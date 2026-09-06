@@ -27,6 +27,35 @@ export default function ChatHeader({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
+  // Accessibility Font Size menu popover state
+  const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
+  const fontSizeMenuRef = useRef<HTMLDivElement>(null);
+
+  const [fontSize, setFontSizeState] = useState<"normal" | "large" | "xlarge">(() => {
+    const saved = localStorage.getItem("fontSize");
+    if (saved === "large" || saved === "xlarge") return saved;
+    return "normal";
+  });
+
+  const changeFontSize = (size: "normal" | "large" | "xlarge") => {
+    setFontSizeState(size);
+    localStorage.setItem("fontSize", size);
+    if (size === "normal") {
+      document.documentElement.removeAttribute("data-font-size");
+    } else {
+      document.documentElement.setAttribute("data-font-size", size);
+    }
+  };
+
+  // Sync initial font size attribute on mount
+  useEffect(() => {
+    if (fontSize !== "normal") {
+      document.documentElement.setAttribute("data-font-size", fontSize);
+    } else {
+      document.documentElement.removeAttribute("data-font-size");
+    }
+  }, [fontSize]);
+
   const activeModelObj = models.find((m) => m.id === selectedModel) || models[0] || {
     id: "zai/glm-5.3-flash",
     name: "GLM-5.3 Flash",
@@ -61,12 +90,15 @@ export default function ChatHeader({
     return () => window.removeEventListener("toggle-theme", handleToggleEvent);
   }, [isDark]);
 
-  // Close mobile menu when tapping outside
+  // Close mobile menu & font size menu when tapping outside
   useEffect(() => {
-    if (!mobileMenuOpen) return;
     const handleOutside = (e: MouseEvent | TouchEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (mobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
         setMobileMenuOpen(false);
+      }
+      if (fontSizeMenuOpen && fontSizeMenuRef.current && !fontSizeMenuRef.current.contains(target)) {
+        setFontSizeMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -75,7 +107,7 @@ export default function ChatHeader({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("touchstart", handleOutside);
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, fontSizeMenuOpen]);
 
   const MoonIcon = () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -109,6 +141,14 @@ export default function ChatHeader({
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  );
+
+  const FontSizeIcon = () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 7V4h16v3" />
+      <path d="M9 20h6" />
+      <path d="M12 4v16" />
     </svg>
   );
 
@@ -150,6 +190,73 @@ export default function ChatHeader({
               <span className="text-[#2E6B5E] dark:text-[#10b981]">⚡ Smart Auto Router</span>
             </div>
           </Tooltip>
+
+          {/* ── Accessibility Font Size Control Popover ── */}
+          <div className="relative" ref={fontSizeMenuRef}>
+            <Tooltip content="Font Size (Parents & Low Vision Support)" position="bottom">
+              <button
+                type="button"
+                onClick={() => setFontSizeMenuOpen((p) => !p)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold transition-colors shadow-hairline cursor-pointer ${
+                  fontSize !== "normal"
+                    ? "bg-[#2E6B5E]/15 border-[#2E6B5E]/40 text-[#2E6B5E] dark:text-[#10b981]"
+                    : "bg-surface border-line text-ink hover:bg-hover"
+                }`}
+              >
+                <FontSizeIcon />
+                <span className="text-[11px] uppercase tracking-wider">{fontSize === "xlarge" ? "A++" : fontSize === "large" ? "A+" : "A"}</span>
+              </button>
+            </Tooltip>
+
+            <AnimatePresence>
+              {fontSizeMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-10 z-50 w-52 rounded-2xl bg-surface border border-line shadow-2xl p-1.5 backdrop-blur-xl"
+                >
+                  <div className="px-3 py-1.5 border-b border-line/60">
+                    <p className="text-[11px] font-bold text-ink">Text Size Settings</p>
+                    <p className="text-[9.5px] text-ink-3">Easy reading for parents & low vision</p>
+                  </div>
+                  <div className="flex flex-col gap-0.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => { changeFontSize("normal"); setFontSizeMenuOpen(false); }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        fontSize === "normal" ? "bg-[#2E6B5E]/10 text-accent font-bold" : "text-ink hover:bg-hover"
+                      }`}
+                    >
+                      <span>Standard (100%)</span>
+                      {fontSize === "normal" && <span className="text-accent text-[10px]">✓ Active</span>}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { changeFontSize("large"); setFontSizeMenuOpen(false); }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        fontSize === "large" ? "bg-[#2E6B5E]/10 text-accent font-bold" : "text-ink hover:bg-hover"
+                      }`}
+                    >
+                      <span>Large (+15% Parents)</span>
+                      {fontSize === "large" && <span className="text-accent text-[10px]">✓ Active</span>}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { changeFontSize("xlarge"); setFontSizeMenuOpen(false); }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        fontSize === "xlarge" ? "bg-[#2E6B5E]/10 text-accent font-bold" : "text-ink hover:bg-hover"
+                      }`}
+                    >
+                      <span>Extra Large (+30%)</span>
+                      {fontSize === "xlarge" && <span className="text-accent text-[10px]">✓ Active</span>}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <Tooltip content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"} position="bottom">
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="button" onClick={toggleTheme}
@@ -196,7 +303,7 @@ export default function ChatHeader({
             </svg>
           </motion.button>
 
-          {/* ⋯ Overflow menu — opens popover with History, Stats, Theme */}
+          {/* ⋯ Overflow menu — opens popover with History, Stats, Theme, Font Size */}
           <div className="relative">
             <motion.button
               whileTap={{ scale: 0.92 }}
@@ -220,12 +327,12 @@ export default function ChatHeader({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.92, y: -6 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute right-0 top-11 z-50 w-44 rounded-2xl bg-surface border border-line shadow-2xl backdrop-blur-xl overflow-hidden"
+                  className="absolute right-0 top-11 z-50 w-48 rounded-2xl bg-surface border border-line shadow-2xl backdrop-blur-xl overflow-hidden"
                 >
                   {/* Live status pill */}
                   <div className="px-3 py-2 border-b border-line/60 flex items-center gap-2">
                     <div className="size-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                    <span className="text-[10.5px] font-semibold text-[#2E6B5E]">Smart Auto Router</span>
+                    <span className="text-[10.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981]">Smart Auto Router</span>
                   </div>
 
                   <button type="button" onClick={() => { onOpenHistory(); setMobileMenuOpen(false); }}
@@ -234,8 +341,23 @@ export default function ChatHeader({
                   </button>
 
                   <button type="button" onClick={() => { onOpenStats(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-3 text-[13px] font-medium text-ink hover:bg-hover active:bg-hover-2 transition-colors tap-target border-t border-line/40">
+                    className="w-[#full] flex items-center gap-3 px-3 py-3 text-[13px] font-medium text-ink hover:bg-hover active:bg-hover-2 transition-colors tap-target border-t border-line/40">
                     <StatsIcon /> Analytics
+                  </button>
+
+                  {/* Font Size cycle button on mobile */}
+                  <button type="button" onClick={() => {
+                    const nextSize = fontSize === "normal" ? "large" : fontSize === "large" ? "xlarge" : "normal";
+                    changeFontSize(nextSize);
+                  }}
+                    className="w-full flex items-center justify-between px-3 py-3 text-[13px] font-medium text-ink hover:bg-hover active:bg-hover-2 transition-colors tap-target border-t border-line/40">
+                    <div className="flex items-center gap-3">
+                      <FontSizeIcon />
+                      <span>Font Size</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent/15 text-accent uppercase">
+                      {fontSize === "xlarge" ? "XL (130%)" : fontSize === "large" ? "L (115%)" : "100%"}
+                    </span>
                   </button>
 
                   <button type="button" onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}

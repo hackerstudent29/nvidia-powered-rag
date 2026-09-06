@@ -234,6 +234,41 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY FONT SIZE SCALING (Designed for Parents & Senior Readers)
+   ══════════════════════════════════════════════════════════════ */
+html[data-font-size="large"] {
+  font-size: 114%;
+}
+
+html[data-font-size="xlarge"] {
+  font-size: 128%;
+}
+
+html[data-font-size="large"] .prose-clean p,
+html[data-font-size="large"] .prose-clean li,
+html[data-font-size="large"] .prose-clean h1,
+html[data-font-size="large"] .prose-clean h2,
+html[data-font-size="large"] .prose-clean h3,
+html[data-font-size="large"] .message-bubble,
+html[data-font-size="large"] textarea,
+html[data-font-size="large"] input {
+  font-size: 1.15em !important;
+  line-height: 1.72 !important;
+}
+
+html[data-font-size="xlarge"] .prose-clean p,
+html[data-font-size="xlarge"] .prose-clean li,
+html[data-font-size="xlarge"] .prose-clean h1,
+html[data-font-size="xlarge"] .prose-clean h2,
+html[data-font-size="xlarge"] .prose-clean h3,
+html[data-font-size="xlarge"] .message-bubble,
+html[data-font-size="xlarge"] textarea,
+html[data-font-size="xlarge"] input {
+  font-size: 1.32em !important;
+  line-height: 1.8 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
    CSS VARIABLE UTILITY CLASSES
    ══════════════════════════════════════════════════════════════ */
 .bg-canvas  { background-color: var(--canvas); }
