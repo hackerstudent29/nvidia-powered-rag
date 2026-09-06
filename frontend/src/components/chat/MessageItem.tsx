@@ -893,30 +893,38 @@ const MessageItem = React.memo(function MessageItem({
               </Tooltip>
             )}
 
-            {/* Sources Button */}
+            {/* Sources Button (Matches TokenCostBadge style: transparent, no emojis) */}
             {sources.length > 0 && (
               <button
                 type="button"
                 aria-expanded={sourcesOpen}
                 onClick={() => setSourcesOpen((current) => !current)}
-                className="ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold transition-all duration-200 bg-[#E1EED7]/70 dark:bg-[#2E6B5E]/20 text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/30 dark:border-[#10b981]/30 hover:bg-[#E1EED7] dark:hover:bg-[#2E6B5E]/30 shadow-sm cursor-pointer"
+                className={`ml-1 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline cursor-pointer ${
+                  sourcesOpen
+                    ? "bg-hover text-ink shadow-sm font-semibold border-line-strong"
+                    : "bg-transparent hover:bg-hover text-ink-2 hover:text-ink"
+                }`}
               >
-                <span className="flex -space-x-1">
-                  {sources.slice(0, 3).map((s, i) => (
-                    <div
-                      key={s.chunk_id || i}
-                      className="size-3.5 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] border border-white dark:border-zinc-900 flex items-center justify-center text-[8px] font-bold text-white dark:text-zinc-950"
-                    >
-                      {i + 1}
-                    </div>
-                  ))}
-                </span>
-                <span>
-                  {sources.length} {sources.length === 1 ? "source" : "sources"}
-                </span>
                 <svg
                   width="11"
                   height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-accent"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                <span className="tabular-nums font-mono text-ink-2">
+                  {sources.length} {sources.length === 1 ? "source" : "sources"}
+                </span>
+                <svg
+                  width="10"
+                  height="10"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -930,36 +938,49 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
 
-        {/* Expandable Sources Panel (Theme Matched & Optimized) */}
+        {/* Expandable Sources Panel (Transparent, Glassmorphism, Theme-Matched with TokenCostPanel, No Emojis) */}
         {sourcesOpen && sources.length > 0 && (
-          <div className="mt-2.5 flex flex-col gap-1.5 p-3 rounded-2xl bg-[#f8f9fc] dark:bg-[#181a20] border border-black/[0.08] dark:border-white/[0.08] shadow-lg transition-colors animate-in fade-in slide-in-from-top-1 duration-200">
-            <div className="text-[11px] font-bold text-ink dark:text-[#f4f3ee] pb-1.5 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <span className="flex size-4 items-center justify-center rounded bg-emerald-500/20 text-[#10b981] text-[10px]">📚</span>
-                <span>Verified Grounding Context Sources</span>
+          <div className="w-full rounded-2xl bg-surface/90 dark:bg-[#14151a]/90 text-ink dark:text-[#f4f3ee] mt-2 mb-1 p-3.5 border border-black/[0.08] dark:border-white/[0.08] shadow-md backdrop-blur-xl transition-all animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/[0.08] dark:border-white/[0.08]">
+              <div className="flex items-center gap-2">
+                <div className="size-6 rounded-lg bg-[#E1EED7] dark:bg-[#2E6B5E]/30 border border-[#2E6B5E]/30 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] shadow-sm shrink-0">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </div>
+                <div className="text-[11.5px] font-bold text-ink dark:text-[#f4f3ee]">
+                  Verified Grounding Context Sources
+                </div>
               </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink-3 dark:text-zinc-400 font-mono font-medium">
-                {sources.length} Verified Documents
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.05] border border-black/[0.08] dark:border-white/[0.08] text-ink-3 dark:text-[#b1ada1] font-mono font-medium">
+                {sources.length} {sources.length === 1 ? "Verified Document" : "Verified Documents"}
               </span>
             </div>
-            <div className="flex flex-col gap-1 mt-1">
+
+            <div className="flex flex-col gap-1.5 mt-1">
               {sources.map((source, idx) => {
-                const fileName = source.source_file ? source.source_file.replace(/\.php$/i, '.md') : (source.title || "").replace(/\.php$/i, '.md');
+                const fileName = source.source_file
+                  ? source.source_file.replace(/\.php$/i, '.md')
+                  : (source.title || "").replace(/\.php$/i, '.md');
                 return (
                   <div
                     key={source.chunk_id || idx}
-                    className="group flex items-center justify-between w-full rounded-xl px-2.5 py-2 text-[11.5px] font-medium bg-white/70 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.05] text-ink-2 dark:text-[#b1ada1] hover:bg-white dark:hover:bg-white/[0.07] hover:text-ink dark:hover:text-[#f4f3ee] hover:border-emerald-500/30 transition-all cursor-default shadow-xs"
+                    className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-[11.5px] font-medium bg-black/[0.02] dark:bg-white/[0.03] hover:bg-black/[0.05] dark:hover:bg-white/[0.07] border border-black/[0.06] dark:border-white/[0.06] transition-all cursor-default"
                   >
-                    <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
-                      <span className="flex size-4.5 items-center justify-center rounded-md bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9.5px] shrink-0 border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+                      <span className="flex size-4.5 items-center justify-center rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9.5px] shrink-0 border border-[#2E6B5E]/20 dark:border-[#10b981]/30">
                         {idx + 1}
                       </span>
-                      <span className="text-[11px] text-ink-3 dark:text-zinc-500 shrink-0">📄</span>
-                      <span className="truncate font-mono text-[11px] font-medium text-ink dark:text-zinc-200">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3 dark:text-[#b1ada1] shrink-0">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                      <span className="truncate font-mono text-[11px] font-medium text-ink dark:text-[#f4f3ee]">
                         {fileName}
                       </span>
                     </div>
-                    <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-[#10b981] dark:text-[#34d399] font-mono shrink-0">
+                    <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-[#10b981]/10 dark:bg-[#10b981]/15 text-[#10b981] dark:text-[#34d399] font-mono shrink-0 font-medium border border-[#10b981]/20">
                       RAG Verified
                     </span>
                   </div>
@@ -980,7 +1001,9 @@ const MessageItem = React.memo(function MessageItem({
         {isDisliked && onRegenerateWithNeMo && (
           <div className="mt-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/30 text-[12px] text-emerald-800 dark:text-emerald-200">
             <div className="flex items-center gap-2">
-              <span className="text-[14px]">⚡</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-emerald-600 dark:text-emerald-400 shrink-0">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
               <span>Dissatisfied? Re-evaluate using <strong>NVIDIA Nemotron Neural Re-ranker (nvidia/llama-nemotron-rerank-1b-v2)</strong> & Colang 2.0 Guardrails</span>
             </div>
             <button
