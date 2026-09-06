@@ -137,34 +137,34 @@ export const AdminDashboard: React.FC = () => {
     }`}>
       
       {/* FLOATING TOP EXPANDABLE PILL NAVBAR */}
-      <div className="fixed top-3 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none">
-        <header className={`pointer-events-auto max-w-7xl mx-auto h-16 backdrop-blur-2xl border rounded-full shadow-2xl flex items-center justify-between px-3 sm:px-6 transition-all ${
+      <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-50 px-2 sm:px-4 pointer-events-none">
+        <header className={`pointer-events-auto max-w-7xl mx-auto h-14 sm:h-16 backdrop-blur-2xl border rounded-full shadow-2xl flex items-center justify-between px-3 sm:px-6 transition-all ${
           isDark ? 'bg-[#14151a]/90 border-white/[0.08]' : 'bg-white/90 border-black/[0.08]'
         }`}>
           
           {/* Logo & Title */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <Tooltip content="Return to Student AI Chat" position="bottom">
               <motion.div 
                 whileHover={{ rotate: 15, scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/')}
-                className="w-9 h-9 rounded-full bg-[#2E6B5E]/20 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-[#10b981]/40 cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#2E6B5E]/20 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-[#10b981]/40 cursor-pointer shrink-0"
               >
-                <Activity className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-[#2E6B5E] dark:text-[#10b981]" />
               </motion.div>
             </Tooltip>
-            <div className="flex items-center gap-2">
-              <span className="font-heading font-bold text-sm sm:text-base tracking-tight text-[#1C1917] dark:text-[#f4f3ee]">
+            <div className="flex items-center gap-1.5">
+              <span className="font-heading font-bold text-xs sm:text-base tracking-tight text-[#1C1917] dark:text-[#f4f3ee]">
                 Lorin AI
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[9.5px] uppercase font-bold tracking-wider bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
+              <span className="hidden xs:inline-block px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] uppercase font-bold tracking-wider bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
                 Ops Center
               </span>
             </div>
           </div>
 
-          {/* ── EXPANDABLE PILL TAB NAVIGATION (SHADCN / FRAMER MOTION) ── */}
+          {/* ── EXPANDABLE PILL TAB NAVIGATION (DESKTOP) ── */}
           <motion.nav
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -223,19 +223,19 @@ export const AdminDashboard: React.FC = () => {
           </motion.nav>
 
           {/* Controls, Theme Toggle & Back to App */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <Tooltip content={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"} position="bottom">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleTheme}
-                className={`p-2 rounded-full transition-all border flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+                className={`p-1.5 sm:p-2 rounded-full transition-all border flex items-center gap-1 text-xs font-semibold cursor-pointer ${
                   isDark 
                     ? 'bg-white/[0.06] hover:bg-white/[0.1] text-amber-300 border-white/[0.08]' 
                     : 'bg-[#F7F6ED] hover:bg-[#edece4] text-indigo-600 border-black/[0.08]'
                 }`}
               >
-                {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+                {isDark ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600" />}
               </motion.button>
             </Tooltip>
 
@@ -244,7 +244,7 @@ export const AdminDashboard: React.FC = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                   isDark 
                     ? 'bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f3ee] border-white/[0.08]' 
                     : 'bg-[#F7F6ED] hover:bg-[#edece4] text-[#1C1917] border-black/[0.08]'
@@ -264,13 +264,13 @@ export const AdminDashboard: React.FC = () => {
                   document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
                   navigate('/admin/login');
                 }}
-                className={`p-2 rounded-full transition-all border cursor-pointer ${
+                className={`p-1.5 sm:p-2 rounded-full transition-all border cursor-pointer ${
                   isDark 
                     ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20' 
                     : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200'
                 }`}
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </motion.button>
             </Tooltip>
           </div>
@@ -278,7 +278,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* DASHBOARD CONTENT BODY */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-12 relative z-10">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 pt-20 sm:pt-24 pb-20 sm:pb-12 relative z-10">
         
         {/* Error Alert */}
         <AnimatePresence>
@@ -372,13 +372,13 @@ export const AdminDashboard: React.FC = () => {
         )}
       </main>
 
-      {/* MOBILE STICKY BOTTOM NAV BAR (SHADCN / FRAMER MOTION EXPANDING PILLS) */}
-      <div className="fixed inset-x-0 bottom-4 z-40 md:hidden flex justify-center px-4 pointer-events-none">
+      {/* MOBILE STICKY BOTTOM NAV BAR (TOUCH OPTIMIZED, SCROLLABLE IF NARROW) */}
+      <div className="fixed inset-x-0 bottom-3 z-40 md:hidden flex justify-center px-2 pointer-events-none">
         <motion.nav
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 26 }}
-          className="pointer-events-auto rounded-full flex items-center p-1.5 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/90 dark:bg-[#07080a]/95 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08),0_10px_30px_rgba(0,0,0,0.2)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7),0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+          className="pointer-events-auto max-w-[calc(100vw-1rem)] rounded-full flex items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/95 dark:bg-[#07080a]/95 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08),0_10px_30px_rgba(0,0,0,0.25)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7),0_10px_30px_rgba(0,0,0,0.6)] backdrop-blur-2xl overflow-x-auto scrollbar-none gap-0.5"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -390,7 +390,7 @@ export const AdminDashboard: React.FC = () => {
                 whileTap={{ scale: 0.94 }}
                 onClick={() => setActiveTab(item.id as any)}
                 type="button"
-                className={`flex items-center gap-0 px-3 py-2 rounded-full transition-all duration-200 relative h-10 min-w-[42px] cursor-pointer overflow-hidden ${
+                className={`flex items-center gap-0 px-2.5 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[38px] shrink-0 cursor-pointer overflow-hidden ${
                   isActive
                     ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md'
                     : 'bg-transparent text-[#57534E] dark:text-[#b1ada1]'
@@ -398,7 +398,7 @@ export const AdminDashboard: React.FC = () => {
                 aria-label={item.label}
               >
                 <Icon
-                  size={19}
+                  size={17}
                   strokeWidth={isActive ? 2.3 : 1.8}
                   className="shrink-0"
                 />
@@ -406,9 +406,9 @@ export const AdminDashboard: React.FC = () => {
                 <motion.div
                   initial={false}
                   animate={{
-                    width: isActive ? "72px" : "0px",
+                    width: isActive ? "68px" : "0px",
                     opacity: isActive ? 1 : 0,
-                    marginLeft: isActive ? "6px" : "0px",
+                    marginLeft: isActive ? "5px" : "0px",
                   }}
                   transition={{
                     width: { type: "spring", stiffness: 350, damping: 30 },
