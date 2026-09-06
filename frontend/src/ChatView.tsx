@@ -171,7 +171,7 @@ export default function App() {
               onPastePrompt={(prompt) => setChatInput(prompt)}
             />
           ) : (
-            <div className="flex flex-col space-y-4 sm:space-y-6 pt-3 pb-8 sm:pb-12">
+            <div className="flex flex-col space-y-6 sm:space-y-8 pt-4 pb-12 sm:pb-16">
               {messages.map((msg, idx) => {
                 const prevUserMsg = idx > 0 ? messages.slice(0, idx).reverse().find(m => m.role === 'user') : null;
                 const userQueryText = prevUserMsg ? prevUserMsg.content : "MSAJCEA Inquiry";

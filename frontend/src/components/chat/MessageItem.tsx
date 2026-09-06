@@ -670,7 +670,7 @@ const MessageItem = React.memo(function MessageItem({
 
   if (isUser) {
     return (
-      <div className="flex flex-col items-end my-3.5 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div className="flex flex-col items-end mt-7 mb-4 sm:mt-8 sm:mb-5 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
         {/* User Profile Header (You + Timestamp + Avatar) aligned to top right */}
         <div className="flex items-center gap-2 mb-1.5 shrink-0 justify-end pr-1">
           <span className="text-[11.5px] font-bold text-ink-2 dark:text-zinc-300">You</span>
@@ -758,7 +758,7 @@ const MessageItem = React.memo(function MessageItem({
   };
 
   return (
-    <div ref={messageRef} className="flex flex-col mt-1 mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
+    <div ref={messageRef} className="flex flex-col mt-3 mb-7 sm:mt-4 sm:mb-9 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
       <div className="flex items-center gap-2 mb-2 shrink-0">
         <div className="size-6 rounded-lg bg-gradient-to-tr from-[#D0CCE5] via-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E]/40 dark:to-[#10b981]/30 border border-white dark:border-emerald-500/30 shadow-hairline flex items-center justify-center text-[#2E6B5E] dark:text-[#34d399] shrink-0">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
