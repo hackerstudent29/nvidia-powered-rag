@@ -607,6 +607,13 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------
+# Health Check — required for Railway deployment
+# ---------------------------------------------------------
+@app.get("/", tags=["health"])
+async def health_check():
+    return {"status": "ok", "service": "Lorin AI API", "version": "2.0.0"}
+
+# ---------------------------------------------------------
 # Embeddings & Retrieval Logic
 # ---------------------------------------------------------
 async def get_query_embedding(query_text: str) -> Optional[List[float]]:
