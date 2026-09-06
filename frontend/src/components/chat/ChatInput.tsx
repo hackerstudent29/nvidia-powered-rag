@@ -364,10 +364,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   // Voice recording stop handler
   const stopRecording = useCallback(() => {
     isRecordingRef.current = false;
-    if (demoIntervalRef.current) {
-      window.clearInterval(demoIntervalRef.current);
-      demoIntervalRef.current = null;
-    }
     if (recognitionRef.current) {
       try {
         recognitionRef.current.onend = null;
@@ -394,42 +390,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setAudioData(new Array(5).fill(0.1));
   }, []);
 
-  // Voice recording start handler
+  // Voice recording start handler — Real-time Speech-to-Text Dictation
   const startRecording = useCallback(async () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech-to-Text is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari.");
+      return;
+    }
+
     setIsSmoothResize(false);
     setExpanded(true);
     isRecordingRef.current = true;
     setIsRecording(true);
-
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    // Simulation transcription generator if SpeechRecognition fails or is restricted
-    const startFallbackTranscription = () => {
-      const sampleSentences = [
-        "What are the admission requirements for MSAJCEA?",
-        "Tell me about the fee structure and hostel facilities.",
-        "What departments and Anna University courses are offered?",
-      ];
-      const targetSentence = sampleSentences[Math.floor(Math.random() * sampleSentences.length)];
-      const words = targetSentence.split(" ");
-      let wordIdx = 0;
-      let currentBase = textRef.current;
-
-      demoIntervalRef.current = window.setInterval(() => {
-        if (!isRecordingRef.current) {
-          if (demoIntervalRef.current) window.clearInterval(demoIntervalRef.current);
-          return;
-        }
-        if (wordIdx < words.length) {
-          currentBase = (currentBase ? currentBase + " " : "") + words[wordIdx];
-          handleValueChange(currentBase);
-          wordIdx++;
-        } else {
-          if (demoIntervalRef.current) window.clearInterval(demoIntervalRef.current);
-        }
-      }, 450);
-    };
 
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -467,65 +441,62 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       console.warn("Microphone visualizer notice:", err);
     }
 
-    if (SpeechRecognition) {
-      try {
-        const recognition = new SpeechRecognition();
-        recognitionRef.current = recognition;
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = navigator.language || "en-IN";
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || "en-US";
 
-        let baseText = textRef.current;
+      let baseText = textRef.current;
 
-        recognition.onresult = (event: any) => {
-          let interimTranscript = "";
-          let finalTranscript = "";
+      recognition.onresult = (event: any) => {
+        let interimTranscript = "";
+        let finalTranscript = "";
 
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
-            } else {
-              interimTranscript += event.results[i][0].transcript;
-            }
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
           }
+        }
 
-          if (finalTranscript) {
-            baseText = (baseText ? baseText.trim() + " " : "") + finalTranscript.trim();
+        if (finalTranscript) {
+          baseText = (baseText ? baseText.trim() + " " : "") + finalTranscript.trim();
+        }
+
+        const combined = (baseText + (interimTranscript ? " " + interimTranscript : "")).trim();
+        handleValueChange(combined);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition notice:", event.error);
+        if (event.error === "no-speech" || event.error === "audio-capture") {
+          return; // Stay active during quiet pauses
+        }
+        if (event.error === "not-allowed") {
+          alert("Microphone permission denied. Please allow microphone access in your browser settings.");
+          stopRecording();
+        }
+      };
+
+      recognition.onend = () => {
+        // Automatically restart speech recognition if user has not clicked stop button
+        if (isRecordingRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            // Ignore if already active
           }
+        }
+      };
 
-          const combined = (baseText + (interimTranscript ? " " + interimTranscript : "")).trim();
-          handleValueChange(combined);
-        };
-
-        recognition.onerror = (event: any) => {
-          console.warn("Speech recognition event:", event.error);
-          if (event.error === "no-speech" || event.error === "audio-capture") {
-            return;
-          }
-          if (isRecordingRef.current && !demoIntervalRef.current) {
-            startFallbackTranscription();
-          }
-        };
-
-        recognition.onend = () => {
-          if (isRecordingRef.current) {
-            try {
-              recognition.start();
-            } catch (e) {
-              if (!demoIntervalRef.current) {
-                startFallbackTranscription();
-              }
-            }
-          }
-        };
-
-        recognition.start();
-      } catch (err) {
-        console.warn("SpeechRecognition start exception:", err);
-        startFallbackTranscription();
-      }
-    } else {
-      startFallbackTranscription();
+      recognition.start();
+    } catch (err) {
+      console.error("Failed to start SpeechRecognition:", err);
+      stopRecording();
     }
   }, [handleValueChange, stopRecording]);
 
