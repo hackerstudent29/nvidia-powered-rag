@@ -4039,56 +4039,28 @@ async def generate_tts(body: TTSRequest):
 async def websocket_stt_proxy(websocket: WebSocket, model: str = Query("nova-3")):
     """
     Realtime Speech-to-Text WebSocket Proxy Endpoint.
-    Primary Engine: Deepgram (nova-3, nova-2, enhanced, base)
-    Automatic Fallback Engine: AssemblyAI Universal-3.5 Pro
+    Engine: Deepgram Realtime STT (nova-3, nova-2, enhanced, base)
     """
     await websocket.accept()
     
     dg_key = os.getenv("DEEPGRAM_API_KEY")
-    aai_key = os.getenv("ASSEMBLYAI_API_KEY")
-    
-    connected_engine = None
-    upstream_ws = None
-    requested_model = model.strip().lower() if model else "nova-3"
-
-    # If explicitly requested AssemblyAI
-    if requested_model in ["assemblyai", "universal-3-5-pro", "aai"]:
-        requested_model = "universal-3-5-pro"
-
-    # 1. Attempt Primary Connection: Deepgram Realtime STT (if not explicitly AssemblyAI)
-    if dg_key and requested_model != "universal-3-5-pro":
-        try:
-            dg_model = requested_model if requested_model in ["nova-3", "nova-2", "enhanced", "base"] else "nova-3"
-            dg_url = f"wss://api.deepgram.com/v1/listen?endpointing=10&interim_results=true&smart_format=true&language=en&model={dg_model}&encoding=linear16&sample_rate=16000"
-            upstream_ws = await websockets.connect(dg_url, additional_headers={"Authorization": f"Token {dg_key}"})
-            connected_engine = "deepgram"
-            print(f"[STT Proxy] Connected to Primary Engine: Deepgram ({dg_model})")
-        except Exception as e:
-            print(f"[STT Proxy] Deepgram ({requested_model}) connection failed: {e}. Switching to AssemblyAI fallback...")
-
-    # 2. Attempt Fallback / Explicit Connection: AssemblyAI Realtime STT (Universal-3.5 Pro)
-    if not connected_engine and aai_key:
-        try:
-            async with httpx.AsyncClient() as client:
-                token_resp = await client.get(
-                    "https://streaming.assemblyai.com/v3/token?expires_in_seconds=60",
-                    headers={"Authorization": aai_key},
-                    timeout=5.0
-                )
-                if token_resp.status_code == 200:
-                    token = token_resp.json().get("token")
-                    aai_url = f"wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=universal-3-5-pro&mode=balanced&token={token}"
-                    upstream_ws = await websockets.connect(aai_url)
-                    connected_engine = "assemblyai"
-                    print("[STT Proxy] Connected to Fallback Engine: AssemblyAI Universal-3.5 Pro")
-        except Exception as e:
-            print(f"[STT Proxy] AssemblyAI fallback connection failed: {e}")
-
-    if not connected_engine or not upstream_ws:
-        await websocket.close(code=1011, reason="All STT engines failed to connect")
+    if not dg_key:
+        await websocket.close(code=1008, reason="Deepgram API key missing")
         return
 
-    await websocket.send_json({"type": "engine_info", "provider": connected_engine, "model": requested_model})
+    requested_model = model.strip().lower() if model else "nova-3"
+    dg_model = requested_model if requested_model in ["nova-3", "nova-2", "enhanced", "base"] else "nova-3"
+    dg_url = f"wss://api.deepgram.com/v1/listen?endpointing=10&interim_results=true&smart_format=true&language=en&model={dg_model}&encoding=linear16&sample_rate=16000"
+    
+    try:
+        upstream_ws = await websockets.connect(dg_url, additional_headers={"Authorization": f"Token {dg_key}"})
+        print(f"[STT Proxy] Connected to Deepgram ({dg_model})")
+    except Exception as e:
+        print(f"[STT Proxy] Deepgram connection failed: {e}")
+        await websocket.close(code=1011, reason="Failed to connect to Deepgram STT service")
+        return
+
+    await websocket.send_json({"type": "engine_info", "provider": "deepgram", "model": dg_model})
 
     async def forward_client_to_upstream():
         try:
@@ -4097,10 +4069,7 @@ async def websocket_stt_proxy(websocket: WebSocket, model: str = Query("nova-3")
                 if "bytes" in message and message["bytes"]:
                     await upstream_ws.send(message["bytes"])
                 elif "text" in message and message["text"]:
-                    if connected_engine == "deepgram":
-                        await upstream_ws.send(json.dumps({"type": "CloseStream"}))
-                    elif connected_engine == "assemblyai":
-                        await upstream_ws.send(json.dumps({"type": "Terminate"}))
+                    await upstream_ws.send(json.dumps({"type": "CloseStream"}))
                     break
         except Exception:
             pass
@@ -4109,29 +4078,17 @@ async def websocket_stt_proxy(websocket: WebSocket, model: str = Query("nova-3")
         try:
             async for raw in upstream_ws:
                 msg = json.loads(raw)
-                if connected_engine == "deepgram":
-                    channel = msg.get("channel", {})
-                    alternatives = channel.get("alternatives", [{}])
-                    transcript = alternatives[0].get("transcript", "") if alternatives else ""
-                    is_final = msg.get("is_final", False)
-                    if transcript.strip():
-                        await websocket.send_json({
-                            "type": "transcript",
-                            "transcript": transcript,
-                            "is_final": is_final,
-                            "provider": "deepgram"
-                        })
-                elif connected_engine == "assemblyai":
-                    if msg.get("type") == "Turn":
-                        transcript = msg.get("transcript", "")
-                        is_final = msg.get("end_of_turn", False)
-                        if transcript.strip():
-                            await websocket.send_json({
-                                "type": "transcript",
-                                "transcript": transcript,
-                                "is_final": is_final,
-                                "provider": "assemblyai"
-                            })
+                channel = msg.get("channel", {})
+                alternatives = channel.get("alternatives", [{}])
+                transcript = alternatives[0].get("transcript", "") if alternatives else ""
+                is_final = msg.get("is_final", False)
+                if transcript.strip():
+                    await websocket.send_json({
+                        "type": "transcript",
+                        "transcript": transcript,
+                        "is_final": is_final,
+                        "provider": "deepgram"
+                    })
         except Exception:
             pass
 

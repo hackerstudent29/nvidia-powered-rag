@@ -4,6 +4,7 @@ import { Tooltip } from "../Tooltip";
 import { RateLimitInfo } from "../../types/chat";
 import { cn } from "../../lib/utils";
 import { AIVoiceInput } from "../ui/AIVoiceInput";
+import { Bot, Volume1, Volume2, Sparkles, Zap, SlidersHorizontal, Check, X, Play, Square, Mic, Gauge, AudioWaveform } from "lucide-react";
 
 // ----------------------------------------------------------------------
 // Physics & Animation Constants
@@ -237,6 +238,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   });
 
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
+  const [activeVoiceTab, setActiveVoiceTab] = useState<"all" | "style" | "speed" | "voices">("all");
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -1200,164 +1202,207 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     onClick={() => setIsVoiceMenuOpen(!isVoiceMenuOpen)}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
                   >
-                    <span className="text-[11px]">🎙️</span>
+                    <Mic className="size-3.5 text-[#10b981]" />
                     <span>
-                      {AURA_VOICES.find(v => v.id === selectedVoice)?.name || "Asteria"}
+                      {AURA_VOICES.find(v => v.id === selectedVoice)?.name || "Alexis"}
                     </span>
                   </button>
                 </Tooltip>
 
                 {isVoiceMenuOpen && (
                   <div
-                    className="absolute right-0 bottom-full mb-2 w-80 rounded-2xl bg-white/95 dark:bg-[#121417]/95 backdrop-blur-xl p-3 shadow-2xl border border-black/[0.1] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-default"
+                    className="absolute right-0 bottom-full mb-2 w-84 sm:w-96 rounded-2xl bg-[#12141a]/95 backdrop-blur-2xl p-3.5 shadow-2xl border border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-default text-white"
                   >
                     {/* Header */}
-                    <div className="px-1 py-1 text-xs font-semibold text-ink dark:text-zinc-200 border-b border-black/[0.06] dark:border-white/[0.06] mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold">Voice Controls & Tone</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-[#10b981] font-mono font-bold">Deepgram AI</span>
+                    <div className="px-1 pb-2 border-b border-white/[0.08] mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <SlidersHorizontal className="size-4 text-[#10b981]" />
+                        <span className="font-bold text-xs tracking-tight text-white">Voice Controls & Tone</span>
+                        <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#10b981] font-mono font-bold border border-emerald-500/30">
+                          Deepgram AI
+                        </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setIsVoiceMenuOpen(false)}
-                        className="text-ink-3 dark:text-zinc-500 hover:text-ink text-xs p-1 cursor-pointer"
+                        className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                       >
-                        ✕
+                        <X className="size-4" />
                       </button>
                     </div>
 
-                    {/* 1. Voice Style & Expressivity (Deepgram Flux Parameter) */}
-                    <div className="mb-3 px-1">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
-                          Voice Style & Expressivity
-                        </span>
-                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-[#10b981]">
-                          {expressivity === -2
-                            ? "🤖 Robot (-2)"
-                            : expressivity === -1
-                            ? "😐 Calm (-1)"
-                            : expressivity === 0
-                            ? "💬 Normal (0)"
-                            : expressivity === 1
-                            ? "🗣️ Animated (+1)"
-                            : "⚡ Expressive (+2)"}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-5 gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
-                        {[
-                          { val: -2, label: "🤖", title: "Robot" },
-                          { val: -1, label: "😐", title: "Calm" },
-                          { val: 0, label: "💬", title: "Normal" },
-                          { val: 1, label: "🗣️", title: "Animated" },
-                          { val: 2, label: "⚡", title: "Expressive" }
-                        ].map((item) => (
+                    {/* Navbar Component for switching options */}
+                    <div className="flex items-center gap-1 p-1 bg-black/40 rounded-xl border border-white/[0.06] mb-3.5">
+                      {[
+                        { id: "all", label: "All", icon: SlidersHorizontal },
+                        { id: "style", label: "Style", icon: Sparkles },
+                        { id: "speed", label: "Speed", icon: Gauge },
+                        { id: "voices", label: "Voices", icon: AudioWaveform },
+                      ].map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = activeVoiceTab === tab.id;
+                        return (
                           <button
-                            key={item.val}
+                            key={tab.id}
                             type="button"
-                            onClick={() => handleExpressivitySelect(item.val)}
+                            onClick={() => setActiveVoiceTab(tab.id as any)}
                             className={cn(
-                              "flex flex-col items-center justify-center py-1.5 px-0.5 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer border text-center",
-                              expressivity === item.val
-                                ? "bg-white dark:bg-[#20222a] text-emerald-600 dark:text-[#10b981] border-emerald-500/40 shadow-sm font-bold scale-[1.02]"
-                                : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.05]"
+                              "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer",
+                              isActive
+                                ? "bg-emerald-500/20 text-[#10b981] border border-emerald-500/40 shadow-sm font-bold"
+                                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
                             )}
                           >
-                            <span className="text-sm">{item.label}</span>
-                            <span className="text-[8.5px] truncate max-w-full font-semibold">{item.title}</span>
+                            <Icon className="size-3.5" />
+                            <span>{tab.label}</span>
                           </button>
-                        ))}
-                      </div>
+                        );
+                      })}
                     </div>
 
-                    {/* 2. Speaking Speed / Pace (Deepgram Spec: 0.5x to 1.5x) */}
-                    <div className="mb-3 px-1">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
-                          Speaking Speed (Pace)
-                        </span>
-                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-[#10b981]">
-                          {ttsSpeed}x
-                        </span>
+                    {/* Section 1: Voice Style & Expressivity */}
+                    {(activeVoiceTab === "all" || activeVoiceTab === "style") && (
+                      <div className="mb-3.5 px-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1.5">
+                            <Sparkles className="size-3 text-[#10b981]" />
+                            Voice Style & Expressivity
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-[#10b981]">
+                            {expressivity === -2
+                              ? "Robot (-2)"
+                              : expressivity === -1
+                              ? "Calm (-1)"
+                              : expressivity === 0
+                              ? "Normal (0)"
+                              : expressivity === 1
+                              ? "Animated (+1)"
+                              : "Expressive (+2)"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-5 gap-1.5 bg-black/40 p-1.5 rounded-xl border border-white/[0.06]">
+                          {[
+                            { val: -2, icon: Bot, title: "Robot" },
+                            { val: -1, icon: Volume1, title: "Calm" },
+                            { val: 0, icon: Volume2, title: "Normal" },
+                            { val: 1, icon: Sparkles, title: "Animated" },
+                            { val: 2, icon: Zap, title: "Expressive" }
+                          ].map((item) => {
+                            const ItemIcon = item.icon;
+                            const isSelected = expressivity === item.val;
+                            return (
+                              <button
+                                key={item.val}
+                                type="button"
+                                onClick={() => handleExpressivitySelect(item.val)}
+                                className={cn(
+                                  "flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer border text-center gap-1",
+                                  isSelected
+                                    ? "bg-emerald-500/20 text-[#10b981] border-emerald-500/50 shadow-md font-bold scale-[1.02]"
+                                    : "text-zinc-400 border-transparent hover:bg-white/[0.06] hover:text-zinc-200"
+                                )}
+                              >
+                                <ItemIcon className={cn("size-4", isSelected ? "text-[#10b981]" : "text-zinc-400")} />
+                                <span className="text-[9px] truncate max-w-full font-semibold">{item.title}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
-                        {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => (
-                          <button
-                            key={spd}
-                            type="button"
-                            onClick={() => handleSpeedSelect(spd)}
-                            className={cn(
-                              "flex-1 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer border text-center",
-                              ttsSpeed === spd
-                                ? "bg-white dark:bg-[#20222a] text-emerald-600 dark:text-[#10b981] border-emerald-500/40 shadow-sm"
-                                : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.05]"
-                            )}
-                          >
-                            {spd}x
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    )}
 
-                    {/* 3. Voice Model List */}
-                    <div className="px-1 mb-1">
-                      <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
-                        AI Speaker Voice ({AURA_VOICES.length})
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
-                      {AURA_VOICES.map((v) => (
-                        <div
-                          key={v.id}
-                          onClick={() => handleVoiceSelect(v.id)}
-                          className={cn(
-                            "group relative flex items-center justify-between p-2 rounded-xl border transition-all cursor-pointer",
-                            selectedVoice === v.id
-                              ? "bg-black/[0.04] dark:bg-white/[0.08] border-[#10b981]/50 shadow-sm"
-                              : "bg-black/[0.02] dark:bg-white/[0.03] border-transparent hover:bg-black/[0.05] dark:hover:bg-white/[0.06]"
-                          )}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            {/* Play Preview Button */}
+                    {/* Section 2: Speaking Speed (Pace) */}
+                    {(activeVoiceTab === "all" || activeVoiceTab === "speed") && (
+                      <div className="mb-3.5 px-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1.5">
+                            <Gauge className="size-3 text-[#10b981]" />
+                            Speaking Speed (Pace)
+                          </span>
+                          <span className="text-[10px] font-mono font-bold text-[#10b981]">
+                            {ttsSpeed}x
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-black/40 p-1.5 rounded-xl border border-white/[0.06]">
+                          {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => (
                             <button
+                              key={spd}
                               type="button"
-                              onClick={(e) => handlePlayPreview(e, v)}
-                              title="Play voice preview"
+                              onClick={() => handleSpeedSelect(spd)}
                               className={cn(
-                                "size-6 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm",
-                                previewingVoiceId === v.id
-                                  ? "bg-[#10b981] text-white animate-pulse"
-                                  : "bg-black/10 dark:bg-white/10 text-ink dark:text-zinc-200 hover:bg-[#10b981] hover:text-white"
+                                "flex-1 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer border text-center",
+                                ttsSpeed === spd
+                                  ? "bg-emerald-500/20 text-[#10b981] border-emerald-500/50 shadow-sm"
+                                  : "text-zinc-400 border-transparent hover:bg-white/[0.06] hover:text-zinc-200"
                               )}
                             >
-                              {previewingVoiceId === v.id ? (
-                                <span className="text-[10px]">⏸</span>
-                              ) : (
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                  <polygon points="5 3 19 12 5 21 5 3" />
-                                </svg>
-                              )}
+                              {spd}x
                             </button>
-
-                            {/* 3D Gradient Orb Avatar */}
-                            <div className={cn("size-6 rounded-full bg-gradient-to-tr shadow-md shrink-0 ring-1 ring-white/20", v.gradient)} />
-
-                            {/* Voice Name & Accent */}
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-semibold text-xs leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
-                              <span className="text-[10px] text-ink-3 dark:text-zinc-400 truncate">{v.description}</span>
-                            </div>
-                          </div>
-
-                          {selectedVoice === v.id && (
-                            <span className="text-[#10b981] font-bold text-xs shrink-0 pl-1">
-                              ✓
-                            </span>
-                          )}
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
+
+                    {/* Section 3: AI Speaker Voice List */}
+                    {(activeVoiceTab === "all" || activeVoiceTab === "voices") && (
+                      <div className="px-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-zinc-400 flex items-center gap-1.5">
+                            <AudioWaveform className="size-3 text-[#10b981]" />
+                            AI Speaker Voice ({AURA_VOICES.length})
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
+                          {AURA_VOICES.map((v) => (
+                            <div
+                              key={v.id}
+                              onClick={() => handleVoiceSelect(v.id)}
+                              className={cn(
+                                "group relative flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer",
+                                selectedVoice === v.id
+                                  ? "bg-white/[0.08] border-[#10b981]/50 shadow-sm"
+                                  : "bg-white/[0.03] border-transparent hover:bg-white/[0.06]"
+                              )}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                {/* Play Preview Button */}
+                                <button
+                                  type="button"
+                                  onClick={(e) => handlePlayPreview(e, v)}
+                                  title="Play voice preview"
+                                  className={cn(
+                                    "size-6 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm",
+                                    previewingVoiceId === v.id
+                                      ? "bg-[#10b981] text-white animate-pulse"
+                                      : "bg-white/10 text-zinc-300 hover:bg-[#10b981] hover:text-white"
+                                  )}
+                                >
+                                  {previewingVoiceId === v.id ? (
+                                    <Square className="size-2.5 fill-current" />
+                                  ) : (
+                                    <Play className="size-2.5 fill-current ml-0.5" />
+                                  )}
+                                </button>
+
+                                {/* 3D Gradient Orb Avatar */}
+                                <div className={cn("size-6 rounded-full bg-gradient-to-tr shadow-md shrink-0 ring-1 ring-white/20", v.gradient)} />
+
+                                {/* Voice Name & Description */}
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-semibold text-xs leading-tight text-zinc-100 truncate">{v.name}</span>
+                                  <span className="text-[10px] text-zinc-400 truncate">{v.description}</span>
+                                </div>
+                              </div>
+
+                              {selectedVoice === v.id && (
+                                <Check className="size-4 text-[#10b981] shrink-0 pl-0.5" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
