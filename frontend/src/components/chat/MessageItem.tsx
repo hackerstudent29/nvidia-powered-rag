@@ -350,17 +350,34 @@ const MessageItem = React.memo(function MessageItem({
 
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
+  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-alexis-en");
+
   // Sync voice settings (speed, tone/expressivity) live across all message toolbars & Voice Controls modal
   useEffect(() => {
     const syncVoiceSettings = () => {
       const savedSpeed = localStorage.getItem("lorin_tts_speed");
-      if (savedSpeed) setTtsSpeed(parseFloat(savedSpeed));
+      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
       const savedExpr = localStorage.getItem("lorin_tts_expressivity");
-      if (savedExpr !== null) setTtsExpressivity(parseInt(savedExpr, 10));
+
+      if (savedSpeed) {
+        const newSpeed = parseFloat(savedSpeed);
+        setTtsSpeed(newSpeed);
+        // Live update active playing audio speed immediately right there!
+        if (audioRef.current && isPlayingAudio) {
+          audioRef.current.playbackRate = newSpeed;
+        }
+      }
+
+      if (savedExpr !== null) {
+        setTtsExpressivity(parseInt(savedExpr, 10));
+      }
+
+      activeVoiceRef.current = savedVoice;
     };
+
     window.addEventListener("lorin_voice_settings_changed", syncVoiceSettings);
     return () => window.removeEventListener("lorin_voice_settings_changed", syncVoiceSettings);
-  }, []);
+  }, [isPlayingAudio]);
 
   // Global click-outside listener: close sources & stats dropdowns when clicking outside or on empty space
   useEffect(() => {
@@ -385,6 +402,9 @@ const MessageItem = React.memo(function MessageItem({
     const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % speeds.length : 2;
     const newSpeed = speeds[nextIdx];
     setTtsSpeed(newSpeed);
+    if (audioRef.current && isPlayingAudio) {
+      audioRef.current.playbackRate = newSpeed;
+    }
     localStorage.setItem("lorin_tts_speed", newSpeed.toString());
     window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
