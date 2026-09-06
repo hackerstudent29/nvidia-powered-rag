@@ -199,12 +199,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const internalContainerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef(inputValue || "");
-
-  // Audio & SpeechRecognition Refs
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const rafRef = useRef<number | null>(null);
   const recognitionRef = useRef<any>(null);
+  const isRecordingRef = useRef(false);
 
   // Sync textRef for callbacks
   useEffect(() => {
@@ -329,8 +328,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   // Voice recording stop handler
   const stopRecording = useCallback(() => {
+    isRecordingRef.current = false;
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
         recognitionRef.current.stop();
       } catch (e) {}
       recognitionRef.current = null;
@@ -355,31 +357,23 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   // Voice recording start handler
   const startRecording = useCallback(async () => {
-    setIsSmoothResize(false);
-    setExpanded(true);
-
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Voice speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+      alert("Voice speech recognition is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari.");
       return;
     }
 
-    let stream: MediaStream | null = null;
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      }
-    } catch (err) {
-      console.warn("Microphone access denied or restricted:", err);
-    }
-
+    setIsSmoothResize(false);
+    setExpanded(true);
+    isRecordingRef.current = true;
     setIsRecording(true);
 
-    if (stream) {
-      streamRef.current = stream;
-      try {
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
         const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
         const audioCtx = new AudioCtx();
         audioContextRef.current = audioCtx;
@@ -392,6 +386,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
         const updateVisualizer = () => {
+          if (!isRecordingRef.current) return;
           analyser.getByteFrequencyData(dataArray);
           const bands = new Array(5).fill(0);
           const step = Math.floor(dataArray.length / 5);
@@ -400,13 +395,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             for (let j = 0; j < step; j++) {
               sum += dataArray[i * step + j];
             }
-            bands[i] = Math.min(1, Math.max(0.15, sum / step / 200));
+            bands[i] = Math.min(1, Math.max(0.2, sum / step / 180));
           }
           setAudioData(bands);
           rafRef.current = requestAnimationFrame(updateVisualizer);
         };
         updateVisualizer();
-      } catch (e) {}
+      }
+    } catch (err) {
+      console.warn("Microphone visualizer stream notice:", err);
     }
 
     try {
@@ -414,7 +411,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       recognitionRef.current = recognition;
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = "en-IN";
+      recognition.lang = navigator.language || "en-IN";
 
       let baseText = textRef.current;
 
@@ -438,16 +435,30 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         handleValueChange(combined);
       };
 
-      recognition.onerror = () => {
-        stopRecording();
+      recognition.onerror = (event: any) => {
+        console.warn("Speech recognition notice:", event.error);
+        if (event.error === "no-speech" || event.error === "audio-capture") {
+          return; // Ignore non-fatal pause errors!
+        }
+        if (isRecordingRef.current) {
+          stopRecording();
+        }
       };
 
       recognition.onend = () => {
-        stopRecording();
+        // Auto-restart if user has not explicitly clicked stop!
+        if (isRecordingRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            stopRecording();
+          }
+        }
       };
 
       recognition.start();
     } catch (err) {
+      console.error("Failed to start SpeechRecognition:", err);
       stopRecording();
     }
   }, [handleValueChange, stopRecording]);
