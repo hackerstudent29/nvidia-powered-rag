@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useChat } from "./hooks/useChat";
+import { useMobileLayout } from "./hooks/useMobileLayout";
 import ChatHeader from "./components/chat/ChatHeader";
 import HeroGreeting from "./components/chat/HeroGreeting";
 import MessageItem from "./components/chat/MessageItem";
@@ -16,6 +17,9 @@ export default function App() {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [chatInput, setChatInput] = useState("");
+
+  // Single source of truth for mobile/touch layout state + keyboard offset
+  const { isMobile, keyboardOffset } = useMobileLayout();
 
   const {
     messages,
@@ -66,31 +70,22 @@ export default function App() {
 
       if (isInputFocused) return;
 
-      // Cmd/Ctrl + N -> New Chat
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
         e.preventDefault();
         startNewChat();
       }
-
-      // Cmd/Ctrl + J -> Toggle History Drawer
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         handleOpenHistory();
       }
-
-      // Cmd/Ctrl + I -> Toggle Analytics/Stats Drawer
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "i") {
         e.preventDefault();
         handleOpenStats();
       }
-
-      // Esc -> Stop Streaming Audio / LLM
       if (e.key === "Escape") {
         if (isStreaming) stopStreaming();
         window.dispatchEvent(new CustomEvent("stop-all-audio"));
       }
-
-      // Spacebar -> Pause/Play Audio if not typing in input
       if (e.key === " " && !isInputFocused) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent("stop-all-audio"));
@@ -110,26 +105,19 @@ export default function App() {
     const msgCount = messages.length;
     const wasStreaming = prevStreamingRef.current;
 
-    // User just sent a new message → instant scroll to bottom
     if (msgCount > prevMsgCountRef.current && msgCount > 0) {
       const lastMsg = messages[msgCount - 1];
       if (lastMsg.role === "user" || (lastMsg.role === "assistant" && lastMsg.is_streaming)) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
     }
-
-    // Streaming just completed → smooth scroll to final answer position
     if (wasStreaming && !isStreaming) {
       setTimeout(() => scrollToBottom(false), 80);
     }
-
-    // During streaming → auto-follow if user is near bottom
     if (isStreaming) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
-      if (isNearBottom) {
-        scrollRef.current.scrollTop = scrollHeight;
-      }
+      if (isNearBottom) scrollRef.current.scrollTop = scrollHeight;
     }
 
     prevStreamingRef.current = isStreaming;
@@ -149,8 +137,14 @@ export default function App() {
   };
 
   return (
-    <div className="relative flex h-screen w-screen flex-col overflow-hidden bg-canvas text-ink antialiased">
-      {/* Top Glassmorphic Navigation Bar */}
+    // h-screen-safe uses 100dvh — fixes iOS Safari 100vh bug
+    <div
+      className="relative flex w-screen flex-col overflow-hidden bg-canvas text-ink antialiased h-screen-safe"
+      style={{
+        // Propagate keyboard offset as CSS var — ChatInput reads this to shift up
+        "--keyboard-offset": `${keyboardOffset}px`,
+      } as React.CSSProperties}
+    >
       <ChatHeader
         models={models}
         selectedModel={selectedModel}
@@ -161,7 +155,6 @@ export default function App() {
         isStreaming={isStreaming}
       />
 
-      {/* Centered Single-Column Chat Canvas */}
       <main
         ref={scrollRef}
         onScroll={handleScroll}
@@ -201,7 +194,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* Scroll To Bottom Button — Floating centered above input box */}
       {showScrollBottom && (
         <Tooltip content="Scroll to bottom" position="top">
           <button
@@ -217,7 +209,7 @@ export default function App() {
         </Tooltip>
       )}
 
-      {/* Floating Chat Input Box */}
+      {/* Keyboard-aware floating input — shifts up when iOS keyboard opens */}
       <ChatInput
         inputValue={chatInput}
         onInputChange={setChatInput}
@@ -230,9 +222,10 @@ export default function App() {
         showChips={messages.length > 0}
         rateLimitInfo={rateLimitInfo}
         onClearRateLimit={() => setRateLimitInfo(null)}
+        isMobile={isMobile}
       />
 
-      {/* History Slide-over Drawer */}
+      {/* Side drawer on desktop, bottom sheet on mobile */}
       <SessionDrawer
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
@@ -242,9 +235,9 @@ export default function App() {
         onDeleteSession={deleteSession}
         onClearAllSessions={clearAllSessions}
         onNewChat={startNewChat}
+        isMobile={isMobile}
       />
 
-      {/* Telemetry Stats Modal */}
       <StatsModal
         isOpen={isStatsOpen}
         onClose={() => setIsStatsOpen(false)}

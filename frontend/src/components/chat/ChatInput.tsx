@@ -12,6 +12,8 @@ interface ChatInputProps {
   showChips?: boolean;
   rateLimitInfo?: RateLimitInfo | null;
   onClearRateLimit?: () => void;
+  /** Passed from useMobileLayout — enables mobile-specific chip layout */
+  isMobile?: boolean;
 }
 
 const DISCLAIMER_SENTENCES = [
@@ -82,6 +84,7 @@ const ChatInput = function ChatInput({
   showChips = true,
   rateLimitInfo,
   onClearRateLimit,
+  isMobile = false,
 }: ChatInputProps) {
   const [text, setText] = useState(inputValue || "");
   const [isListening, setIsListening] = useState(false);
@@ -254,7 +257,14 @@ const ChatInput = function ChatInput({
   };
 
   return (
-    <div className="sticky bottom-0 z-20 pb-2.5 pt-1 bg-gradient-to-t from-canvas via-canvas/95 to-transparent w-full">
+    <div
+      className="sticky bottom-0 z-20 pb-2.5 pt-1 bg-gradient-to-t from-canvas via-canvas/95 to-transparent w-full"
+      style={{
+        // Shift entire input up by the iOS keyboard height when open.
+        // --keyboard-offset is injected by ChatView via useMobileLayout.
+        paddingBottom: `max(10px, calc(10px + var(--keyboard-offset, 0px)))`,
+      }}
+    >
       <div className="mx-auto max-w-5xl w-full min-w-0 px-3 sm:px-6 box-border">
         {/* Rate Limit Alert Banner Tab */}
         <AnimatePresence>
@@ -306,33 +316,37 @@ const ChatInput = function ChatInput({
           )}
         </AnimatePresence>
 
-        {/* Quick Suggestion Chips */}
+        {/* Quick Suggestion Chips
+             Desktop: CSS marquee animation for infinite scroll effect
+             Mobile:  Native overflow-x scroll — no animation jank on low-end devices */}
         {showChips && (
-          <div className="relative w-full overflow-hidden pb-1.5 group animate-in fade-in duration-200">
-            <div className="overflow-hidden w-full relative [mask-image:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%)]">
-              <div className="animate-marquee flex items-center gap-1.5">
-                {[...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => {
+          isMobile ? (
+            // Native scroll on mobile — no marquee animation (causes layout thrash)
+            <div className="w-full overflow-x-auto pb-1.5 animate-in fade-in duration-200"
+              style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+              <div className="flex items-center gap-1.5 w-max pr-3">
+                {QUICK_CHIPS.map((chip, idx) => {
                   const colors = [
-                    "bg-[#E1EED7]/70 text-[#2E6B5E] hover:bg-[#E1EED7]",
-                    "bg-[#D0CCE5]/70 text-[#4C1D95] hover:bg-[#D0CCE5]",
-                    "bg-[#D0E7E1]/70 text-[#1F7A5F] hover:bg-[#D0E7E1]",
-                    "bg-[#F2CFDF]/70 text-[#9D174D] hover:bg-[#F2CFDF]",
-                    "bg-[#FFE4C4]/70 text-[#9A3412] hover:bg-[#FFE4C4]",
-                    "bg-[#FCE7F3]/70 text-[#BE185D] hover:bg-[#FCE7F3]",
-                    "bg-[#F7F6ED] text-ink-2 hover:bg-surface",
-                    "bg-[#FEF3C7]/70 text-[#B45309] hover:bg-[#FEF3C7]",
-                    "bg-[#DCFCE7]/70 text-[#15803D] hover:bg-[#DCFCE7]",
-                    "bg-[#E0F2FE]/70 text-[#0369A1] hover:bg-[#E0F2FE]",
-                    "bg-[#EDE9FE]/70 text-[#6D28D9] hover:bg-[#EDE9FE]",
-                    "bg-[#FFEDD5]/70 text-[#C2410C] hover:bg-[#FFEDD5]",
+                    "bg-[#E1EED7]/70 text-[#2E6B5E]",
+                    "bg-[#D0CCE5]/70 text-[#4C1D95]",
+                    "bg-[#D0E7E1]/70 text-[#1F7A5F]",
+                    "bg-[#F2CFDF]/70 text-[#9D174D]",
+                    "bg-[#FFE4C4]/70 text-[#9A3412]",
+                    "bg-[#FCE7F3]/70 text-[#BE185D]",
+                    "bg-[#F7F6ED] text-ink-2",
+                    "bg-[#FEF3C7]/70 text-[#B45309]",
+                    "bg-[#DCFCE7]/70 text-[#15803D]",
+                    "bg-[#E0F2FE]/70 text-[#0369A1]",
+                    "bg-[#EDE9FE]/70 text-[#6D28D9]",
+                    "bg-[#FFEDD5]/70 text-[#C2410C]",
                   ];
                   return (
                     <button
-                      key={`${chip.label}-${idx}`}
+                      key={chip.label}
                       type="button"
                       onClick={() => onSendMessage(chip.query)}
                       disabled={isStreaming || !!rateLimitInfo?.isLimited}
-                      className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-medium transition-transform duration-150 hover:scale-105 active:scale-95 shrink-0 border border-line shadow-hairline cursor-pointer ${
+                      className={`rounded-full px-3 py-1.5 text-[11px] font-medium shrink-0 border border-line shadow-hairline active:scale-95 transition-transform duration-100 cursor-pointer ${
                         colors[idx % colors.length]
                       } disabled:opacity-50 disabled:pointer-events-none`}
                     >
@@ -342,7 +356,44 @@ const ChatInput = function ChatInput({
                 })}
               </div>
             </div>
-          </div>
+          ) : (
+            // Desktop: CSS marquee for infinite scroll feel
+            <div className="relative w-full overflow-hidden pb-1.5 group animate-in fade-in duration-200">
+              <div className="overflow-hidden w-full relative [mask-image:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%)]">
+                <div className="animate-marquee flex items-center gap-1.5">
+                  {[...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => {
+                    const colors = [
+                      "bg-[#E1EED7]/70 text-[#2E6B5E] hover:bg-[#E1EED7]",
+                      "bg-[#D0CCE5]/70 text-[#4C1D95] hover:bg-[#D0CCE5]",
+                      "bg-[#D0E7E1]/70 text-[#1F7A5F] hover:bg-[#D0E7E1]",
+                      "bg-[#F2CFDF]/70 text-[#9D174D] hover:bg-[#F2CFDF]",
+                      "bg-[#FFE4C4]/70 text-[#9A3412] hover:bg-[#FFE4C4]",
+                      "bg-[#FCE7F3]/70 text-[#BE185D] hover:bg-[#FCE7F3]",
+                      "bg-[#F7F6ED] text-ink-2 hover:bg-surface",
+                      "bg-[#FEF3C7]/70 text-[#B45309] hover:bg-[#FEF3C7]",
+                      "bg-[#DCFCE7]/70 text-[#15803D] hover:bg-[#DCFCE7]",
+                      "bg-[#E0F2FE]/70 text-[#0369A1] hover:bg-[#E0F2FE]",
+                      "bg-[#EDE9FE]/70 text-[#6D28D9] hover:bg-[#EDE9FE]",
+                      "bg-[#FFEDD5]/70 text-[#C2410C] hover:bg-[#FFEDD5]",
+                    ];
+                    return (
+                      <button
+                        key={`${chip.label}-${idx}`}
+                        type="button"
+                        onClick={() => onSendMessage(chip.query)}
+                        disabled={isStreaming || !!rateLimitInfo?.isLimited}
+                        className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-medium transition-transform duration-150 hover:scale-105 active:scale-95 shrink-0 border border-line shadow-hairline cursor-pointer ${
+                          colors[idx % colors.length]
+                        } disabled:opacity-50 disabled:pointer-events-none`}
+                      >
+                        {chip.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )
         )}
 
         {/* Floating Auto-Expanding Production Input Box */}
@@ -360,14 +411,14 @@ const ChatInput = function ChatInput({
           </div>
 
           <div className="flex items-center justify-end pt-1 gap-1.5 shrink-0">
-            {/* Mic Speech-to-Text Button */}
+            {/* Mic Speech-to-Text Button — tap-target ensures 44px min on mobile */}
             <Tooltip content={isListening ? "Listening..." : "Voice Input"} position="top">
               <motion.button
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
                 type="button"
                 onClick={handleVoiceInput}
-                className={`flex size-8 items-center justify-center rounded-full transition-all duration-150 ${
+                className={`tap-target flex items-center justify-center size-9 sm:size-8 rounded-full transition-all duration-150 ${
                   isListening
                     ? "bg-red text-white animate-bounce shadow-md"
                     : "text-ink-3 hover:text-accent hover:bg-accent/10"
@@ -382,7 +433,7 @@ const ChatInput = function ChatInput({
               </motion.button>
             </Tooltip>
 
-            {/* Send or Stop Button */}
+            {/* Send or Stop Button — tap-target ensures 44px min on mobile */}
             {isStreaming ? (
               <Tooltip content="Stop generating" position="top">
                 <motion.button
@@ -390,7 +441,7 @@ const ChatInput = function ChatInput({
                   whileTap={{ scale: 0.92 }}
                   type="button"
                   onClick={onStopStreaming}
-                  className="flex size-8.5 sm:size-9 items-center justify-center rounded-full bg-red text-white hover:opacity-90 shadow-md transition-all shrink-0 cursor-pointer"
+                  className="tap-target flex items-center justify-center size-9 rounded-full bg-red text-white hover:opacity-90 shadow-md transition-all shrink-0 cursor-pointer"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -404,7 +455,7 @@ const ChatInput = function ChatInput({
                   whileTap={{ scale: 0.92 }}
                   type="button"
                   onClick={() => handleSubmit()}
-                  className="flex size-8.5 sm:size-9 items-center justify-center rounded-full bg-[#2E6B5E] dark:bg-[#34D399] text-white dark:text-[#111622] shadow-md hover:shadow-lg hover:scale-105 transition-all shrink-0 cursor-pointer"
+                  className="tap-target flex items-center justify-center size-9 rounded-full bg-[#2E6B5E] dark:bg-[#34D399] text-white dark:text-[#111622] shadow-md hover:shadow-lg hover:scale-105 transition-all shrink-0 cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="19" x2="12" y2="5" />
@@ -416,21 +467,23 @@ const ChatInput = function ChatInput({
           </div>
         </div>
 
-        {/* 1-Sentence Rotating Disclaimer Banner */}
-        <div className="mt-1.5 h-4 flex items-center justify-center overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={disclaimerIdx}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="text-[10px] text-ink-3/80 font-medium text-center truncate max-w-2xl px-2"
-            >
-              {DISCLAIMER_SENTENCES[disclaimerIdx]}
-            </motion.p>
-          </AnimatePresence>
-        </div>
+        {/* 1-Sentence Rotating Disclaimer Banner — hidden on mobile to save space */}
+        {!isMobile && (
+          <div className="mt-1.5 h-4 flex items-center justify-center overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={disclaimerIdx}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="text-[10px] text-ink-3/80 font-medium text-center truncate max-w-2xl px-2"
+              >
+                {DISCLAIMER_SENTENCES[disclaimerIdx]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );

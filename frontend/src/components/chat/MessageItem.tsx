@@ -10,7 +10,13 @@ import TokenCostBadge, { TokenCostPanel } from "./TokenCostBadge";
 import { audioManager } from "../../utils/audioManager";
 import { Tooltip } from "../Tooltip";
 
-const API_BASE = window.location.port === "3000" ? "http://localhost:8000/api" : "/api";
+// Use VITE_API_URL from environment so it works in production on Vercel/Railway
+// Falls back to localhost:8000 for local dev
+const API_BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : window.location.port === "3000" || window.location.port === "5173"
+  ? "http://localhost:8000/api"
+  : "/api";
 
 interface MessageItemProps {
   message: Message;
@@ -608,6 +614,7 @@ const MessageItem = React.memo(function MessageItem({
         </div>
       </div>
 
+      {/* AI message body — remove desktop-only pl-7 indent on mobile */}
       <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 sm:pl-7 overflow-hidden">
         <ThinkingState
           variant="Steps"
@@ -795,12 +802,12 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Action Icons, Token & Cost Badge & Sources Row */}
         {!message.is_streaming && (
-          <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-line/40">
+          <div className="mt-3 flex flex-wrap items-center gap-1 sm:gap-1.5 pt-2 border-t border-line/40">
             <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
               <button
                 type="button"
                 onClick={handleCopy}
-                className="flex size-7 items-center justify-center rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2"
+                className="tap-target flex items-center justify-center size-7 sm:size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2"
               >
                 {copied ? (
                   <span className="text-[10px] font-bold text-green">✓</span>
@@ -815,7 +822,7 @@ const MessageItem = React.memo(function MessageItem({
                 <button
                   type="button"
                   onClick={onRegenerate}
-                  className="flex size-7 items-center justify-center rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2"
+                  className="tap-target flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2"
                 >
                   {ACTION_ICONS.retry}
                 </button>
@@ -826,7 +833,7 @@ const MessageItem = React.memo(function MessageItem({
               <button
                 type="button"
                 onClick={() => handleThumbs(1)}
-                className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 ${
+                className={`tap-target flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 ${
                   isLiked ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-green"
                 }`}
               >
@@ -838,7 +845,7 @@ const MessageItem = React.memo(function MessageItem({
               <button
                 type="button"
                 onClick={() => handleThumbs(-1)}
-                className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 ${
+                className={`tap-target flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 ${
                   isDisliked ? "bg-red/20 text-red font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-red"
                 }`}
               >
