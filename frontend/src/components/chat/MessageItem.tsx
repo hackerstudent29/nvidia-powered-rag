@@ -482,10 +482,10 @@ const MessageItem = React.memo(function MessageItem({
       // Use Python FastAPI HD Neural Voice TTS API (Deepgram Flux primary - Alexis as default)
       const rawVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
       const validVoices = [
-        "flux-alexis-en", "flux-astrid-en", "flux-orion-en", "flux-stella-en",
-        "aura-orion-en", "aura-asteria-en", "aura-zeus-en", "aura-arcas-en",
-        "aura-perseus-en", "aura-helios-en", "aura-luna-en", "aura-stella-en",
-        "aura-athena-en", "aura-hera-en"
+        "aura-bruce-en", "aura-brook-en", "flux-alexis-en", "flux-astrid-en",
+        "flux-orion-en", "flux-stella-en", "aura-orion-en", "aura-asteria-en",
+        "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
+        "aura-angus-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
       ];
       const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-alexis-en";
 

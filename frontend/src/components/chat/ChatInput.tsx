@@ -193,15 +193,27 @@ export interface VoiceOption {
 }
 
 const AURA_VOICES: VoiceOption[] = [
-  // Deepgram Flux TTS Voices (Expressivity & Speed Native Support)
-  { id: "flux-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "Flux Expressive (Warm & Natural - Default)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
-  { id: "flux-astrid-en", name: "Astrid", gender: "Feminine", accent: "American", description: "Flux Neural (Clear & Natural)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
-  { id: "flux-orion-en", name: "Orion", gender: "Masculine", accent: "American", description: "Flux Neural (Deep & Resonant)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
-  { id: "flux-stella-en", name: "Stella", gender: "Feminine", accent: "American", description: "Flux Neural (Smooth & Professional)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
-  
-  // Deepgram Aura TTS Voices
-  { id: "aura-orion-en", name: "Bruce", gender: "Masculine", accent: "American", description: "Aura Neural (Deep Masculine)", gradient: "from-amber-400 via-yellow-500 to-amber-600" },
+  // Default & Featured Voices (Bruce, Brook, Alexis)
+  { id: "aura-bruce-en", name: "Bruce", gender: "Masculine", accent: "American", description: "Deep & Resonant Male (Default)", gradient: "from-blue-500 via-indigo-600 to-slate-800" },
+  { id: "aura-brook-en", name: "Brook", gender: "Masculine", accent: "American", description: "Warm & Natural Male (Default)", gradient: "from-cyan-400 via-teal-500 to-emerald-700" },
+  { id: "flux-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "Flux Expressive (Warm Female)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
+
+  // Deepgram Flux Models
+  { id: "flux-astrid-en", name: "Astrid", gender: "Feminine", accent: "American", description: "Flux Expressive (Clear & Expressive)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
+  { id: "flux-orion-en", name: "Orion Flux", gender: "Masculine", accent: "American", description: "Flux Expressive (Deep & Resonant)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
+  { id: "flux-stella-en", name: "Stella Flux", gender: "Feminine", accent: "American", description: "Flux Expressive (Smooth & Professional)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
+
+  // Deepgram Aura Neural Models
   { id: "aura-asteria-en", name: "Brooke", gender: "Feminine", accent: "American", description: "Aura Neural (Warm Feminine)", gradient: "from-rose-400 via-pink-500 to-rose-600" },
+  { id: "aura-athena-en", name: "Athena", gender: "Feminine", accent: "American", description: "Aura Neural (Clear & Authoritative)", gradient: "from-amber-400 via-orange-500 to-red-600" },
+  { id: "aura-orion-en", name: "Orion Aura", gender: "Masculine", accent: "American", description: "Aura Neural (Strong & Confident)", gradient: "from-blue-600 via-sky-500 to-indigo-800" },
+  { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "Aura Neural (Commanding Male)", gradient: "from-purple-600 via-indigo-600 to-slate-900" },
+  { id: "aura-arcas-en", name: "Arcas", gender: "Masculine", accent: "American", description: "Aura Neural (Warm & Friendly Male)", gradient: "from-emerald-500 via-teal-600 to-cyan-700" },
+  { id: "aura-perseus-en", name: "Perseus", gender: "Masculine", accent: "American", description: "Aura Neural (Professional Male)", gradient: "from-slate-600 via-zinc-700 to-neutral-800" },
+  { id: "aura-helios-en", name: "Helios", gender: "Masculine", accent: "British", description: "Aura Neural (British Accent Male)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
+  { id: "aura-angus-en", name: "Angus", gender: "Masculine", accent: "Irish", description: "Aura Neural (Irish Accent Male)", gradient: "from-green-500 via-emerald-600 to-teal-700" },
+  { id: "aura-luna-en", name: "Luna", gender: "Feminine", accent: "American", description: "Aura Neural (Gentle Soft Female)", gradient: "from-fuchsia-400 via-purple-500 to-pink-600" },
+  { id: "aura-hera-en", name: "Hera", gender: "Feminine", accent: "American", description: "Aura Neural (Polished Female)", gradient: "from-violet-400 via-purple-600 to-indigo-600" },
 ];
 
 
@@ -239,6 +251,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
   const [activeVoiceTab, setActiveVoiceTab] = useState<"all" | "style" | "speed" | "voices">("all");
+  const [genderFilter, setGenderFilter] = useState<"all" | "Feminine" | "Masculine">("all");
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -1400,12 +1413,39 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                               <div className="flex items-center justify-between mb-1.5">
                                 <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
                                   <AudioWaveform className="size-2.5 text-[#10b981]" />
-                                  AI Speakers ({AURA_VOICES.length})
+                                  AI Speakers ({AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).length})
                                 </span>
+
+                                {/* Male / Female Filter Options (Voices tab only) */}
+                                {activeVoiceTab === "voices" && (
+                                  <div className="flex items-center gap-0.5 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-md border border-black/[0.06] dark:border-white/[0.06]">
+                                    {(["all", "Feminine", "Masculine"] as const).map((g) => (
+                                      <button
+                                        key={g}
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setGenderFilter(g);
+                                        }}
+                                        className={cn(
+                                          "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold transition-all cursor-pointer",
+                                          genderFilter === g
+                                            ? "bg-white dark:bg-emerald-500/20 text-[#10b981] border border-black/10 dark:border-emerald-500/40 shadow-xs font-extrabold"
+                                            : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200"
+                                        )}
+                                      >
+                                        {g === "all" ? "All" : g === "Feminine" ? "Female" : "Male"}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
 
-                              <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-0.5 custom-scrollbar">
-                                {AURA_VOICES.map((v) => (
+                              <div className={cn(
+                                "flex flex-col gap-1 overflow-y-auto pr-0.5 custom-scrollbar transition-all duration-200",
+                                activeVoiceTab === "voices" ? "max-h-[280px]" : "max-h-36"
+                              )}>
+                                {AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).map((v) => (
                                   <div
                                     key={v.id}
                                     onClick={(e) => {
@@ -1447,7 +1487,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                                       {/* Voice Name & Description */}
                                       <div className="flex flex-col min-w-0">
-                                        <span className="font-semibold text-[11px] leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
+                                        <div className="flex items-center gap-1">
+                                          <span className="font-semibold text-[11px] leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
+                                          <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-black/5 dark:bg-white/10 text-ink-3 dark:text-zinc-400 shrink-0">
+                                            {v.gender === "Masculine" ? "Male" : "Female"}
+                                          </span>
+                                        </div>
                                         <span className="text-[9px] text-ink-3 dark:text-zinc-400 truncate">{v.description}</span>
                                       </div>
                                     </div>
