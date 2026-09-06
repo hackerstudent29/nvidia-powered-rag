@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ModelOption } from "../../types/chat";
 import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip } from "../Tooltip";
 import { useNavigate } from "react-router-dom";
 import {
   Clock,
@@ -116,7 +117,7 @@ export default function ChatHeader({
     },
     {
       id: "history",
-      label: "History",
+      label: "Chat History",
       icon: Clock,
       action: () => {
         onOpenHistory();
@@ -134,7 +135,7 @@ export default function ChatHeader({
     },
     {
       id: "theme",
-      label: isDark ? "Dark" : "Light",
+      label: isDark ? "Dark Theme" : "Light Theme",
       icon: isDark ? Moon : Sun,
       action: () => {
         toggleTheme();
@@ -143,7 +144,7 @@ export default function ChatHeader({
     },
     {
       id: "admin",
-      label: "Admin Ops",
+      label: "Admin Portal",
       icon: ShieldCheck,
       action: () => {
         navigate("/admin");
@@ -162,14 +163,16 @@ export default function ChatHeader({
       <div className="mx-auto max-w-6xl w-full min-w-0 px-3 sm:px-6 py-2.5 flex items-center justify-between box-border gap-2">
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <motion.div
-            whileHover={{ rotate: 12, scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onNewChat}
-            className="flex size-9 items-center justify-center rounded-2xl bg-surface dark:bg-[#14151a] shadow-sm border border-line dark:border-white/[0.08] cursor-pointer shrink-0"
-          >
-            <GraduationCap className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
-          </motion.div>
+          <Tooltip content="Start New Chat" position="bottom">
+            <motion.div
+              whileHover={{ rotate: 12, scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onNewChat}
+              className="flex size-9 items-center justify-center rounded-2xl bg-surface dark:bg-[#14151a] shadow-sm border border-line dark:border-white/[0.08] cursor-pointer shrink-0"
+            >
+              <GraduationCap className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
+            </motion.div>
+          </Tooltip>
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -186,8 +189,6 @@ export default function ChatHeader({
           </div>
         </div>
 
-
-
         {/* ── EXPANDABLE PILL TOP HEADER NAVBAR (SHADCN / FRAMER MOTION) ── */}
         <div className="flex items-center gap-1.5 relative">
           <motion.nav
@@ -201,48 +202,49 @@ export default function ChatHeader({
               const isActive = activePill === pill.id;
 
               return (
-                <motion.button
-                  key={pill.id}
-                  whileTap={{ scale: 0.94 }}
-                  whileHover={{ scale: 1.04 }}
-                  onClick={pill.action}
-                  type="button"
-                  className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[40px] cursor-pointer overflow-hidden ${
-                    isActive
-                      ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md"
-                      : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
-                  }`}
-                  aria-label={pill.label}
-                >
-                  <Icon
-                    size={17}
-                    strokeWidth={isActive ? 2.3 : 1.8}
-                    className="shrink-0 transition-transform duration-200"
-                  />
-
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      width: isActive ? "72px" : "0px",
-                      opacity: isActive ? 1 : 0,
-                      marginLeft: isActive ? "6px" : "0px",
-                    }}
-                    transition={{
-                      width: { type: "spring", stiffness: 350, damping: 30 },
-                      opacity: { duration: 0.18 },
-                      marginLeft: { duration: 0.18 },
-                    }}
-                    className="overflow-hidden flex items-center whitespace-nowrap hidden sm:flex"
+                <Tooltip key={pill.id} content={pill.label} position="bottom">
+                  <motion.button
+                    whileTap={{ scale: 0.94 }}
+                    whileHover={{ scale: 1.04 }}
+                    onClick={pill.action}
+                    type="button"
+                    className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[40px] cursor-pointer overflow-hidden ${
+                      isActive
+                        ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md"
+                        : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
+                    }`}
+                    aria-label={pill.label}
                   >
-                    <span
-                      className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
-                        isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
-                      }`}
+                    <Icon
+                      size={17}
+                      strokeWidth={isActive ? 2.3 : 1.8}
+                      className="shrink-0 transition-transform duration-200"
+                    />
+
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        width: isActive ? "72px" : "0px",
+                        opacity: isActive ? 1 : 0,
+                        marginLeft: isActive ? "6px" : "0px",
+                      }}
+                      transition={{
+                        width: { type: "spring", stiffness: 350, damping: 30 },
+                        opacity: { duration: 0.18 },
+                        marginLeft: { duration: 0.18 },
+                      }}
+                      className="overflow-hidden flex items-center whitespace-nowrap hidden sm:flex"
                     >
-                      {pill.label}
-                    </span>
-                  </motion.div>
-                </motion.button>
+                      <span
+                        className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                          isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                        }`}
+                      >
+                        {pill.label}
+                      </span>
+                    </motion.div>
+                  </motion.button>
+                </Tooltip>
               );
             })}
           </motion.nav>
