@@ -260,11 +260,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
     setPreviewingVoiceId(voice.id);
     try {
-      const apiBase = (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
-        ? "http://localhost:8000/api"
-        : import.meta.env.VITE_API_URL
-        ? `${import.meta.env.VITE_API_URL}/api`
-        : "/api";
+      const apiBase = "/api";
 
       const res = await fetch(`${apiBase}/tts`, {
         method: "POST",
@@ -598,20 +594,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       baseTextRef.current = baseText;
 
       // 2. Connect to STT Proxy WebSocket Endpoint on Backend
-      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
       let wsProxyUrl: string;
-      if (isLocal) {
-        wsProxyUrl = `ws://${window.location.hostname}:8000/ws/stt`;
+      const envUrl = import.meta.env.VITE_API_URL;
+      if (envUrl) {
+        const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
+        const host = envUrl.replace(/^https?:\/\//, "");
+        wsProxyUrl = `${wsProto}://${host}/ws/stt`;
       } else {
-        const envUrl = import.meta.env.VITE_API_URL;
-        if (envUrl) {
-          const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
-          const host = envUrl.replace(/^https?:\/\//, "");
-          wsProxyUrl = `${wsProto}://${host}/ws/stt`;
-        } else {
-          const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
-          wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
-        }
+        const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+        wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
       }
 
       const startWebSpeechFallback = () => {

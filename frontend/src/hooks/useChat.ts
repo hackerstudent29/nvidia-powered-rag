@@ -3,7 +3,7 @@ import { Message, Session, ModelOption, SystemStats, RateLimitInfo } from "../ty
 import { audioManager } from "../utils/audioManager";
 import { detectRateLimitFromText } from "../utils/rateLimitHelper";
 
-const API_BASE = window.location.port === "3000" ? "http://localhost:8000/api" : "/api";
+const API_BASE = "/api";
 
 export function useChat() {
   const [userId] = useState<string>(() => {

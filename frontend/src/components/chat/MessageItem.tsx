@@ -10,12 +10,8 @@ import TokenCostBadge, { TokenCostPanel } from "./TokenCostBadge";
 import { audioManager } from "../../utils/audioManager";
 import { Tooltip } from "../Tooltip";
 
-// Use local backend when on localhost, otherwise VITE_API_URL or relative /api
-const API_BASE = (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
-  ? "http://localhost:8000/api"
-  : import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : "/api";
+const API_BASE = "/api";
+
 
 
 interface MessageItemProps {
