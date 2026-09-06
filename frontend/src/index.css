@@ -235,37 +235,79 @@
 
 /* ══════════════════════════════════════════════════════════════
    ACCESSIBILITY FONT SIZE SCALING (Designed for Parents & Senior Readers)
+   Controls all text elements: paragraphs, lists, headings, tables,
+   table headers/cells, links, code blocks, user bubbles, and inputs
    ══════════════════════════════════════════════════════════════ */
+:root {
+  --prose-body-size:  14.5px;
+  --prose-h1-size:    24px;
+  --prose-h2-size:    20px;
+  --prose-h3-size:    18px;
+  --prose-h4-size:    15px;
+  --prose-table-size: 13.5px;
+  --prose-link-size:  13.5px;
+  --prose-code-size:  13px;
+  --prose-lh:         1.68;
+}
+
+/* 🔍 Large Font Mode (+22% scale for Parents) */
 html[data-font-size="large"] {
-  font-size: 114%;
+  --prose-body-size:  18px;
+  --prose-h1-size:    28px;
+  --prose-h2-size:    24px;
+  --prose-h3-size:    21px;
+  --prose-h4-size:    18px;
+  --prose-table-size: 16.5px;
+  --prose-link-size:  16.5px;
+  --prose-code-size:  15.5px;
+  --prose-lh:         1.78;
 }
 
+/* 🔍✨ Extra Large Font Mode (+42% scale for Maximum Readability) */
 html[data-font-size="xlarge"] {
-  font-size: 128%;
+  --prose-body-size:  21px;
+  --prose-h1-size:    33px;
+  --prose-h2-size:    29px;
+  --prose-h3-size:    25px;
+  --prose-h4-size:    21px;
+  --prose-table-size: 19px;
+  --prose-link-size:  19px;
+  --prose-code-size:  17.5px;
+  --prose-lh:         1.85;
 }
 
-html[data-font-size="large"] .prose-clean p,
-html[data-font-size="large"] .prose-clean li,
-html[data-font-size="large"] .prose-clean h1,
-html[data-font-size="large"] .prose-clean h2,
-html[data-font-size="large"] .prose-clean h3,
-html[data-font-size="large"] .message-bubble,
-html[data-font-size="large"] textarea,
-html[data-font-size="large"] input {
-  font-size: 1.15em !important;
-  line-height: 1.72 !important;
+/* Enforce font size variable scaling across all content types */
+.prose-clean p,
+.prose-clean li,
+.prose-clean blockquote,
+.user-msg-bubble {
+  font-size: var(--prose-body-size) !important;
+  line-height: var(--prose-lh) !important;
 }
 
-html[data-font-size="xlarge"] .prose-clean p,
-html[data-font-size="xlarge"] .prose-clean li,
-html[data-font-size="xlarge"] .prose-clean h1,
-html[data-font-size="xlarge"] .prose-clean h2,
-html[data-font-size="xlarge"] .prose-clean h3,
-html[data-font-size="xlarge"] .message-bubble,
-html[data-font-size="xlarge"] textarea,
-html[data-font-size="xlarge"] input {
-  font-size: 1.32em !important;
-  line-height: 1.8 !important;
+.prose-clean h1 { font-size: var(--prose-h1-size) !important; }
+.prose-clean h2 { font-size: var(--prose-h2-size) !important; }
+.prose-clean h3 { font-size: var(--prose-h3-size) !important; }
+.prose-clean h4 { font-size: var(--prose-h4-size) !important; }
+
+.prose-clean a {
+  font-size: var(--prose-link-size) !important;
+}
+
+.prose-clean table,
+.prose-clean th,
+.prose-clean td {
+  font-size: var(--prose-table-size) !important;
+  line-height: 1.55 !important;
+}
+
+.prose-clean code,
+.prose-clean pre {
+  font-size: var(--prose-code-size) !important;
+}
+
+textarea, input {
+  font-size: var(--prose-body-size) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════

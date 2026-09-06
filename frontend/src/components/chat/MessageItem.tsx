@@ -537,7 +537,7 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
         <div className="flex justify-end items-end gap-2.5 w-full max-w-full min-w-0 box-border">
-          <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-3.5 bg-surface dark:bg-surface border border-line text-ink dark:text-ink text-[13.5px] sm:text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
+          <div className="user-msg-bubble max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-3.5 bg-surface dark:bg-surface border border-line text-ink dark:text-ink text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
             {message.content}
           </div>
           <div className="size-8 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/40 dark:to-[#9D174D]/40 border border-white/80 dark:border-white/20 shadow-hairline flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
@@ -623,25 +623,25 @@ const MessageItem = React.memo(function MessageItem({
           durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
         />
 
-        <div className="prose-clean w-full max-w-full min-w-0 box-border text-[13.5px] sm:text-[14px] leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden">
+        <div className="prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              p: ({ children }) => <p className="mb-3 leading-relaxed text-[14px] sm:text-[14.5px] text-ink/90 font-normal">{processHighlightedChildren(children)}</p>,
+              p: ({ children }) => <p className="mb-3 text-ink/90 font-normal">{processHighlightedChildren(children)}</p>,
               ul: ({ children }) => <ul className="list-disc pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ul>,
               ol: ({ children }) => <ol className="list-decimal pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ol>,
-              li: ({ children }) => <li className="mb-1 leading-relaxed text-[14px] sm:text-[14.5px]">{processHighlightedChildren(children)}</li>,
-              h1: ({ children }) => <h1 className="font-heading text-xl sm:text-2xl font-bold tracking-tight mt-5 mb-2.5 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
-              h2: ({ children }) => <h2 className="font-heading text-lg sm:text-xl font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
-              h3: ({ children }) => <h3 className="font-heading text-base sm:text-lg font-bold mt-3.5 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
-              h4: ({ children }) => <h4 className="font-heading text-sm font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
+              li: ({ children }) => <li className="mb-1">{processHighlightedChildren(children)}</li>,
+              h1: ({ children }) => <h1 className="font-heading font-bold tracking-tight mt-5 mb-2.5 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
+              h2: ({ children }) => <h2 className="font-heading font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
+              h3: ({ children }) => <h3 className="font-heading font-bold mt-3.5 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
+              h4: ({ children }) => <h4 className="font-heading font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
               hr: () => <hr className="my-4 border-line/60 dark:border-line/40" />,
               blockquote: ({ children }) => <blockquote className="font-heading border-l-4 border-[#2E6B5E] dark:border-[#4ade80] bg-[#2E6B5E]/5 dark:bg-[#4ade80]/8 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
               strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
                 <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4.5 rounded-2xl border border-line/60 dark:border-line/40 bg-surface/60 dark:bg-surface/40 shadow-sm box-border backdrop-blur-sm transition-all duration-200">
-                  <table className="w-full min-w-max border-collapse text-[13px] sm:text-[13.5px] text-left divide-y divide-line/40">{children}</table>
+                  <table className="w-full min-w-max border-collapse text-left divide-y divide-line/40">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
@@ -654,12 +654,12 @@ const MessageItem = React.memo(function MessageItem({
                 <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#34D399]/10 transition-colors duration-150">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-4 py-3 text-xs uppercase tracking-wider font-extrabold border-b border-line/40 whitespace-nowrap text-[#2E6B5E] dark:text-[#34D399]">
+                <th className="px-4 py-3 uppercase tracking-wider font-extrabold border-b border-line/40 whitespace-nowrap text-[#2E6B5E] dark:text-[#34D399]">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-4 py-3 text-ink border-b border-line/20 align-top leading-relaxed text-[13px] sm:text-[13.5px]">
+                <td className="px-4 py-3 text-ink border-b border-line/20 align-top leading-relaxed">
                   {processHighlightedChildren(children)}
                 </td>
               ),
@@ -674,7 +674,7 @@ const MessageItem = React.memo(function MessageItem({
                         e.preventDefault();
                         if (href) window.location.href = href;
                       }}
-                      className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded-md text-[13px]"
+                      className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded-md"
                       title="Send Email"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
@@ -693,7 +693,7 @@ const MessageItem = React.memo(function MessageItem({
                         e.preventDefault();
                         if (href) window.location.href = href;
                       }}
-                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-300 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-emerald-500/15 dark:bg-emerald-500/25 px-2 py-0.5 rounded-md text-[13px]"
+                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-300 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-emerald-500/15 dark:bg-emerald-500/25 px-2 py-0.5 rounded-md"
                       title="Click to dial on default phone app"
                     >
                       📞 {processHighlightedChildren(children)}
