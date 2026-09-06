@@ -631,12 +631,12 @@ const MessageItem = React.memo(function MessageItem({
               ul: ({ children }) => <ul className="list-disc pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ul>,
               ol: ({ children }) => <ol className="list-decimal pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ol>,
               li: ({ children }) => <li className="mb-1 leading-relaxed text-[14px] sm:text-[14.5px]">{processHighlightedChildren(children)}</li>,
-              h1: ({ children }) => <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-5 mb-2.5 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
-              h2: ({ children }) => <h2 className="text-lg sm:text-xl font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
-              h3: ({ children }) => <h3 className="text-base sm:text-lg font-bold mt-3.5 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
-              h4: ({ children }) => <h4 className="text-sm font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
+              h1: ({ children }) => <h1 className="font-heading text-xl sm:text-2xl font-bold tracking-tight mt-5 mb-2.5 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
+              h2: ({ children }) => <h2 className="font-heading text-lg sm:text-xl font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
+              h3: ({ children }) => <h3 className="font-heading text-base sm:text-lg font-bold mt-3.5 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
+              h4: ({ children }) => <h4 className="font-heading text-sm font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
               hr: () => <hr className="my-4 border-line/60 dark:border-line/40" />,
-              blockquote: ({ children }) => <blockquote className="border-l-4 border-[#2E6B5E] dark:border-[#34D399] bg-[#2E6B5E]/5 dark:bg-[#34D399]/10 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic font-medium shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
+              blockquote: ({ children }) => <blockquote className="font-heading border-l-4 border-[#2E6B5E] dark:border-[#4ade80] bg-[#2E6B5E]/5 dark:bg-[#4ade80]/8 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
               strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
@@ -645,7 +645,7 @@ const MessageItem = React.memo(function MessageItem({
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#34D399]/20 dark:via-[#34D399]/8 dark:to-transparent border-b border-line/60 text-[#2E6B5E] dark:text-[#34D399] font-bold">{children}</thead>
+                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#4ade80]/15 dark:via-[#4ade80]/8 dark:to-transparent border-b border-line/60 text-[#2E6B5E] dark:text-[#4ade80] font-heading">{children}</thead>
               ),
               tbody: ({ children }) => (
                 <tbody className="divide-y divide-line/30 text-ink font-medium">{children}</tbody>

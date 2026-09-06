@@ -327,18 +327,18 @@ const ChatInput = function ChatInput({
               <div className="flex items-center gap-1.5 w-max pr-3">
                 {QUICK_CHIPS.map((chip, idx) => {
                   const colors = [
-                    "bg-[#E1EED7]/70 text-[#2E6B5E]",
-                    "bg-[#D0CCE5]/70 text-[#4C1D95]",
-                    "bg-[#D0E7E1]/70 text-[#1F7A5F]",
-                    "bg-[#F2CFDF]/70 text-[#9D174D]",
-                    "bg-[#FFE4C4]/70 text-[#9A3412]",
-                    "bg-[#FCE7F3]/70 text-[#BE185D]",
-                    "bg-[#F7F6ED] text-ink-2",
-                    "bg-[#FEF3C7]/70 text-[#B45309]",
-                    "bg-[#DCFCE7]/70 text-[#15803D]",
-                    "bg-[#E0F2FE]/70 text-[#0369A1]",
-                    "bg-[#EDE9FE]/70 text-[#6D28D9]",
-                    "bg-[#FFEDD5]/70 text-[#C2410C]",
+                    "bg-[#E1EED7]/70 text-[#2E6B5E] dark:bg-[#2E6B5E]/20 dark:text-[#6ee7b7] dark:border-[#2E6B5E]/40",
+                    "bg-[#D0CCE5]/70 text-[#4C1D95] dark:bg-[#4C1D95]/20 dark:text-[#c4b5fd] dark:border-[#4C1D95]/40",
+                    "bg-[#D0E7E1]/70 text-[#1F7A5F] dark:bg-[#1F7A5F]/20 dark:text-[#5eead4] dark:border-[#1F7A5F]/40",
+                    "bg-[#F2CFDF]/70 text-[#9D174D] dark:bg-[#9D174D]/20 dark:text-[#f472b6] dark:border-[#9D174D]/40",
+                    "bg-[#FFE4C4]/70 text-[#9A3412] dark:bg-[#9A3412]/20 dark:text-[#fdba74] dark:border-[#9A3412]/40",
+                    "bg-[#FCE7F3]/70 text-[#BE185D] dark:bg-[#BE185D]/20 dark:text-[#f472b6] dark:border-[#BE185D]/40",
+                    "bg-[#F7F6ED] text-ink-2 dark:bg-zinc-800/80 dark:text-[#b1ada1] dark:border-zinc-700/60",
+                    "bg-[#FEF3C7]/70 text-[#B45309] dark:bg-[#B45309]/20 dark:text-[#fcd34d] dark:border-[#B45309]/40",
+                    "bg-[#DCFCE7]/70 text-[#15803D] dark:bg-[#15803D]/20 dark:text-[#86efac] dark:border-[#15803D]/40",
+                    "bg-[#E0F2FE]/70 text-[#0369A1] dark:bg-[#0369A1]/20 dark:text-[#7dd3fc] dark:border-[#0369A1]/40",
+                    "bg-[#EDE9FE]/70 text-[#6D28D9] dark:bg-[#6D28D9]/20 dark:text-[#c4b5fd] dark:border-[#6D28D9]/40",
+                    "bg-[#FFEDD5]/70 text-[#C2410C] dark:bg-[#C2410C]/20 dark:text-[#fdba74] dark:border-[#C2410C]/40",
                   ];
                   return (
                     <button
@@ -363,18 +363,18 @@ const ChatInput = function ChatInput({
                 <div className="animate-marquee flex items-center gap-1.5">
                   {[...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => {
                     const colors = [
-                      "bg-[#E1EED7]/70 text-[#2E6B5E] hover:bg-[#E1EED7]",
-                      "bg-[#D0CCE5]/70 text-[#4C1D95] hover:bg-[#D0CCE5]",
-                      "bg-[#D0E7E1]/70 text-[#1F7A5F] hover:bg-[#D0E7E1]",
-                      "bg-[#F2CFDF]/70 text-[#9D174D] hover:bg-[#F2CFDF]",
-                      "bg-[#FFE4C4]/70 text-[#9A3412] hover:bg-[#FFE4C4]",
-                      "bg-[#FCE7F3]/70 text-[#BE185D] hover:bg-[#FCE7F3]",
-                      "bg-[#F7F6ED] text-ink-2 hover:bg-surface",
-                      "bg-[#FEF3C7]/70 text-[#B45309] hover:bg-[#FEF3C7]",
-                      "bg-[#DCFCE7]/70 text-[#15803D] hover:bg-[#DCFCE7]",
-                      "bg-[#E0F2FE]/70 text-[#0369A1] hover:bg-[#E0F2FE]",
-                      "bg-[#EDE9FE]/70 text-[#6D28D9] hover:bg-[#EDE9FE]",
-                      "bg-[#FFEDD5]/70 text-[#C2410C] hover:bg-[#FFEDD5]",
+                      "bg-[#E1EED7]/70 text-[#2E6B5E] hover:bg-[#E1EED7] dark:bg-[#2E6B5E]/20 dark:text-[#6ee7b7] dark:border-[#2E6B5E]/40 dark:hover:bg-[#2E6B5E]/35",
+                      "bg-[#D0CCE5]/70 text-[#4C1D95] hover:bg-[#D0CCE5] dark:bg-[#4C1D95]/20 dark:text-[#c4b5fd] dark:border-[#4C1D95]/40 dark:hover:bg-[#4C1D95]/35",
+                      "bg-[#D0E7E1]/70 text-[#1F7A5F] hover:bg-[#D0E7E1] dark:bg-[#1F7A5F]/20 dark:text-[#5eead4] dark:border-[#1F7A5F]/40 dark:hover:bg-[#1F7A5F]/35",
+                      "bg-[#F2CFDF]/70 text-[#9D174D] hover:bg-[#F2CFDF] dark:bg-[#9D174D]/20 dark:text-[#f472b6] dark:border-[#9D174D]/40 dark:hover:bg-[#9D174D]/35",
+                      "bg-[#FFE4C4]/70 text-[#9A3412] hover:bg-[#FFE4C4] dark:bg-[#9A3412]/20 dark:text-[#fdba74] dark:border-[#9A3412]/40 dark:hover:bg-[#9A3412]/35",
+                      "bg-[#FCE7F3]/70 text-[#BE185D] hover:bg-[#FCE7F3] dark:bg-[#BE185D]/20 dark:text-[#f472b6] dark:border-[#BE185D]/40 dark:hover:bg-[#BE185D]/35",
+                      "bg-[#F7F6ED] text-ink-2 hover:bg-surface dark:bg-zinc-800/80 dark:text-[#b1ada1] dark:border-zinc-700/60 dark:hover:bg-zinc-700/80",
+                      "bg-[#FEF3C7]/70 text-[#B45309] hover:bg-[#FEF3C7] dark:bg-[#B45309]/20 dark:text-[#fcd34d] dark:border-[#B45309]/40 dark:hover:bg-[#B45309]/35",
+                      "bg-[#DCFCE7]/70 text-[#15803D] hover:bg-[#DCFCE7] dark:bg-[#15803D]/20 dark:text-[#86efac] dark:border-[#15803D]/40 dark:hover:bg-[#15803D]/35",
+                      "bg-[#E0F2FE]/70 text-[#0369A1] hover:bg-[#E0F2FE] dark:bg-[#0369A1]/20 dark:text-[#7dd3fc] dark:border-[#0369A1]/40 dark:hover:bg-[#0369A1]/35",
+                      "bg-[#EDE9FE]/70 text-[#6D28D9] hover:bg-[#EDE9FE] dark:bg-[#6D28D9]/20 dark:text-[#c4b5fd] dark:border-[#6D28D9]/40 dark:hover:bg-[#6D28D9]/35",
+                      "bg-[#FFEDD5]/70 text-[#C2410C] hover:bg-[#FFEDD5] dark:bg-[#C2410C]/20 dark:text-[#fdba74] dark:border-[#C2410C]/40 dark:hover:bg-[#C2410C]/35",
                     ];
                     return (
                       <button
@@ -455,7 +455,7 @@ const ChatInput = function ChatInput({
                   whileTap={{ scale: 0.92 }}
                   type="button"
                   onClick={() => handleSubmit()}
-                  className="tap-target flex items-center justify-center size-9 rounded-full bg-[#2E6B5E] dark:bg-[#34D399] text-white dark:text-[#111622] shadow-md hover:shadow-lg hover:scale-105 transition-all shrink-0 cursor-pointer"
+                  className="tap-target flex items-center justify-center size-9 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] text-white dark:text-zinc-950 shadow-md hover:shadow-lg hover:scale-105 transition-all shrink-0 cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="19" x2="12" y2="5" />

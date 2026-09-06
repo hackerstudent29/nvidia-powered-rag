@@ -8,6 +8,7 @@ import ChatInput from "./components/chat/ChatInput";
 import SessionDrawer from "./components/chat/SessionDrawer";
 import StatsModal from "./components/chat/StatsModal";
 import { Tooltip } from "./components/Tooltip";
+import { AmbientBackground } from "./components/chat/AmbientBackground";
 
 export default function App() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -100,23 +101,23 @@ export default function App() {
   const prevMsgCountRef = useRef(0);
 
   useEffect(() => {
-    if (!scrollRef.current) return;
-
     const msgCount = messages.length;
-    const wasStreaming = prevStreamingRef.current;
+    const isNewMsgAdded = msgCount > prevMsgCountRef.current;
+    const isStreamingStarted = isStreaming && !prevStreamingRef.current;
 
-    if (msgCount > prevMsgCountRef.current && msgCount > 0) {
-      const lastMsg = messages[msgCount - 1];
-      if (lastMsg.role === "user" || (lastMsg.role === "assistant" && lastMsg.is_streaming)) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (isNewMsgAdded || isStreamingStarted) {
+      if (scrollRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+        if (isNearBottom || isNewMsgAdded) {
+          endRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
       }
     }
-    if (wasStreaming && !isStreaming) {
-      setTimeout(() => scrollToBottom(false), 80);
-    }
-    if (isStreaming) {
+
+    if (isStreaming && scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 180;
       if (isNearBottom) scrollRef.current.scrollTop = scrollHeight;
     }
 
@@ -145,6 +146,7 @@ export default function App() {
         "--keyboard-offset": `${keyboardOffset}px`,
       } as React.CSSProperties}
     >
+      <AmbientBackground />
       <ChatHeader
         models={models}
         selectedModel={selectedModel}

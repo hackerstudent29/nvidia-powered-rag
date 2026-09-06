@@ -130,11 +130,11 @@ export default function ChatHeader({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-xs sm:text-sm font-bold text-ink tracking-tight whitespace-nowrap">Lorin AI</h1>
-              <span className="rounded-full bg-[#E1EED7] px-1.5 py-0.5 text-[9.5px] font-semibold text-[#2E6B5E] whitespace-nowrap">
+              <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/30 px-1.5 py-0.5 text-[9.5px] font-semibold text-[#2E6B5E] dark:text-[#6ee7b7] dark:border dark:border-[#2E6B5E]/40 whitespace-nowrap">
                 MSAJCEA
               </span>
               {/* TNEA badge — hidden on mobile to save space */}
-              <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 px-1.5 py-0.5 text-[9.5px] font-medium text-[#4C1D95]">
+              <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.5 text-[9.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40">
                 TNEA 1301
               </span>
             </div>
@@ -147,7 +147,7 @@ export default function ChatHeader({
           <Tooltip content="Smart Auto Router: Dynamically routes simple factoids, multi-hop queries, and academic synthesis to optimal models automatically." position="bottom">
             <div className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-[11.5px] font-semibold text-ink shadow-hairline border border-line cursor-default">
               <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[#2E6B5E]">⚡ Smart Auto Router</span>
+              <span className="text-[#2E6B5E] dark:text-[#10b981]">⚡ Smart Auto Router</span>
             </div>
           </Tooltip>
 
@@ -174,7 +174,7 @@ export default function ChatHeader({
 
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="button" onClick={onNewChat}
             disabled={isStreaming}
-            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#D0E7E1] to-[#E1EED7] px-3.5 py-1.5 text-xs font-semibold text-[#1E293B] shadow-hairline border border-white hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer">
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E] dark:to-[#10b981] px-3.5 py-1.5 text-xs font-semibold text-[#1E293B] dark:text-white shadow-hairline border border-white dark:border-emerald-400/30 hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer">
             <span>+</span> New Chat
           </motion.button>
         </div>
@@ -188,7 +188,7 @@ export default function ChatHeader({
             onClick={onNewChat}
             disabled={isStreaming}
             aria-label="New Chat"
-            className="tap-target flex items-center justify-center size-9 rounded-full bg-gradient-to-r from-[#D0E7E1] to-[#E1EED7] border border-white/80 shadow-hairline text-[#1E293B] disabled:opacity-50 cursor-pointer"
+            className="tap-target flex items-center justify-center size-9 rounded-full bg-gradient-to-r from-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E] dark:to-[#10b981] border border-white/80 dark:border-emerald-400/30 shadow-hairline text-[#1E293B] dark:text-white disabled:opacity-50 cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />

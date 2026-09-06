@@ -2,92 +2,141 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* User 5 Strict Pastel Colors */
-    --color-lavender: #D0CCE5;
-    --color-mint: #D0E7E1;
-    --color-cream: #F7F6ED;
-    --color-matcha: #E1EED7;
-    --color-blush: #F2CFDF;
+/* ══════════════════════════════════════════════════════════════
+   FONT SYSTEM
+   ─────────────────────────────────────────────────────────────
+   Source Serif 4  →  Headings, titles, AI response headers (h1–h4)
+   Satoshi         →  Body text, UI labels, buttons, nav, inputs, badges
+   Plus Jakarta    →  Fallback only
+   ══════════════════════════════════════════════════════════════ */
 
-    /* Theme Tokens for Thinking & Streaming */
-    --canvas: #F7F6ED;
-    --surface: #FFFFFF;
-    --inset: #ECEAE0;
-    --line: rgba(0, 0, 0, 0.08);
+/* Heading font — applied to all h1–h4 and hero titles */
+.font-heading {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+/* UI / Body font — applied to everything else */
+.font-ui {
+  font-family: 'Satoshi', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@layer base {
+  /* ── LIGHT THEME TOKENS ── */
+  :root {
+    /* Brand pastel palette (5 strict colors) */
+    --color-lavender: #D0CCE5;
+    --color-mint:     #D0E7E1;
+    --color-cream:    #F7F6ED;
+    --color-matcha:   #E1EED7;
+    --color-blush:    #F2CFDF;
+
+    /* Layout */
+    --canvas:      #F7F6ED;
+    --surface:     #FFFFFF;
+    --inset:       #ECEAE0;
+
+    /* Borders */
+    --line:        rgba(0, 0, 0, 0.08);
     --line-strong: rgba(0, 0, 0, 0.18);
-    --ink: #1C1917;
+
+    /* Text */
+    --ink:   #1C1917;
     --ink-2: #57534E;
     --ink-3: #8C877D;
-    --hover: rgba(0, 0, 0, 0.04);
+
+    /* Hover states */
+    --hover:   rgba(0, 0, 0, 0.04);
     --hover-2: rgba(0, 0, 0, 0.08);
+
+    /* Accent & semantic */
     --accent: #2E6B5E;
     --orange: #D97706;
-    --green: #059669;
-    --red: #DC2626;
+    --green:  #059669;
+    --red:    #DC2626;
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     DARK THEME — redesigned from scratch
+     Base colors from user: #f4f3ee (warm white) + #b1ada1 (warm taupe)
+     All backgrounds are dark warm neutrals; texts use those exact colors.
+     ══════════════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════════════════
+     ULTRA CLEAN MODERN DARK THEME — Redesigned from Scratch
+     Palette focused around user requirements:
+     Primary Text: #f4f3ee (warm crisp off-white)
+     Secondary Text: #b1ada1 (warm taupe grey)
+     Tertiary Text: #78756d (subtle muted accent)
+     Backgrounds: Sleek obsidian charcoal & deep slate tones
+     ══════════════════════════════════════════════════════════════ */
   .dark {
-    --canvas: #111622;
-    --surface: #1A202C;
-    --inset: #242D3D;
-    --line: rgba(208, 231, 225, 0.18);
-    --line-strong: rgba(208, 204, 229, 0.35);
-    --ink: #F8FAFC;
-    --ink-2: #E2E8F0;
-    --ink-3: #94A3B8;
-    --hover: rgba(255, 255, 255, 0.07);
-    --hover-2: rgba(255, 255, 255, 0.12);
-    --accent: #34D399;
-    --orange: #F59E0B;
-    --green: #10B981;
-    --red: #EF4444;
+    /* ── Dark Surfaces (Ultra-clean obsidian & charcoal) ── */
+    --canvas:      #0b0c0e;   /* Deepest obsidian dark canvas */
+    --surface:     #14151a;   /* Clean elevated card & panel background */
+    --inset:       #1c1d24;   /* Inset containers, inputs, code blocks */
+
+    /* ── Borders & Dividers ── */
+    --line:        rgba(244, 243, 238, 0.08);   /* Hairline warm-white border */
+    --line-strong: rgba(244, 243, 238, 0.16);   /* Prominent separator */
+
+    /* ── Typography (Exact user colors) ── */
+    --ink:   #f4f3ee;   /* Primary text — crisp warm white */
+    --ink-2: #b1ada1;   /* Secondary text — warm taupe */
+    --ink-3: #78756d;   /* Tertiary text & placeholders */
+
+    /* ── State & Interactive ── */
+    --hover:   rgba(244, 243, 238, 0.05);
+    --hover-2: rgba(244, 243, 238, 0.10);
+
+    /* ── Brand Accents ── */
+    --accent: #10b981;   /* Luminous MSAJCEA emerald green */
+    --orange: #f97316;
+    --green:  #10b981;
+    --red:    #ef4444;
   }
 
+  /* ── Body: Satoshi for UI/body, Source Serif 4 injected per element ── */
   body {
     background-color: var(--canvas);
     color: var(--ink);
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    /* dvh = dynamic viewport height — fixes iOS Safari 100vh bug where browser chrome is included */
+    font-family: 'Satoshi', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
     user-select: text;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Prevent iOS bounce scroll on the body itself */
     overscroll-behavior: none;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Remove iOS tap flash on all interactive elements */
+  /* Remove iOS tap highlight on all interactive elements */
   button, a, [role='button'] {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+
+  /* ── Headings use Source Serif 4 globally ── */
+  h1, h2, h3, h4 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-optical-sizing: auto;
+  }
 }
 
-/* Hardware-accelerate backdrop-filters and scrolling lists to eliminate lag */
-.gpu-accelerated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-/* === SAFE AREA UTILITIES — for notched phones (iPhone X+) ===
-   Use these on fixed elements that sit near the screen edges. */
+/* ══════════════════════════════════════════════════════════════
+   SAFE AREA + LAYOUT UTILITIES
+   ══════════════════════════════════════════════════════════════ */
 .safe-top    { padding-top:    env(safe-area-inset-top); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 .safe-left   { padding-left:   env(safe-area-inset-left); }
 .safe-right  { padding-right:  env(safe-area-inset-right); }
 
-/* Full screen layout with dvh — use instead of h-screen on root elements */
 .h-screen-safe {
   height: 100vh;
   height: 100dvh;
 }
 
-/* Touch-friendly minimum tap target (Apple HIG: 44×44px minimum) */
+/* Touch-friendly minimum tap target (Apple HIG: 44×44px) */
 .tap-target {
   min-width:  44px;
   min-height: 44px;
@@ -96,10 +145,16 @@
   justify-content: center;
 }
 
-/* Prevent text selection on UI chrome elements */
 .no-select {
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* GPU-accelerated compositing layer */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .content-visibility-auto {
@@ -107,34 +162,36 @@
   contain-intrinsic-size: 140px;
 }
 
-/* Animations */
+/* ══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════════════════════════ */
 @keyframes shimmer-text {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
 @keyframes pop-in {
   from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: scale(1);    }
 }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
 @keyframes marquee-scroll {
-  0% { transform: translateX(0%); }
+  0%   { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
 }
 
@@ -143,36 +200,22 @@
   width: max-content;
   animation: marquee-scroll 35s linear infinite;
 }
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
+.animate-marquee:hover { animation-play-state: paused; }
 
 @keyframes float-slow-1 {
   0%, 100% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -40px) scale(1.08); }
-  66% { transform: translate(-25px, 25px) scale(0.95); }
+  33%       { transform: translate(30px, -40px) scale(1.08); }
+  66%       { transform: translate(-25px, 25px) scale(0.95); }
 }
-
 @keyframes float-slow-2 {
   0%, 100% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(-40px, 35px) scale(1.05); }
-  66% { transform: translate(25px, -30px) scale(0.95); }
+  33%       { transform: translate(-40px, 35px) scale(1.05); }
+  66%       { transform: translate(25px, -30px) scale(0.95); }
 }
+.animate-orb-1 { animation: float-slow-1 18s ease-in-out infinite; }
+.animate-orb-2 { animation: float-slow-2 22s ease-in-out infinite; }
 
-.animate-orb-1 {
-  animation: float-slow-1 18s ease-in-out infinite;
-}
-
-.animate-orb-2 {
-  animation: float-slow-2 22s ease-in-out infinite;
-}
-
-.animated-underline {
-  position: relative;
-  text-decoration: none;
-}
-
+.animated-underline { position: relative; text-decoration: none; }
 .animated-underline::after {
   content: '';
   position: absolute;
@@ -185,43 +228,60 @@
   transform-origin: bottom right;
   transition: transform 0.2s ease-out;
 }
-
 .animated-underline:hover::after {
   transform: scaleX(1);
   transform-origin: bottom left;
 }
 
-/* Utility classes mapping to CSS vars */
-.bg-canvas { background-color: var(--canvas); }
+/* ══════════════════════════════════════════════════════════════
+   CSS VARIABLE UTILITY CLASSES
+   ══════════════════════════════════════════════════════════════ */
+.bg-canvas  { background-color: var(--canvas); }
 .bg-surface { background-color: var(--surface); }
-.bg-inset { background-color: var(--inset); }
-.bg-line { background-color: var(--line); }
-.bg-hover { background-color: var(--hover); }
+.bg-inset   { background-color: var(--inset); }
+.bg-line    { background-color: var(--line); }
+.bg-hover   { background-color: var(--hover); }
 .bg-hover-2 { background-color: var(--hover-2); }
-.bg-accent { background-color: var(--accent); }
-.bg-orange { background-color: var(--orange); }
-.bg-green { background-color: var(--green); }
-.bg-red { background-color: var(--red); }
+.bg-accent  { background-color: var(--accent); }
+.bg-orange  { background-color: var(--orange); }
+.bg-green   { background-color: var(--green); }
+.bg-red     { background-color: var(--red); }
 
-.text-ink { color: var(--ink); }
+.text-ink   { color: var(--ink); }
 .text-ink-2 { color: var(--ink-2); }
 .text-ink-3 { color: var(--ink-3); }
 .text-accent { color: var(--accent); }
-.text-green { color: var(--green); }
-.text-red { color: var(--red); }
+.text-green  { color: var(--green); }
+.text-red    { color: var(--red); }
 
-.border-line { border-color: var(--line); }
+.border-line        { border-color: var(--line); }
 .border-line-strong { border-color: var(--line-strong); }
-.rounded-control { border-radius: 8px; }
-.shadow-hairline { box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0,0,0,0.03); }
+.rounded-control    { border-radius: 8px; }
+.shadow-hairline    { box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0,0,0,0.03); }
 
-/* Glassmorphism Styles */
+/* ══════════════════════════════════════════════════════════════
+   GLASSMORPHISM
+   ══════════════════════════════════════════════════════════════ */
+
+/* Light mode: cool glass effect */
 .glass-card-ai {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.90);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(208, 231, 225, 0.85);
   box-shadow: 0 10px 30px -5px rgba(208, 204, 229, 0.25), 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Dark mode: warm glass — uses surface warm dark + warm border */
+.dark .glass-card-ai {
+  background: rgba(33, 31, 23, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(244, 243, 238, 0.10);
+  box-shadow:
+    0 12px 40px -8px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(244, 243, 238, 0.05);
 }
 
 .glass-card-user {
@@ -231,6 +291,15 @@
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
+/* Dark mode user bubble: warm lavender tones */
+.dark .glass-card-user {
+  background: linear-gradient(135deg, rgba(208, 204, 229, 0.18) 0%, rgba(242, 207, 223, 0.14) 100%);
+  color: #f4f3ee;
+  border: 1px solid rgba(244, 243, 238, 0.14);
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* Light mode input */
 .glass-floating-input {
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(24px);
@@ -238,83 +307,94 @@
   border: 1.5px solid rgba(0, 0, 0, 0.09);
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.02);
 }
-
 .glass-floating-input:focus-within {
   border-color: #2E6B5E;
   box-shadow: 0 0 0 4px rgba(46, 107, 94, 0.14), 0 14px 40px -6px rgba(46, 107, 94, 0.1);
 }
 
+/* Dark mode input — warm dark glass */
 .dark .glass-floating-input {
-  background: rgba(18, 24, 36, 0.96);
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  background: rgba(33, 31, 23, 0.96);
+  border: 1.5px solid rgba(244, 243, 238, 0.12);
+  box-shadow:
+    0 12px 40px -8px rgba(0, 0, 0, 0.65),
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(244, 243, 238, 0.04);
 }
-
 .dark .glass-floating-input:focus-within {
-  border-color: #34D399;
-  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.18), 0 14px 40px -6px rgba(0, 0, 0, 0.6);
+  border-color: #4ade80;
+  box-shadow:
+    0 0 0 3px rgba(74, 222, 128, 0.15),
+    0 16px 48px -8px rgba(0, 0, 0, 0.7);
 }
 
-/* Scrollbars */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+/* ══════════════════════════════════════════════════════════════
+   SCROLLBARS
+   ══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(208, 204, 229, 0.75);
+  background: rgba(177, 173, 161, 0.45);
   border-radius: 9999px;
 }
+::-webkit-scrollbar-thumb:hover { background: rgba(177, 173, 161, 0.75); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(208, 204, 229, 1);
+/* Dark scrollbar — warm accent */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(244, 243, 238, 0.15);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 243, 238, 0.30);
 }
 
-/* Markdown styling inside AI messages */
+/* ══════════════════════════════════════════════════════════════
+   MARKDOWN / PROSE STYLING (AI responses)
+   Source Serif 4 for headings, Satoshi for body text
+   ══════════════════════════════════════════════════════════════ */
 .prose-clean {
   color: #334155;
   font-size: 14.5px;
-  line-height: 1.7;
+  line-height: 1.75;
+  font-family: 'Satoshi', 'Plus Jakarta Sans', sans-serif;
 }
 
 .prose-clean p {
   margin-bottom: 0.75rem;
+  font-family: 'Satoshi', sans-serif;
 }
-
-.prose-clean p:last-child {
-  margin-bottom: 0;
-}
+.prose-clean p:last-child { margin-bottom: 0; }
 
 .prose-clean strong {
   color: #0F172A;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .prose-clean ul {
   list-style-type: disc;
   padding-left: 1.25rem;
   margin-bottom: 0.75rem;
+  font-family: 'Satoshi', sans-serif;
 }
-
 .prose-clean ol {
   list-style-type: decimal;
   padding-left: 1.25rem;
   margin-bottom: 0.75rem;
+  font-family: 'Satoshi', sans-serif;
 }
+.prose-clean li { margin-bottom: 0.25rem; }
 
-.prose-clean li {
-  margin-bottom: 0.25rem;
-}
-
-.prose-clean h1, .prose-clean h2, .prose-clean h3, .prose-clean h4 {
+/* ── Headings: Source Serif 4 ── */
+.prose-clean h1,
+.prose-clean h2,
+.prose-clean h3,
+.prose-clean h4 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-optical-sizing: auto;
   color: #0F172A;
   font-weight: 700;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
 }
 
 .prose-clean table {
@@ -322,41 +402,33 @@
   border-collapse: collapse;
   margin: 0.85rem 0;
   font-size: 13.5px;
+  font-family: 'Satoshi', sans-serif;
 }
-
 .prose-clean th, .prose-clean td {
   padding: 8px 12px;
   border: 1px solid rgba(208, 231, 225, 0.9);
   text-align: left;
 }
-
 .prose-clean th {
   background-color: #E1EED7;
   color: #1E293B;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
+.prose-clean tr:nth-child(even) { background-color: rgba(247, 246, 237, 0.6); }
 
-.prose-clean tr:nth-child(even) {
-  background-color: rgba(247, 246, 237, 0.6);
-}
-
-/* === MOBILE TABLE COMPACTION — at < 640px === */
+/* Mobile table compaction */
 @media (max-width: 639px) {
-  .prose-clean table {
-    font-size: 11.5px;
-  }
-  .prose-clean th,
-  .prose-clean td {
+  .prose-clean table { font-size: 11.5px; }
+  .prose-clean th, .prose-clean td {
     padding: 6px 8px;
-    /* Allow wrapping on mobile to prevent absurd horizontal scroll */
     white-space: normal;
     word-break: break-word;
   }
-  /* Compact code blocks on mobile */
-  .prose-clean pre {
-    font-size: 11.5px;
-    padding: 10px;
-  }
+  .prose-clean pre { font-size: 11.5px; padding: 10px; }
 }
 
 .prose-clean blockquote {
@@ -369,8 +441,8 @@
   border-radius: 0 6px 6px 0;
   padding-top: 4px;
   padding-bottom: 4px;
+  font-family: 'Source Serif 4', Georgia, serif;
 }
-
 .prose-clean code {
   background: #ECEAE0;
   padding: 2px 6px;
@@ -379,7 +451,6 @@
   font-size: 12.5px;
   color: #0F172A;
 }
-
 .prose-clean pre {
   background: #1E293B;
   color: #F8FAFC;
@@ -388,92 +459,119 @@
   overflow-x: auto;
   margin: 0.75rem 0;
 }
-
 .prose-clean pre code {
   background: transparent;
   color: inherit;
   padding: 0;
 }
 
-/* Dark Mode Prose Clean Rules adhering strictly to the 5 Pastel Colors */
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — PROSE OVERRIDES
+   Warm text colors using the user's specified palette
+   ══════════════════════════════════════════════════════════════ */
 .dark .prose-clean {
-  color: #F8FAFC;
+  color: #b1ada1;   /* --ink-2: secondary warm text for body copy */
+}
+
+.dark .prose-clean p {
+  color: #c8c4bc;   /* slightly warmer than ink-2 for readability */
 }
 
 .dark .prose-clean strong {
-  color: #F7F6ED; /* Cream */
+  color: #f4f3ee;   /* --ink: full warm white for emphasis */
   font-weight: 700;
 }
 
+/* Dark headings: Source Serif 4 in warm white */
 .dark .prose-clean h1,
 .dark .prose-clean h2,
 .dark .prose-clean h3,
 .dark .prose-clean h4 {
-  color: #F7F6ED; /* Cream */
+  color: #f4f3ee;   /* --ink: warm white */
+  font-family: 'Source Serif 4', Georgia, serif;
 }
 
+/* Dark h2 border separator */
+.dark .prose-clean h2 {
+  border-bottom-color: rgba(244, 243, 238, 0.12);
+}
+
+/* Dark tables: warm dark surface */
 .dark .prose-clean table {
-  border-color: rgba(208, 231, 225, 0.25);
+  border-color: rgba(244, 243, 238, 0.10);
 }
-
 .dark .prose-clean th {
-  background-color: rgba(46, 107, 94, 0.45);
-  color: #E1EED7; /* Matcha */
-  border-color: rgba(208, 231, 225, 0.25);
+  background: rgba(46, 107, 94, 0.30);
+  color: #E1EED7;   /* matcha — our green pastel */
+  border-color: rgba(244, 243, 238, 0.12);
 }
-
 .dark .prose-clean td {
-  border-color: rgba(208, 231, 225, 0.18);
-  color: #E2E8F0;
+  border-color: rgba(244, 243, 238, 0.08);
+  color: #b1ada1;   /* warm taupe */
 }
-
 .dark .prose-clean tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.04);
+  background: rgba(244, 243, 238, 0.03);
 }
 
+/* Dark blockquote: warm lavender accent line */
 .dark .prose-clean blockquote {
-  border-left-color: #D0CCE5; /* Lavender */
-  color: #CBD5E1;
-  background: rgba(208, 204, 229, 0.15);
+  border-left-color: #D0CCE5;   /* lavender */
+  color: #7a7670;               /* ink-3 warm muted */
+  background: rgba(208, 204, 229, 0.10);
+  font-style: italic;
 }
 
+/* Dark inline code: warm inset */
 .dark .prose-clean code {
-  background: rgba(255, 255, 255, 0.1);
-  color: #D0E7E1; /* Mint */
+  background: rgba(244, 243, 238, 0.10);
+  color: #D0E7E1;   /* mint pastel */
+  border: 1px solid rgba(244, 243, 238, 0.08);
 }
 
-/* Custom Scrollbar for Markdown Tables and Code Blocks */
-.custom-scrollbar::-webkit-scrollbar {
-  height: 6px;
-  width: 6px;
+/* Dark code block: deep warm dark */
+.dark .prose-clean pre {
+  background: #100f09;
+  border: 1px solid rgba(244, 243, 238, 0.08);
+  color: #f4f3ee;
 }
+
+/* Dark links */
+.dark .prose-clean a {
+  color: #4ade80;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CUSTOM SCROLLBAR — within content areas
+   ══════════════════════════════════════════════════════════════ */
+.custom-scrollbar::-webkit-scrollbar       { height: 6px; width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.03);
   border-radius: 9999px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(46, 107, 94, 0.35);
   border-radius: 9999px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(52, 211, 153, 0.35);
+  background: rgba(244, 243, 238, 0.15);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(46, 107, 94, 0.6);
+  background: rgba(46, 107, 94, 0.60);
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(52, 211, 153, 0.6);
+  background: rgba(244, 243, 238, 0.30);
 }
 
-/* === BOTTOM SHEET BASE — used by SessionDrawer on mobile === */
+/* ══════════════════════════════════════════════════════════════
+   BOTTOM SHEET (mobile SessionDrawer)
+   ══════════════════════════════════════════════════════════════ */
 .bottom-sheet {
   border-radius: 20px 20px 0 0;
   padding-bottom: env(safe-area-inset-bottom);
 }
-
 .bottom-sheet-handle {
   width: 36px;
   height: 4px;
@@ -481,4 +579,12 @@
   border-radius: 9999px;
   margin: 0 auto 12px;
   flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HERO TITLE — Source Serif 4
+   ══════════════════════════════════════════════════════════════ */
+.hero-title {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-optical-sizing: auto;
 }

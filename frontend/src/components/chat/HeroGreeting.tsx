@@ -134,7 +134,7 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="relative text-[2.4rem] sm:text-[3.2rem] lg:text-[3.8rem] font-black tracking-tighter leading-none uppercase text-ink z-10"
+          className="hero-title relative text-[2.2rem] sm:text-[3rem] lg:text-[3.6rem] font-bold tracking-tight leading-none text-ink z-10"
         >
           Hello, Future Engineer.
         </motion.h1>
@@ -143,7 +143,7 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="relative z-10 mt-3 text-[13px] sm:text-[14px] text-ink-3 max-w-[520px] leading-relaxed"
+          className="relative z-10 mt-3 text-[13.5px] sm:text-[14.5px] text-ink-3 max-w-[520px] leading-relaxed font-ui"
         >
           Explore&nbsp;
           <span className="font-semibold text-ink">
