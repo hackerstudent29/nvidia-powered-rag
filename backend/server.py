@@ -3831,9 +3831,11 @@ async def generate_tts(body: TTSRequest):
     dg_key = os.getenv("DEEPGRAM_API_KEY")
     voice = body.voice or "aura-orion-en"
     
-    # If custom/unknown voice or requested bruce, map to Orion / Asteria
+    # If custom/unknown voice or requested bruce/brooke, map to Orion / Asteria
     if "bruce" in voice.lower() or "orion" in voice.lower():
         voice = "aura-orion-en"
+    elif "brooke" in voice.lower() or "asteria" in voice.lower():
+        voice = "aura-asteria-en"
     elif not voice.startswith("aura-"):
         voice = "aura-orion-en"
 

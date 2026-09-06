@@ -803,12 +803,12 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Action Icons, Token & Cost Badge & Sources Row */}
         {!message.is_streaming && (
-          <div className="mt-1.5 flex flex-wrap items-center gap-1 pt-1.5 border-t border-line/30 dark:border-white/[0.04]">
+          <div className="mt-1.5 flex flex-wrap items-center gap-0.5 pt-1.5 border-t border-line/30 dark:border-white/[0.04]">
             <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
               <button
                 type="button"
                 onClick={handleCopy}
-                className="tap-target flex items-center justify-center size-7 sm:size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2"
+                className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
               >
                 {copied ? (
                   <span className="text-[10px] font-bold text-green">✓</span>
@@ -823,7 +823,7 @@ const MessageItem = React.memo(function MessageItem({
                 <button
                   type="button"
                   onClick={onRegenerate}
-                  className="tap-target flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2"
+                  className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
                 >
                   {ACTION_ICONS.retry}
                 </button>
@@ -834,7 +834,7 @@ const MessageItem = React.memo(function MessageItem({
               <button
                 type="button"
                 onClick={() => handleThumbs(1)}
-                className={`tap-target flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 ${
+                className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
                   isLiked ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-green"
                 }`}
               >
@@ -846,7 +846,7 @@ const MessageItem = React.memo(function MessageItem({
               <button
                 type="button"
                 onClick={() => handleThumbs(-1)}
-                className={`tap-target flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 ${
+                className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
                   isDisliked ? "bg-red/20 text-red font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-red"
                 }`}
               >
@@ -859,7 +859,7 @@ const MessageItem = React.memo(function MessageItem({
                 type="button"
                 onClick={handleTTS}
                 disabled={isLoadingAudio}
-                className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 hover:bg-hover-2 ${
+                className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 hover:bg-hover-2 cursor-pointer ${
                   isPlayingAudio
                     ? "text-accent bg-accent/15 animate-pulse"
                     : isLoadingAudio

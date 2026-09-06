@@ -174,24 +174,19 @@ export interface VoiceOption {
 }
 
 const AURA_VOICES: VoiceOption[] = [
-  { id: "aura-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-amber-400 via-orange-500 to-red-500" },
-  { id: "aura-asteria-en", name: "Asteria", gender: "Feminine", accent: "American", description: "American Feminine (Warm)", gradient: "from-emerald-400 via-teal-500 to-green-600" },
+  // Top 5 Masculine Voices (Bruce as #1 Default)
+  { id: "aura-orion-en", name: "Bruce", gender: "Masculine", accent: "American", description: "American Masculine (Deep - Main)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
   { id: "aura-cliff-en", name: "Cliff", gender: "Masculine", accent: "American", description: "American Masculine", gradient: "from-emerald-400 via-cyan-500 to-blue-600" },
-  { id: "aura-sienna-en", name: "Sienna", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-orange-400 via-amber-500 to-yellow-600" },
   { id: "aura-cole-en", name: "Cole", gender: "Masculine", accent: "American", description: "American Masculine", gradient: "from-blue-400 via-indigo-500 to-purple-600" },
   { id: "aura-colin-en", name: "Colin", gender: "Masculine", accent: "British", description: "British Masculine", gradient: "from-cyan-400 via-blue-500 to-indigo-600" },
-  { id: "aura-gemma-en", name: "Gemma", gender: "Feminine", accent: "British", description: "British Feminine", gradient: "from-purple-400 via-fuchsia-500 to-pink-600" },
-  { id: "aura-haley-en", name: "Haley", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-pink-400 via-purple-500 to-indigo-600" },
+  { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "American Masculine (Strong)", gradient: "from-amber-300 via-yellow-500 to-amber-600" },
+  
+  // Top 5 Feminine Voices (Brooke as #1 Main Feminine)
+  { id: "aura-asteria-en", name: "Brooke", gender: "Feminine", accent: "American", description: "American Feminine (Warm - Main)", gradient: "from-emerald-400 via-teal-500 to-green-600" },
+  { id: "aura-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-amber-400 via-orange-500 to-red-500" },
   { id: "aura-luna-en", name: "Luna", gender: "Feminine", accent: "American", description: "American Feminine (Soft)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
   { id: "aura-stella-en", name: "Stella", gender: "Feminine", accent: "American", description: "American Feminine (Pro)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
   { id: "aura-athena-en", name: "Athena", gender: "Feminine", accent: "British", description: "British Feminine (Elegant)", gradient: "from-violet-400 via-purple-500 to-indigo-600" },
-  { id: "aura-hera-en", name: "Hera", gender: "Feminine", accent: "American", description: "American Feminine (Expressive)", gradient: "from-rose-400 via-pink-500 to-red-600" },
-  { id: "aura-orion-en", name: "Bruce", gender: "Masculine", accent: "American", description: "American Masculine (Deep)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
-  { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "American Masculine (Strong)", gradient: "from-amber-300 via-yellow-500 to-amber-600" },
-  { id: "aura-arcas-en", name: "Arcas", gender: "Masculine", accent: "American", description: "American Masculine (Clear)", gradient: "from-cyan-300 via-sky-500 to-blue-600" },
-  { id: "aura-helios-en", name: "Helios", gender: "Masculine", accent: "British", description: "British Masculine (Warm)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
-  { id: "aura-angus-en", name: "Angus", gender: "Masculine", accent: "Irish", description: "Irish Masculine", gradient: "from-green-400 via-emerald-500 to-teal-600" },
-  { id: "aura-orpheus-en", name: "Orpheus", gender: "Masculine", accent: "American", description: "American Masculine (Confident)", gradient: "from-blue-500 via-indigo-600 to-slate-700" },
 ];
 
 
