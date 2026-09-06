@@ -268,7 +268,7 @@ export function useChat() {
   };
 
   // Send message with SSE streaming and retry on temporary failures
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, effort?: string) => {
     if (!text.trim() || isStreaming) return;
     audioManager.stopAll();
 
@@ -311,6 +311,7 @@ export function useChat() {
           session_id: sessionId,
           user_id: userId,
           model: selectedModel,
+          effort: effort || "Medium",
         }),
         signal: abortController.signal,
       });

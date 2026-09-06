@@ -2389,7 +2389,8 @@ class ChatRequest(BaseModel):
     message: str = Field(..., description="User question or query")
     session_id: Optional[str] = Field(None, description="UUID of chat session")
     user_id: Optional[str] = Field(None, description="Persistent client user identifier")
-    model: Optional[str] = Field("zai/glm-5.3-flash", description="LLM model identifier")
+    model: Optional[str] = Field("auto", description="LLM model identifier")
+    effort: Optional[str] = Field("Medium", description="Reasoning effort: Low, Medium, Max Effort")
 
 @app.post("/api/chat/stream")
 async def chat_stream_endpoint(req: ChatRequest, request: Request):
@@ -2518,7 +2519,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             # 3. Classify query to scale token usage dynamically
             query_class = classify_query(user_query)
 
-            # --- Dynamic Token Budgeting & RAG Context Scaling ---
+            # --- Dynamic Token Budgeting & Effort Scaling ---
+            req_effort = (req.effort or "Medium").strip()
+            
+            # Smart Effort Logic: If user selected "Low" but asked a complex or long question (> 100 chars),
+            # automatically upgrade effort to Auto/Medium so answer is accurate and complete without quality loss.
+            if req_effort == "Low" and (len(user_query) > 100 or query_class in ["complex", "transport"]):
+                req_effort = "Auto"
+
             if query_class == "greeting":
                 RAG_TOP_K      = 0
                 MAX_TOKENS     = 300
@@ -2539,6 +2547,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 RAG_TOP_K      = 4
                 MAX_TOKENS     = 1200
                 HISTORY_LIMIT  = 4
+
+            if req_effort == "Low":
+                MAX_TOKENS = 500
+                RAG_TOP_K = min(RAG_TOP_K, 3)
+            elif req_effort == "Max Effort":
+                MAX_TOKENS = 4500
+                RAG_TOP_K = max(RAG_TOP_K, 6)
+
             CHUNK_TRIM = 99999
 
             # 3. Fast Knowledge Entity DB Lookup (Check exact verified entities before running heavy vector search)

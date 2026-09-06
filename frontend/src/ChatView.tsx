@@ -214,14 +214,14 @@ export default function App() {
       <ChatInput
         inputValue={chatInput}
         onInputChange={setChatInput}
-        onSendMessage={(msg) => {
+        onSendMessage={(msg, effort) => {
           const clean = msg.trim().toLowerCase();
           if (clean === "/admin" || clean === "/ admin" || clean === "admin/") {
             setChatInput("");
             window.location.href = "/admin";
             return;
           }
-          sendMessage(msg);
+          sendMessage(msg, effort);
           setChatInput("");
         }}
         onStopStreaming={stopStreaming}

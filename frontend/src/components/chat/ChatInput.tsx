@@ -1,81 +1,170 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "../Tooltip";
 import { RateLimitInfo } from "../../types/chat";
+import { cn } from "../../lib/utils";
 
+// ----------------------------------------------------------------------
+// Physics & Animation Constants
+// ----------------------------------------------------------------------
+const SPRING_TRANSITION = "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+const SMOOTH_HEIGHT_TRANSITION = "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.15s ease-out";
+
+// ----------------------------------------------------------------------
+// Sub-components
+// ----------------------------------------------------------------------
+function MorphingText({ text }: { text: string }) {
+  const [width, setWidth] = useState<number | "auto">("auto");
+  const spanRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (spanRef.current) {
+      setWidth(spanRef.current.offsetWidth);
+    }
+  }, [text]);
+
+  return (
+    <span
+      className="relative inline-flex items-center justify-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+      style={{ width }}
+    >
+      <span ref={spanRef} className="invisible whitespace-nowrap px-0.5">
+        {text}
+      </span>
+      <span
+        key={text}
+        className="absolute inset-0 flex items-center justify-center whitespace-nowrap animate-in fade-in zoom-in-95 duration-200"
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function ModelIcon({ model, className }: { model: string; className?: string }) {
+  if (model.includes("Minimax")) {
+    return (
+      <span className={cn("flex size-3.5 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400 font-mono font-bold text-[9px]", className)}>
+        M
+      </span>
+    );
+  }
+  if (model.includes("Gemini")) {
+    return (
+      <span className={cn("flex size-3.5 items-center justify-center rounded-full bg-blue-500/20 text-blue-400 font-mono font-bold text-[9px]", className)}>
+        G
+      </span>
+    );
+  }
+  if (model.includes("ZAI") || model.includes("GLM")) {
+    return (
+      <span className={cn("flex size-3.5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 font-mono font-bold text-[9px]", className)}>
+        Z
+      </span>
+    );
+  }
+  return (
+    <span className={cn("flex size-3.5 items-center justify-center rounded-full bg-[#2E6B5E]/30 text-[#10b981] font-mono font-bold text-[9px]", className)}>
+      A
+    </span>
+  );
+}
+
+function ArrowUpIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M7 12V2M7 2L2.5 6.5M7 2L11.5 6.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MicIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <rect x="5" y="1" width="4" height="7" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M2.75 6.5V7a4.25 4.25 0 0 0 8.5 0v-.5M7 11.25V13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function StopIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+function DynamicBarsIcon({ level }: { level: string }) {
+  const isMediumOrHigh = level === "Medium" || level === "Max Effort";
+  const isHigh = level === "Max Effort";
+
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <rect x="1.5" y="8" width="2.5" height="4.5" rx="1" fill="currentColor" className="transition-opacity duration-300" opacity={1} />
+      <rect x="5.75" y="5" width="2.5" height="7.5" rx="1" fill="currentColor" className="transition-opacity duration-300" opacity={isMediumOrHigh ? 1 : 0.3} />
+      <rect x="10" y="2" width="2.5" height="10.5" rx="1" fill="currentColor" className="transition-opacity duration-300" opacity={isHigh ? 1 : 0.3} />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Constants & Types
+// ----------------------------------------------------------------------
 interface ChatInputProps {
   inputValue: string;
   onInputChange: (val: string) => void;
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, effort?: string) => void;
   onStopStreaming?: () => void;
   isStreaming: boolean;
   showChips?: boolean;
   rateLimitInfo?: RateLimitInfo | null;
   onClearRateLimit?: () => void;
-  /** Passed from useMobileLayout — enables mobile-specific chip layout */
   isMobile?: boolean;
 }
 
+const MODELS_LIST = [
+  { id: "auto", name: "Auto (Router)", description: "Auto-routes between Minimax, Gemini & ZAI" },
+  { id: "minimax", name: "Minimax (MiniMax-M3)", description: "Auto-selected for reasoning" },
+  { id: "gemini", name: "Gemini (Gemini 2.5 Flash)", description: "Auto-selected for speed" },
+  { id: "zai", name: "ZAI (GLM-5.3 Flash)", description: "Auto-selected for general queries" },
+];
+
+const EFFORTS = ["Low", "Medium", "Max Effort"];
+
 const DISCLAIMER_SENTENCES = [
-  "Lorin AI is an experimental AI campus assistant grounded on official Mohamed Sathak A.J. College of Engineering and Architecture records.",
-  "AI models can occasionally make mistakes or produce outdated details — answers are not guaranteed to be 100% accurate.",
-  "Please verify critical fee structures, admission criteria, and scholarship policies directly with the official MSAJCEA Admission Office.",
-  "Lorin AI assumes no legal liability for admission decisions or financial commitments made based solely on generated chat responses.",
-  "Official college circulars, Anna University regulations, and MSAJCEA administrative notices override any AI-generated content."
+  "Lorin AI is grounded on official Mohamed Sathak A.J. College of Engineering and Architecture records.",
+  "AI models can occasionally make mistakes — answers are not guaranteed to be 100% accurate.",
+  "Please verify critical fee structures, admission criteria, and scholarship policies directly with official MSAJCEA Admission Office.",
+  "Lorin AI assumes no legal liability for admission decisions or financial commitments made based solely on generated responses.",
+  "Official college circulars, Anna University regulations, and MSAJCEA administrative notices override AI content."
 ];
 
 const QUICK_CHIPS = [
-  {
-    label: "Admission Guide",
-    query: "What are the admission criteria, pathways, TNEA code, and document requirements for MSAJCEA?",
-  },
-  {
-    label: "Courses Offered",
-    query: "What are all the 12 UG & 2 PG degree courses, intake capacity, and departments offered at MSAJCEA?",
-  },
-  {
-    label: "Campus Placements",
-    query: "Who are the top recruiters, placement statistics, and highest salary package at MSAJCEA?",
-  },
-  {
-    label: "Scholarships",
-    query: "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?",
-  },
-  {
-    label: "Boys Hostel",
-    query: "What are the hostel facilities, room capacity, mess menu, and rules for the Boys Hostel at MSAJCEA?",
-  },
-  {
-    label: "Girls Hostel",
-    query: "What safety features, capacity, room amenities, and location details apply to the Girls Hostel at MSAJCEA?",
-  },
-  {
-    label: "Bus Routes",
-    query: "What are the college bus routes, pickup points, timings, and transport coverage for MSAJCEA?",
-  },
-  {
-    label: "Mess & Canteen",
-    query: "What is the mess food menu, dining hall capacity, canteen facilities, and timings at MSAJCEA?",
-  },
-  {
-    label: "Central Library",
-    query: "Tell me about the Central Library facilities, book collection, digital library, and working hours at MSAJCEA.",
-  },
-  {
-    label: "Lab Facilities",
-    query: "What engineering lab facilities, computer centers, and specialized workshops are available at MSAJCEA?",
-  },
-  {
-    label: "Campus Life",
-    query: "What sports facilities, athletic infrastructure, and student clubs are active at MSAJCEA?",
-  },
-  {
-    label: "Contact Info",
-    query: "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?",
-  },
+  { label: "Admission Guide", query: "What are the admission criteria, pathways, TNEA code, and document requirements for MSAJCEA?" },
+  { label: "Courses Offered", query: "What are all the 12 UG & 2 PG degree courses, intake capacity, and departments offered at MSAJCEA?" },
+  { label: "Campus Placements", query: "Who are the top recruiters, placement statistics, and highest salary package at MSAJCEA?" },
+  { label: "Scholarships", query: "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?" },
+  { label: "Boys Hostel", query: "What are the hostel facilities, room capacity, mess menu, and rules for the Boys Hostel at MSAJCEA?" },
+  { label: "Girls Hostel", query: "What safety features, capacity, room amenities, and location details apply to the Girls Hostel at MSAJCEA?" },
+  { label: "Bus Routes", query: "What are the college bus routes, pickup points, timings, and transport coverage for MSAJCEA?" },
+  { label: "Mess & Canteen", query: "What is the mess food menu, dining hall capacity, canteen facilities, and timings at MSAJCEA?" },
+  { label: "Central Library", query: "Tell me about the Central Library facilities, book collection, digital library, and working hours at MSAJCEA." },
+  { label: "Lab Facilities", query: "What engineering lab facilities, computer centers, and specialized workshops are available at MSAJCEA?" },
+  { label: "Campus Life", query: "What sports facilities, athletic infrastructure, and student clubs are active at MSAJCEA?" },
+  { label: "Contact Info", query: "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?" },
 ];
 
-const ChatInput = function ChatInput({
+export const ChatInput: React.FC<ChatInputProps> = ({
   inputValue = "",
   onInputChange,
   onSendMessage,
@@ -85,14 +174,54 @@ const ChatInput = function ChatInput({
   rateLimitInfo,
   onClearRateLimit,
   isMobile = false,
-}: ChatInputProps) {
+}) => {
   const [text, setText] = useState(inputValue || "");
-  const [isListening, setIsListening] = useState(false);
+  const [effortIndex, setEffortIndex] = useState(1); // Default "Medium"
+  const [selectedModel, setSelectedModel] = useState("Auto (Router)");
+  const [isModelSelectOpen, setIsModelSelectOpen] = useState(false);
+  const [showLockedToast, setShowLockedToast] = useState(false);
+
   const [disclaimerIdx, setDisclaimerIdx] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Ticking countdown timer for rate limit reset
+  // Audio / Voice recording states
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioData, setAudioData] = useState<number[]>(new Array(5).fill(0.1));
+
+  // Hover sliding background for model dropdown
+  const [hoverStyle, setHoverStyle] = useState({ opacity: 0, transform: "translateY(0px) scale(0.95)", transition: "none" });
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef(inputValue || "");
+
+  // Audio & SpeechRecognition Refs
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Sync textRef for callbacks
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
+
+  // Sync external inputValue prop
+  useEffect(() => {
+    if (inputValue !== undefined && inputValue !== text) {
+      setText(inputValue);
+    }
+  }, [inputValue]);
+
+  // Rotate disclaimer sentences
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDisclaimerIdx((prev) => (prev + 1) % DISCLAIMER_SENTENCES.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Rate limit countdown
   useEffect(() => {
     if (!rateLimitInfo?.untilTimestamp) return;
     const updateTimer = () => {
@@ -117,69 +246,152 @@ const ChatInput = function ChatInput({
     return `${secs}s`;
   };
 
-  // Sync local text when external prop `inputValue` changes (e.g. clicking prompt chips)
-  useEffect(() => {
-    if (inputValue !== undefined && inputValue !== text) {
-      setText(inputValue);
-    }
-  }, [inputValue]);
-
-  // Rotate disclaimer sentences smoothly every 4.5s
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDisclaimerIdx((prev) => (prev + 1) % DISCLAIMER_SENTENCES.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Smooth, non-blocking auto-resize textarea via requestAnimationFrame
+  // Textarea auto-resize
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     const handle = requestAnimationFrame(() => {
-      if (!el) return;
       el.style.height = "auto";
-      const maxHeight = Math.min(window.innerHeight * 0.35, 260);
+      const maxHeight = Math.min(window.innerHeight * 0.3, 220);
       el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
     });
     return () => cancelAnimationFrame(handle);
   }, [text]);
 
-  // Global Keyboard Navigation & Shortcuts
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      const activeTag = document.activeElement?.tagName;
-      const isInputFocused =
-        activeTag === "INPUT" ||
-        activeTag === "TEXTAREA" ||
-        (document.activeElement as HTMLElement)?.isContentEditable;
-
-      if (isInputFocused) {
-        if (e.key === "Escape") {
-          (document.activeElement as HTMLElement).blur();
-        }
-        return;
-      }
-
-      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        textareaRef.current?.focus();
-      }
-
-      if (e.key === "/") {
-        e.preventDefault();
-        textareaRef.current?.focus();
-      }
-    };
-
-    window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  // Voice recording stop handler
+  const stopRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      recognitionRef.current = null;
+    }
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch (e) {}
+      audioContextRef.current = null;
+    }
+    setIsRecording(false);
+    setAudioData(new Array(5).fill(0.1));
   }, []);
+
+  // Voice recording start handler
+  const startRecording = useCallback(async () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Voice speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
+      return;
+    }
+
+    let stream: MediaStream | null = null;
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+    } catch (err) {
+      console.warn("Microphone access denied or restricted:", err);
+    }
+
+    setIsRecording(true);
+
+    if (stream) {
+      streamRef.current = stream;
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const audioCtx = new AudioCtx();
+        audioContextRef.current = audioCtx;
+
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        const updateVisualizer = () => {
+          analyser.getByteFrequencyData(dataArray);
+          const bands = new Array(5).fill(0);
+          const step = Math.floor(dataArray.length / 5);
+          for (let i = 0; i < 5; i++) {
+            let sum = 0;
+            for (let j = 0; j < step; j++) {
+              sum += dataArray[i * step + j];
+            }
+            bands[i] = Math.min(1, Math.max(0.15, sum / step / 200));
+          }
+          setAudioData(bands);
+          rafRef.current = requestAnimationFrame(updateVisualizer);
+        };
+        updateVisualizer();
+      } catch (e) {}
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-IN";
+
+      let baseText = textRef.current;
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = "";
+        let finalTranscript = "";
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          baseText = (baseText ? baseText.trim() + " " : "") + finalTranscript.trim();
+        }
+
+        const combined = (baseText + (interimTranscript ? " " + interimTranscript : "")).trim();
+        setText(combined);
+        if (onInputChange) onInputChange(combined);
+      };
+
+      recognition.onerror = () => {
+        stopRecording();
+      };
+
+      recognition.onend = () => {
+        stopRecording();
+      };
+
+      recognition.start();
+    } catch (err) {
+      stopRecording();
+    }
+  }, [onInputChange, stopRecording]);
+
+  useEffect(() => {
+    return () => {
+      stopRecording();
+    };
+  }, [stopRecording]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
-    onSendMessage(trimmed);
+    onSendMessage(trimmed, EFFORTS[effortIndex]);
     setText("");
     if (onInputChange) onInputChange("");
     if (textareaRef.current) {
@@ -194,83 +406,57 @@ const ChatInput = function ChatInput({
     }
   };
 
-  const textRef = useRef(text);
+  const cycleEffort = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEffortIndex((prev) => (prev + 1) % EFFORTS.length);
+  };
+
+  // Close dropdown on outside click
   useEffect(() => {
-    textRef.current = text;
-  }, [text]);
-
-  const recognitionRef = useRef<any>(null);
-
-  const handleVoiceInput = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Voice speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
-      return;
-    }
-
-    if (isListening && recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (err) {
-        console.warn("Speech recognition stop error", err);
+    if (!isModelSelectOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsModelSelectOpen(false);
+        setShowLockedToast(false);
       }
-      setIsListening(false);
-      return;
-    }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [isModelSelectOpen]);
 
-    try {
-      const recognition = new SpeechRecognition();
-      recognitionRef.current = recognition;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-IN";
+  const handleModelClick = (modelObj: typeof MODELS_LIST[0]) => {
+    // Show locked feedback notification to user
+    setShowLockedToast(true);
+    setTimeout(() => {
+      setShowLockedToast(false);
+    }, 2800);
+  };
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
+  const hasValue = text.trim() !== "";
+  const showArrow = hasValue && !isRecording && !isStreaming;
+  const showStop = isRecording || isStreaming;
+  const showMic = !hasValue && !isRecording && !isStreaming;
 
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn("Speech recognition error:", event.error);
-        setIsListening(false);
-        if (event.error === "not-allowed") {
-          alert("Microphone permission denied. Please allow microphone access in your browser settings to use voice input.");
-        }
-      };
-
-      recognition.onresult = (event: any) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-        }
-        if (transcript.trim()) {
-          const currentText = textRef.current;
-          const updated = currentText ? `${currentText.trim()} ${transcript.trim()}` : transcript.trim();
-          setText(updated);
-          if (onInputChange) onInputChange(updated);
-        }
-      };
-
-      recognition.start();
-    } catch (err) {
-      console.error("Speech recognition start failed:", err);
-      setIsListening(false);
+  const handleActionButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isStreaming) {
+      onStopStreaming?.();
+    } else if (isRecording) {
+      stopRecording();
+    } else if (hasValue) {
+      handleSubmit();
+    } else {
+      startRecording();
     }
   };
 
   return (
     <div
-      className="sticky bottom-0 z-20 pb-2.5 pt-1 bg-gradient-to-t from-canvas via-canvas/95 to-transparent w-full"
-      style={{
-        paddingBottom: `max(10px, calc(10px + var(--keyboard-offset, 0px)))`,
-      }}
+      ref={containerRef}
+      className="sticky bottom-0 z-20 pb-2.5 pt-1 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
+      style={{ paddingBottom: `max(10px, calc(10px + var(--keyboard-offset, 0px)))` }}
     >
-      <div className="mx-auto max-w-5xl w-full min-w-0 px-3 sm:px-6 box-border">
+      <div className="mx-auto max-w-4xl w-full min-w-0 px-3 sm:px-6 box-border">
         {/* Rate Limit Alert Banner Tab */}
         <AnimatePresence>
           {rateLimitInfo && rateLimitInfo.isLimited && (
@@ -278,11 +464,11 @@ const ChatInput = function ChatInput({
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.98 }}
-              className="mb-2.5 w-full rounded-2xl border bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/30 text-amber-900 dark:text-amber-100 p-3 sm:p-3.5 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in"
+              className="mb-2.5 w-full rounded-2xl border bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/30 text-amber-900 dark:text-amber-100 p-3.5 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in"
             >
               <div className="flex items-center gap-3">
                 <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-300 shrink-0">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                     <line x1="12" y1="9" x2="12" y2="13" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -293,13 +479,10 @@ const ChatInput = function ChatInput({
                     <span className="text-xs sm:text-sm font-bold tracking-tight text-amber-900 dark:text-amber-100">
                       {rateLimitInfo.message}
                     </span>
-                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                      5:30 AM Daily Reset
-                    </span>
                   </div>
                   <p className="text-[11.5px] sm:text-[12px] text-amber-800/90 dark:text-amber-200/90 mt-0.5 font-medium">
                     Lorin AI will be available again{" "}
-                    <strong className="text-amber-950 dark:text-white underline decoration-amber-400">
+                    <strong className="text-amber-950 dark:text-white underline">
                       {rateLimitInfo.resetTimeString}
                     </strong>
                   </p>
@@ -308,10 +491,6 @@ const ChatInput = function ChatInput({
 
               <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                 <div className="flex items-center gap-1.5 rounded-xl bg-amber-500/20 px-3 py-1.5 border border-amber-500/30">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
                   <span className="font-mono text-xs font-bold text-amber-900 dark:text-amber-100">
                     {formatCountdown(secondsLeft)}
                   </span>
@@ -321,164 +500,265 @@ const ChatInput = function ChatInput({
           )}
         </AnimatePresence>
 
+        {/* Quick Chips Marquee */}
         {showChips && (
           isMobile ? (
-            <div className="w-full overflow-x-auto pb-1.5 animate-in fade-in duration-200"
-              style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+            <div className="w-full overflow-x-auto pb-1.5 animate-in fade-in duration-200" style={{ scrollbarWidth: 'none' }}>
               <div className="flex items-center gap-1.5 w-max pr-3">
-                {QUICK_CHIPS.map((chip, idx) => {
-                  const colors = [
-                    "bg-[#E1EED7]/70 text-[#2E6B5E] dark:bg-[#2E6B5E]/20 dark:text-[#6ee7b7] dark:border-[#2E6B5E]/40",
-                    "bg-[#D0CCE5]/70 text-[#4C1D95] dark:bg-[#4C1D95]/20 dark:text-[#c4b5fd] dark:border-[#4C1D95]/40",
-                    "bg-[#D0E7E1]/70 text-[#1F7A5F] dark:bg-[#1F7A5F]/20 dark:text-[#5eead4] dark:border-[#1F7A5F]/40",
-                    "bg-[#F2CFDF]/70 text-[#9D174D] dark:bg-[#9D174D]/20 dark:text-[#f472b6] dark:border-[#9D174D]/40",
-                    "bg-[#FFE4C4]/70 text-[#9A3412] dark:bg-[#9A3412]/20 dark:text-[#fdba74] dark:border-[#9A3412]/40",
-                    "bg-[#FCE7F3]/70 text-[#BE185D] dark:bg-[#BE185D]/20 dark:text-[#f472b6] dark:border-[#BE185D]/40",
-                    "bg-[#F7F6ED] text-ink-2 dark:bg-zinc-800/80 dark:text-[#b1ada1] dark:border-zinc-700/60",
-                    "bg-[#FEF3C7]/70 text-[#B45309] dark:bg-[#B45309]/20 dark:text-[#fcd34d] dark:border-[#B45309]/40",
-                    "bg-[#DCFCE7]/70 text-[#15803D] dark:bg-[#15803D]/20 dark:text-[#86efac] dark:border-[#15803D]/40",
-                    "bg-[#E0F2FE]/70 text-[#0369A1] dark:bg-[#0369A1]/20 dark:text-[#7dd3fc] dark:border-[#0369A1]/40",
-                    "bg-[#EDE9FE]/70 text-[#6D28D9] dark:bg-[#6D28D9]/20 dark:text-[#c4b5fd] dark:border-[#6D28D9]/40",
-                    "bg-[#FFEDD5]/70 text-[#C2410C] dark:bg-[#C2410C]/20 dark:text-[#fdba74] dark:border-[#C2410C]/40",
-                  ];
-                  return (
-                    <button
-                      key={chip.label}
-                      type="button"
-                      onClick={() => onSendMessage(chip.query)}
-                      disabled={isStreaming || !!rateLimitInfo?.isLimited}
-                      className={`rounded-full px-3 py-1.5 text-[11px] font-medium shrink-0 border border-line shadow-hairline active:scale-95 transition-transform duration-100 cursor-pointer ${
-                        colors[idx % colors.length]
-                      } disabled:opacity-50 disabled:pointer-events-none`}
-                    >
-                      {chip.label}
-                    </button>
-                  );
-                })}
+                {QUICK_CHIPS.map((chip) => (
+                  <button
+                    key={chip.label}
+                    type="button"
+                    onClick={() => onSendMessage(chip.query, EFFORTS[effortIndex])}
+                    disabled={isStreaming || !!rateLimitInfo?.isLimited}
+                    className="rounded-full px-3 py-1 text-[11px] font-medium shrink-0 border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] text-ink dark:text-[#f4f3ee] hover:border-[#2E6B5E] dark:hover:border-[#10b981] active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
               </div>
             </div>
           ) : (
             <div className="relative w-full overflow-hidden pb-1.5 group animate-in fade-in duration-200">
               <div className="overflow-hidden w-full relative [mask-image:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%)]">
                 <div className="animate-marquee flex items-center gap-1.5">
-                  {[...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => {
-                    const colors = [
-                      "bg-[#E1EED7]/70 text-[#2E6B5E] hover:bg-[#E1EED7] dark:bg-[#2E6B5E]/20 dark:text-[#6ee7b7] dark:border-[#2E6B5E]/40 dark:hover:bg-[#2E6B5E]/35",
-                      "bg-[#D0CCE5]/70 text-[#4C1D95] hover:bg-[#D0CCE5] dark:bg-[#4C1D95]/20 dark:text-[#c4b5fd] dark:border-[#4C1D95]/40 dark:hover:bg-[#4C1D95]/35",
-                      "bg-[#D0E7E1]/70 text-[#1F7A5F] hover:bg-[#D0E7E1] dark:bg-[#1F7A5F]/20 dark:text-[#5eead4] dark:border-[#1F7A5F]/40 dark:hover:bg-[#1F7A5F]/35",
-                      "bg-[#F2CFDF]/70 text-[#9D174D] hover:bg-[#F2CFDF] dark:bg-[#9D174D]/20 dark:text-[#f472b6] dark:border-[#9D174D]/40 dark:hover:bg-[#9D174D]/35",
-                      "bg-[#FFE4C4]/70 text-[#9A3412] hover:bg-[#FFE4C4] dark:bg-[#9A3412]/20 dark:text-[#fdba74] dark:border-[#9A3412]/40 dark:hover:bg-[#9A3412]/35",
-                      "bg-[#FCE7F3]/70 text-[#BE185D] hover:bg-[#FCE7F3] dark:bg-[#BE185D]/20 dark:text-[#f472b6] dark:border-[#BE185D]/40 dark:hover:bg-[#BE185D]/35",
-                      "bg-[#F7F6ED] text-ink-2 hover:bg-surface dark:bg-zinc-800/80 dark:text-[#b1ada1] dark:border-zinc-700/60 dark:hover:bg-zinc-700/80",
-                      "bg-[#FEF3C7]/70 text-[#B45309] hover:bg-[#FEF3C7] dark:bg-[#B45309]/20 dark:text-[#fcd34d] dark:border-[#B45309]/40 dark:hover:bg-[#B45309]/35",
-                      "bg-[#DCFCE7]/70 text-[#15803D] hover:bg-[#DCFCE7] dark:bg-[#15803D]/20 dark:text-[#86efac] dark:border-[#15803D]/40 dark:hover:bg-[#15803D]/35",
-                      "bg-[#E0F2FE]/70 text-[#0369A1] hover:bg-[#E0F2FE] dark:bg-[#0369A1]/20 dark:text-[#7dd3fc] dark:border-[#0369A1]/40 dark:hover:bg-[#0369A1]/35",
-                      "bg-[#EDE9FE]/70 text-[#6D28D9] hover:bg-[#EDE9FE] dark:bg-[#6D28D9]/20 dark:text-[#c4b5fd] dark:border-[#6D28D9]/40 dark:hover:bg-[#6D28D9]/35",
-                      "bg-[#FFEDD5]/70 text-[#C2410C] hover:bg-[#FFEDD5] dark:bg-[#C2410C]/20 dark:text-[#fdba74] dark:border-[#C2410C]/40 dark:hover:bg-[#C2410C]/35",
-                    ];
-                    return (
-                      <button
-                        key={`${chip.label}-${idx}`}
-                        type="button"
-                        onClick={() => onSendMessage(chip.query)}
-                        disabled={isStreaming || !!rateLimitInfo?.isLimited}
-                        className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-medium transition-transform duration-150 hover:scale-105 active:scale-95 shrink-0 border border-line shadow-hairline cursor-pointer ${
-                          colors[idx % colors.length]
-                        } disabled:opacity-50 disabled:pointer-events-none`}
-                      >
-                        {chip.label}
-                      </button>
-                    );
-                  })}
+                  {[...QUICK_CHIPS, ...QUICK_CHIPS].map((chip, idx) => (
+                    <button
+                      key={`${chip.label}-${idx}`}
+                      type="button"
+                      onClick={() => onSendMessage(chip.query, EFFORTS[effortIndex])}
+                      disabled={isStreaming || !!rateLimitInfo?.isLimited}
+                      className="rounded-full px-2.5 py-0.5 text-[10.5px] font-medium shrink-0 border border-black/[0.08] dark:border-white/[0.08] bg-white/90 dark:bg-[#14151a]/90 text-ink dark:text-[#f4f3ee] hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           )
         )}
 
-        {/* Floating Auto-Expanding Production Input Box */}
-        <div className="relative flex flex-col justify-between rounded-2xl sm:rounded-3xl glass-floating-input p-2.5 sm:p-3 overflow-hidden shadow-lg transition-all duration-200">
-          <div className="w-full px-1 pt-0.5">
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything about MSAJCEA (fees, courses, cutoff, hostels, faculty, placements)..."
-              rows={1}
-              className="w-full resize-none bg-transparent px-1 py-0.5 text-[13.5px] sm:text-[14px] text-ink dark:text-[#f4f3ee] placeholder:text-ink-3/65 dark:placeholder:text-zinc-500 focus:outline-none max-h-[35vh] overflow-y-auto font-medium leading-relaxed block"
-            />
-          </div>
+        {/* ── Main Production Prompt Input Card ── */}
+        <div className="relative w-full rounded-2xl sm:rounded-3xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] shadow-lg transition-all duration-200 p-3 flex flex-col justify-between">
+          
+          {/* Text Area Input */}
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              onInputChange?.(e.target.value);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask anything about MSAJCEA (fees, courses, cutoff, hostels, faculty, placements)..."
+            rows={1}
+            disabled={isStreaming}
+            className="w-full resize-none bg-transparent px-2 py-1 text-[14px] text-ink dark:text-[#f4f3ee] placeholder:text-ink-3/60 dark:placeholder:text-zinc-500 focus:outline-none max-h-[30vh] overflow-y-auto font-medium leading-relaxed block"
+          />
 
-          <div className="flex items-center justify-end pt-1 gap-1.5 shrink-0">
-            {/* Mic Speech-to-Text Button */}
-            <Tooltip content={isListening ? "Listening... (Click to stop)" : "Voice Input"} position="top">
-              <motion.button
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.92 }}
-                type="button"
-                onClick={handleVoiceInput}
-                className={`tap-target flex items-center justify-center size-9 rounded-full transition-all duration-200 cursor-pointer ${
-                  isListening
-                    ? "bg-red-500 text-white animate-pulse shadow-md shadow-red-500/40 ring-2 ring-red-400"
-                    : "text-ink-3 dark:text-[#b1ada1] hover:text-[#2E6B5E] dark:hover:text-[#10b981] hover:bg-black/[0.05] dark:hover:bg-white/[0.08]"
-                }`}
+          {/* Bottom Toolbar Row */}
+          <div className="flex items-center justify-between pt-2.5 px-1 border-t border-black/[0.04] dark:border-white/[0.04] mt-2">
+            
+            {/* Left Controls: Model indicator & Effort Selector */}
+            <div className="flex items-center gap-1.5 relative">
+              
+              {/* Model Dropdown Button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsModelSelectOpen((prev) => !prev);
+                  }}
+                  className={cn(
+                    "group flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all duration-200 outline-none cursor-pointer border",
+                    isModelSelectOpen
+                      ? "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] border-[#2E6B5E]/40"
+                      : "bg-[#E1EED7]/70 dark:bg-[#2E6B5E]/20 text-[#2E6B5E] dark:text-[#10b981] border-[#2E6B5E]/20 dark:border-[#10b981]/30 hover:bg-[#E1EED7]"
+                  )}
+                >
+                  <ModelIcon model={selectedModel} />
+                  <span>
+                    <MorphingText text={selectedModel} />
+                  </span>
+                  <LockIcon />
+                </button>
+
+                {/* Model List Dropdown with Hover Slider & Locked Notification */}
+                <div
+                  style={{ transformOrigin: "bottom left" }}
+                  onMouseLeave={() => {
+                    setHoverStyle((prev) => ({
+                      ...prev,
+                      opacity: 0,
+                      transform: prev.transform.replace("scale(1)", "scale(0.95)"),
+                      transition: "opacity 0.2s ease-in, transform 0.2s ease-out",
+                    }));
+                  }}
+                  className={cn(
+                    "absolute bottom-full left-0 mb-2.5 z-50 w-64 rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/95 dark:bg-[#1c1d24]/95 p-1.5 shadow-2xl backdrop-blur-md flex flex-col gap-1 transition-all duration-300 cursor-default",
+                    isModelSelectOpen
+                      ? "opacity-100 scale-100 translate-y-0 pointer-events-auto ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+                      : "opacity-0 scale-95 translate-y-3 pointer-events-none ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+                  )}
+                >
+                  <div className="px-2 py-1 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.06] mb-0.5">
+                    <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-[#b1ada1]">
+                      Model Auto-Router
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[#10b981] text-[9px] font-mono font-bold">
+                      AUTO ACTIVE
+                    </span>
+                  </div>
+
+                  {showLockedToast && (
+                    <div className="px-2 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-[10.5px] font-medium leading-tight animate-in fade-in">
+                      Auto-routing selects between Minimax, Gemini, & ZAI based on your query type.
+                    </div>
+                  )}
+
+                  <div className="relative flex flex-col gap-0.5">
+                    {/* Hover highlight background slider */}
+                    <div style={hoverStyle} className="absolute left-0 right-0 top-0 h-9 -z-10 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] pointer-events-none" />
+                    
+                    {MODELS_LIST.map((mItem, idx) => (
+                      <button
+                        key={mItem.id}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onMouseEnter={() => {
+                          setHoverStyle((prev) => ({
+                            opacity: 1,
+                            transform: `translateY(${idx * 38}px) scale(1)`,
+                            transition: prev.opacity === 0 ? "opacity 0.15s ease-out" : "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease",
+                          }));
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleModelClick(mItem);
+                        }}
+                        className="group relative flex h-9 w-full items-center justify-between rounded-xl px-2.5 py-1 text-left text-xs font-medium text-ink dark:text-[#f4f3ee] outline-none cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <ModelIcon model={mItem.name} />
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-xs leading-tight">{mItem.name}</span>
+                            <span className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">{mItem.description}</span>
+                          </div>
+                        </div>
+                        {mItem.id === "auto" && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Effort Selector Button */}
+              <Tooltip content="Adjust reasoning token budget (Low, Medium, Max Effort)">
+                <button
+                  type="button"
+                  onClick={cycleEffort}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
+                >
+                  <DynamicBarsIcon level={EFFORTS[effortIndex]} />
+                  <span>
+                    <MorphingText text={EFFORTS[effortIndex]} />
+                  </span>
+                </button>
+              </Tooltip>
+            </div>
+
+            {/* Right Controls: Single Action Button + Voice Wave Visualizer */}
+            <div className="flex items-center gap-2">
+              
+              {/* Audio Wave Visualizer (5 animated bars when recording) */}
+              <div
+                className={cn(
+                  "flex h-7 items-center justify-end gap-[3px] transition-all duration-300",
+                  isRecording ? "w-14 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none"
+                )}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" y1="19" x2="12" y2="23" />
-                  <line x1="8" y1="23" x2="16" y2="23" />
-                </svg>
-              </motion.button>
-            </Tooltip>
+                {audioData.map((val, i) => (
+                  <div
+                    key={i}
+                    className="w-1 rounded-full bg-[#10b981] transition-[height] duration-100 ease-out"
+                    style={{ height: `${Math.max(4, val * 24)}px` }}
+                  />
+                ))}
+              </div>
 
-            {/* Send or Stop Button */}
-            {isStreaming ? (
-              <Tooltip content="Stop generating" position="top">
-                <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.92 }}
+              {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}
+              <Tooltip
+                content={
+                  isStreaming
+                    ? "Stop generating"
+                    : isRecording
+                    ? "Stop recording"
+                    : hasValue
+                    ? "Send message (Enter)"
+                    : "Voice Input (Speech to text)"
+                }
+              >
+                <button
                   type="button"
-                  onClick={onStopStreaming}
-                  className="tap-target flex items-center justify-center size-9 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/30 transition-all shrink-0 cursor-pointer"
+                  onClick={handleActionButtonClick}
+                  disabled={!hasValue && !isRecording && !isStreaming && !!rateLimitInfo?.isLimited}
+                  className={cn(
+                    "relative flex size-9 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
+                    showStop
+                      ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse ring-2 ring-red-400"
+                      : showArrow
+                      ? "bg-[#2E6B5E] dark:bg-[#10b981] dark:text-zinc-950 hover:opacity-90"
+                      : "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E] hover:text-white dark:hover:bg-[#10b981] dark:hover:text-zinc-950"
+                  )}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="4" y="4" width="16" height="16" rx="2" />
-                  </svg>
-                </motion.button>
+                  <span className="relative flex h-full w-full items-center justify-center">
+                    <span
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center transition-all duration-250 ease-out",
+                        showArrow ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 rotate-45 pointer-events-none"
+                      )}
+                    >
+                      <ArrowUpIcon />
+                    </span>
+                    <span
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center transition-all duration-250 ease-out",
+                        showMic ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 -rotate-45 pointer-events-none"
+                      )}
+                    >
+                      <MicIcon />
+                    </span>
+                    <span
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center transition-all duration-250 ease-out",
+                        showStop ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 rotate-45 pointer-events-none"
+                      )}
+                    >
+                      <StopIcon />
+                    </span>
+                  </span>
+                </button>
               </Tooltip>
-            ) : (
-              <Tooltip content="Send message (Enter)" position="top">
-                <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.92 }}
-                  type="button"
-                  onClick={() => handleSubmit()}
-                  disabled={!text.trim() || !!rateLimitInfo?.isLimited}
-                  className="tap-target flex items-center justify-center size-9 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] text-white dark:text-zinc-950 shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="19" x2="12" y2="5" />
-                    <polyline points="5 12 12 5 19 12" />
-                  </svg>
-                </motion.button>
-              </Tooltip>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* 1-Sentence Rotating Disclaimer Banner — hidden on mobile to save space */}
+        {/* 1-Sentence Rotating Disclaimer Banner */}
         {!isMobile && (
           <div className="mt-1.5 h-4 flex items-center justify-center overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.p
                 key={disclaimerIdx}
-                initial={{ opacity: 0, y: 5 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="text-[10px] text-ink-3/80 font-medium text-center truncate max-w-2xl px-2"
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.3 }}
+                className="text-[10px] text-ink-3/80 dark:text-[#b1ada1]/80 font-medium text-center truncate max-w-2xl px-2"
               >
                 {DISCLAIMER_SENTENCES[disclaimerIdx]}
               </motion.p>

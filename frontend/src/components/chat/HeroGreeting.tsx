@@ -172,25 +172,19 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
             type="button"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 + idx * 0.025, duration: 0.3 }}
-            whileHover={{
-              y: -3,
-              scale: 1.02,
-              boxShadow: "0 12px 30px rgba(46,107,94,0.15)",
-            }}
-            whileTap={{ scale: 0.97 }}
+            transition={{ delay: 0.05 + idx * 0.015, duration: 0.2 }}
             onClick={() => handleCardClick(card.q)}
-            className="group flex flex-col justify-between items-start text-left rounded-2xl p-4 bg-white/80 dark:bg-[#14151a]/90 backdrop-blur-xl border border-black/[0.07] dark:border-white/[0.07] shadow-sm hover:border-[#2E6B5E]/50 dark:hover:border-[#10b981]/50 transition-all duration-200 cursor-pointer w-full"
+            className="group flex flex-col justify-between items-start text-left rounded-2xl p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-sm hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md transform-gpu hover:-translate-y-1 hover:scale-[1.01] transition-all duration-150 ease-out cursor-pointer w-full active:scale-[0.98]"
             style={{ minHeight: "115px" }}
           >
             {/* Icon Pill Container */}
-            <div className="size-9 rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:scale-110 group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-200 shadow-sm shrink-0">
+            <div className="size-9 rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:scale-105 group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-150 shadow-sm shrink-0">
               {card.icon}
             </div>
 
             {/* Content */}
             <div className="mt-3 w-full">
-              <p className="text-[13.5px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors">
+              <p className="text-[13.5px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors duration-150">
                 {card.title}
               </p>
               <p className="text-[11px] text-ink-3 dark:text-[#b1ada1] leading-snug mt-1 line-clamp-2">
