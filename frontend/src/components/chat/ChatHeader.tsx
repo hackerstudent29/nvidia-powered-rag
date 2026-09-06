@@ -150,7 +150,7 @@ export default function ChatHeader({
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 24 }}
-        className="pointer-events-auto max-w-5xl mx-auto h-14 sm:h-16 backdrop-blur-2xl bg-white/70 dark:bg-[#14151a]/80 border border-black/10 dark:border-white/10 shadow-2xl rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+        className="pointer-events-auto max-w-5xl mx-auto h-14 sm:h-16 backdrop-blur-2xl bg-white/70 dark:bg-[#14151a]/70 border border-white/60 dark:border-white/10 shadow-2xl shadow-black/5 rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
       >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
@@ -159,7 +159,7 @@ export default function ChatHeader({
               whileHover={{ rotate: 12, scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex size-9 items-center justify-center rounded-2xl bg-surface dark:bg-[#14151a] shadow-sm border border-line dark:border-white/[0.08] cursor-pointer shrink-0"
+              className="flex size-9 items-center justify-center rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-md shadow-sm border border-white/60 dark:border-white/10 cursor-pointer shrink-0"
             >
               <GraduationCap className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
             </motion.div>

@@ -334,7 +334,7 @@ const MessageItem = React.memo(function MessageItem({
   });
   const [ttsExpressivity, setTtsExpressivity] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_expressivity");
-    return saved !== null ? parseInt(saved, 10) : 0;
+    return saved !== null ? parseInt(saved, 10) : 2;
   });
   const [feedbackRating, setFeedbackRating] = useState<number | null>(null);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -350,13 +350,13 @@ const MessageItem = React.memo(function MessageItem({
 
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
-  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-alexis-en");
+  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "aura-bruce-en");
 
   // Sync voice settings (speed, tone/expressivity) live across all message toolbars & Voice Controls modal
   useEffect(() => {
     const syncVoiceSettings = () => {
       const savedSpeed = localStorage.getItem("lorin_tts_speed");
-      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
+      const savedVoice = localStorage.getItem("lorin_tts_voice") || "aura-bruce-en";
       const savedExpr = localStorage.getItem("lorin_tts_expressivity");
 
       if (savedSpeed) {
@@ -378,6 +378,16 @@ const MessageItem = React.memo(function MessageItem({
     window.addEventListener("lorin_voice_settings_changed", syncVoiceSettings);
     return () => window.removeEventListener("lorin_voice_settings_changed", syncVoiceSettings);
   }, [isPlayingAudio]);
+
+  // Mobile & Desktop Auto-scroll active highlighted word into view smoothly
+  useEffect(() => {
+    if (isPlayingAudio && activeWordIdx >= 0 && messageRef.current) {
+      const activeMark = messageRef.current.querySelector("mark");
+      if (activeMark) {
+        activeMark.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }
+  }, [isPlayingAudio, activeWordIdx]);
 
   // Global click-outside listener: close sources & stats dropdowns when clicking outside or on empty space
   useEffect(() => {
@@ -479,15 +489,15 @@ const MessageItem = React.memo(function MessageItem({
     setIsLoadingAudio(true);
 
     try {
-      // Use Python FastAPI HD Neural Voice TTS API (Deepgram Flux primary - Alexis as default)
-      const rawVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
+      // Use Python FastAPI HD Neural Voice TTS API (Bruce as default)
+      const rawVoice = localStorage.getItem("lorin_tts_voice") || "aura-bruce-en";
       const validVoices = [
         "aura-bruce-en", "aura-brook-en", "flux-alexis-en", "flux-astrid-en",
         "flux-orion-en", "flux-stella-en", "aura-orion-en", "aura-asteria-en",
         "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
         "aura-angus-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
       ];
-      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-alexis-en";
+      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "aura-bruce-en";
 
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
@@ -680,7 +690,7 @@ const MessageItem = React.memo(function MessageItem({
           return (
             <mark
               key={i}
-              className="bg-[#10B981]/40 dark:bg-[#34D399]/45 text-ink font-bold px-1 py-0.5 rounded transition-all duration-100 shadow-sm animate-pulse"
+              className="bg-[#10B981]/35 dark:bg-[#34D399]/40 text-ink dark:text-white font-extrabold px-1 -mx-0.5 rounded transition-all duration-75 shadow-xs ring-1 ring-[#10b981]/50 inline-block align-baseline"
             >
               {token}
             </mark>
@@ -751,8 +761,8 @@ const MessageItem = React.memo(function MessageItem({
               h4: ({ children }) => <h4 className="font-heading font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
               hr: () => <hr className="my-4 border-line/50 dark:border-white/[0.05]" />,
               blockquote: ({ children }) => <blockquote className="font-heading border-l-4 border-[#2E6B5E] dark:border-[#4ade80] bg-[#2E6B5E]/5 dark:bg-[#4ade80]/8 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
-              strong: ({ children }) => <strong className="font-bold text-ink">{children}</strong>,
-              em: ({ children }) => <em className="italic">{children}</em>,
+              strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
+              em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
                 <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4 rounded-2xl bg-surface/50 dark:bg-surface/30 box-border backdrop-blur-sm transition-all duration-200 border-none">
                   <table className="w-full max-w-full border-collapse text-left border-none table-auto">{children}</table>

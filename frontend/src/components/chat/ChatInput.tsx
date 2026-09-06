@@ -238,11 +238,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const [selectedVoice, setSelectedVoice] = useState(() => {
     const saved = localStorage.getItem("lorin_tts_voice");
-    return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "flux-alexis-en";
+    return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "aura-bruce-en";
   });
   const [expressivity, setExpressivity] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_expressivity");
-    return saved !== null ? parseInt(saved, 10) : 0;
+    return saved !== null ? parseInt(saved, 10) : 2;
   });
   const [ttsSpeed, setTtsSpeed] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_speed");
@@ -869,8 +869,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div
-      className="sticky bottom-0 z-20 pb-4 sm:pb-6 pt-2 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
-      style={{ paddingBottom: `max(18px, calc(18px + var(--keyboard-offset, 0px)))` }}
+      className="sticky bottom-0 z-20 pb-5 sm:pb-6 pt-2 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
+      style={{ paddingBottom: `max(28px, calc(28px + var(--keyboard-offset, 0px)))` }}
     >
       <div className="mx-auto max-w-4xl w-full min-w-0 px-3 sm:px-6 box-border">
         {/* Rate Limit Alert Banner Tab */}
