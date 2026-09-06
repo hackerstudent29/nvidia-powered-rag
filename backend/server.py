@@ -8,6 +8,7 @@ import time
 import base64
 import hashlib
 import asyncio
+import random
 from datetime import datetime, timedelta, timezone
 import jwt
 from typing import List, Dict, Any, Optional, AsyncGenerator, Tuple
@@ -3110,6 +3111,7 @@ async def chat_sync_endpoint(req: ChatRequest):
             "suggestions": generate_follow_up_suggestions(user_query, cached["response"])
         })
 
+    asst_msg_id = f"msg_{int(time.time()*1000)}_a"
     query_class = classify_query(user_query)
     matched_entities = search_knowledge_entities(user_query) or search_knowledge_entities(rewrite_query(user_query))
     
@@ -3138,7 +3140,7 @@ async def chat_sync_endpoint(req: ChatRequest):
         semantic_cached = check_semantic_cache(query_vector)
         if semantic_cached:
             return {
-                "message_id": message_id,
+                "message_id": asst_msg_id,
                 "session_id": session_id,
                 "role": "assistant",
                 "content": semantic_cached["response"],
