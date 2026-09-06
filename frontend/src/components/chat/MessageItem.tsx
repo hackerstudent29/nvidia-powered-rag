@@ -640,26 +640,26 @@ const MessageItem = React.memo(function MessageItem({
               strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4.5 rounded-2xl border border-line/60 dark:border-line/40 bg-surface/60 dark:bg-surface/40 shadow-sm box-border backdrop-blur-sm transition-all duration-200">
-                  <table className="w-full min-w-max border-collapse text-left divide-y divide-line/40">{children}</table>
+                <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4 rounded-2xl bg-surface/50 dark:bg-surface/30 box-border backdrop-blur-sm transition-all duration-200 border-none">
+                  <table className="w-full min-w-max border-collapse text-left border-none">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#4ade80]/15 dark:via-[#4ade80]/8 dark:to-transparent border-b border-line/60 text-[#2E6B5E] dark:text-[#4ade80] font-heading">{children}</thead>
+                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#4ade80]/15 dark:via-[#4ade80]/8 dark:to-transparent text-[#2E6B5E] dark:text-[#4ade80] font-heading border-none">{children}</thead>
               ),
               tbody: ({ children }) => (
-                <tbody className="divide-y divide-line/30 text-ink font-medium">{children}</tbody>
+                <tbody className="text-ink font-medium border-none">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#34D399]/10 transition-colors duration-150">{children}</tr>
+                <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#34D399]/10 transition-colors duration-150 border-none">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-4 py-3 uppercase tracking-wider font-extrabold border-b border-line/40 whitespace-nowrap text-[#2E6B5E] dark:text-[#34D399]">
+                <th className="px-4 py-3 uppercase tracking-wider font-extrabold whitespace-nowrap text-[#2E6B5E] dark:text-[#34D399] border-none">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-4 py-3 text-ink border-b border-line/20 align-top leading-relaxed">
+                <td className="px-4 py-3 text-ink align-top leading-relaxed border-none">
                   {processHighlightedChildren(children)}
                 </td>
               ),
