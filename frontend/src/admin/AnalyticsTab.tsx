@@ -1,5 +1,6 @@
 import React from 'react';
 import { Zap, Trash2, Database, BarChart2 } from 'lucide-react';
+import { Tooltip } from '../components/Tooltip';
 
 interface AnalyticsTabProps {
   cacheEntries: any[];
@@ -18,44 +19,50 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
     <div className="space-y-6 animate-fade-in font-ui">
       {/* Cache Metrics Banner */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Real Cache Entries</div>
-            <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{cacheEntries.length} Entries</div>
-            <div className="text-xs text-[#10b981] font-semibold">Stored in query_cache table</div>
+        <Tooltip content="Total active semantic query cache entries stored in query_cache table">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Real Cache Entries</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{cacheEntries.length} Entries</div>
+              <div className="text-xs text-[#10b981] font-semibold">Stored in query_cache table</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
+              <Zap className="w-6 h-6" />
+            </div>
           </div>
-          <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
-            <Zap className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Total Cache Hits</div>
-            <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalHits.toLocaleString()} Hits</div>
-            <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>0.94 Cosine Threshold</div>
+        <Tooltip content="Total cache hit count across all cached prompt embeddings">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Total Cache Hits</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalHits.toLocaleString()} Hits</div>
+              <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>0.94 Cosine Threshold</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-white/[0.06] text-[#10b981]">
+              <Database className="w-6 h-6 text-[#10b981]" />
+            </div>
           </div>
-          <div className="p-3 rounded-2xl bg-white/[0.06] text-[#10b981]">
-            <Database className="w-6 h-6 text-[#10b981]" />
-          </div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Cache Latency</div>
-            <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>&lt; 15ms</div>
-            <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Fast vector matching</div>
+        <Tooltip content="Average vector search matching latency for cached responses">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Cache Latency</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>&lt; 15ms</div>
+              <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Fast vector matching</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
+              <BarChart2 className="w-6 h-6" />
+            </div>
           </div>
-          <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
-            <BarChart2 className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
       </div>
 
       {/* Semantic Cache Inspector Table */}
@@ -73,12 +80,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               Live cached query patterns from database table `query_cache`
             </p>
           </div>
-          <button 
-            onClick={onPurgeCache}
-            className="flex items-center gap-1.5 px-4 py-2 bg-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-xs font-semibold transition-all border border-rose-500/30"
-          >
-            <Trash2 className="w-4 h-4" /> Purge DB Cache
-          </button>
+          <Tooltip content="Permanently wipe all cached query pairs from database">
+            <button 
+              onClick={onPurgeCache}
+              className="flex items-center gap-1.5 px-4 py-2 bg-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-xs font-semibold transition-all border border-rose-500/30 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" /> Purge DB Cache
+            </button>
+          </Tooltip>
         </div>
 
         <div className="overflow-x-auto">

@@ -6,6 +6,7 @@ import {
   LogOut, LayoutDashboard, RefreshCw, Zap, Sun, Moon, ArrowLeft,
   Lock, AlertTriangle
 } from 'lucide-react';
+import { Tooltip } from '../components/Tooltip';
 import { OverviewTab } from './OverviewTab';
 import { ConversationsTab } from './ConversationsTab';
 import { KnowledgeTab } from './KnowledgeTab';
@@ -48,84 +49,57 @@ export const AdminDashboard: React.FC = () => {
   // Real Data States
   const [metrics, setMetrics] = useState<any>(null);
   const [sessions, setSessions] = useState<any[]>([]);
-  const [knowledgeGaps, setKnowledgeGaps] = useState<any[]>([]);
-  const [cacheEntries, setCacheEntries] = useState<any[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [sessionDetails, setSessionDetails] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
   const [dislikes, setDislikes] = useState<any[]>([]);
+  const [knowledgeGaps, setKnowledgeGaps] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Slide-out panel state for Trace Inspector
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [sessionDetails, setSessionDetails] = useState<any>(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("adminToken");
-    return {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {})
-    };
-  };
-
-  const fetchData = async () => {
+  const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const headers = getAuthHeaders();
+      const token = localStorage.getItem("adminToken");
+      const headers = { Authorization: `Bearer ${token}` };
 
-      const [metricsRes, sessionsRes, gapsRes, cacheRes, dislikesRes] = await Promise.all([
-        fetch('/api/admin/metrics', { headers, credentials: 'include' }),
-        fetch('/api/admin/sessions', { headers, credentials: 'include' }),
-        fetch('/api/admin/knowledge-gaps', { headers, credentials: 'include' }),
-        fetch('/api/admin/cache', { headers, credentials: 'include' }),
-        fetch('/api/admin/dislikes', { headers, credentials: 'include' })
+      const [mRes, sRes, dRes, kRes] = await Promise.all([
+        fetch("/api/admin/metrics", { headers }),
+        fetch("/api/admin/sessions", { headers }),
+        fetch("/api/admin/dislikes", { headers }),
+        fetch("/api/admin/knowledge-gaps", { headers })
       ]);
 
-      if (metricsRes.status === 401 || sessionsRes.status === 401) {
-        navigate('/admin/login');
-        return;
-      }
-
-      if (metricsRes.ok) setMetrics(await metricsRes.json());
-      if (sessionsRes.ok) setSessions(await sessionsRes.json());
-      if (gapsRes.ok) {
-        const data = await gapsRes.json();
-        setKnowledgeGaps(data.gaps || []);
-      }
-      if (cacheRes.ok) {
-        const data = await cacheRes.json();
-        setCacheEntries(data.cache || []);
-      }
-      if (dislikesRes.ok) {
-        const data = await dislikesRes.json();
-        setDislikes(data.dislikes || []);
-      }
-    } catch (err: any) {
-      console.error("API error", err);
-      setError("Failed to fetch real telemetry data from server");
+      if (mRes.ok) setMetrics(await mRes.json());
+      if (sRes.ok) setSessions(await sRes.json());
+      if (dRes.ok) setDislikes(await dRes.json());
+      if (kRes.ok) setKnowledgeGaps(await kRes.json());
+    } catch (err) {
+      console.error("Failed to fetch admin dashboard telemetry:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchSessionDetails = async (sessionId: string) => {
-    setSelectedSessionId(sessionId);
+  useEffect(() => {
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSelectSessionTrace = async (sessId: string) => {
+    setSelectedSessionId(sessId);
     setLoadingDetails(true);
     try {
-      const res = await fetch(`/api/admin/sessions/${sessionId}`, {
-        headers: getAuthHeaders(),
-        credentials: 'include'
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`/api/admin/sessions/${sessId}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.status === 401) {
-        navigate('/admin/login');
-        return;
-      }
       if (res.ok) {
         setSessionDetails(await res.json());
       }
-    } catch (err: any) {
-      console.error(err);
+    } catch (err) {
+      console.error("Failed to fetch session trace:", err);
     } finally {
       setLoadingDetails(false);
     }
@@ -134,27 +108,23 @@ export const AdminDashboard: React.FC = () => {
   const purgeCache = async () => {
     if (!window.confirm("Are you sure you want to purge the real database semantic cache?")) return;
     try {
+      const token = localStorage.getItem("adminToken");
       const res = await fetch('/api/admin/cache', { 
         method: 'DELETE',
-        headers: getAuthHeaders(),
-        credentials: 'include'
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         alert("Semantic cache purged from database.");
-        fetchData();
+        fetchDashboardData();
       }
     } catch (e) {
       alert("Failed to purge cache.");
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'conversations', label: 'Conversations', icon: MessageSquare },
+    { id: 'conversations', label: 'Chats', icon: MessageSquare },
     { id: 'knowledge', label: 'Knowledge', icon: BookOpen },
     { id: 'analytics', label: 'Analytics', icon: BarChart2 },
     { id: 'safety', label: 'Safety', icon: ShieldCheck },
@@ -166,13 +136,6 @@ export const AdminDashboard: React.FC = () => {
       isDark ? 'bg-[#0b0c0e] text-[#f4f3ee]' : 'bg-[#F7F6ED] text-[#1C1917]'
     }`}>
       
-      {/* Background ambient lighting */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className={`absolute -top-[30%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] blur-3xl opacity-60 rounded-full ${
-          isDark ? 'bg-gradient-to-b from-[#2E6B5E]/20 via-[#10b981]/5 to-transparent' : 'bg-gradient-to-b from-[#2E6B5E]/15 via-[#D0E7E1]/20 to-transparent'
-        }`} />
-      </div>
-
       {/* FLOATING TOP EXPANDABLE PILL NAVBAR */}
       <div className="fixed top-3 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none">
         <header className={`pointer-events-auto max-w-7xl mx-auto h-16 backdrop-blur-2xl border rounded-full shadow-2xl flex items-center justify-between px-3 sm:px-6 transition-all ${
@@ -181,14 +144,16 @@ export const AdminDashboard: React.FC = () => {
           
           {/* Logo & Title */}
           <div className="flex items-center gap-2.5">
-            <motion.div 
-              whileHover={{ rotate: 15, scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/')}
-              className="w-9 h-9 rounded-full bg-[#2E6B5E]/20 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-[#10b981]/40 cursor-pointer"
-            >
-              <Activity className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
-            </motion.div>
+            <Tooltip content="Return to Student AI Chat" position="bottom">
+              <motion.div 
+                whileHover={{ rotate: 15, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/')}
+                className="w-9 h-9 rounded-full bg-[#2E6B5E]/20 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-[#10b981]/40 cursor-pointer"
+              >
+                <Activity className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
+              </motion.div>
+            </Tooltip>
             <div className="flex items-center gap-2">
               <span className="font-heading font-bold text-sm sm:text-base tracking-tight text-[#1C1917] dark:text-[#f4f3ee]">
                 Lorin AI
@@ -211,99 +176,103 @@ export const AdminDashboard: React.FC = () => {
               const isActive = activeTab === item.id;
 
               return (
-                <motion.button
-                  key={item.id}
-                  whileTap={{ scale: 0.94 }}
-                  whileHover={{ scale: 1.03 }}
-                  onClick={() => setActiveTab(item.id as any)}
-                  type="button"
-                  className={`flex items-center gap-0 px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[38px] cursor-pointer overflow-hidden ${
-                    isActive
-                      ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md'
-                      : 'bg-transparent text-[#57534E] dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#1C1917] dark:hover:text-[#f4f3ee]'
-                  }`}
-                >
-                  <Icon
-                    size={17}
-                    strokeWidth={isActive ? 2.3 : 1.8}
-                    className="shrink-0 transition-transform duration-200"
-                  />
-
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      width: isActive ? "84px" : "0px",
-                      opacity: isActive ? 1 : 0,
-                      marginLeft: isActive ? "6px" : "0px",
-                    }}
-                    transition={{
-                      width: { type: "spring", stiffness: 350, damping: 30 },
-                      opacity: { duration: 0.18 },
-                      marginLeft: { duration: 0.18 },
-                    }}
-                    className="overflow-hidden flex items-center whitespace-nowrap"
+                <Tooltip key={item.id} content={item.label} position="bottom">
+                  <motion.button
+                    whileTap={{ scale: 0.94 }}
+                    whileHover={{ scale: 1.03 }}
+                    onClick={() => setActiveTab(item.id as any)}
+                    type="button"
+                    className={`flex items-center gap-0 px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[38px] cursor-pointer overflow-hidden ${
+                      isActive
+                        ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md'
+                        : 'bg-transparent text-[#57534E] dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#1C1917] dark:hover:text-[#f4f3ee]'
+                    }`}
                   >
-                    <span
-                      className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
-                        isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
-                      }`}
+                    <Icon
+                      size={17}
+                      strokeWidth={isActive ? 2.3 : 1.8}
+                      className="shrink-0 transition-transform duration-200"
+                    />
+
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        width: isActive ? "84px" : "0px",
+                        opacity: isActive ? 1 : 0,
+                        marginLeft: isActive ? "6px" : "0px",
+                      }}
+                      transition={{
+                        width: { type: "spring", stiffness: 350, damping: 30 },
+                        opacity: { duration: 0.18 },
+                        marginLeft: { duration: 0.18 },
+                      }}
+                      className="overflow-hidden flex items-center whitespace-nowrap"
                     >
-                      {item.label}
-                    </span>
-                  </motion.div>
-                </motion.button>
+                      <span
+                        className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                          isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </motion.div>
+                  </motion.button>
+                </Tooltip>
               );
             })}
           </motion.nav>
 
           {/* Controls, Theme Toggle & Back to App */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={toggleTheme}
-              title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
-              className={`p-2 rounded-full transition-all border flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
-                isDark 
-                  ? 'bg-white/[0.06] hover:bg-white/[0.1] text-amber-300 border-white/[0.08]' 
-                  : 'bg-[#F7F6ED] hover:bg-[#edece4] text-indigo-600 border-black/[0.08]'
-              }`}
-            >
-              {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-600" />}
-            </motion.button>
+            <Tooltip content={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"} position="bottom">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={toggleTheme}
+                className={`p-2 rounded-full transition-all border flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+                  isDark 
+                    ? 'bg-white/[0.06] hover:bg-white/[0.1] text-amber-300 border-white/[0.08]' 
+                    : 'bg-[#F7F6ED] hover:bg-[#edece4] text-indigo-600 border-black/[0.08]'
+                }`}
+              >
+                {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+              </motion.button>
+            </Tooltip>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/')}
-              title="Return to Student AI Chat"
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                isDark 
-                  ? 'bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f3ee] border-white/[0.08]' 
-                  : 'bg-[#F7F6ED] hover:bg-[#edece4] text-[#1C1917] border-black/[0.08]'
-              }`}
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Exit to Chat</span>
-            </motion.button>
+            <Tooltip content="Return to Student AI Chat" position="bottom">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  isDark 
+                    ? 'bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f3ee] border-white/[0.08]' 
+                    : 'bg-[#F7F6ED] hover:bg-[#edece4] text-[#1C1917] border-black/[0.08]'
+                }`}
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Exit to Chat</span>
+              </motion.button>
+            </Tooltip>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                localStorage.removeItem("adminToken");
-                document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                navigate('/admin/login');
-              }}
-              title="Sign Out"
-              className={`p-2 rounded-full transition-all border cursor-pointer ${
-                isDark 
-                  ? 'bg-white/[0.06] hover:bg-rose-500/20 hover:text-rose-300 text-[#b1ada1] border-white/[0.08]' 
-                  : 'bg-white hover:bg-rose-50 hover:text-rose-600 text-[#57534E] border-black/[0.08]'
-              }`}
-            >
-              <LogOut className="w-4 h-4" />
-            </motion.button>
+            <Tooltip content="Sign Out of Admin Portal" position="bottom">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  localStorage.removeItem("adminToken");
+                  document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                  navigate('/admin/login');
+                }}
+                className={`p-2 rounded-full transition-all border cursor-pointer ${
+                  isDark 
+                    ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20' 
+                    : 'bg-red-50 hover:bg-red-100 text-red-600 border-red-200'
+                }`}
+              >
+                <LogOut className="w-4 h-4" />
+              </motion.button>
+            </Tooltip>
           </div>
         </header>
       </div>
@@ -325,7 +294,7 @@ export const AdminDashboard: React.FC = () => {
                 <span>{error}</span>
               </div>
               <button 
-                onClick={fetchData}
+                onClick={fetchDashboardData}
                 className="px-3 py-1 rounded-xl bg-rose-500 text-white text-[11px] font-bold hover:bg-rose-600 transition-colors"
               >
                 Retry Fetch
@@ -360,14 +329,14 @@ export const AdminDashboard: React.FC = () => {
                   metrics={metrics} 
                   period={period} 
                   setPeriod={setPeriod} 
-                  onRefresh={fetchData}
+                  onRefresh={fetchDashboardData}
                   isDark={isDark}
                 />
               )}
               {activeTab === 'conversations' && (
                 <ConversationsTab 
                   sessions={sessions} 
-                  onSelectSession={fetchSessionDetails} 
+                  onSelectSession={handleSelectSessionTrace} 
                   isDark={isDark}
                 />
               )}
@@ -381,7 +350,7 @@ export const AdminDashboard: React.FC = () => {
               )}
               {activeTab === 'analytics' && (
                 <AnalyticsTab 
-                  cacheEntries={cacheEntries} 
+                  cacheEntries={metrics?.query_cache_entries || []} 
                   onPurgeCache={purgeCache}
                   isDark={isDark}
                 />

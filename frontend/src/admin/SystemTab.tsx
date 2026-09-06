@@ -1,5 +1,6 @@
 import React from 'react';
 import { Cpu, HardDrive, Activity, Server, Zap, CheckCircle2, Database } from 'lucide-react';
+import { Tooltip } from '../components/Tooltip';
 
 interface SystemTabProps {
   metrics?: any;
@@ -20,53 +21,61 @@ export const SystemTab: React.FC<SystemTabProps> = ({ metrics, isDark = true }) 
     <div className="space-y-6 animate-fade-in font-ui">
       {/* System Node Telemetry Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
-            <span>Average Query Latency</span>
-            <Activity className="w-4 h-4 text-[#10b981]" />
+        <Tooltip content="Average query response generation time across all turns">
+          <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
+              <span>Average Query Latency</span>
+              <Activity className="w-4 h-4 text-[#10b981]" />
+            </div>
+            <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{avgLatency} ms</div>
+            <div className="text-[11px] text-[#10b981] font-semibold">Measured across all assistant turns</div>
           </div>
-          <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{avgLatency} ms</div>
-          <div className="text-[11px] text-[#10b981] font-semibold">Measured across all assistant turns</div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
-            <span>Active Database Sessions</span>
-            <HardDrive className={`w-4 h-4 ${isDark ? 'text-[#10b981]' : 'text-[#2E6B5E]'}`} />
+        <Tooltip content="Total active chat session records logged in Neon PostgreSQL">
+          <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
+              <span>Active Database Sessions</span>
+              <HardDrive className={`w-4 h-4 ${isDark ? 'text-[#10b981]' : 'text-[#2E6B5E]'}`} />
+            </div>
+            <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalSessions.toLocaleString()}</div>
+            <div className={`text-[11px] ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Neon PostgreSQL session records</div>
           </div>
-          <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalSessions.toLocaleString()}</div>
-          <div className={`text-[11px] ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Neon PostgreSQL session records</div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
-            <span>Tokens Processed</span>
-            <Zap className="w-4 h-4 text-amber-500" />
+        <Tooltip content="Cumulative token volume processed across prompt & completion cycles">
+          <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
+              <span>Tokens Processed</span>
+              <Zap className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
+              {totalTokens > 1000000 ? (totalTokens / 1000000).toFixed(2) + 'M' : totalTokens.toLocaleString()}
+            </div>
+            <div className={`text-[11px] ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Prompt + completion tokens</div>
           </div>
-          <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
-            {totalTokens > 1000000 ? (totalTokens / 1000000).toFixed(2) + 'M' : totalTokens.toLocaleString()}
-          </div>
-          <div className={`text-[11px] ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Prompt + completion tokens</div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
-            <span>Vector Cache Hits</span>
-            <Server className={`w-4 h-4 ${isDark ? 'text-[#10b981]' : 'text-[#2E6B5E]'}`} />
+        <Tooltip content="Queries served directly from sub-15ms vector cache">
+          <div className={`p-5 rounded-3xl border space-y-2 transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div className={`flex justify-between items-center text-xs font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
+              <span>Vector Cache Hits</span>
+              <Server className={`w-4 h-4 ${isDark ? 'text-[#10b981]' : 'text-[#2E6B5E]'}`} />
+            </div>
+            <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{cachedQueries.toLocaleString()}</div>
+            <div className="text-[11px] text-[#10b981] font-semibold flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" /> High-speed cache hits
+            </div>
           </div>
-          <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{cachedQueries.toLocaleString()}</div>
-          <div className="text-[11px] text-[#10b981] font-semibold flex items-center gap-1">
-            <CheckCircle2 className="w-3.5 h-3.5" /> High-speed cache hits
-          </div>
-        </div>
+        </Tooltip>
       </div>
 
       {/* Latency Quantiles & Subsystem Status */}

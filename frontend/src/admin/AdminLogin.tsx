@@ -42,13 +42,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F7F6ED] dark:bg-[#0b0c0e] transition-colors duration-300 font-ui relative overflow-hidden">
       
-      {/* Premium ambient blur background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] bg-[#2E6B5E]/15 dark:bg-[#10b981]/15 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] bg-[#D0E7E1]/30 dark:bg-[#2E6B5E]/20 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-[120px] animate-pulse" style={{ animationDelay: "2s" }}></div>
-      </div>
-
-      <div className="relative w-full max-w-md p-8 sm:p-10 space-y-8 bg-white/90 dark:bg-[#14151a]/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-black/[0.08] dark:border-white/[0.06] z-10 mx-4">
+      <div className="relative w-full max-w-md p-8 sm:p-10 space-y-8 bg-white dark:bg-[#14151a] rounded-3xl shadow-xl border border-black/[0.08] dark:border-white/[0.06] z-10 mx-4">
         
         <div className="text-center">
           <div className="flex justify-center mb-6">

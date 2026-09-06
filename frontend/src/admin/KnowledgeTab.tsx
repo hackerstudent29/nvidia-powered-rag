@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, Database, AlertCircle, CheckCircle, Upload, Search, FileText } from 'lucide-react';
+import { Tooltip } from '../components/Tooltip';
 
 interface KnowledgeTabProps {
   knowledgeGaps: any[];
@@ -26,43 +27,51 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({ knowledgeGaps, disli
     <div className="space-y-6 animate-fade-in font-ui">
       {/* Knowledge Index Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className={`p-5 rounded-3xl border flex items-center gap-4 transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
-            <BookOpen className="w-6 h-6" />
-          </div>
-          <div>
-            <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{indexSources} Index Documents</div>
-            <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Verified Markdown & Handbooks (Dataset/)</div>
-          </div>
-        </div>
-
-        <div className={`p-5 rounded-3xl border flex items-center gap-4 transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div className="p-3 rounded-2xl bg-white/[0.06] text-[#10b981]">
-            <Database className="w-6 h-6 text-[#10b981]" />
-          </div>
-          <div>
-            <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalChunks.toLocaleString()} Chunks</div>
-            <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>{vectorModel}</div>
-          </div>
-        </div>
-
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-sm font-semibold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>Qdrant Vector Sync</div>
-            <div className="text-xs text-[#10b981] font-medium flex items-center gap-1 mt-1 font-mono font-bold">
-              <CheckCircle className="w-3.5 h-3.5" /> Synchronized (100%)
+        <Tooltip content="Total verified markdown handbooks and documents indexed into knowledge base">
+          <div className={`p-5 rounded-3xl border flex items-center gap-4 transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <div>
+              <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{indexSources} Index Documents</div>
+              <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>Verified Markdown & Handbooks (Dataset/)</div>
             </div>
           </div>
-          <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2E6B5E] text-white text-xs font-semibold hover:bg-[#10b981] transition-all shadow-md">
-            <Upload className="w-3.5 h-3.5" /> Re-index
-          </button>
-        </div>
+        </Tooltip>
+
+        <Tooltip content="Total vector chunks generated using NVIDIA Llama-Nemotron embeddings">
+          <div className={`p-5 rounded-3xl border flex items-center gap-4 transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div className="p-3 rounded-2xl bg-white/[0.06] text-[#10b981]">
+              <Database className="w-6 h-6 text-[#10b981]" />
+            </div>
+            <div>
+              <div className={`text-2xl font-heading font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalChunks.toLocaleString()} Chunks</div>
+              <div className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>{vectorModel}</div>
+            </div>
+          </div>
+        </Tooltip>
+
+        <Tooltip content="Sync status with Qdrant vector database collection">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-sm font-semibold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>Qdrant Vector Sync</div>
+              <div className="text-xs text-[#10b981] font-medium flex items-center gap-1 mt-1 font-mono font-bold">
+                <CheckCircle className="w-3.5 h-3.5" /> Synchronized (100%)
+              </div>
+            </div>
+            <Tooltip content="Trigger full re-indexing of Dataset folder into Qdrant">
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2E6B5E] text-white text-xs font-semibold hover:bg-[#10b981] transition-all shadow-md cursor-pointer">
+                <Upload className="w-3.5 h-3.5" /> Re-index
+              </button>
+            </Tooltip>
+          </div>
+        </Tooltip>
       </div>
 
       {/* Disliked Responses & AI Re-Evaluated Corrections */}

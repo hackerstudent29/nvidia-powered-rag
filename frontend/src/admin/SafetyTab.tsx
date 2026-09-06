@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, ShieldAlert, CheckCircle2, Play, Lock, Unlock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Tooltip } from '../components/Tooltip';
 
 interface SafetyTabProps {
   metrics?: any;
@@ -79,59 +80,67 @@ export const SafetyTab: React.FC<SafetyTabProps> = ({ metrics, isDark = true }) 
     <div className="space-y-6 animate-fade-in font-ui">
       {/* Safety Overview Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Rate Limit Enforcer</div>
-            <div className={`text-xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>5 / min • 20 / day</div>
-            <div className="text-xs text-[#10b981] font-semibold">Strict Client Window Control</div>
-          </div>
-          <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Banned & Blocked Users</div>
-            <div className={`text-2xl font-heading font-bold my-1 ${activeBannedCount > 0 ? 'text-rose-500' : isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
-              {activeBannedCount} Users
+        <Tooltip content="Rate limit window: 5 requests per minute, 20 requests per day per user/IP">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Rate Limit Enforcer</div>
+              <div className={`text-xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>5 / min • 20 / day</div>
+              <div className="text-xs text-[#10b981] font-semibold">Strict Client Window Control</div>
             </div>
-            <div className="text-xs text-rose-500 font-semibold">Graduated Banning (5m → Permanent)</div>
+            <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
           </div>
-          <div className="p-3 rounded-2xl bg-rose-500/20 text-rose-400">
-            <Lock className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Attacks Intercepted</div>
-            <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalAttackCount} Attempts</div>
-            <div className="text-xs text-[#10b981] font-semibold">Logged to security_attack_logs</div>
+        <Tooltip content="Currently banned user IDs & IPs subject to graduated escalation penalties">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Banned & Blocked Users</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${activeBannedCount > 0 ? 'text-rose-500' : isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
+                {activeBannedCount} Users
+              </div>
+              <div className="text-xs text-rose-500 font-semibold">Graduated Banning (5m → Permanent)</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-rose-500/20 text-rose-400">
+              <Lock className="w-6 h-6" />
+            </div>
           </div>
-          <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-        </div>
+        </Tooltip>
 
-        <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl ${
-          isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
-        }`}>
-          <div>
-            <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Institutional Guardrail</div>
-            <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>100% Active</div>
-            <div className="text-xs text-[#10b981] font-semibold">Zero-Bypass Code Boundary</div>
+        <Tooltip content="Total prompt injection and malicious attempt logs recorded in database">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Attacks Intercepted</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{totalAttackCount} Attempts</div>
+              <div className="text-xs text-[#10b981] font-semibold">Logged to security_attack_logs</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
           </div>
-          <div className="p-3 rounded-2xl bg-white/[0.06] text-[#10b981]">
-            <CheckCircle2 className="w-6 h-6" />
+        </Tooltip>
+
+        <Tooltip content="Institutional domain boundary security rules active across all queries">
+          <div className={`p-5 rounded-3xl border flex items-center justify-between transition-colors backdrop-blur-xl h-full ${
+            isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
+          }`}>
+            <div>
+              <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Institutional Guardrail</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>100% Active</div>
+              <div className="text-xs text-[#10b981] font-semibold">Zero-Bypass Code Boundary</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-white/[0.06] text-[#10b981]">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
           </div>
-        </div>
+        </Tooltip>
       </div>
 
       {/* BANNED & SUSPENDED USERS TABLE */}
