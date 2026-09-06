@@ -45,38 +45,38 @@ function ModelIcon({ model, className }: { model: string; className?: string }) 
   if (model.includes("Gemini")) {
     return (
       <svg className={cn("size-4 shrink-0", className)} viewBox="0 0 24 24" fill="none">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+        <path d="M12 2C12 7.5 7.5 12 2 12C7.5 12 12 16.5 12 22C12 16.5 16.5 12 22 12C16.5 12 12 7.5 12 2Z" fill="url(#gemini-spark)" />
+        <defs>
+          <linearGradient id="gemini-spark" x1="2" y1="2" x2="22" y2="22">
+            <stop offset="0%" stopColor="#1A73E8" />
+            <stop offset="35%" stopColor="#4285F4" />
+            <stop offset="70%" stopColor="#EA4335" />
+            <stop offset="100%" stopColor="#FBBC04" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+  if (model.includes("GLM") || model.includes("ZAI")) {
+    return (
+      <svg className={cn("size-4 shrink-0", className)} viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="5" fill="#1C1D21" />
+        <path d="M7 7h10l-6.5 8.5H17V17H7l6.5-8.5H7V7z" fill="#FFFFFF" />
       </svg>
     );
   }
   if (model.includes("Minimax")) {
     return (
       <svg className={cn("size-4 shrink-0", className)} viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="url(#minimax-grad)" />
+        <rect width="24" height="24" rx="5" fill="#6366F1" />
         <path d="M7 16V8l5 4 5-4v8" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        <defs>
-          <linearGradient id="minimax-grad" x1="0" y1="0" x2="24" y2="24">
-            <stop stopColor="#6366F1" />
-            <stop offset="1" stopColor="#8B5CF6" />
-          </linearGradient>
-        </defs>
       </svg>
     );
   }
-  if (model.includes("ZAI") || model.includes("GLM")) {
+  if (model.includes("GPT")) {
     return (
-      <svg className={cn("size-4 shrink-0", className)} viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="url(#zai-grad)" />
-        <path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z" fill="#FFFFFF" />
-        <defs>
-          <linearGradient id="zai-grad" x1="0" y1="0" x2="24" y2="24">
-            <stop stopColor="#10B981" />
-            <stop offset="1" stopColor="#059669" />
-          </linearGradient>
-        </defs>
+      <svg className={cn("size-4 shrink-0 text-emerald-500", className)} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.259 23a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7466-6.0729z" />
       </svg>
     );
   }
@@ -380,6 +380,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     window.addEventListener("keydown", handleGlobalTyping);
     return () => window.removeEventListener("keydown", handleGlobalTyping);
   }, [expand]);
+
+  // Global click-outside listener: close model & voice popovers immediately on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (internalContainerRef.current && !internalContainerRef.current.contains(e.target as Node)) {
+        setIsModelSelectOpen(false);
+        setIsVoiceMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   // Auto-expand if text typed or streaming
   useEffect(() => {
@@ -794,6 +810,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   }, [isModelSelectOpen]);
 
   const handleModelClick = () => {
+    setIsModelSelectOpen(false);
     setShowLockedToast(true);
     setTimeout(() => {
       setShowLockedToast(false);
