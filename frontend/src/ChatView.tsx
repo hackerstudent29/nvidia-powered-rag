@@ -153,7 +153,6 @@ export default function App() {
         onSelectModel={setSelectedModel}
         onNewChat={startNewChat}
         onOpenHistory={handleOpenHistory}
-        onOpenStats={handleOpenStats}
         isStreaming={isStreaming}
       />
 

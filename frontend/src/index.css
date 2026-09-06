@@ -10,15 +10,15 @@
    Plus Jakarta    →  Fallback only
    ══════════════════════════════════════════════════════════════ */
 
-/* Heading font — applied to all h1–h4 and hero titles */
+/* Heading font — cute & subtle sans-serif for headings */
 .font-heading {
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-optical-sizing: auto;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
 }
 
 /* UI / Body font — applied to everything else */
 .font-ui {
-  font-family: 'Satoshi', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 @layer base {
@@ -95,11 +95,11 @@
     --red:    #ef4444;
   }
 
-  /* ── Body: Satoshi for UI/body, Source Serif 4 injected per element ── */
+  /* ── Body: Plus Jakarta Sans & Inter for modern UI ── */
   body {
     background-color: var(--canvas);
     color: var(--ink);
-    font-family: 'Satoshi', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
@@ -116,10 +116,10 @@
     touch-action: manipulation;
   }
 
-  /* ── Headings use Source Serif 4 globally ── */
+  /* ── Headings use Plus Jakarta Sans globally ── */
   h1, h2, h3, h4 {
-    font-family: 'Source Serif 4', Georgia, serif;
-    font-optical-sizing: auto;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-weight: 700;
   }
 }
 
@@ -460,13 +460,12 @@ textarea, input {
 }
 .prose-clean li { margin-bottom: 0.25rem; }
 
-/* ── Headings: Source Serif 4 ── */
+/* ── Headings: Plus Jakarta Sans ── */
 .prose-clean h1,
 .prose-clean h2,
 .prose-clean h3,
 .prose-clean h4 {
-  font-family: 'Source Serif 4', Georgia, serif;
-  font-optical-sizing: auto;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   color: #0F172A;
   font-weight: 700;
   margin-top: 1.25rem;
@@ -476,21 +475,32 @@ textarea, input {
 
 .prose-clean table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 0.85rem 0;
   font-size: 13.5px;
-  font-family: 'Satoshi', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(208, 231, 225, 0.9);
 }
 .prose-clean th, .prose-clean td {
-  padding: 8px 12px;
-  border: 1px solid rgba(208, 231, 225, 0.9);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(208, 231, 225, 0.6);
+  border-right: 1px solid rgba(208, 231, 225, 0.6);
   text-align: left;
+}
+.prose-clean th:last-child, .prose-clean td:last-child {
+  border-right: none;
+}
+.prose-clean tr:last-child td {
+  border-bottom: none;
 }
 .prose-clean th {
   background-color: #E1EED7;
   color: #1E293B;
   font-weight: 700;
-  font-family: 'Source Serif 4', Georgia, serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   font-size: 12.5px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -518,7 +528,7 @@ textarea, input {
   border-radius: 0 6px 6px 0;
   padding-top: 4px;
   padding-bottom: 4px;
-  font-family: 'Source Serif 4', Georgia, serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 .prose-clean code {
   background: #ECEAE0;
@@ -559,35 +569,38 @@ textarea, input {
   font-weight: 700;
 }
 
-/* Dark headings: Source Serif 4 in warm white */
+/* Dark headings: Plus Jakarta Sans in warm white */
 .dark .prose-clean h1,
 .dark .prose-clean h2,
 .dark .prose-clean h3,
 .dark .prose-clean h4 {
   color: #f4f3ee;   /* --ink: warm white */
-  font-family: 'Source Serif 4', Georgia, serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
 /* Dark h2 border separator */
 .dark .prose-clean h2 {
-  border-bottom-color: rgba(244, 243, 238, 0.12);
+  border-bottom-color: rgba(244, 243, 238, 0.08);
 }
 
-/* Dark tables: warm dark surface */
+/* Dark tables: warm ultra clean dark surface with soft borders */
 .dark .prose-clean table {
-  border-color: rgba(244, 243, 238, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #14151a;
 }
 .dark .prose-clean th {
-  background: rgba(46, 107, 94, 0.30);
-  color: #E1EED7;   /* matcha — our green pastel */
-  border-color: rgba(244, 243, 238, 0.12);
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;   /* emerald green */
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  border-right-color: rgba(255, 255, 255, 0.04);
 }
 .dark .prose-clean td {
-  border-color: rgba(244, 243, 238, 0.08);
-  color: #b1ada1;   /* warm taupe */
+  border-bottom-color: rgba(255, 255, 255, 0.035);
+  border-right-color: rgba(255, 255, 255, 0.035);
+  color: #f4f3ee;   /* warm white */
 }
 .dark .prose-clean tr:nth-child(even) {
-  background: rgba(244, 243, 238, 0.03);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* Dark blockquote: warm lavender accent line */

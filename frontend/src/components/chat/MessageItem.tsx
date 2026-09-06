@@ -982,13 +982,13 @@ const MessageItem = React.memo(function MessageItem({
         {/* Contextual Follow-up Prompts */}
         {isLatestMessage && !message.is_streaming && message.suggestions && message.suggestions.length > 0 && (
           <div className="mt-5 sm:pl-7 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="text-[11.5px] font-medium text-ink-3/80 mb-2 pl-1">Follow-ups</div>
-            <div className="flex flex-col">
+            <div className="text-[11.5px] font-semibold text-ink-3 dark:text-zinc-400 mb-2 pl-1">Follow-ups</div>
+            <div className="flex flex-col gap-1.5">
               {message.suggestions.map((suggestion, i) => (
                 <button
                   key={i}
                   onClick={() => onSendPrompt?.(suggestion)}
-                  className="group flex items-center gap-3 w-full border-b border-line/40 py-2.5 px-1 text-left transition-all hover:bg-hover/50 active:bg-hover"
+                  className="group flex items-center gap-2.5 w-full py-2 px-3 rounded-xl text-left transition-all bg-surface/40 dark:bg-zinc-900/40 hover:bg-[#2E6B5E]/10 dark:hover:bg-emerald-500/10 border border-line/30 dark:border-white/[0.04] cursor-pointer"
                 >
                   <svg 
                     width="14" 
@@ -997,12 +997,12 @@ const MessageItem = React.memo(function MessageItem({
                     fill="none" 
                     stroke="currentColor" 
                     strokeWidth="2" 
-                    className="text-ink-3 shrink-0 group-hover:text-ink transition-colors"
+                    className="text-ink-3 dark:text-zinc-500 shrink-0 group-hover:text-accent dark:group-hover:text-[#34d399] transition-colors"
                   >
                     <path d="M9 10l-5 5 5 5" />
                     <path d="M4 15h12a4 4 0 0 0 4-4v-4" />
                   </svg>
-                  <span className="text-[12.5px] text-ink-2 group-hover:text-ink transition-colors">
+                  <span className="text-[12.5px] text-ink-2 dark:text-zinc-300 group-hover:text-ink dark:group-hover:text-white transition-colors">
                     {suggestion}
                   </span>
                 </button>

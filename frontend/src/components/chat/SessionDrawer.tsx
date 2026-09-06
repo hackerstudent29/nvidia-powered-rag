@@ -88,14 +88,14 @@ export default function SessionDrawer({
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between px-4 pb-3 border-b border-line">
+              <div className="flex items-center justify-between px-4 pb-3 border-b border-line dark:border-white/[0.06]">
                 <div className="flex items-center gap-2">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent dark:text-[#34d399]">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
-                  <h3 className="text-sm font-bold text-ink">Chat History</h3>
+                  <h3 className="text-sm font-bold text-ink dark:text-[#f4f3ee]">Chat History</h3>
                   {sessions.length > 0 && (
-                    <span className="rounded-full bg-inset px-2 py-0.5 text-[10px] font-semibold text-ink-3">
+                    <span className="rounded-full bg-inset dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold text-ink-3 dark:text-zinc-400">
                       {sessions.length}
                     </span>
                   )}
@@ -108,7 +108,7 @@ export default function SessionDrawer({
                       onClick={() => {
                         if (window.confirm("Archive all chat history?")) onClearAllSessions();
                       }}
-                      className="tap-target rounded-lg bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-500 hover:bg-red-500/20 transition-colors"
+                      className="tap-target rounded-lg bg-red-500/10 dark:bg-red-500/20 px-2.5 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-500/20 transition-colors"
                     >
                       Clear All
                     </button>
@@ -116,7 +116,7 @@ export default function SessionDrawer({
                   <button
                     type="button"
                     onClick={() => { onNewChat(); onClose(); }}
-                    className="tap-target rounded-lg bg-inset px-2.5 py-1 text-xs font-medium text-ink hover:bg-hover transition-colors flex items-center gap-1"
+                    className="tap-target rounded-lg bg-inset dark:bg-zinc-800 px-2.5 py-1 text-xs font-medium text-ink dark:text-zinc-200 hover:bg-hover transition-colors flex items-center gap-1"
                   >
                     <span>+</span> New
                   </button>
@@ -126,7 +126,7 @@ export default function SessionDrawer({
               {/* Session list */}
               <div className="flex-1 overflow-y-auto py-2 px-3 space-y-1.5">
                 {sessions.length === 0 ? (
-                  <div className="py-12 text-center text-xs text-ink-3">
+                  <div className="py-12 text-center text-xs text-ink-3 dark:text-zinc-400">
                     No previous chat sessions found.
                   </div>
                 ) : (
@@ -137,14 +137,14 @@ export default function SessionDrawer({
                         key={sess.id}
                         className={`group flex items-center justify-between rounded-xl px-3 min-h-[52px] transition-all text-xs cursor-pointer ${
                           isActive
-                            ? "bg-accent/10 border border-accent/30 text-accent font-semibold"
-                            : "hover:bg-inset text-ink border border-transparent"
+                            ? "bg-accent/10 border border-accent/30 text-accent dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-[#34d399] font-semibold"
+                            : "hover:bg-inset dark:hover:bg-zinc-800/60 text-ink dark:text-zinc-300 border border-transparent"
                         }`}
                         onClick={() => { onSelectSession(sess.id); onClose(); }}
                       >
                         <div className="flex-1 truncate mr-2">
                           <p className="truncate font-medium text-[13px]">{sess.title || "Campus Chat"}</p>
-                          <p className="text-[10px] text-ink-3 mt-0.5">
+                          <p className="text-[10px] text-ink-3 dark:text-zinc-400 mt-0.5">
                             {sess.updated_at ? new Date(sess.updated_at).toLocaleDateString() : "Recent"}
                           </p>
                         </div>
@@ -180,7 +180,7 @@ export default function SessionDrawer({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex justify-end bg-black/25 backdrop-blur-sm cursor-pointer"
+          className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm cursor-pointer"
         >
           <motion.div
             initial={{ x: "100%" }}
@@ -188,14 +188,14 @@ export default function SessionDrawer({
             exit={{ x: "100%" }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative h-full w-full max-w-sm bg-surface p-5 shadow-2xl border-l border-line flex flex-col cursor-default"
+            className="relative h-full w-full max-w-sm bg-surface dark:bg-[#14151a] p-5 shadow-2xl border-l border-line dark:border-white/[0.06] flex flex-col cursor-default"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-line">
+            <div className="flex items-center justify-between pb-4 border-b border-line dark:border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent dark:text-[#34d399]">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
-                <h3 className="text-sm font-bold text-ink">Chat History</h3>
+                <h3 className="text-sm font-bold text-ink dark:text-[#f4f3ee]">Chat History</h3>
               </div>
 
               <div className="flex items-center gap-1">
@@ -208,7 +208,7 @@ export default function SessionDrawer({
                           onClearAllSessions();
                         }
                       }}
-                      className="rounded-lg bg-red-500/10 px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-500/20 transition-colors flex items-center gap-1"
+                      className="rounded-lg bg-red-500/10 dark:bg-red-500/20 px-2 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-1"
                     >
                       Clear All
                     </button>
@@ -217,14 +217,14 @@ export default function SessionDrawer({
                 <button
                   type="button"
                   onClick={() => { onNewChat(); onClose(); }}
-                  className="rounded-lg bg-inset px-2.5 py-1 text-xs font-medium text-ink hover:bg-hover transition-colors flex items-center gap-1"
+                  className="rounded-lg bg-inset dark:bg-zinc-800/80 px-2.5 py-1 text-xs font-medium text-ink dark:text-zinc-200 hover:bg-hover dark:hover:bg-zinc-700 transition-colors flex items-center gap-1"
                 >
                   <span>+</span> New Chat
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-lg p-1 text-ink-3 hover:text-ink hover:bg-hover transition-colors"
+                  className="rounded-lg p-1 text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-white hover:bg-hover transition-colors"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -236,7 +236,7 @@ export default function SessionDrawer({
 
             <div className="flex-1 overflow-y-auto py-3 space-y-1.5">
               {sessions.length === 0 ? (
-                <div className="py-12 text-center text-xs text-ink-3">
+                <div className="py-12 text-center text-xs text-ink-3 dark:text-zinc-400">
                   No previous chat sessions found.
                 </div>
               ) : (
@@ -247,14 +247,14 @@ export default function SessionDrawer({
                       key={sess.id}
                       className={`group flex items-center justify-between rounded-xl px-3 py-2.5 transition-all text-xs cursor-pointer ${
                         isActive
-                          ? "bg-accent/10 border border-accent/30 text-accent font-semibold"
-                          : "hover:bg-inset text-ink border border-transparent"
+                          ? "bg-accent/10 border border-accent/30 text-accent dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-[#34d399] font-semibold"
+                          : "hover:bg-inset dark:hover:bg-zinc-800/60 text-ink dark:text-zinc-300 border border-transparent"
                       }`}
                       onClick={() => { onSelectSession(sess.id); onClose(); }}
                     >
                       <div className="flex-1 truncate mr-2">
                         <p className="truncate font-medium">{sess.title || "Campus Chat"}</p>
-                        <p className="text-[10px] text-ink-3 mt-0.5">
+                        <p className="text-[10px] text-ink-3 dark:text-zinc-400 mt-0.5">
                           {sess.updated_at ? new Date(sess.updated_at).toLocaleDateString() : "Recent"}
                         </p>
                       </div>
