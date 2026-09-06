@@ -641,7 +641,7 @@ const MessageItem = React.memo(function MessageItem({
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
                 <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4 rounded-2xl bg-surface/50 dark:bg-surface/30 box-border backdrop-blur-sm transition-all duration-200 border-none">
-                  <table className="w-full min-w-max border-collapse text-left border-none">{children}</table>
+                  <table className="w-full max-w-full border-collapse text-left border-none table-auto">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
@@ -654,12 +654,12 @@ const MessageItem = React.memo(function MessageItem({
                 <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#34D399]/10 transition-colors duration-150 border-none">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-4 py-3 uppercase tracking-wider font-extrabold whitespace-nowrap text-[#2E6B5E] dark:text-[#34D399] border-none">
+                <th className="px-3.5 py-2.5 uppercase tracking-wider font-extrabold text-[#2E6B5E] dark:text-[#34D399] border-none whitespace-normal break-words align-top">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-4 py-3 text-ink align-top leading-relaxed border-none">
+                <td className="px-3.5 py-2.5 text-ink align-top leading-relaxed border-none whitespace-normal break-words">
                   {processHighlightedChildren(children)}
                 </td>
               ),
