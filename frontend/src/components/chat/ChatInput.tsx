@@ -618,13 +618,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           )
         )}
 
-        {/* ── Spring Resizing Prompt Input Container ── */}
+        {/* ── Prompt Input Container (Maintains full lengthy width in idle state) ── */}
         <div
           ref={internalContainerRef}
           onBlur={handleBlur}
           className="relative flex flex-col w-full mx-auto"
           style={{
-            maxWidth: expanded ? 672 : 360,
+            maxWidth: 672,
             transition: isSmoothResize
               ? "max-width 0.15s ease-out"
               : "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
@@ -726,60 +726,87 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     }));
                   }}
                   className={cn(
-                    "absolute bottom-full left-0 mb-2.5 z-50 w-64 rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/95 dark:bg-[#1c1d24]/95 p-1.5 shadow-2xl backdrop-blur-md flex flex-col gap-1 transition-all duration-300 cursor-default",
+                    "absolute bottom-full left-0 mb-2.5 z-50 w-72 sm:w-80 rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/95 dark:bg-[#1c1d24]/95 p-2 shadow-2xl backdrop-blur-md flex flex-col gap-2 transition-all duration-300 cursor-default",
                     isModelSelectOpen
                       ? "opacity-100 scale-100 translate-y-0 pointer-events-auto ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                       : "opacity-0 scale-95 translate-y-3 pointer-events-none ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
                   )}
                 >
-                  <div className="px-2 py-1 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.06] mb-0.5">
+                  <div className="px-2.5 py-1.5 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-2">
                     <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-[#b1ada1]">
                       Model Auto-Router
                     </span>
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-[#10b981] text-[9px] font-mono font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#10b981] text-[9.5px] font-mono font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
                       AUTO ACTIVE
                     </span>
                   </div>
 
                   {showLockedToast && (
-                    <div className="px-2 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-[10.5px] font-medium leading-tight animate-in fade-in">
-                      Auto-routing selects between Minimax, Gemini, & ZAI based on your query type.
+                    <div className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-medium leading-tight animate-in fade-in flex items-center gap-1.5">
+                      <LockIcon />
+                      <span>Auto-routing automatically selects model based on query type.</span>
                     </div>
                   )}
 
-                  <div className="relative flex flex-col gap-0.5">
-                    <div style={hoverStyle} className="absolute left-0 right-0 top-0 h-9 -z-10 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] pointer-events-none" />
+                  <div className="relative flex flex-col gap-1.5">
+                    {/* Hover highlight background slider */}
+                    <div style={hoverStyle} className="absolute left-0 right-0 top-0 h-[48px] -z-10 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] pointer-events-none" />
                     
-                    {MODELS_LIST.map((mItem, idx) => (
-                      <button
-                        key={mItem.id}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onMouseEnter={() => {
-                          setHoverStyle((prev) => ({
-                            opacity: 1,
-                            transform: `translateY(${idx * 38}px) scale(1)`,
-                            transition: prev.opacity === 0 ? "opacity 0.15s ease-out" : "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease",
-                          }));
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleModelClick();
-                        }}
-                        className="group relative flex h-9 w-full items-center justify-between rounded-xl px-2.5 py-1 text-left text-xs font-medium text-ink dark:text-[#f4f3ee] outline-none cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2">
-                          <ModelIcon model={mItem.name} />
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-xs leading-tight">{mItem.name}</span>
-                            <span className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">{mItem.description}</span>
+                    {MODELS_LIST.map((mItem, idx) => {
+                      const isAuto = mItem.id === "auto";
+                      return (
+                        <button
+                          key={mItem.id}
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onMouseEnter={() => {
+                            setHoverStyle((prev) => ({
+                              opacity: 1,
+                              transform: `translateY(${idx * 54}px) scale(1)`,
+                              transition: prev.opacity === 0 ? "opacity 0.15s ease-out" : "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease",
+                            }));
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleModelClick();
+                          }}
+                          className={cn(
+                            "group relative flex h-[48px] w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xs font-medium transition-all duration-200 outline-none cursor-pointer border border-transparent",
+                            isAuto
+                              ? "text-ink dark:text-[#f4f3ee] opacity-100 font-semibold"
+                              : "text-ink-2/70 dark:text-[#b1ada1]/70 opacity-60 hover:opacity-90"
+                          )}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                            <ModelIcon model={mItem.name} className={cn(!isAuto && "grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all")} />
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-xs leading-tight truncate">{mItem.name}</span>
+                                {!isAuto && (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/[0.06] dark:bg-white/[0.08] text-ink-3 dark:text-zinc-400 font-normal">
+                                    Auto-routed
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">{mItem.description}</span>
+                            </div>
                           </div>
-                        </div>
-                        {mItem.id === "auto" && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                        )}
-                      </button>
-                    ))}
+
+                          {isAuto ? (
+                            <span className="flex size-4 items-center justify-center rounded-full bg-[#10b981]/20 text-[#10b981] shrink-0">
+                              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="2 6 5 9 10 3" />
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className="text-ink-3/40 dark:text-zinc-600 group-hover:text-amber-500 transition-colors shrink-0">
+                              <LockIcon />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -895,3 +922,4 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 };
 
 export default React.memo(ChatInput);
+
