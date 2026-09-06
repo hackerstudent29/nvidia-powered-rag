@@ -285,12 +285,17 @@ function buildTTSToDisplayMapping(displayWords: string[], ttsWords: string[]): n
 
 function autoLinkPhoneNumbers(content: string): string {
   if (!content) return "";
-  // Auto-convert raw phone numbers like +91 9789970304 into markdown tel links if not already linked
-  return content.replace(
-    /(?<!\[[^\]]*)(?<!href=["'])(?<!tel:)(\+91[\s\-]?[6-9]\d{9}|\b[6-9]\d{9}\b)/g,
+  let text = content;
+  // Match Indian landlines (+91 44 2747 4222, 044-27474222, 044 2747 4222), mobiles (+91 9789970304), toll free
+  return text.replace(
+    /(?<!\[[^\]]*)(?<!href=["'])(?<!tel:)(\+91[\s\-]?(?:\d{2,4})[\s\-]?\d{3,4}[\s\-]?\d{3,4}|\b0\d{2,4}[\s\-]?\d{6,8}\b|\b[6-9]\d{9}\b)/g,
     (match) => {
       const cleanNum = match.replace(/[^\d+]/g, "");
-      const formattedNum = cleanNum.startsWith("+") ? cleanNum : `+91${cleanNum}`;
+      const formattedNum = cleanNum.startsWith("+")
+        ? cleanNum
+        : cleanNum.startsWith("0")
+        ? `+91${cleanNum.slice(1)}`
+        : `+91${cleanNum}`;
       return `[${match}](tel:${formattedNum})`;
     }
   );
@@ -788,18 +793,99 @@ const MessageItem = React.memo(function MessageItem({
                 </td>
               ),
               a: ({ href, children }) => {
-                const isMailto = href?.startsWith("mailto:");
-                const isTel = href?.startsWith("tel:");
-                if (isMailto) {
+                const rawHref = (href || "").trim();
+                const childrenText = typeof children === "string" ? children : Array.isArray(children) ? children.join("") : "";
+                const copyValue = childrenText || rawHref;
+
+                const createLongPressCopy = (textToCopy: string, typeName: string) => {
+                  let timer: any = null;
+                  let isLongPress = false;
+
+                  return {
+                    onTouchStart: () => {
+                      isLongPress = false;
+                      timer = setTimeout(() => {
+                        isLongPress = true;
+                        if (textToCopy) {
+                          navigator.clipboard?.writeText(textToCopy);
+                          setToastMsg(`✓ Copied ${typeName} (${textToCopy}) to clipboard!`);
+                          setTimeout(() => setToastMsg(null), 2500);
+                        }
+                      }, 420);
+                    },
+                    onTouchEnd: () => {
+                      if (timer) clearTimeout(timer);
+                    },
+                    onMouseDown: () => {
+                      isLongPress = false;
+                      timer = setTimeout(() => {
+                        isLongPress = true;
+                        if (textToCopy) {
+                          navigator.clipboard?.writeText(textToCopy);
+                          setToastMsg(`✓ Copied ${typeName} (${textToCopy}) to clipboard!`);
+                          setTimeout(() => setToastMsg(null), 2500);
+                        }
+                      }, 420);
+                    },
+                    onMouseUp: () => {
+                      if (timer) clearTimeout(timer);
+                    },
+                    onContextMenu: (e: React.MouseEvent) => {
+                      if (textToCopy) {
+                        navigator.clipboard?.writeText(textToCopy);
+                        setToastMsg(`✓ Copied ${typeName} (${textToCopy}) to clipboard!`);
+                        setTimeout(() => setToastMsg(null), 2500);
+                      }
+                    },
+                    onClick: (e: React.MouseEvent) => {
+                      if (isLongPress) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        isLongPress = false;
+                      }
+                    }
+                  };
+                };
+
+                const isTelScheme = rawHref.startsWith("tel:");
+                const isRawPhone = /^\+?\d[\d\s\-]{6,15}$/.test(rawHref) || /^\+91/.test(rawHref);
+                const isPhoneLink = isTelScheme || isRawPhone;
+
+                const isMailtoScheme = rawHref.startsWith("mailto:");
+                const isEmail = isMailtoScheme || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(rawHref);
+
+                if (isPhoneLink) {
+                  const rawDigits = rawHref.replace(/^tel:/, "").replace(/[^\d+]/g, "");
+                  const cleanTel = `tel:${rawDigits.startsWith("+") ? rawDigits : `+91${rawDigits}`}`;
+                  const phoneText = copyValue.replace(/^tel:/, "");
+                  const handlers = createLongPressCopy(phoneText, "Phone Number");
+
                   return (
                     <a
-                      href={href}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (href) window.location.href = href;
-                      }}
-                      className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded-md"
-                      title="Send Email"
+                      href={cleanTel}
+                      {...handlers}
+                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-300 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-emerald-500/15 dark:bg-emerald-500/25 px-2 py-0.5 rounded-md select-text"
+                      title="Tap to call on default phone app | Long press to copy"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0 text-emerald-600 dark:text-emerald-400">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      {processHighlightedChildren(children)}
+                    </a>
+                  );
+                }
+
+                if (isEmail) {
+                  const cleanMail = `mailto:${rawHref.replace(/^mailto:/, "").trim()}`;
+                  const mailText = copyValue.replace(/^mailto:/, "");
+                  const handlers = createLongPressCopy(mailText, "Email Address");
+
+                  return (
+                    <a
+                      href={cleanMail}
+                      {...handlers}
+                      className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded-md select-text"
+                      title="Tap to open Email client | Long press to copy"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
                         <rect width="20" height="16" x="2" y="4" rx="2" />
@@ -809,27 +895,18 @@ const MessageItem = React.memo(function MessageItem({
                     </a>
                   );
                 }
-                if (isTel) {
-                  return (
-                    <a
-                      href={href}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (href) window.location.href = href;
-                      }}
-                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-300 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-emerald-500/15 dark:bg-emerald-500/25 px-2 py-0.5 rounded-md"
-                      title="Click to dial on default phone app"
-                    >
-                      📞 {processHighlightedChildren(children)}
-                    </a>
-                  );
-                }
+
+                const targetUrl = rawHref.startsWith("http") ? rawHref : `https://${rawHref}`;
+                const handlers = createLongPressCopy(targetUrl, "Link URL");
+
                 return (
                   <a
-                    href={href?.startsWith("http") ? href : `https://${href}`}
+                    href={targetUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-0.5"
+                    {...handlers}
+                    className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-0.5 select-text"
+                    title="Tap to open link | Long press to copy"
                   >
                     {processHighlightedChildren(children)}
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline ml-0.5">
@@ -1243,6 +1320,13 @@ const MessageItem = React.memo(function MessageItem({
           onSubmit={onSubmitFeedback}
           onRegenerateWithNeMo={onRegenerateWithNeMo ? () => onRegenerateWithNeMo(userQuery || message.content) : undefined}
         />
+      )}
+
+      {/* Toast Notification Banner */}
+      {toastMsg && (
+        <div className="fixed bottom-24 right-4 sm:right-8 z-50 rounded-xl bg-zinc-900/90 text-white dark:bg-white/95 dark:text-zinc-950 px-4 py-2.5 text-xs font-bold shadow-2xl backdrop-blur-md border border-white/10 dark:border-black/10 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          {toastMsg}
+        </div>
       )}
     </div>
   );
