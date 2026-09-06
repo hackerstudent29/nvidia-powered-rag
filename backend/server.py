@@ -3847,7 +3847,7 @@ async def generate_tts(body: TTSRequest):
         try:
             async with httpx.AsyncClient() as client:
                 dg_resp = await client.post(
-                    f"https://api.deepgram.com/v1/speak?model={voice}&speed={speed_param}",
+                    f"https://api.deepgram.com/v1/speak?model={voice}",
                     headers={
                         "Authorization": f"Token {dg_key}",
                         "Content-Type": "application/json"

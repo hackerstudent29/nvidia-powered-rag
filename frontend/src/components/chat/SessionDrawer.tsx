@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { Session } from "../../types/chat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "../Tooltip";
@@ -31,6 +31,14 @@ export default function SessionDrawer({
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const touchDeltaY = useRef<number>(0);
+
+  // Cache pre-formatted date strings for high-performance rendering
+  const formattedSessions = useMemo(() => {
+    return sessions.map((s) => ({
+      ...s,
+      dateStr: s.updated_at ? new Date(s.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recent"
+    }));
+  }, [sessions]);
 
   useEffect(() => {
     const el = sheetRef.current;
@@ -124,18 +132,18 @@ export default function SessionDrawer({
               </div>
 
               {/* Session list */}
-              <div className="flex-1 overflow-y-auto py-2 px-3 space-y-1.5">
-                {sessions.length === 0 ? (
+              <div className="flex-1 overflow-y-auto py-2 px-3 space-y-1.5 overscroll-contain">
+                {formattedSessions.length === 0 ? (
                   <div className="py-12 text-center text-xs text-ink-3 dark:text-zinc-400">
                     No previous chat sessions found.
                   </div>
                 ) : (
-                  sessions.map((sess) => {
+                  formattedSessions.map((sess) => {
                     const isActive = sess.id === activeSessionId;
                     return (
                       <div
                         key={sess.id}
-                        className={`group flex items-center justify-between rounded-xl px-3 min-h-[52px] transition-all text-xs cursor-pointer ${
+                        className={`group flex items-center justify-between rounded-xl px-3 min-h-[48px] transition-all text-xs cursor-pointer ${
                           isActive
                             ? "bg-accent/10 border border-accent/30 text-accent dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-[#34d399] font-semibold"
                             : "hover:bg-inset dark:hover:bg-zinc-800/60 text-ink dark:text-zinc-300 border border-transparent"
@@ -145,14 +153,14 @@ export default function SessionDrawer({
                         <div className="flex-1 truncate mr-2">
                           <p className="truncate font-medium text-[13px]">{sess.title || "Campus Chat"}</p>
                           <p className="text-[10px] text-ink-3 dark:text-zinc-400 mt-0.5">
-                            {sess.updated_at ? new Date(sess.updated_at).toLocaleDateString() : "Recent"}
+                            {sess.dateStr}
                           </p>
                         </div>
 
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onDeleteSession(sess.id); }}
-                          className="tap-target p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center justify-center shrink-0"
+                          className="size-7 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center justify-center shrink-0 cursor-pointer"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6" />
@@ -234,13 +242,13 @@ export default function SessionDrawer({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-3 space-y-1.5">
-              {sessions.length === 0 ? (
+            <div className="flex-1 overflow-y-auto py-3 space-y-1.5 overscroll-contain">
+              {formattedSessions.length === 0 ? (
                 <div className="py-12 text-center text-xs text-ink-3 dark:text-zinc-400">
                   No previous chat sessions found.
                 </div>
               ) : (
-                sessions.map((sess) => {
+                formattedSessions.map((sess) => {
                   const isActive = sess.id === activeSessionId;
                   return (
                     <div
@@ -255,7 +263,7 @@ export default function SessionDrawer({
                       <div className="flex-1 truncate mr-2">
                         <p className="truncate font-medium">{sess.title || "Campus Chat"}</p>
                         <p className="text-[10px] text-ink-3 dark:text-zinc-400 mt-0.5">
-                          {sess.updated_at ? new Date(sess.updated_at).toLocaleDateString() : "Recent"}
+                          {sess.dateStr}
                         </p>
                       </div>
 
@@ -263,7 +271,7 @@ export default function SessionDrawer({
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onDeleteSession(sess.id); }}
-                          className="p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center justify-center shrink-0 ml-1"
+                          className="p-1.5 rounded-lg text-red-500/70 hover:text-red-600 hover:bg-red-500/10 transition-all flex items-center justify-center shrink-0 ml-1 cursor-pointer"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6" />
