@@ -931,16 +931,19 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Expandable Sources Panel */}
         {sourcesOpen && sources.length > 0 && (
-          <div className="mt-2 flex flex-col gap-1 pl-1 sm:pl-8 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="mt-2.5 flex flex-col gap-1.5 p-3 rounded-2xl bg-surface/90 dark:bg-[#14151a]/90 border border-black/[0.08] dark:border-white/[0.08] shadow-md backdrop-blur-xl animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="text-[11px] font-bold text-ink dark:text-[#f4f3ee] mb-1 flex items-center gap-1.5">
+              <span>📚 Verified Grounding Context Sources</span>
+            </div>
             {sources.map((source, idx) => (
               <div
                 key={source.chunk_id || idx}
-                className="group flex items-center gap-2 w-fit max-w-full rounded-md px-2 py-1 -ml-2 text-[11.5px] font-medium text-ink-2 hover:bg-hover hover:text-ink transition-all cursor-default"
+                className="group flex items-center gap-2.5 w-full rounded-xl px-2 py-1.5 text-[11.5px] font-medium text-ink-2 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee] transition-all cursor-default"
               >
-                <span className="flex size-4 items-center justify-center rounded-full bg-accent/15 text-accent font-bold text-[9px] shrink-0 border border-accent/20">
+                <span className="flex size-4.5 items-center justify-center rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9.5px] shrink-0 border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
                   {idx + 1}
                 </span>
-                <span className="truncate flex-1">
+                <span className="truncate flex-1 font-mono text-[11px]">
                   {source.source_file ? source.source_file.replace(/\.php$/i, '.md') : (source.title || "").replace(/\.php$/i, '.md')}
                 </span>
               </div>
@@ -974,7 +977,7 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Expandable Usage/Stats Panel */}
         {statsOpen && message.token_metrics && (
-          <div className="mt-2 pl-1 sm:pl-8 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
             <TokenCostPanel metrics={message.token_metrics} />
           </div>
         )}
@@ -996,8 +999,8 @@ const MessageItem = React.memo(function MessageItem({
                     viewBox="0 0 24 24" 
                     fill="none" 
                     stroke="currentColor" 
-                    strokeWidth="2" 
-                    className="text-ink-3 dark:text-zinc-500 shrink-0 group-hover:text-accent dark:group-hover:text-[#34d399] transition-colors"
+                    strokeWidth="2.5" 
+                    className="text-[#2E6B5E] dark:text-[#10b981] font-bold shrink-0 transition-transform group-hover:scale-110"
                   >
                     <path d="M9 10l-5 5 5 5" />
                     <path d="M4 15h12a4 4 0 0 0 4-4v-4" />

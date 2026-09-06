@@ -19,10 +19,10 @@ export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'conversations' | 'knowledge' | 'analytics' | 'safety' | 'system'>('overview');
   const [period, setPeriod] = useState<string>('24h');
   
-  // Theme state (Dark vs Light mode toggle)
+  // Theme state (Dark vs Light mode toggle, defaults to Light theme for Admin)
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem("theme");
-    return saved === "light" ? false : true;
+    return saved === "dark" ? true : false;
   });
 
   const toggleTheme = () => {

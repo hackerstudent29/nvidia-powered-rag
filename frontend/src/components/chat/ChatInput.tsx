@@ -194,6 +194,11 @@ const ChatInput = function ChatInput({
     }
   };
 
+  const textRef = useRef(text);
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
+
   const recognitionRef = useRef<any>(null);
 
   const handleVoiceInput = () => {
@@ -233,17 +238,19 @@ const ChatInput = function ChatInput({
       recognition.onerror = (event: any) => {
         console.warn("Speech recognition error:", event.error);
         setIsListening(false);
+        if (event.error === "not-allowed") {
+          alert("Microphone permission denied. Please allow microphone access in your browser settings to use voice input.");
+        }
       };
 
       recognition.onresult = (event: any) => {
-        let finalTranscript = "";
+        let transcript = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          }
+          transcript += event.results[i][0].transcript;
         }
-        if (finalTranscript.trim()) {
-          const updated = text ? `${text.trim()} ${finalTranscript.trim()}` : finalTranscript.trim();
+        if (transcript.trim()) {
+          const currentText = textRef.current;
+          const updated = currentText ? `${currentText.trim()} ${transcript.trim()}` : transcript.trim();
           setText(updated);
           if (onInputChange) onInputChange(updated);
         }
@@ -260,8 +267,6 @@ const ChatInput = function ChatInput({
     <div
       className="sticky bottom-0 z-20 pb-2.5 pt-1 bg-gradient-to-t from-canvas via-canvas/95 to-transparent w-full"
       style={{
-        // Shift entire input up by the iOS keyboard height when open.
-        // --keyboard-offset is injected by ChatView via useMobileLayout.
         paddingBottom: `max(10px, calc(10px + var(--keyboard-offset, 0px)))`,
       }}
     >
@@ -316,12 +321,8 @@ const ChatInput = function ChatInput({
           )}
         </AnimatePresence>
 
-        {/* Quick Suggestion Chips
-             Desktop: CSS marquee animation for infinite scroll effect
-             Mobile:  Native overflow-x scroll — no animation jank on low-end devices */}
         {showChips && (
           isMobile ? (
-            // Native scroll on mobile — no marquee animation (causes layout thrash)
             <div className="w-full overflow-x-auto pb-1.5 animate-in fade-in duration-200"
               style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
               <div className="flex items-center gap-1.5 w-max pr-3">
@@ -357,7 +358,6 @@ const ChatInput = function ChatInput({
               </div>
             </div>
           ) : (
-            // Desktop: CSS marquee for infinite scroll feel
             <div className="relative w-full overflow-hidden pb-1.5 group animate-in fade-in duration-200">
               <div className="overflow-hidden w-full relative [mask-image:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%)]">
                 <div className="animate-marquee flex items-center gap-1.5">
@@ -406,25 +406,25 @@ const ChatInput = function ChatInput({
               onKeyDown={handleKeyDown}
               placeholder="Ask anything about MSAJCEA (fees, courses, cutoff, hostels, faculty, placements)..."
               rows={1}
-              className="w-full resize-none bg-transparent px-1 py-0.5 text-[13.5px] sm:text-[14px] text-ink placeholder:text-ink-3/65 focus:outline-none max-h-[35vh] overflow-y-auto font-medium leading-relaxed block"
+              className="w-full resize-none bg-transparent px-1 py-0.5 text-[13.5px] sm:text-[14px] text-ink dark:text-[#f4f3ee] placeholder:text-ink-3/65 dark:placeholder:text-zinc-500 focus:outline-none max-h-[35vh] overflow-y-auto font-medium leading-relaxed block"
             />
           </div>
 
           <div className="flex items-center justify-end pt-1 gap-1.5 shrink-0">
-            {/* Mic Speech-to-Text Button — tap-target ensures 44px min on mobile */}
-            <Tooltip content={isListening ? "Listening..." : "Voice Input"} position="top">
+            {/* Mic Speech-to-Text Button */}
+            <Tooltip content={isListening ? "Listening... (Click to stop)" : "Voice Input"} position="top">
               <motion.button
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
                 type="button"
                 onClick={handleVoiceInput}
-                className={`tap-target flex items-center justify-center size-9 sm:size-8 rounded-full transition-all duration-150 ${
+                className={`tap-target flex items-center justify-center size-9 rounded-full transition-all duration-200 cursor-pointer ${
                   isListening
-                    ? "bg-red text-white animate-bounce shadow-md"
-                    : "text-ink-3 hover:text-accent hover:bg-accent/10"
+                    ? "bg-red-500 text-white animate-pulse shadow-md shadow-red-500/40 ring-2 ring-red-400"
+                    : "text-ink-3 dark:text-[#b1ada1] hover:text-[#2E6B5E] dark:hover:text-[#10b981] hover:bg-black/[0.05] dark:hover:bg-white/[0.08]"
                 }`}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                   <line x1="12" y1="19" x2="12" y2="23" />
@@ -433,7 +433,7 @@ const ChatInput = function ChatInput({
               </motion.button>
             </Tooltip>
 
-            {/* Send or Stop Button — tap-target ensures 44px min on mobile */}
+            {/* Send or Stop Button */}
             {isStreaming ? (
               <Tooltip content="Stop generating" position="top">
                 <motion.button
@@ -441,9 +441,9 @@ const ChatInput = function ChatInput({
                   whileTap={{ scale: 0.92 }}
                   type="button"
                   onClick={onStopStreaming}
-                  className="tap-target flex items-center justify-center size-9 rounded-full bg-red text-white hover:opacity-90 shadow-md transition-all shrink-0 cursor-pointer"
+                  className="tap-target flex items-center justify-center size-9 rounded-full bg-red-500 text-white hover:bg-red-600 shadow-md shadow-red-500/30 transition-all shrink-0 cursor-pointer"
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="4" y="4" width="16" height="16" rx="2" />
                   </svg>
                 </motion.button>
@@ -455,9 +455,10 @@ const ChatInput = function ChatInput({
                   whileTap={{ scale: 0.92 }}
                   type="button"
                   onClick={() => handleSubmit()}
-                  className="tap-target flex items-center justify-center size-9 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] text-white dark:text-zinc-950 shadow-md hover:shadow-lg hover:scale-105 transition-all shrink-0 cursor-pointer"
+                  disabled={!text.trim() || !!rateLimitInfo?.isLimited}
+                  className="tap-target flex items-center justify-center size-9 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] text-white dark:text-zinc-950 shadow-md hover:shadow-lg transition-all shrink-0 cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="19" x2="12" y2="5" />
                     <polyline points="5 12 12 5 19 12" />
                   </svg>
