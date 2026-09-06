@@ -218,7 +218,8 @@ function prepareCleanTTSText(markdown: string): string {
 
   text = text.replace(/\b(\+?\d{2,4})[\s\-]?(\d{3,5})[\s\-]?(\d{3,5})\b/g, "$1, $2, $3");
 
-  text = text.replace(/\bMSAJCEA\b/gi, "M S A J C E");
+  text = text.replace(/\bMSAJCEA\b/gi, "M S A J C E A");
+  text = text.replace(/\bMSAJCE\b/gi, "M S A J C E");
   text = text.replace(/\bTNEA\b/gi, "T N E A");
   text = text.replace(/\bCGPA\b/gi, "C G P A");
   text = text.replace(/\bB\.Tech\b/gi, "B Tech");
@@ -381,22 +382,30 @@ const MessageItem = React.memo(function MessageItem({
       if (savedSpeed) {
         const newSpeed = parseFloat(savedSpeed);
         setTtsSpeed(newSpeed);
-        // Live update active playing audio speed immediately right there!
         if (audioRef.current && isPlayingAudio) {
           audioRef.current.playbackRate = newSpeed;
         }
       }
 
-      if (savedExpr !== null) {
-        setTtsExpressivity(parseInt(savedExpr, 10));
+      const newExpr = savedExpr !== null ? parseInt(savedExpr, 10) : 2;
+      const exprChanged = newExpr !== ttsExpressivity;
+      const voiceChanged = savedVoice !== activeVoiceRef.current;
+
+      if (exprChanged) {
+        setTtsExpressivity(newExpr);
       }
 
-      activeVoiceRef.current = savedVoice;
+      if (isPlayingAudio && (voiceChanged || exprChanged)) {
+        activeVoiceRef.current = savedVoice;
+        handleTTS(savedVoice);
+      } else {
+        activeVoiceRef.current = savedVoice;
+      }
     };
 
     window.addEventListener("lorin_voice_settings_changed", syncVoiceSettings);
     return () => window.removeEventListener("lorin_voice_settings_changed", syncVoiceSettings);
-  }, [isPlayingAudio]);
+  }, [isPlayingAudio, ttsSpeed, ttsExpressivity]);
 
   // Mobile & Desktop Auto-scroll active highlighted word into view smoothly
   useEffect(() => {
@@ -483,8 +492,8 @@ const MessageItem = React.memo(function MessageItem({
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const handleTTS = async () => {
-    if (isPlayingAudio) {
+  const handleTTS = async (overrideVoice?: string) => {
+    if (isPlayingAudio && !overrideVoice) {
       stopAudio();
       return;
     }
@@ -509,7 +518,7 @@ const MessageItem = React.memo(function MessageItem({
 
     try {
       // Use Python FastAPI HD Neural Voice TTS API (Bruce as default)
-      const rawVoice = localStorage.getItem("lorin_tts_voice") || "aura-bruce-en";
+      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "aura-bruce-en";
       const validVoices = [
         "aura-bruce-en", "aura-brook-en", "flux-alexis-en", "flux-astrid-en",
         "flux-orion-en", "flux-stella-en", "aura-orion-en", "aura-asteria-en",
@@ -545,12 +554,15 @@ const MessageItem = React.memo(function MessageItem({
       const totalTTSWords = ttsWords.length;
 
       const updateHighlightLoop = () => {
-        if (audioRef.current && !audioRef.current.paused && audioRef.current.duration > 0) {
-          const progress = Math.min(audioRef.current.currentTime / audioRef.current.duration, 0.999);
-          const currentTTSWordIdx = Math.floor(progress * totalTTSWords);
-          const activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
+        if (audioRef.current && !audioRef.current.paused) {
+          const duration = audioRef.current.duration;
+          if (duration && duration > 0 && totalTTSWords > 0) {
+            const progress = Math.min(audioRef.current.currentTime / duration, 0.999);
+            const currentTTSWordIdx = Math.floor(progress * totalTTSWords);
+            const activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
 
-          setActiveWordIdx(activeDisplayIdx);
+            setActiveWordIdx(activeDisplayIdx);
+          }
           animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
         }
       };
@@ -718,7 +730,7 @@ const MessageItem = React.memo(function MessageItem({
           return (
             <mark
               key={i}
-              className="bg-[#10B981]/40 dark:bg-[#34D399]/50 text-ink dark:text-white font-extrabold px-1 -mx-0.5 rounded transition-all duration-75 shadow-xs ring-2 ring-[#10b981]/70"
+              className="bg-emerald-500/20 dark:bg-emerald-400/25 text-[#2E6B5E] dark:text-[#34D399] font-bold px-1 py-0.5 rounded-md transition-colors duration-100 backdrop-blur-[1px] select-text"
             >
               {token}
             </mark>
@@ -1066,7 +1078,7 @@ const MessageItem = React.memo(function MessageItem({
                 <Tooltip content={isPlayingAudio ? "Stop HD Voice" : isLoadingAudio ? "Synthesizing HD Voice..." : "Read Aloud (HD Neural Voice)"} position="top">
                   <button
                     type="button"
-                    onClick={handleTTS}
+                    onClick={() => handleTTS()}
                     disabled={isLoadingAudio}
                     className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 hover:bg-hover-2 cursor-pointer ${
                       isPlayingAudio ? "text-accent bg-accent/15 animate-pulse" : isLoadingAudio ? "text-orange" : "text-ink-3 hover:text-ink-2"

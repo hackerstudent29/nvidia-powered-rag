@@ -4033,8 +4033,9 @@ def normalize_tts_text_for_speech(markdown_text: str) -> str:
 
     # 7. College Pronunciation Dictionary & Acronym Mapping
     PRONUNCIATION_DICT = [
-        (r'\bMSAJCEA\b|\bMSAJCE\b', 'Mohamed Sathak A J College of Engineering'),
-        (r'\bHOD\b|\bHODs\b', 'Head of the Department'),
+        (r'\bMSAJCEA\b', 'M S A J C E A'),
+        (r'\bMSAJCE\b', 'M S A J C E'),
+        (r'\bHOD\b|\bHODs\b', 'H O D'),
         (r'\bSIPCOT\b', 'Sip-cot'),
         (r'\bOMR\b', 'O M R'),
         (r'\bSiruseri\b', 'Siru-seri'),
