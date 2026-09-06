@@ -1,0 +1,3537 @@
+[
+  {
+    "route_id": "AR3",
+    "name": "Route AR 3 (Uthiramerur → MSAJCEA)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Sathish K",
+      "contact": "9789970304",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "uthiramerur",
+        "name": "Uthiramerur",
+        "lat": 12.585,
+        "lng": 79.757,
+        "confidence": "landmark",
+        "time": "6:00 AM"
+      },
+      {
+        "stop_id": "gh_hospital",
+        "name": "Government Hospital (Uthiramerur area)",
+        "lat": 12.63,
+        "lng": 79.81,
+        "confidence": "approx",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "paranur_tollgate",
+        "name": "Paranur Tollgate",
+        "lat": 12.73,
+        "lng": 79.95,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "mahindra_city",
+        "name": "Mahindra City",
+        "lat": 12.755,
+        "lng": 79.99,
+        "confidence": "landmark",
+        "time": "6:43 AM"
+      },
+      {
+        "stop_id": "sp_koil",
+        "name": "S.P. Koil",
+        "lat": 12.775,
+        "lng": 79.995,
+        "confidence": "approx",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "maraimalai_nagar",
+        "name": "Maraimalai Nagar",
+        "lat": 12.7833,
+        "lng": 80.0,
+        "confidence": "landmark",
+        "time": "6:48 AM"
+      },
+      {
+        "stop_id": "guduvanchery",
+        "name": "Guduvanchery",
+        "lat": 12.841,
+        "lng": 80.0653,
+        "confidence": "landmark",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "ooraapakkam",
+        "name": "Urapakkam",
+        "lat": 12.862,
+        "lng": 80.085,
+        "confidence": "landmark",
+        "time": "6:52 AM"
+      },
+      {
+        "stop_id": "vandalur_zoo",
+        "name": "Vandalur Zoo",
+        "lat": 12.8925,
+        "lng": 80.0817,
+        "confidence": "landmark",
+        "time": "6:55 AM"
+      },
+      {
+        "stop_id": "perungalathur",
+        "name": "Perungalathur",
+        "lat": 12.905,
+        "lng": 80.095,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "kandigai",
+        "name": "Kandigai",
+        "lat": 12.86,
+        "lng": 80.085,
+        "confidence": "approx",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "mambakkam",
+        "name": "Mambakkam",
+        "lat": 12.845,
+        "lng": 80.115,
+        "confidence": "approx",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "puthupakkam",
+        "name": "Puthupakkam",
+        "lat": 12.83,
+        "lng": 80.165,
+        "confidence": "approx",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "kelambakkam",
+        "name": "Kelambakkam",
+        "lat": 12.793,
+        "lng": 80.218,
+        "confidence": "landmark",
+        "time": "7:40 AM"
+      },
+      {
+        "stop_id": "sipcot_guduvanchery",
+        "name": "Sipcot (near Kelambakkam approach)",
+        "lat": 12.796,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "7:50 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "AR4",
+    "name": "Route AR 4 (Moolakadai → MSAJCEA via ECR)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. M. Suresh",
+      "contact": "9849265637",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "moolakadai",
+        "name": "Moolakadai",
+        "lat": 13.118,
+        "lng": 80.238,
+        "confidence": "approx",
+        "time": "6:10 AM"
+      },
+      {
+        "stop_id": "perambur_stn",
+        "name": "Perambur Railway Station",
+        "lat": 13.115,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "otteri_pattalam",
+        "name": "Otteri Pattalam",
+        "lat": 13.105,
+        "lng": 80.245,
+        "confidence": "approx",
+        "time": "6:18 AM"
+      },
+      {
+        "stop_id": "dowton",
+        "name": "Dowton",
+        "lat": 13.095,
+        "lng": 80.25,
+        "confidence": "approx",
+        "time": "6:23 AM"
+      },
+      {
+        "stop_id": "vepery_ps",
+        "name": "Vepery Police Station",
+        "lat": 13.085,
+        "lng": 80.255,
+        "confidence": "approx",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "periyamet",
+        "name": "Periyamet",
+        "lat": 13.09,
+        "lng": 80.275,
+        "confidence": "approx",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "central",
+        "name": "Central (Chennai Central)",
+        "lat": 13.0827,
+        "lng": 80.2757,
+        "confidence": "landmark",
+        "time": "6:35 AM"
+      },
+      {
+        "stop_id": "parrys_corner",
+        "name": "Parrys Corner",
+        "lat": 13.094,
+        "lng": 80.287,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "marina_beach",
+        "name": "Marina Beach",
+        "lat": 13.05,
+        "lng": 80.2824,
+        "confidence": "approx",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "santhome",
+        "name": "Santhome",
+        "lat": 13.0333,
+        "lng": 80.2794,
+        "confidence": "landmark",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "thiruvanmiyur",
+        "name": "Thiruvanmiyur",
+        "lat": 12.983,
+        "lng": 80.2594,
+        "confidence": "landmark",
+        "time": "7:05 AM"
+      },
+      {
+        "stop_id": "palavakkam",
+        "name": "Palavakkam",
+        "lat": 12.9613,
+        "lng": 80.2529,
+        "confidence": "landmark",
+        "time": "7:10 AM"
+      },
+      {
+        "stop_id": "neelankarai",
+        "name": "Neelankarai",
+        "lat": 12.9358,
+        "lng": 80.2496,
+        "confidence": "landmark",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "akkarai",
+        "name": "Akkarai Water Tank",
+        "lat": 12.9184,
+        "lng": 80.2429,
+        "confidence": "approx",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "ladies_hostel_msajcea",
+        "name": "Ladies Hostel (near MSAJCEA)",
+        "lat": 12.828,
+        "lng": 80.221,
+        "confidence": "approx",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "N3",
+    "name": "Route N/3 (formerly AR 5) (MMDA School → MSAJCEA via OMR)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Velu",
+      "contact": "9940050685",
+      "arrival": "8:00 AM",
+      "note": "If asked for AR 5 or N/3, this is the route."
+    },
+    "stops": [
+      {
+        "stop_id": "mmda_school",
+        "name": "MMDA (Arumbakkam)",
+        "lat": 13.0781,
+        "lng": 80.2103,
+        "confidence": "landmark",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "anna_nagar",
+        "name": "Anna Nagar",
+        "lat": 13.085,
+        "lng": 80.2101,
+        "confidence": "landmark",
+        "time": "6:20 AM"
+      },
+      {
+        "stop_id": "chinthamani",
+        "name": "Chinthamani",
+        "lat": 13.07,
+        "lng": 80.217,
+        "confidence": "approx",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "skywalk",
+        "name": "Skywalk",
+        "lat": 13.067,
+        "lng": 80.213,
+        "confidence": "approx",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "choolaimedu",
+        "name": "Choolaimedu",
+        "lat": 13.06,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "6:33 AM"
+      },
+      {
+        "stop_id": "loyola_college",
+        "name": "Loyola College",
+        "lat": 13.05,
+        "lng": 80.22,
+        "confidence": "landmark",
+        "time": "6:35 AM"
+      },
+      {
+        "stop_id": "t_nagar",
+        "name": "T. Nagar",
+        "lat": 13.0418,
+        "lng": 80.2341,
+        "confidence": "landmark",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "cit_nagar",
+        "name": "CIT Nagar",
+        "lat": 13.035,
+        "lng": 80.232,
+        "confidence": "approx",
+        "time": "6:43 AM"
+      },
+      {
+        "stop_id": "saidapet",
+        "name": "Saidapet",
+        "lat": 13.0212,
+        "lng": 80.2226,
+        "confidence": "landmark",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "velachery_checkpost",
+        "name": "Velachery Check Post",
+        "lat": 12.972,
+        "lng": 80.216,
+        "confidence": "approx",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "velachery_vijayanagar",
+        "name": "Velachery Vijayanagar",
+        "lat": 12.978,
+        "lng": 80.217,
+        "confidence": "approx",
+        "time": "6:53 AM"
+      },
+      {
+        "stop_id": "baby_nagar",
+        "name": "Baby Nagar",
+        "lat": 12.983,
+        "lng": 80.232,
+        "confidence": "approx",
+        "time": "6:55 AM"
+      },
+      {
+        "stop_id": "taramani",
+        "name": "Taramani (100 Feet Road)",
+        "lat": 12.9889,
+        "lng": 80.2444,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "ladies_hostel_msajcea",
+        "name": "Ladies Hostel (near MSAJCEA)",
+        "lat": 12.828,
+        "lng": 80.221,
+        "confidence": "approx",
+        "time": "7:35 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "AR6",
+    "name": "Route AR 6 (ICF → MSAJCEA)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. B. Padmanaban",
+      "contact": "7358527720",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "mmda_school",
+        "name": "MMDA (Arumbakkam)",
+        "lat": 13.0781,
+        "lng": 80.2103,
+        "confidence": "landmark",
+        "time": "6:10 AM"
+      },
+      {
+        "stop_id": "retteri",
+        "name": "Retteri",
+        "lat": 13.133,
+        "lng": 80.195,
+        "confidence": "landmark",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "anna_nagar",
+        "name": "Anna Nagar",
+        "lat": 13.085,
+        "lng": 80.2101,
+        "confidence": "landmark",
+        "time": "6:20 AM"
+      },
+      {
+        "stop_id": "egmore",
+        "name": "Egmore",
+        "lat": 13.0732,
+        "lng": 80.2609,
+        "confidence": "landmark",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "egmore",
+        "name": "Egmore",
+        "lat": 13.0732,
+        "lng": 80.2609,
+        "confidence": "landmark",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "pudupet",
+        "name": "Pudupet",
+        "lat": 13.063,
+        "lng": 80.25,
+        "confidence": "approx",
+        "time": "6:32 AM"
+      },
+      {
+        "stop_id": "rathnacap",
+        "name": "Rathnasamy Hospital / Rathnacap",
+        "lat": 13.06,
+        "lng": 80.265,
+        "confidence": "approx",
+        "time": "6:35 AM"
+      },
+      {
+        "stop_id": "triplicane",
+        "name": "Triplicane",
+        "lat": 13.057,
+        "lng": 80.279,
+        "confidence": "approx",
+        "time": "6:37 AM"
+      },
+      {
+        "stop_id": "ice_house",
+        "name": "Ice House",
+        "lat": 13.048,
+        "lng": 80.27,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "new_college",
+        "name": "New College",
+        "lat": 13.043,
+        "lng": 80.26,
+        "confidence": "approx",
+        "time": "6:48 AM"
+      },
+      {
+        "stop_id": "teynampet",
+        "name": "Teynampet",
+        "lat": 13.041,
+        "lng": 80.247,
+        "confidence": "landmark",
+        "time": "6:55 AM"
+      },
+      {
+        "stop_id": "kotturpuram",
+        "name": "Kotturpuram",
+        "lat": 13.023,
+        "lng": 80.244,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "madhya_kailash",
+        "name": "Madhya Kailash",
+        "lat": 12.999,
+        "lng": 80.253,
+        "confidence": "landmark",
+        "time": "7:10 AM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "ladies_hostel_msajcea",
+        "name": "Ladies Hostel (near MSAJCEA)",
+        "lat": 12.828,
+        "lng": 80.221,
+        "confidence": "approx",
+        "time": "7:35 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "AR7",
+    "name": "Route AR 7 (Chunambedu → MSAJCEA)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Suresh",
+      "contact": "9789895025",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "chunambedu",
+        "name": "Chunambedu",
+        "lat": 12.77,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "5:25 AM"
+      },
+      {
+        "stop_id": "kadapakam",
+        "name": "Kadapakkam",
+        "lat": 12.74,
+        "lng": 80.2,
+        "confidence": "approx",
+        "time": "5:45 AM"
+      },
+      {
+        "stop_id": "elliyanman_koil",
+        "name": "Elliyamman Koil",
+        "lat": 12.69,
+        "lng": 80.19,
+        "confidence": "approx",
+        "time": "6:00 AM"
+      },
+      {
+        "stop_id": "koovathur",
+        "name": "Koovathur",
+        "lat": 12.62,
+        "lng": 80.17,
+        "confidence": "approx",
+        "time": "6:17 AM"
+      },
+      {
+        "stop_id": "kathan_kadai",
+        "name": "Kathan Kadai",
+        "lat": 12.59,
+        "lng": 80.15,
+        "confidence": "approx",
+        "time": "6:22 AM"
+      },
+      {
+        "stop_id": "kalpakkam",
+        "name": "Kalpakkam",
+        "lat": 12.5583,
+        "lng": 80.1717,
+        "confidence": "landmark",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "cheyyur",
+        "name": "Cheyyur (Caturankappattinam area)",
+        "lat": 12.47,
+        "lng": 79.98,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "venkampakkam",
+        "name": "Venkambakkam",
+        "lat": 12.61,
+        "lng": 80.12,
+        "confidence": "approx",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "thirukazhukundram",
+        "name": "Thirukazhukundram",
+        "lat": 12.6167,
+        "lng": 80.0,
+        "confidence": "approx",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "punceri",
+        "name": "Punceri",
+        "lat": 12.69,
+        "lng": 80.06,
+        "confidence": "approx",
+        "time": "7:12 AM"
+      },
+      {
+        "stop_id": "paiyanur",
+        "name": "Paiyanur",
+        "lat": 12.705,
+        "lng": 80.13,
+        "confidence": "approx",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "alathur",
+        "name": "Alathur",
+        "lat": 12.71,
+        "lng": 80.12,
+        "confidence": "approx",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "kalavakkam",
+        "name": "Kalavakkam",
+        "lat": 12.79,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "7:36 AM"
+      },
+      {
+        "stop_id": "kelambakkam",
+        "name": "Kelambakkam",
+        "lat": 12.793,
+        "lng": 80.218,
+        "confidence": "landmark",
+        "time": "7:45 AM"
+      },
+      {
+        "stop_id": "padur",
+        "name": "Padur",
+        "lat": 12.818,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "7:50 AM"
+      },
+      {
+        "stop_id": "hindustan_college",
+        "name": "Hindustan College",
+        "lat": 12.805,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "7:53 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "AR8",
+    "name": "Route AR 8 (Manjambakkam → MSAJCEA)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Raju",
+      "contact": "9790750906",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "manjambakkam",
+        "name": "Manjambakkam",
+        "lat": 13.145,
+        "lng": 80.19,
+        "confidence": "approx",
+        "time": "5:50 AM"
+      },
+      {
+        "stop_id": "retteri",
+        "name": "Retteri",
+        "lat": 13.133,
+        "lng": 80.195,
+        "confidence": "landmark",
+        "time": "5:55 AM"
+      },
+      {
+        "stop_id": "senthil_nagar",
+        "name": "Senthil Nagar",
+        "lat": 13.12,
+        "lng": 80.19,
+        "confidence": "approx",
+        "time": "6:00 AM"
+      },
+      {
+        "stop_id": "padi",
+        "name": "Padi",
+        "lat": 13.115,
+        "lng": 80.195,
+        "confidence": "landmark",
+        "time": "6:05 AM"
+      },
+      {
+        "stop_id": "anna_nagar",
+        "name": "Anna Nagar",
+        "lat": 13.085,
+        "lng": 80.2101,
+        "confidence": "landmark",
+        "time": "6:10 AM"
+      },
+      {
+        "stop_id": "thirumangalam",
+        "name": "Thirumangalam",
+        "lat": 13.072,
+        "lng": 80.202,
+        "confidence": "landmark",
+        "time": "6:12 AM"
+      },
+      {
+        "stop_id": "vijaykanth_mandapam",
+        "name": "Vijaykanth Mandapam",
+        "lat": 13.08,
+        "lng": 80.195,
+        "confidence": "approx",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "chinmaya_nagar",
+        "name": "Chinmaya Nagar",
+        "lat": 13.07,
+        "lng": 80.19,
+        "confidence": "approx",
+        "time": "6:20 AM"
+      },
+      {
+        "stop_id": "avichi_school",
+        "name": "Avichi School",
+        "lat": 13.065,
+        "lng": 80.187,
+        "confidence": "approx",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "nesapakkam",
+        "name": "Nesapakkam",
+        "lat": 13.048,
+        "lng": 80.19,
+        "confidence": "approx",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "kk_nagar",
+        "name": "K.K. Nagar",
+        "lat": 13.041,
+        "lng": 80.201,
+        "confidence": "landmark",
+        "time": "6:35 AM"
+      },
+      {
+        "stop_id": "ashok_pillar",
+        "name": "Ashok Pillar (Ashok Nagar)",
+        "lat": 13.035,
+        "lng": 80.21,
+        "confidence": "landmark",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "aadampakkam",
+        "name": "Adambakkam",
+        "lat": 12.988,
+        "lng": 80.2,
+        "confidence": "approx",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "kiveli",
+        "name": "Kaiveli / K.Veli",
+        "lat": 12.97,
+        "lng": 80.198,
+        "confidence": "approx",
+        "time": "6:55 AM"
+      },
+      {
+        "stop_id": "pallikaranai",
+        "name": "Pallikaranai",
+        "lat": 12.937,
+        "lng": 80.214,
+        "confidence": "landmark",
+        "time": "7:10 AM"
+      },
+      {
+        "stop_id": "medavakkam",
+        "name": "Medavakkam",
+        "lat": 12.9184,
+        "lng": 80.1988,
+        "confidence": "landmark",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "perumbakkam",
+        "name": "Perumbakkam",
+        "lat": 12.897,
+        "lng": 80.218,
+        "confidence": "landmark",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "ladies_hostel_msajcea",
+        "name": "Ladies Hostel (near MSAJCEA)",
+        "lat": 12.828,
+        "lng": 80.221,
+        "confidence": "approx",
+        "time": "7:35 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "AR9",
+    "name": "Route AR 9 (Ennore → MSAJCEA via ECR)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Kanagaraj",
+      "contact": "9710209097",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "ennore",
+        "name": "Ennore",
+        "lat": 13.2146,
+        "lng": 80.3227,
+        "confidence": "landmark",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "mint",
+        "name": "Mint",
+        "lat": 13.098,
+        "lng": 80.283,
+        "confidence": "approx",
+        "time": "6:20 AM"
+      },
+      {
+        "stop_id": "broadway",
+        "name": "Broadway",
+        "lat": 13.0937,
+        "lng": 80.2827,
+        "confidence": "landmark",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "central",
+        "name": "Central (Chennai Central)",
+        "lat": 13.0827,
+        "lng": 80.2757,
+        "confidence": "landmark",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "omandurar_hosp",
+        "name": "Omandurar (Government) Hospital",
+        "lat": 13.076,
+        "lng": 80.27,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "royapettah",
+        "name": "Royapettah",
+        "lat": 13.055,
+        "lng": 80.265,
+        "confidence": "approx",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "mylapore",
+        "name": "Mylapore",
+        "lat": 13.0339,
+        "lng": 80.2619,
+        "confidence": "landmark",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "mandaveli",
+        "name": "Mandaveli",
+        "lat": 13.027,
+        "lng": 80.266,
+        "confidence": "approx",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "7:10 AM"
+      },
+      {
+        "stop_id": "thiruvanmiyur",
+        "name": "Thiruvanmiyur",
+        "lat": 12.983,
+        "lng": 80.2594,
+        "confidence": "landmark",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "palavakkam",
+        "name": "Palavakkam",
+        "lat": 12.9613,
+        "lng": 80.2529,
+        "confidence": "landmark",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "neelankarai",
+        "name": "Neelankarai",
+        "lat": 12.9358,
+        "lng": 80.2496,
+        "confidence": "landmark",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "akkarai",
+        "name": "Akkarai Water Tank",
+        "lat": 12.9184,
+        "lng": 80.2429,
+        "confidence": "approx",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:35 AM"
+      },
+      {
+        "stop_id": "ladies_hostel_msajcea",
+        "name": "Ladies Hostel (near MSAJCEA)",
+        "lat": 12.828,
+        "lng": 80.221,
+        "confidence": "approx",
+        "time": "7:40 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "AR10",
+    "name": "Route AR 10 / R21 (Porur → MSAJCEA via GST Road)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Ravindran",
+      "contact": "9710939995",
+      "arrival": "8:00 AM",
+      "note": "Also called R21."
+    },
+    "stops": [
+      {
+        "stop_id": "porur",
+        "name": "Porur",
+        "lat": 13.0359,
+        "lng": 80.1567,
+        "confidence": "landmark",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "boy_kadai",
+        "name": "Boy Kadai (Kundrathur road)",
+        "lat": 13.01,
+        "lng": 80.12,
+        "confidence": "approx",
+        "time": "6:33 AM"
+      },
+      {
+        "stop_id": "kovoor",
+        "name": "Kovoor",
+        "lat": 13.0,
+        "lng": 80.13,
+        "confidence": "approx",
+        "time": "6:35 AM"
+      },
+      {
+        "stop_id": "kundrathur",
+        "name": "Kundrathur",
+        "lat": 12.99,
+        "lng": 80.105,
+        "confidence": "landmark",
+        "time": "6:38 AM"
+      },
+      {
+        "stop_id": "anagaputhur",
+        "name": "Anakaputhur",
+        "lat": 12.975,
+        "lng": 80.125,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "pammal",
+        "name": "Pammal",
+        "lat": 12.965,
+        "lng": 80.13,
+        "confidence": "landmark",
+        "time": "6:43 AM"
+      },
+      {
+        "stop_id": "pallavaram",
+        "name": "Pallavaram",
+        "lat": 12.9675,
+        "lng": 80.1491,
+        "confidence": "landmark",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "meenambakkam",
+        "name": "Meenambakkam",
+        "lat": 12.99,
+        "lng": 80.17,
+        "confidence": "landmark",
+        "time": "6:48 AM"
+      },
+      {
+        "stop_id": "pallavaram",
+        "name": "Pallavaram",
+        "lat": 12.9675,
+        "lng": 80.1491,
+        "confidence": "landmark",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "chrompet",
+        "name": "Chrompet",
+        "lat": 12.9516,
+        "lng": 80.1462,
+        "confidence": "landmark",
+        "time": "6:55 AM"
+      },
+      {
+        "stop_id": "tambaram",
+        "name": "Tambaram (West & East)",
+        "lat": 12.9249,
+        "lng": 80.1,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "camp_road",
+        "name": "Camp Road, Tambaram",
+        "lat": 12.92,
+        "lng": 80.105,
+        "confidence": "approx",
+        "time": "7:05 AM"
+      },
+      {
+        "stop_id": "saliyur",
+        "name": "Selaiyur",
+        "lat": 12.91,
+        "lng": 80.13,
+        "confidence": "approx",
+        "time": "7:10 AM"
+      },
+      {
+        "stop_id": "medavakkam",
+        "name": "Medavakkam",
+        "lat": 12.9184,
+        "lng": 80.1988,
+        "confidence": "landmark",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "ladies_hostel_msajcea",
+        "name": "Ladies Hostel (near MSAJCEA)",
+        "lat": 12.828,
+        "lng": 80.221,
+        "confidence": "approx",
+        "time": "7:35 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "R22",
+    "name": "Route R 22 (Nemilichery → MSAJCEA via GST Road)",
+    "category": "college",
+    "meta": {
+      "driver": "Mr. Jaffar",
+      "contact": "9566037890",
+      "arrival": "8:00 AM"
+    },
+    "stops": [
+      {
+        "stop_id": "poonamallee",
+        "name": "Poonamallee",
+        "lat": 13.0475,
+        "lng": 80.0947,
+        "confidence": "landmark",
+        "time": "5:50 AM"
+      },
+      {
+        "stop_id": "poonamallee",
+        "name": "Poonamallee",
+        "lat": 13.0475,
+        "lng": 80.0947,
+        "confidence": "landmark",
+        "time": "6:05 AM"
+      },
+      {
+        "stop_id": "kumanan_chavadi",
+        "name": "Kumananchavadi",
+        "lat": 13.043,
+        "lng": 80.11,
+        "confidence": "approx",
+        "time": "6:00 AM"
+      },
+      {
+        "stop_id": "kattupakkam",
+        "name": "Kattupakkam",
+        "lat": 13.035,
+        "lng": 80.125,
+        "confidence": "approx",
+        "time": "6:05 AM"
+      },
+      {
+        "stop_id": "ramachandra_hosp",
+        "name": "Sri Ramachandra Hospital",
+        "lat": 13.035,
+        "lng": 80.145,
+        "confidence": "landmark",
+        "time": "6:10 AM"
+      },
+      {
+        "stop_id": "porur",
+        "name": "Porur",
+        "lat": 13.0359,
+        "lng": 80.1567,
+        "confidence": "landmark",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "valasaravakkam",
+        "name": "Valasaravakkam",
+        "lat": 13.04,
+        "lng": 80.175,
+        "confidence": "landmark",
+        "time": "6:20 AM"
+      },
+      {
+        "stop_id": "ramapuram",
+        "name": "Ramapuram",
+        "lat": 13.028,
+        "lng": 80.18,
+        "confidence": "landmark",
+        "time": "6:25 AM"
+      },
+      {
+        "stop_id": "nanthampakkam",
+        "name": "Nanthambakkam",
+        "lat": 13.02,
+        "lng": 80.19,
+        "confidence": "approx",
+        "time": "6:30 AM"
+      },
+      {
+        "stop_id": "kathipara",
+        "name": "Kathipara Junction / Guindy",
+        "lat": 13.01,
+        "lng": 80.215,
+        "confidence": "landmark",
+        "time": "6:35 AM"
+      },
+      {
+        "stop_id": "thillai_ganga",
+        "name": "Thillai Ganga Nagar Subway",
+        "lat": 13.0,
+        "lng": 80.2,
+        "confidence": "approx",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "velachery_bypass",
+        "name": "Velachery Bypass Road",
+        "lat": 12.985,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "kiveli",
+        "name": "Kaiveli / K.Veli",
+        "lat": 12.97,
+        "lng": 80.198,
+        "confidence": "approx",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "madipakkam",
+        "name": "Madipakkam",
+        "lat": 12.96,
+        "lng": 80.198,
+        "confidence": "landmark",
+        "time": "7:05 AM"
+      },
+      {
+        "stop_id": "kilkattalai",
+        "name": "Kilkattalai",
+        "lat": 12.945,
+        "lng": 80.195,
+        "confidence": "landmark",
+        "time": "7:10 AM"
+      },
+      {
+        "stop_id": "kovilampakkam",
+        "name": "Kovilambakkam",
+        "lat": 12.93,
+        "lng": 80.198,
+        "confidence": "approx",
+        "time": "7:15 AM"
+      },
+      {
+        "stop_id": "medavakkam",
+        "name": "Medavakkam",
+        "lat": 12.9184,
+        "lng": 80.1988,
+        "confidence": "landmark",
+        "time": "7:20 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:25 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "8:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "570S_onward",
+    "name": "MTC 570S: CMBT → Siruseri IT Park",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "direction": "onward",
+      "frequency": "~29-30 min, 32 trips/day"
+    },
+    "stops": [
+      {
+        "stop_id": "cmbt",
+        "name": "CMBT (Koyambedu)",
+        "lat": 13.0694,
+        "lng": 80.1948,
+        "confidence": "landmark",
+        "time": "5:00 AM"
+      },
+      {
+        "stop_id": "mmda_school",
+        "name": "MMDA (Arumbakkam)",
+        "lat": 13.0781,
+        "lng": 80.2103,
+        "confidence": "landmark",
+        "time": "5:03 AM"
+      },
+      {
+        "stop_id": "thirunagar",
+        "name": "Thirunagar",
+        "lat": 13.07,
+        "lng": 80.205,
+        "confidence": "approx",
+        "time": "5:05 AM"
+      },
+      {
+        "stop_id": "vadapalani",
+        "name": "Vadapalani",
+        "lat": 13.0503,
+        "lng": 80.2121,
+        "confidence": "landmark",
+        "time": "5:10 AM"
+      },
+      {
+        "stop_id": "kasi_theatre",
+        "name": "Kasi Theatre",
+        "lat": 13.047,
+        "lng": 80.215,
+        "confidence": "approx",
+        "time": "5:17 AM"
+      },
+      {
+        "stop_id": "kalaimagal_nagar",
+        "name": "Kalaimagal Nagar (Jaya TV)",
+        "lat": 13.035,
+        "lng": 80.215,
+        "confidence": "approx",
+        "time": "5:19 AM"
+      },
+      {
+        "stop_id": "ekkattuthangal",
+        "name": "Ekkattuthangal",
+        "lat": 13.0175,
+        "lng": 80.201,
+        "confidence": "landmark",
+        "time": "5:21 AM"
+      },
+      {
+        "stop_id": "cipet_technopark",
+        "name": "CIPET / Techno Park",
+        "lat": 13.01,
+        "lng": 80.205,
+        "confidence": "approx",
+        "time": "5:23 AM"
+      },
+      {
+        "stop_id": "saidapet",
+        "name": "Saidapet",
+        "lat": 13.0212,
+        "lng": 80.2226,
+        "confidence": "landmark",
+        "time": "5:31 AM"
+      },
+      {
+        "stop_id": "chinna_malai",
+        "name": "Chinna Malai",
+        "lat": 13.015,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "5:32 AM"
+      },
+      {
+        "stop_id": "raj_bhawan",
+        "name": "Raj Bhawan",
+        "lat": 13.013,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "5:33 AM"
+      },
+      {
+        "stop_id": "kannagipuram",
+        "name": "Kannagipuram / SAF Aquatic Complex / Guindy Race Course",
+        "lat": 12.995,
+        "lng": 80.22,
+        "confidence": "approx",
+        "time": "5:36 AM"
+      },
+      {
+        "stop_id": "velachery",
+        "name": "Velachery",
+        "lat": 12.9756,
+        "lng": 80.2207,
+        "confidence": "landmark",
+        "time": "5:39 AM"
+      },
+      {
+        "stop_id": "velachery",
+        "name": "Velachery",
+        "lat": 12.9756,
+        "lng": 80.2207,
+        "confidence": "landmark",
+        "time": "5:48 AM"
+      },
+      {
+        "stop_id": "tansi_nagar",
+        "name": "Tansi Nagar",
+        "lat": 12.982,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "5:50 AM"
+      },
+      {
+        "stop_id": "baby_nagar",
+        "name": "Baby Nagar",
+        "lat": 12.983,
+        "lng": 80.232,
+        "confidence": "approx",
+        "time": "5:53 AM"
+      },
+      {
+        "stop_id": "bharathi_nagar",
+        "name": "Bharathi Nagar",
+        "lat": 12.985,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "5:54 AM"
+      },
+      {
+        "stop_id": "pillaiyar_koil",
+        "name": "Pillaiyar Koil",
+        "lat": 12.987,
+        "lng": 80.238,
+        "confidence": "approx",
+        "time": "5:56 AM"
+      },
+      {
+        "stop_id": "taramani",
+        "name": "Taramani (100 Feet Road)",
+        "lat": 12.9889,
+        "lng": 80.2444,
+        "confidence": "landmark",
+        "time": "5:57 AM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "6:01 AM"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx",
+        "time": "6:04 AM"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark",
+        "time": "6:07 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "6:09 AM"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "6:12 AM"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "6:15 AM"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "6:16 AM"
+      },
+      {
+        "stop_id": "tcs_siruseri",
+        "name": "T.C.S.",
+        "lat": 12.915,
+        "lng": 80.225,
+        "confidence": "approx",
+        "time": "6:26 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "6:28 AM"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "6:31 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "6:34 AM"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "semmancheri",
+        "name": "Semmancheri",
+        "lat": 12.8631,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "6:55 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "570S_return",
+    "name": "MTC 570S: Siruseri IT Park → CMBT",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "direction": "return",
+      "frequency": "~29-30 min, 30 trips/day"
+    },
+    "stops": [
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "6:40 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "6:45 AM"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "6:50 AM"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "kumaran_nagar",
+        "name": "Kumaran Nagar",
+        "lat": 12.87,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "7:03 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "7:09 AM"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "7:14 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "7:17 AM"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "7:29 AM"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "7:30 AM"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "7:32 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "7:35 AM"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark",
+        "time": "7:39 AM"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx",
+        "time": "7:42 AM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "7:44 AM"
+      },
+      {
+        "stop_id": "taramani",
+        "name": "Taramani (100 Feet Road)",
+        "lat": 12.9889,
+        "lng": 80.2444,
+        "confidence": "landmark",
+        "time": "7:48 AM"
+      },
+      {
+        "stop_id": "pillaiyar_koil",
+        "name": "Pillaiyar Koil",
+        "lat": 12.987,
+        "lng": 80.238,
+        "confidence": "approx",
+        "time": "7:49 AM"
+      },
+      {
+        "stop_id": "bharathi_nagar",
+        "name": "Bharathi Nagar",
+        "lat": 12.985,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "7:51 AM"
+      },
+      {
+        "stop_id": "baby_nagar",
+        "name": "Baby Nagar",
+        "lat": 12.983,
+        "lng": 80.232,
+        "confidence": "approx",
+        "time": "7:53 AM"
+      },
+      {
+        "stop_id": "tansi_nagar",
+        "name": "Tansi Nagar",
+        "lat": 12.982,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "7:55 AM"
+      },
+      {
+        "stop_id": "velachery_vijayanagar",
+        "name": "Velachery Vijayanagar",
+        "lat": 12.978,
+        "lng": 80.217,
+        "confidence": "approx",
+        "time": "7:56 AM"
+      },
+      {
+        "stop_id": "guru_nanak_college",
+        "name": "Guru Nanak College",
+        "lat": 12.98,
+        "lng": 80.22,
+        "confidence": "approx",
+        "time": "8:02 AM"
+      },
+      {
+        "stop_id": "velachery_checkpost",
+        "name": "Velachery Check Post",
+        "lat": 12.972,
+        "lng": 80.216,
+        "confidence": "approx",
+        "time": "8:05 AM"
+      },
+      {
+        "stop_id": "kannagipuram",
+        "name": "Kannagipuram / SAF Aquatic Complex / Guindy Race Course",
+        "lat": 12.995,
+        "lng": 80.22,
+        "confidence": "approx",
+        "time": "8:08 AM"
+      },
+      {
+        "stop_id": "halda",
+        "name": "Halda",
+        "lat": 13.0,
+        "lng": 80.225,
+        "confidence": "approx",
+        "time": "8:11 AM"
+      },
+      {
+        "stop_id": "chellammal_college",
+        "name": "Chellammal College",
+        "lat": 12.998,
+        "lng": 80.22,
+        "confidence": "approx",
+        "time": "8:12 AM"
+      },
+      {
+        "stop_id": "guindy_industrial",
+        "name": "Guindy Industrial Estate",
+        "lat": 13.005,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "8:16 AM"
+      },
+      {
+        "stop_id": "sipcot_olympia",
+        "name": "SIPCOT (Olympia Tech Park)",
+        "lat": 13.0,
+        "lng": 80.208,
+        "confidence": "approx",
+        "time": "8:19 AM"
+      },
+      {
+        "stop_id": "ekkattuthangal",
+        "name": "Ekkattuthangal",
+        "lat": 13.0175,
+        "lng": 80.201,
+        "confidence": "landmark",
+        "time": "8:21 AM"
+      },
+      {
+        "stop_id": "kalaimagal_nagar",
+        "name": "Kalaimagal Nagar (Jaya TV)",
+        "lat": 13.035,
+        "lng": 80.215,
+        "confidence": "approx",
+        "time": "8:23 AM"
+      },
+      {
+        "stop_id": "kasi_theatre",
+        "name": "Kasi Theatre",
+        "lat": 13.047,
+        "lng": 80.215,
+        "confidence": "approx",
+        "time": "8:25 AM"
+      },
+      {
+        "stop_id": "ashok_pillar",
+        "name": "Ashok Pillar (Ashok Nagar)",
+        "lat": 13.035,
+        "lng": 80.21,
+        "confidence": "landmark",
+        "time": "8:27 AM"
+      },
+      {
+        "stop_id": "vadapalani",
+        "name": "Vadapalani",
+        "lat": 13.0503,
+        "lng": 80.2121,
+        "confidence": "landmark",
+        "time": "8:32 AM"
+      },
+      {
+        "stop_id": "thirunagar",
+        "name": "Thirunagar",
+        "lat": 13.07,
+        "lng": 80.205,
+        "confidence": "approx",
+        "time": "8:36 AM"
+      },
+      {
+        "stop_id": "mmda_school",
+        "name": "MMDA (Arumbakkam)",
+        "lat": 13.0781,
+        "lng": 80.2103,
+        "confidence": "landmark",
+        "time": "8:38 AM"
+      },
+      {
+        "stop_id": "cmbt",
+        "name": "CMBT (Koyambedu)",
+        "lat": 13.0694,
+        "lng": 80.1948,
+        "confidence": "landmark",
+        "time": "8:42 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "19K_onward",
+    "name": "MTC 19K: Adyar O.T. → Siruseri",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "direction": "onward"
+    },
+    "stops": [
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "9:40 AM"
+      },
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "9:42 AM"
+      },
+      {
+        "stop_id": "thiruvanmiyur",
+        "name": "Thiruvanmiyur",
+        "lat": 12.983,
+        "lng": 80.2594,
+        "confidence": "landmark",
+        "time": "9:46 AM"
+      },
+      {
+        "stop_id": "thiruvanmiyur",
+        "name": "Thiruvanmiyur",
+        "lat": 12.983,
+        "lng": 80.2594,
+        "confidence": "landmark",
+        "time": "9:47 AM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "9:50 AM"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx",
+        "time": "9:52 AM"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark",
+        "time": "9:56 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "9:58 AM"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "10:01 AM"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "10:03 AM"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "10:05 AM"
+      },
+      {
+        "stop_id": "okkiyampet",
+        "name": "Okkiyampet",
+        "lat": 12.92,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "10:12 AM"
+      },
+      {
+        "stop_id": "tcs_siruseri",
+        "name": "T.C.S.",
+        "lat": 12.915,
+        "lng": 80.225,
+        "confidence": "approx",
+        "time": "10:15 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "10:17 AM"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "10:20 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "10:23 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "10:25 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "10:28 AM"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "10:34 AM"
+      },
+      {
+        "stop_id": "semmancheri",
+        "name": "Semmancheri",
+        "lat": 12.8631,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "10:38 AM"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "10:44 AM"
+      },
+      {
+        "stop_id": "kakkan_nagar",
+        "name": "Kakkan Nagar",
+        "lat": 12.835,
+        "lng": 80.225,
+        "confidence": "approx",
+        "time": "10:48 AM"
+      },
+      {
+        "stop_id": "trisakthi_kovil",
+        "name": "Trisakthi Kovil",
+        "lat": 12.83,
+        "lng": 80.223,
+        "confidence": "approx",
+        "time": "10:49 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "10:56 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "19K_return",
+    "name": "MTC 19K: Siruseri → Adyar O.T.",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "direction": "return"
+    },
+    "stops": [
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "10:55 AM"
+      },
+      {
+        "stop_id": "thalambur",
+        "name": "Thalambur",
+        "lat": 12.835,
+        "lng": 80.213,
+        "confidence": "landmark",
+        "time": "10:59 AM"
+      },
+      {
+        "stop_id": "trisakthi_kovil",
+        "name": "Trisakthi Kovil",
+        "lat": 12.83,
+        "lng": 80.223,
+        "confidence": "approx",
+        "time": "11:03 AM"
+      },
+      {
+        "stop_id": "kakkan_nagar",
+        "name": "Kakkan Nagar",
+        "lat": 12.835,
+        "lng": 80.225,
+        "confidence": "approx",
+        "time": "11:05 AM"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "11:09 AM"
+      },
+      {
+        "stop_id": "semmancheri",
+        "name": "Semmancheri",
+        "lat": 12.8631,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "11:15 AM"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "11:19 AM"
+      },
+      {
+        "stop_id": "kumaran_nagar",
+        "name": "Kumaran Nagar",
+        "lat": 12.87,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "11:21 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "11:25 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "11:28 AM"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "11:33 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "11:35 AM"
+      },
+      {
+        "stop_id": "okkiyampet",
+        "name": "Okkiyampet",
+        "lat": 12.92,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "11:40 AM"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "11:48 AM"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "11:49 AM"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "11:51 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "11:54 AM"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark",
+        "time": "11:58 AM"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx",
+        "time": "12:01 PM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "12:03 PM"
+      },
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "12:06 PM"
+      },
+      {
+        "stop_id": "thiruvanmiyur",
+        "name": "Thiruvanmiyur",
+        "lat": 12.983,
+        "lng": 80.2594,
+        "confidence": "landmark",
+        "time": "12:07 PM"
+      },
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "12:11 PM"
+      },
+      {
+        "stop_id": "adyar",
+        "name": "Adyar",
+        "lat": 13.0064,
+        "lng": 80.2565,
+        "confidence": "landmark",
+        "time": "12:14 PM"
+      }
+    ]
+  },
+  {
+    "route_id": "568B_onward",
+    "name": "MTC 568B: Thiruporur → Velachery Vijayanagar",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "direction": "onward"
+    },
+    "stops": [
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "7:00 AM"
+      },
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "7:03 AM"
+      },
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "7:05 AM"
+      },
+      {
+        "stop_id": "kalavakkam",
+        "name": "Kalavakkam",
+        "lat": 12.79,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "7:09 AM"
+      },
+      {
+        "stop_id": "ssn_college",
+        "name": "S.S.N. College",
+        "lat": 12.7995,
+        "lng": 80.227,
+        "confidence": "landmark",
+        "time": "7:13 AM"
+      },
+      {
+        "stop_id": "thaiyur",
+        "name": "Thaiyur",
+        "lat": 12.802,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "7:19 AM"
+      },
+      {
+        "stop_id": "thaiyur",
+        "name": "Thaiyur",
+        "lat": 12.802,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "7:22 AM"
+      },
+      {
+        "stop_id": "chettinad_hospital",
+        "name": "Chettinad Hospital",
+        "lat": 12.8,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "7:32 AM"
+      },
+      {
+        "stop_id": "hindustan_college",
+        "name": "Hindustan College",
+        "lat": 12.805,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "7:34 AM"
+      },
+      {
+        "stop_id": "padur",
+        "name": "Padur",
+        "lat": 12.818,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "7:36 AM"
+      },
+      {
+        "stop_id": "kazhipattur",
+        "name": "Kazhipattur",
+        "lat": 12.83,
+        "lng": 80.215,
+        "confidence": "approx",
+        "time": "7:42 AM"
+      },
+      {
+        "stop_id": "vaniyanchavadi",
+        "name": "Vaniyanchavadi",
+        "lat": 12.815,
+        "lng": 80.213,
+        "confidence": "approx",
+        "time": "7:45 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "7:47 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "7:47 AM"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "7:52 AM"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "8:02 AM"
+      },
+      {
+        "stop_id": "kumaran_nagar",
+        "name": "Kumaran Nagar",
+        "lat": 12.87,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "8:05 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "8:12 AM"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "8:17 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "8:19 AM"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "8:32 AM"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "8:33 AM"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "8:35 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "8:38 AM"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark",
+        "time": "8:41 AM"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx",
+        "time": "8:44 AM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "8:47 AM"
+      },
+      {
+        "stop_id": "taramani",
+        "name": "Taramani (100 Feet Road)",
+        "lat": 12.9889,
+        "lng": 80.2444,
+        "confidence": "landmark",
+        "time": "8:50 AM"
+      },
+      {
+        "stop_id": "pillaiyar_koil",
+        "name": "Pillaiyar Koil",
+        "lat": 12.987,
+        "lng": 80.238,
+        "confidence": "approx",
+        "time": "8:52 AM"
+      },
+      {
+        "stop_id": "bharathi_nagar",
+        "name": "Bharathi Nagar",
+        "lat": 12.985,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "8:53 AM"
+      },
+      {
+        "stop_id": "baby_nagar",
+        "name": "Baby Nagar",
+        "lat": 12.983,
+        "lng": 80.232,
+        "confidence": "approx",
+        "time": "8:55 AM"
+      },
+      {
+        "stop_id": "tansi_nagar",
+        "name": "Tansi Nagar",
+        "lat": 12.982,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "8:57 AM"
+      },
+      {
+        "stop_id": "velachery_vijayanagar",
+        "name": "Velachery Vijayanagar",
+        "lat": 12.978,
+        "lng": 80.217,
+        "confidence": "approx",
+        "time": "8:59 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "568B_return",
+    "name": "MTC 568B: Velachery → Thiruporur Bus Stand",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "direction": "return"
+    },
+    "stops": [
+      {
+        "stop_id": "velachery",
+        "name": "Velachery",
+        "lat": 12.9756,
+        "lng": 80.2207,
+        "confidence": "landmark",
+        "time": "8:30 AM"
+      },
+      {
+        "stop_id": "tansi_nagar",
+        "name": "Tansi Nagar",
+        "lat": 12.982,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "8:32 AM"
+      },
+      {
+        "stop_id": "baby_nagar",
+        "name": "Baby Nagar",
+        "lat": 12.983,
+        "lng": 80.232,
+        "confidence": "approx",
+        "time": "8:34 AM"
+      },
+      {
+        "stop_id": "bharathi_nagar",
+        "name": "Bharathi Nagar",
+        "lat": 12.985,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "8:35 AM"
+      },
+      {
+        "stop_id": "pillaiyar_koil",
+        "name": "Pillaiyar Koil",
+        "lat": 12.987,
+        "lng": 80.238,
+        "confidence": "approx",
+        "time": "8:37 AM"
+      },
+      {
+        "stop_id": "taramani",
+        "name": "Taramani (100 Feet Road)",
+        "lat": 12.9889,
+        "lng": 80.2444,
+        "confidence": "landmark",
+        "time": "8:39 AM"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx",
+        "time": "8:42 AM"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx",
+        "time": "8:45 AM"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark",
+        "time": "8:48 AM"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark",
+        "time": "8:51 AM"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx",
+        "time": "8:54 AM"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx",
+        "time": "8:56 AM"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx",
+        "time": "8:58 AM"
+      },
+      {
+        "stop_id": "tcs_siruseri",
+        "name": "T.C.S.",
+        "lat": 12.915,
+        "lng": 80.225,
+        "confidence": "approx",
+        "time": "9:08 AM"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "9:10 AM"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "9:13 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "9:16 AM"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx",
+        "time": "9:26 AM"
+      },
+      {
+        "stop_id": "semmancheri",
+        "name": "Semmancheri",
+        "lat": 12.8631,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "9:31 AM"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark",
+        "time": "9:37 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "9:42 AM"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "9:43 AM"
+      },
+      {
+        "stop_id": "vaniyanchavadi",
+        "name": "Vaniyanchavadi",
+        "lat": 12.815,
+        "lng": 80.213,
+        "confidence": "approx",
+        "time": "9:45 AM"
+      },
+      {
+        "stop_id": "kazhipattur",
+        "name": "Kazhipattur",
+        "lat": 12.83,
+        "lng": 80.215,
+        "confidence": "approx",
+        "time": "9:47 AM"
+      },
+      {
+        "stop_id": "hindustan_college",
+        "name": "Hindustan College",
+        "lat": 12.805,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "9:55 AM"
+      },
+      {
+        "stop_id": "chettinad_hospital",
+        "name": "Chettinad Hospital",
+        "lat": 12.8,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "9:57 AM"
+      },
+      {
+        "stop_id": "padur",
+        "name": "Padur",
+        "lat": 12.818,
+        "lng": 80.217,
+        "confidence": "landmark",
+        "time": "9:58 AM"
+      },
+      {
+        "stop_id": "kelambakkam",
+        "name": "Kelambakkam",
+        "lat": 12.793,
+        "lng": 80.218,
+        "confidence": "landmark",
+        "time": "10:01 AM"
+      },
+      {
+        "stop_id": "thaiyur",
+        "name": "Thaiyur",
+        "lat": 12.802,
+        "lng": 80.21,
+        "confidence": "approx",
+        "time": "10:08 AM"
+      },
+      {
+        "stop_id": "koman_nagar",
+        "name": "Koman Nagar",
+        "lat": 12.797,
+        "lng": 80.214,
+        "confidence": "approx",
+        "time": "10:14 AM"
+      },
+      {
+        "stop_id": "ssn_college",
+        "name": "S.S.N. College",
+        "lat": 12.7995,
+        "lng": 80.227,
+        "confidence": "landmark",
+        "time": "10:16 AM"
+      },
+      {
+        "stop_id": "kalavakkam",
+        "name": "Kalavakkam",
+        "lat": 12.79,
+        "lng": 80.226,
+        "confidence": "approx",
+        "time": "10:21 AM"
+      },
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "10:24 AM"
+      },
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "10:27 AM"
+      },
+      {
+        "stop_id": "thiruporur",
+        "name": "Thiruporur",
+        "lat": 12.7194,
+        "lng": 80.1965,
+        "confidence": "landmark",
+        "time": "10:30 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "MAA2",
+    "name": "MAA2: Siruseri IT Park ↔ Chennai Airport (electric AC feeder)",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC (electric)",
+      "note": "Inaugurated Aug 2026, 184 trips/day, 8 buses, ~58 min",
+      "via": "Sholinganallur, Thoraipakkam, OMR, Pallikaranai, Pallavaram, Keelkattalai, Echankadu"
+    },
+    "stops": [
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark",
+        "time": "4:30 AM"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark",
+        "time": "4:45 AM"
+      },
+      {
+        "stop_id": "thoraipakkam",
+        "name": "Thoraipakkam",
+        "lat": 12.943,
+        "lng": 80.238,
+        "confidence": "landmark",
+        "time": "4:55 AM"
+      },
+      {
+        "stop_id": "pallikaranai",
+        "name": "Pallikaranai",
+        "lat": 12.937,
+        "lng": 80.214,
+        "confidence": "landmark",
+        "time": "5:10 AM"
+      },
+      {
+        "stop_id": "keelkattalai",
+        "name": "Keelkattalai",
+        "lat": 12.945,
+        "lng": 80.195,
+        "confidence": "approx",
+        "time": "5:25 AM"
+      },
+      {
+        "stop_id": "pallavaram",
+        "name": "Pallavaram",
+        "lat": 12.9675,
+        "lng": 80.1491,
+        "confidence": "landmark",
+        "time": "5:35 AM"
+      },
+      {
+        "stop_id": "echankadu",
+        "name": "Echankadu",
+        "lat": 12.97,
+        "lng": 80.17,
+        "confidence": "approx",
+        "time": "5:45 AM"
+      },
+      {
+        "stop_id": "chennai_airport",
+        "name": "Chennai Airport (Meenambakkam / Metro Stn)",
+        "lat": 12.9941,
+        "lng": 80.1707,
+        "confidence": "landmark",
+        "time": "5:58 AM"
+      }
+    ]
+  },
+  {
+    "route_id": "555S",
+    "name": "MTC 555S: Kilambakkam (KCBT) ↔ Sholinganallur / Siruseri IT Park",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "note": "Primary direct KCBT link; every ~10 min, 114 trips/day, 34 km, 36 stops",
+      "first_bus": "4:00-4:50 AM",
+      "last_bus": "7:45 PM-11:55 PM"
+    },
+    "stops": [
+      {
+        "stop_id": "kilambakkam_kcbt",
+        "name": "Kilambakkam Bus Terminus (KCBT)",
+        "lat": 12.885,
+        "lng": 80.085,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "vandalur_zoo",
+        "name": "Vandalur Zoo",
+        "lat": 12.8925,
+        "lng": 80.0817,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "vandalur_gate",
+        "name": "Vandalur Gate",
+        "lat": 12.895,
+        "lng": 80.085,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "perungalathur",
+        "name": "Perungalathur",
+        "lat": 12.905,
+        "lng": 80.095,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "kandigai",
+        "name": "Kandigai",
+        "lat": 12.86,
+        "lng": 80.085,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "mambakkam",
+        "name": "Mambakkam",
+        "lat": 12.845,
+        "lng": 80.115,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "kelambakkam",
+        "name": "Kelambakkam",
+        "lat": 12.793,
+        "lng": 80.218,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "puthupakkam",
+        "name": "Puthupakkam",
+        "lat": 12.83,
+        "lng": 80.165,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "chettinad_hospital",
+        "name": "Chettinad Hospital",
+        "lat": 12.8,
+        "lng": 80.217,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "vaniyanchavadi",
+        "name": "Vaniyanchavadi",
+        "lat": 12.815,
+        "lng": 80.213,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "kazhipattur",
+        "name": "Kazhipattur",
+        "lat": 12.83,
+        "lng": 80.215,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "akshaya_padur",
+        "name": "Akshaya Padur",
+        "lat": 12.82,
+        "lng": 80.216,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "padur",
+        "name": "Padur",
+        "lat": 12.818,
+        "lng": 80.217,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "hindustan_college",
+        "name": "Hindustan College",
+        "lat": 12.805,
+        "lng": 80.217,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "kumaran_nagar",
+        "name": "Kumaran Nagar",
+        "lat": 12.87,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark"
+      }
+    ]
+  },
+  {
+    "route_id": "570_AC570",
+    "name": "MTC 570 / AC-570: CMBT ↔ Kelambakkam (via Siruseri, high frequency)",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "note": "40.5 km, every 13-14 min, 66 trips/day from Kelambakkam",
+      "first_bus_cmbt": "4:50 AM",
+      "last_bus": "~9:15 PM"
+    },
+    "stops": [
+      {
+        "stop_id": "cmbt",
+        "name": "CMBT (Koyambedu)",
+        "lat": 13.0694,
+        "lng": 80.1948,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "mmda_school",
+        "name": "MMDA (Arumbakkam)",
+        "lat": 13.0781,
+        "lng": 80.2103,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "thirunagar",
+        "name": "Thirunagar",
+        "lat": 13.07,
+        "lng": 80.205,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "vadapalani",
+        "name": "Vadapalani",
+        "lat": 13.0503,
+        "lng": 80.2121,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "ashok_pillar",
+        "name": "Ashok Pillar (Ashok Nagar)",
+        "lat": 13.035,
+        "lng": 80.21,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "kasi_theatre",
+        "name": "Kasi Theatre",
+        "lat": 13.047,
+        "lng": 80.215,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "kalaimagal_nagar",
+        "name": "Kalaimagal Nagar (Jaya TV)",
+        "lat": 13.035,
+        "lng": 80.215,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "ekkattuthangal",
+        "name": "Ekkattuthangal",
+        "lat": 13.0175,
+        "lng": 80.201,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "cipet_technopark",
+        "name": "CIPET / Techno Park",
+        "lat": 13.01,
+        "lng": 80.205,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "chellammal_college",
+        "name": "Chellammal College",
+        "lat": 12.998,
+        "lng": 80.22,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "saidapet",
+        "name": "Saidapet",
+        "lat": 13.0212,
+        "lng": 80.2226,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "chinna_malai",
+        "name": "Chinna Malai",
+        "lat": 13.015,
+        "lng": 80.228,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "raj_bhawan",
+        "name": "Raj Bhawan",
+        "lat": 13.013,
+        "lng": 80.23,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "halda",
+        "name": "Halda",
+        "lat": 13.0,
+        "lng": 80.225,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "kannagipuram",
+        "name": "Kannagipuram / SAF Aquatic Complex / Guindy Race Course",
+        "lat": 12.995,
+        "lng": 80.22,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "velachery",
+        "name": "Velachery",
+        "lat": 12.9756,
+        "lng": 80.2207,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "guru_nanak_college",
+        "name": "Guru Nanak College",
+        "lat": 12.98,
+        "lng": 80.22,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "velachery_vijayanagar",
+        "name": "Velachery Vijayanagar",
+        "lat": 12.978,
+        "lng": 80.217,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "tansi_nagar",
+        "name": "Tansi Nagar",
+        "lat": 12.982,
+        "lng": 80.228,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "baby_nagar",
+        "name": "Baby Nagar",
+        "lat": 12.983,
+        "lng": 80.232,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "bharathi_nagar",
+        "name": "Bharathi Nagar",
+        "lat": 12.985,
+        "lng": 80.235,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "pillaiyar_koil",
+        "name": "Pillaiyar Koil",
+        "lat": 12.987,
+        "lng": 80.238,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "taramani",
+        "name": "Taramani (100 Feet Road)",
+        "lat": 12.9889,
+        "lng": 80.2444,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "srp_tools",
+        "name": "S.R.P. Tools",
+        "lat": 12.956,
+        "lng": 80.244,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "igp",
+        "name": "I.G.P.",
+        "lat": 12.952,
+        "lng": 80.242,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "kandanchavadi",
+        "name": "Kandanchavadi (TIDEL Park)",
+        "lat": 12.9508,
+        "lng": 80.241,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "perungudi",
+        "name": "Perungudi",
+        "lat": 12.9647,
+        "lng": 80.2422,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "seevaram",
+        "name": "Seevaram",
+        "lat": 12.943,
+        "lng": 80.235,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "jain_college",
+        "name": "D.B. Jain College",
+        "lat": 12.935,
+        "lng": 80.23,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "rattha_tech_tower",
+        "name": "Rattha Tech Tower",
+        "lat": 12.933,
+        "lng": 80.228,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "mettukuppam",
+        "name": "Mettukuppam",
+        "lat": 12.93,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "ptc_quarters",
+        "name": "P.T.C. Quarters",
+        "lat": 12.926,
+        "lng": 80.226,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "okkiyampet",
+        "name": "Okkiyampet",
+        "lat": 12.92,
+        "lng": 80.226,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "tcs_siruseri",
+        "name": "T.C.S.",
+        "lat": 12.915,
+        "lng": 80.225,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "karapakkam",
+        "name": "Karapakkam",
+        "lat": 12.928,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "accenture",
+        "name": "Accenture (OMR)",
+        "lat": 12.908,
+        "lng": 80.226,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "kumaran_nagar",
+        "name": "Kumaran Nagar",
+        "lat": 12.87,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "satyabhama",
+        "name": "Sathyabama Dental College & Hospital",
+        "lat": 12.876,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "semmancheri",
+        "name": "Semmancheri",
+        "lat": 12.8631,
+        "lng": 80.2273,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "navalur",
+        "name": "Navalur",
+        "lat": 12.8406,
+        "lng": 80.2273,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "egattur",
+        "name": "Egattur",
+        "lat": 12.85,
+        "lng": 80.227,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "siruseri",
+        "name": "Siruseri (Muttukadu) / IT Park",
+        "lat": 12.823,
+        "lng": 80.2196,
+        "confidence": "landmark"
+      }
+    ]
+  },
+  {
+    "route_id": "95XCT",
+    "name": "MTC 95XCT: Kilambakkam (KCBT) ↔ Sholinganallur",
+    "category": "public_mtc",
+    "meta": {
+      "operator": "MTC",
+      "note": "Alt. direct KCBT link, every ~10 min, runs ~00:25-23:55",
+      "via": "Vandalur, Perungalathur, East Tambaram, Mahalakshmi Nagar, S.I.V.E.T, Perumbakkam"
+    },
+    "stops": [
+      {
+        "stop_id": "kilambakkam_kcbt",
+        "name": "Kilambakkam Bus Terminus (KCBT)",
+        "lat": 12.885,
+        "lng": 80.085,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "vandalur_zoo",
+        "name": "Vandalur Zoo",
+        "lat": 12.8925,
+        "lng": 80.0817,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "perungalathur",
+        "name": "Perungalathur",
+        "lat": 12.905,
+        "lng": 80.095,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "east_tambaram",
+        "name": "East Tambaram",
+        "lat": 12.93,
+        "lng": 80.115,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "mahalakshmi_nagar",
+        "name": "Mahalakshmi Nagar",
+        "lat": 12.935,
+        "lng": 80.13,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "sivet",
+        "name": "S.I.V.E.T. College",
+        "lat": 12.88,
+        "lng": 80.15,
+        "confidence": "approx"
+      },
+      {
+        "stop_id": "perumbakkam",
+        "name": "Perumbakkam",
+        "lat": 12.897,
+        "lng": 80.218,
+        "confidence": "landmark"
+      },
+      {
+        "stop_id": "sholinganallur",
+        "name": "Sholinganallur",
+        "lat": 12.901,
+        "lng": 80.2279,
+        "confidence": "landmark"
+      }
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+Hi there! 👋 Here's the syllabus information for the **B.Tech. Information Technology** department at MSAJCE:
+
+## 📥 Syllabus Download
+
+- **IT Syllabus (2017 Regulation)**: [Syllabus_IT2017.pdf](https://msajce-edu.in/images/departments/it/Syllabus_IT2017.pdf)
+
+## 📚 Curriculum Details
+
+The IT department follows **two regulations**:
+- **2021 Regulation**
+- **2017 Regulation**
+
+### Key Subjects (2021 Regulation) include:
+- Problem Solving and Python Programming
+- Programming in C
+- Data Structures and Algorithms
+- Object Oriented Programming
+- Artificial Intelligence and Machine Learning
+- Database Management System
+- Computer Networks
+- Full Stack Web Development
+- Web Essentials
+- Embedded System and IoT
+
+### Electives:
+- **Open Electives**: Big Data Analytics
+- **Professional Electives**: Software Testing and Automation, Data Warehousing
+
+## 🎓 Programme Overview
+- **Degree**: B.Tech. Information Technology
+- **Duration**: 4 years (8 semesters) | 3 years for lateral entry (6 semesters)
+- **Intake**: 60 seats (30 government quota + 30 management quota)
+
+For 2021 Regulation course materials (lesson plans, question banks, lecture notes), feel free to ask — happy to help! 😊
+
+---
+### 📎 Verified Resource Downloads & Media
+- 📄 **[Syllabus_IT2017.pdf](https://msajce-edu.in/images/departments/it/Syllabus_IT2017.pdf)** — *Verified campus resource: Syllabus_IT2017.pdf*

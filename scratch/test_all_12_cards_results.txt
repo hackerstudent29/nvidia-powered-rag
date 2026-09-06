@@ -1,0 +1,47 @@
+1. Admission: STATUS=OK (cached=False, len=2013)
+  Snippet: Hello! 😊 Here's everything you need to know about admissions at **Mohamed Sathak A.J. College of Engineering (MSAJCE)**:...
+2. Courses Offered: STATUS=OK (cached=False, len=2239)
+  Snippet: Hello! 👋 Here's the complete list of degree programs offered at **Mohamed Sathak A.J. College of Engineering (MSAJCE)** ...
+3. Campus Placements: STATUS=OK (cached=False, len=1222)
+  Snippet: Hi there! Here's what our official records show about placements at MSAJCE:
+
+**📊 Placement Statistics (NAAC Records)**
+-...
+4. Scholarships: STATUS=OK (cached=False, len=2709)
+  Snippet: Hello! 😊 Here's a friendly overview of the scholarship support available at **MSAJCE**:
+
+## 🎓 Mohamed Sathak Educational...
+5. Boys Hostel: STATUS=OK (cached=False, len=2029)
+  Snippet: # Boys Hostel at MSAJCE 🏫
+
+Here's everything you need to know about the Boys Hostel:
+
+## 🛏️ Room Capacity & Accommodatio...
+6. Girls Hostel: STATUS=OK (cached=False, len=1075)
+  Snippet: Based on campus records for **Hostel & Residential Life	msajce-edu.in/hostel.php**:
+
+### Document: Hostel & Residential ...
+7. Bus Routes: STATUS=OK (cached=False, len=1224)
+  Snippet: Based on campus records for **MSAJCE Campus Document**:
+
+### Document: MSAJCE Campus Document | Section: Verified Resour...
+8. Mess & Canteen: STATUS=OK (cached=False, len=748)
+  Snippet: Based on campus records for **Hostel & Residential Life	msajce-edu.in/hostel.php**:
+
+### Document: Hostel & Residential ...
+9. Central Library: STATUS=OK (cached=False, len=1370)
+  Snippet: Based on campus records for **Central Learning Centre (Library)	msajce-edu.in/library.php**:
+
+### Document: Central Lear...
+10. Lab Facilities: STATUS=OK (cached=False, len=842)
+  Snippet: Based on campus records for **Training & Placement Cell	msajce-edu.in/placement.php**:
+
+### Document: Training & Placeme...
+11. Campus Life: STATUS=OK (cached=False, len=1603)
+  Snippet: Based on campus records for **IQAC (Quality Assurance Cell)	msajce-edu.in/iqac.php**:
+
+### Document: IQAC (Quality Assur...
+12. Contact Info: STATUS=OK (cached=False, len=570)
+  Snippet: Based on campus records for **Training & Placement Cell	msajce-edu.in/placement.php**:
+
+### Document: Training & Placeme...

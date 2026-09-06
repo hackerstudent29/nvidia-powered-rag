@@ -1,0 +1,3406 @@
+[
+  {
+    "entity_key": "developer_ramanathan",
+    "entity_name": "Ramanathan S. (Creator / Developer of Lorin AI)",
+    "entity_type": "DEVELOPER",
+    "aliases": [
+      "ram",
+      "ramanathan",
+      "ramzendrum",
+      "developer",
+      "creator of bot",
+      "who made this bot",
+      "who created lorin",
+      "hackerstudent29"
+    ],
+    "value": "Ramanathan S. is a Software Engineer, B.Tech Information Technology (IT) student (Batch 2024-2028, CGPA 7.75) at Mohamed Sathak A.J. College of Engineering and Architecture (msajcea), Chennai. He is the sole architect and lead developer of the Lorin AI Campus Chatbot. Personal Portfolio: https://ram-portfolio3d.vercel.app | GitHub: https://github.com/hackerstudent29",
+    "source_file": "msajcea_developer_ramanathan.md",
+    "source_url": "https://ram-portfolio3d.vercel.app",
+    "details": {
+      "name": "Ramanathan S.",
+      "role": "Creator & Lead Backend/AI Engineer of Lorin AI Bot",
+      "department": "B.Tech Information Technology (IT)",
+      "batch": "2024-2028",
+      "cgpa": "7.75",
+      "college": "Mohamed Sathak A.J. College of Engineering and Architecture (msajcea)",
+      "skills": [
+        "Java",
+        "Spring Boot",
+        "PostgreSQL",
+        "React",
+        "TypeScript",
+        "NVIDIA NIM",
+        "Qdrant",
+        "RAG Architecture"
+      ],
+      "portfolio": "https://ram-portfolio3d.vercel.app",
+      "github": "https://github.com/hackerstudent29"
+    }
+  },
+  {
+    "entity_key": "principal_srinivasan",
+    "entity_name": "Dr. K.S. Srinivasan (Principal of msajcea)",
+    "entity_type": "PERSON",
+    "aliases": [
+      "principal",
+      "dr ks srinivasan",
+      "dr. k.s. srinivasan",
+      "srinivasan",
+      "head of college"
+    ],
+    "value": "Dr. K.S. Srinivasan (Ph.D) is the Principal of Mohamed Sathak A.J. College of Engineering and Architecture (msajcea), Siruseri, Chennai. Email: [principal@msajce-edu.in](mailto:principal@msajce-edu.in). He specializes in Electronics and Communication Engineering and Anna University Ph.D Supervisor (Ref: 1440364).",
+    "source_file": "msajcea_principal.md",
+    "source_url": "https://msajce-edu.in/principal.php",
+    "details": {
+      "name": "Dr. K.S. Srinivasan",
+      "designation": "Principal",
+      "qualification": "Ph.D",
+      "email": "principal@msajce-edu.in",
+      "supervisor_id": "1440364",
+      "roles": [
+        "Principal",
+        "Chairman Academic Advisory Committee",
+        "Chairman Anti-Ragging Committee",
+        "IQAC Chairperson"
+      ]
+    }
+  },
+  {
+    "entity_key": "contact_college_helpline",
+    "entity_name": "msajcea Official Contact Numbers & Office",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "phone",
+      "phone number",
+      "contact number",
+      "college phone",
+      "helpline",
+      "admission phone",
+      "contact us"
+    ],
+    "value": "msajcea Campus Contact Numbers: Phone: [044-27476300](tel:04427476300), Mobile: [+91 9444103328](tel:+919444103328), Admission Helpline: [+91 9940004500](tel:+919940004500). Email: [admission@msajce-edu.in](mailto:admission@msajce-edu.in) / [info@msajce-edu.in](mailto:info@msajce-edu.in)",
+    "source_file": "msajcea_about.md",
+    "source_url": "https://msajce-edu.in/contact.php",
+    "details": {
+      "landline": "044-27476300",
+      "mobile": "+91 9444103328",
+      "admission_helpline": "+91 9940004500",
+      "email": "admission@msajce-edu.in"
+    }
+  },
+  {
+    "entity_key": "tnea_counselling_code",
+    "entity_name": "msajcea TNEA Counselling Code",
+    "entity_type": "COURSE",
+    "aliases": [
+      "tnea code",
+      "counselling code",
+      "college code",
+      "tnea counselling code",
+      "anna university code"
+    ],
+    "value": "The TNEA Counselling Code for Mohamed Sathak A.J. College of Engineering and Architecture (msajcea) is **1301**.",
+    "source_file": "msajcea_admission.md",
+    "source_url": "https://msajce-edu.in/admission.php",
+    "details": {
+      "tnea_code": "1301",
+      "college": "Mohamed Sathak A.J. College of Engineering and Architecture"
+    }
+  },
+  {
+    "entity_key": "transport_velachery_bus_route___mtc",
+    "entity_name": "Velachery Bus Route / MTC",
+    "entity_type": "TRANSPORT",
+    "aliases": [
+      "velachery bus",
+      "which bus goes velachery",
+      "bus to velachery",
+      "velachery route",
+      "51",
+      "21g"
+    ],
+    "value": "Buses connecting Velachery to msajcea (Siruseri / SIPCOT): MTC Route **51G**, **102**, **570**, **515**, or College Bus Route No. 4 (Velachery -> Guindy -> College). Campus is at SIPCOT IT Park, Siruseri, OMR Chennai.",
+    "source_file": "msajcea_transport.md",
+    "source_url": "https://msajce-edu.in/transport.php",
+    "details": {
+      "route": "Velachery Bus Route / MTC",
+      "description": "Buses connecting Velachery to msajcea (Siruseri / SIPCOT): MTC Route **51G**, **102**, **570**, **515**, or College Bus Route No. 4 (Velachery -> Guindy -> College). Campus is at SIPCOT IT Park, Siruseri, OMR Chennai."
+    }
+  },
+  {
+    "entity_key": "transport_tambaram_bus_route",
+    "entity_name": "Tambaram Bus Route",
+    "entity_type": "TRANSPORT",
+    "aliases": [
+      "tambaram bus",
+      "bus to tambaram",
+      "tambaram route",
+      "515"
+    ],
+    "value": "Buses connecting Tambaram to msajcea: MTC Route **515**, **555**, or College Bus Route No. 2 (Tambaram -> Chromepet -> College).",
+    "source_file": "msajcea_transport.md",
+    "source_url": "https://msajce-edu.in/transport.php",
+    "details": {
+      "route": "Tambaram Bus Route",
+      "description": "Buses connecting Tambaram to msajcea: MTC Route **515**, **555**, or College Bus Route No. 2 (Tambaram -> Chromepet -> College)."
+    }
+  },
+  {
+    "entity_key": "transport_guindy_bus_route",
+    "entity_name": "Guindy Bus Route",
+    "entity_type": "TRANSPORT",
+    "aliases": [
+      "guindy bus",
+      "bus to guindy",
+      "guindy route",
+      "102"
+    ],
+    "value": "Buses connecting Guindy to msajcea: MTC Route **102**, **570**, **19B**, or College Bus Route No. 5.",
+    "source_file": "msajcea_transport.md",
+    "source_url": "https://msajce-edu.in/transport.php",
+    "details": {
+      "route": "Guindy Bus Route",
+      "description": "Buses connecting Guindy to msajcea: MTC Route **102**, **570**, **19B**, or College Bus Route No. 5."
+    }
+  },
+  {
+    "entity_key": "transport_broadway___central_bus_route",
+    "entity_name": "Broadway / Central Bus Route",
+    "entity_type": "TRANSPORT",
+    "aliases": [
+      "broadway bus",
+      "central bus",
+      "bus to central",
+      "102x"
+    ],
+    "value": "Buses connecting Broadway / Chennai Central to msajcea: MTC Route **102**, **102X**, **570** along OMR expressway to Siruseri.",
+    "source_file": "msajcea_transport.md",
+    "source_url": "https://msajce-edu.in/transport.php",
+    "details": {
+      "route": "Broadway / Central Bus Route",
+      "description": "Buses connecting Broadway / Chennai Central to msajcea: MTC Route **102**, **102X**, **570** along OMR expressway to Siruseri."
+    }
+  },
+  {
+    "entity_key": "phone__9194442723",
+    "entity_name": "Phone: +91-94442723 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "+91-94442723",
+      "+9194442723",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [+91-94442723](tel:+9194442723)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "+91-94442723",
+      "digits": "+9194442723",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427474700",
+    "entity_name": "Phone: 044-27474700 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27474700",
+      "04427474700",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27474700](tel:04427474700)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27474700",
+      "digits": "04427474700",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427474274",
+    "entity_name": "Phone: 044-27474274 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27474274",
+      "04427474274",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27474274](tel:04427474274)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27474274",
+      "digits": "04427474274",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427475230",
+    "entity_name": "Phone: 044-27475230 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27475230",
+      "04427475230",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27475230](tel:04427475230)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27475230",
+      "digits": "04427475230",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone__9194450861",
+    "entity_name": "Phone: +91-94450861 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "+91-94450861",
+      "+9194450861",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [+91-94450861](tel:+9194450861)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "+91-94450861",
+      "digits": "+9194450861",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427426566",
+    "entity_name": "Phone: 044-27426566 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27426566",
+      "04427426566",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27426566](tel:04427426566)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27426566",
+      "digits": "04427426566",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427427414",
+    "entity_name": "Phone: 044-27427414 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27427414",
+      "04427427414",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27427414](tel:04427427414)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27427414",
+      "digits": "04427427414",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04424401213",
+    "entity_name": "Phone: 044-24401213 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-24401213",
+      "04424401213",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-24401213](tel:04424401213)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-24401213",
+      "digits": "04424401213",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone__9196009843",
+    "entity_name": "Phone: +91-96009843 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "+91-96009843",
+      "+9196009843",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [+91-96009843](tel:+9196009843)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "+91-96009843",
+      "digits": "+9196009843",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427470720",
+    "entity_name": "Phone: 044-27470720 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27470720",
+      "04427470720",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27470720](tel:04427470720)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27470720",
+      "digits": "04427470720",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_04427427412",
+    "entity_name": "Phone: 044-27427412 (Msajcea About)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-27427412",
+      "04427427412",
+      "Msajcea about phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea About: [044-27427412](tel:04427427412)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-27427412",
+      "digits": "04427427412",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "url_3928919792",
+    "entity_name": "Link: https://maps.app.goo.gl/nrTgXSwx1h76SjdSA (Msajcea About)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://maps.app.goo.gl/nrtgxswx1h76sjdsa",
+      "Msajcea about link"
+    ],
+    "value": "Verified Resource Link for Msajcea About: [https://maps.app.goo.gl/nrTgXSwx1h76SjdSA](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA)",
+    "source_file": "Msajcea_about.md",
+    "source_url": "https://maps.app.goo.gl/nrTgXSwx1h76SjdSA",
+    "details": {
+      "url": "https://maps.app.goo.gl/nrTgXSwx1h76SjdSA",
+      "topic": "Msajcea About"
+    }
+  },
+  {
+    "entity_key": "phone_98408869",
+    "entity_name": "Phone: 98408869 (Msajcea Admission)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "98408869",
+      "98408869",
+      "Msajcea admission phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Admission: [98408869](tel:98408869)",
+    "source_file": "Msajcea_admission.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "98408869",
+      "digits": "98408869",
+      "topic": "Msajcea Admission"
+    }
+  },
+  {
+    "entity_key": "phone_90433586",
+    "entity_name": "Phone: 90433586 (Msajcea Admission)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "90433586",
+      "90433586",
+      "Msajcea admission phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Admission: [90433586](tel:90433586)",
+    "source_file": "Msajcea_admission.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "90433586",
+      "digits": "90433586",
+      "topic": "Msajcea Admission"
+    }
+  },
+  {
+    "entity_key": "phone_95026873",
+    "entity_name": "Phone: 95026873 (Msajcea Admission)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "95026873",
+      "95026873",
+      "Msajcea admission phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Admission: [95026873](tel:95026873)",
+    "source_file": "Msajcea_admission.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "95026873",
+      "digits": "95026873",
+      "topic": "Msajcea Admission"
+    }
+  },
+  {
+    "entity_key": "phone_99403196",
+    "entity_name": "Phone: 99403196 (Msajcea Admission)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "99403196",
+      "99403196",
+      "Msajcea admission phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Admission: [99403196](tel:99403196)",
+    "source_file": "Msajcea_admission.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "99403196",
+      "digits": "99403196",
+      "topic": "Msajcea Admission"
+    }
+  },
+  {
+    "entity_key": "phone_20252030",
+    "entity_name": "Phone: 2025-2030 (Msajcea Aids)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2025-2030",
+      "20252030",
+      "Msajcea aids phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Aids: [2025-2030](tel:20252030)",
+    "source_file": "Msajcea_aids.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2025-2030",
+      "digits": "20252030",
+      "topic": "Msajcea Aids"
+    }
+  },
+  {
+    "entity_key": "phone_20212025",
+    "entity_name": "Phone: 2021-2025 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2021-2025",
+      "20212025",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2021-2025](tel:20212025)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2021-2025",
+      "digits": "20212025",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20222023",
+    "entity_name": "Phone: 2022-2023 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2022-2023",
+      "20222023",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2022-2023](tel:20222023)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2022-2023",
+      "digits": "20222023",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20152019",
+    "entity_name": "Phone: 2015-2019 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2015-2019",
+      "20152019",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2015-2019](tel:20152019)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2015-2019",
+      "digits": "20152019",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20242025",
+    "entity_name": "Phone: 2024-2025 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2024-2025",
+      "20242025",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2024-2025](tel:20242025)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2024-2025",
+      "digits": "20242025",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20082012",
+    "entity_name": "Phone: 2008-2012 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2008-2012",
+      "20082012",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2008-2012](tel:20082012)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2008-2012",
+      "digits": "20082012",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20232027",
+    "entity_name": "Phone: 2023-2027 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2023-2027",
+      "20232027",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2023-2027](tel:20232027)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2023-2027",
+      "digits": "20232027",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20132017",
+    "entity_name": "Phone: 2013-2017 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2013-2017",
+      "20132017",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2013-2017](tel:20132017)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2013-2017",
+      "digits": "20132017",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20162020",
+    "entity_name": "Phone: 2016-2020 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2016-2020",
+      "20162020",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2016-2020](tel:20162020)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2016-2020",
+      "digits": "20162020",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20062010",
+    "entity_name": "Phone: 2006-2010 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2006-2010",
+      "20062010",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2006-2010](tel:20062010)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2006-2010",
+      "digits": "20062010",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20252029",
+    "entity_name": "Phone: 2025-2029 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2025-2029",
+      "20252029",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2025-2029](tel:20252029)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2025-2029",
+      "digits": "20252029",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20142018",
+    "entity_name": "Phone: 2014-2018 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2014-2018",
+      "20142018",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2014-2018](tel:20142018)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2014-2018",
+      "digits": "20142018",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20242028",
+    "entity_name": "Phone: 2024-2028 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2024-2028",
+      "20242028",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2024-2028](tel:20242028)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2024-2028",
+      "digits": "20242028",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20222026",
+    "entity_name": "Phone: 2022-2026 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2022-2026",
+      "20222026",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2022-2026](tel:20222026)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2022-2026",
+      "digits": "20222026",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20232024",
+    "entity_name": "Phone: 2023-2024 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2023-2024",
+      "20232024",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2023-2024](tel:20232024)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2023-2024",
+      "digits": "20232024",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20092020",
+    "entity_name": "Phone: 2009-2020 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2009-2020",
+      "20092020",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2009-2020](tel:20092020)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2009-2020",
+      "digits": "20092020",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20192023",
+    "entity_name": "Phone: 2019-2023 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2019-2023",
+      "20192023",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2019-2023](tel:20192023)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2019-2023",
+      "digits": "20192023",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20072011",
+    "entity_name": "Phone: 2007-2011 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2007-2011",
+      "20072011",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2007-2011](tel:20072011)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2007-2011",
+      "digits": "20072011",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20022006",
+    "entity_name": "Phone: 2002-2006 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2002-2006",
+      "20022006",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2002-2006](tel:20022006)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2002-2006",
+      "digits": "20022006",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20172021",
+    "entity_name": "Phone: 2017-2021 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2017-2021",
+      "20172021",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2017-2021](tel:20172021)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2017-2021",
+      "digits": "20172021",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20042008",
+    "entity_name": "Phone: 2004-2008 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2004-2008",
+      "20042008",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2004-2008](tel:20042008)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2004-2008",
+      "digits": "20042008",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20102014",
+    "entity_name": "Phone: 2010-2014 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2010-2014",
+      "20102014",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2010-2014](tel:20102014)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2010-2014",
+      "digits": "20102014",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20202021",
+    "entity_name": "Phone: 2020-2021 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2020-2021",
+      "20202021",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2020-2021](tel:20202021)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2020-2021",
+      "digits": "20202021",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20012005",
+    "entity_name": "Phone: 2001-2005 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2001-2005",
+      "20012005",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2001-2005](tel:20012005)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2001-2005",
+      "digits": "20012005",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20052009",
+    "entity_name": "Phone: 2005-2009 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2005-2009",
+      "20052009",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2005-2009](tel:20052009)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2005-2009",
+      "digits": "20052009",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20182022",
+    "entity_name": "Phone: 2018-2022 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2018-2022",
+      "20182022",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2018-2022](tel:20182022)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2018-2022",
+      "digits": "20182022",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20202024",
+    "entity_name": "Phone: 2020-2024 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2020-2024",
+      "20202024",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2020-2024](tel:20202024)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2020-2024",
+      "digits": "20202024",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20222027",
+    "entity_name": "Phone: 2022-2027 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2022-2027",
+      "20222027",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2022-2027](tel:20222027)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2022-2027",
+      "digits": "20222027",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20092013",
+    "entity_name": "Phone: 2009-2013 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2009-2013",
+      "20092013",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2009-2013](tel:20092013)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2009-2013",
+      "digits": "20092013",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20212022",
+    "entity_name": "Phone: 2021-2022 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2021-2022",
+      "20212022",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2021-2022](tel:20212022)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2021-2022",
+      "digits": "20212022",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20112015",
+    "entity_name": "Phone: 2011-2015 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2011-2015",
+      "20112015",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2011-2015](tel:20112015)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2011-2015",
+      "digits": "20112015",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20032007",
+    "entity_name": "Phone: 2003-2007 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2003-2007",
+      "20032007",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2003-2007](tel:20032007)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2003-2007",
+      "digits": "20032007",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_20122016",
+    "entity_name": "Phone: 2012-2016 (Msajcea Alumni)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2012-2016",
+      "20122016",
+      "Msajcea alumni phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Alumni: [2012-2016](tel:20122016)",
+    "source_file": "Msajcea_alumni.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2012-2016",
+      "digits": "20122016",
+      "topic": "Msajcea Alumni"
+    }
+  },
+  {
+    "entity_key": "phone_79041174",
+    "entity_name": "Phone: 79041174 (Msajcea Antiragging)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "79041174",
+      "79041174",
+      "Msajcea antiragging phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Antiragging: [79041174](tel:79041174)",
+    "source_file": "Msajcea_antiragging.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "79041174",
+      "digits": "79041174",
+      "topic": "Msajcea Antiragging"
+    }
+  },
+  {
+    "entity_key": "email_abdulgafoor_msajcea_edu_in",
+    "entity_name": "Email: abdulgafoor@msajce-edu.in (Msajcea Courses Overview)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "abdulgafoor@msajce-edu.in",
+      "Msajcea courses overview email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Courses Overview: [abdulgafoor@msajce-edu.in](mailto:abdulgafoor@msajce-edu.in)",
+    "source_file": "Msajcea_courses_overview.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "abdulgafoor@msajce-edu.in",
+      "topic": "Msajcea Courses Overview"
+    }
+  },
+  {
+    "entity_key": "email_ped_santhosh_msajcea_edu_in",
+    "entity_name": "Email: ped.santhosh@msajce-edu.in (Msajcea Courses Overview)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "ped.santhosh@msajce-edu.in",
+      "Msajcea courses overview email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Courses Overview: [ped.santhosh@msajce-edu.in](mailto:ped.santhosh@msajce-edu.in)",
+    "source_file": "Msajcea_courses_overview.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "ped.santhosh@msajce-edu.in",
+      "topic": "Msajcea Courses Overview"
+    }
+  },
+  {
+    "entity_key": "email_principal_msajcea_edu_in",
+    "entity_name": "Email: principal@msajce-edu.in (Msajcea Courses Overview)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "principal@msajce-edu.in",
+      "Msajcea courses overview email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Courses Overview: [principal@msajce-edu.in](mailto:principal@msajce-edu.in)",
+    "source_file": "Msajcea_courses_overview.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "principal@msajce-edu.in",
+      "topic": "Msajcea Courses Overview"
+    }
+  },
+  {
+    "entity_key": "email_cse_vamsi_msajcea_edu_in",
+    "entity_name": "Email: cse.vamsi@msajce-edu.in (Msajcea Courses Overview)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "cse.vamsi@msajce-edu.in",
+      "Msajcea courses overview email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Courses Overview: [cse.vamsi@msajce-edu.in](mailto:cse.vamsi@msajce-edu.in)",
+    "source_file": "Msajcea_courses_overview.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "cse.vamsi@msajce-edu.in",
+      "topic": "Msajcea Courses Overview"
+    }
+  },
+  {
+    "entity_key": "url_3841641848",
+    "entity_name": "Link: https://ram-portfolio3d.vercel.app (Msajcea Developer Ramanathan)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://ram-portfolio3d.vercel.app",
+      "Msajcea developer ramanathan link"
+    ],
+    "value": "Verified Resource Link for Msajcea Developer Ramanathan: [https://ram-portfolio3d.vercel.app](https://ram-portfolio3d.vercel.app)",
+    "source_file": "Msajcea_developer_ramanathan.md",
+    "source_url": "https://ram-portfolio3d.vercel.app",
+    "details": {
+      "url": "https://ram-portfolio3d.vercel.app",
+      "topic": "Msajcea Developer Ramanathan"
+    }
+  },
+  {
+    "entity_key": "url_1724932462",
+    "entity_name": "Link: https://github.com/hackerstudent29 (Msajcea Developer Ramanathan)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://github.com/hackerstudent29",
+      "Msajcea developer ramanathan link"
+    ],
+    "value": "Verified Resource Link for Msajcea Developer Ramanathan: [https://github.com/hackerstudent29](https://github.com/hackerstudent29)",
+    "source_file": "Msajcea_developer_ramanathan.md",
+    "source_url": "https://github.com/hackerstudent29",
+    "details": {
+      "url": "https://github.com/hackerstudent29",
+      "topic": "Msajcea Developer Ramanathan"
+    }
+  },
+  {
+    "entity_key": "phone_20192020",
+    "entity_name": "Phone: 2019-2020 (Msajcea Ece)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2019-2020",
+      "20192020",
+      "Msajcea ece phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Ece: [2019-2020](tel:20192020)",
+    "source_file": "Msajcea_ece.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2019-2020",
+      "digits": "20192020",
+      "topic": "Msajcea Ece"
+    }
+  },
+  {
+    "entity_key": "phone_20182019",
+    "entity_name": "Phone: 2018-2019 (Msajcea Ece)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2018-2019",
+      "20182019",
+      "Msajcea ece phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Ece: [2018-2019](tel:20182019)",
+    "source_file": "Msajcea_ece.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2018-2019",
+      "digits": "20182019",
+      "topic": "Msajcea Ece"
+    }
+  },
+  {
+    "entity_key": "email_manjujackin_gmail_com",
+    "entity_name": "Email: manjujackin@gmail.com (Msajcea Edc)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "manjujackin@gmail.com",
+      "Msajcea edc email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Edc: [manjujackin@gmail.com](mailto:manjujackin@gmail.com)",
+    "source_file": "Msajcea_edc.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "manjujackin@gmail.com",
+      "topic": "Msajcea Edc"
+    }
+  },
+  {
+    "entity_key": "email_ushashankar77_gmail_com",
+    "entity_name": "Email: ushashankar77@gmail.com (Msajcea Edc)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "ushashankar77@gmail.com",
+      "Msajcea edc email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Edc: [ushashankar77@gmail.com](mailto:ushashankar77@gmail.com)",
+    "source_file": "Msajcea_edc.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "ushashankar77@gmail.com",
+      "topic": "Msajcea Edc"
+    }
+  },
+  {
+    "entity_key": "email_info_hussainbasha_com",
+    "entity_name": "Email: info@hussainbasha.com (Msajcea Edc)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "info@hussainbasha.com",
+      "Msajcea edc email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Edc: [info@hussainbasha.com](mailto:info@hussainbasha.com)",
+    "source_file": "Msajcea_edc.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "info@hussainbasha.com",
+      "topic": "Msajcea Edc"
+    }
+  },
+  {
+    "entity_key": "email_drushaaeswaran_gmail_com",
+    "entity_name": "Email: drushaaeswaran@gmail.com (Msajcea Edc)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "drushaaeswaran@gmail.com",
+      "Msajcea edc email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Edc: [drushaaeswaran@gmail.com](mailto:drushaaeswaran@gmail.com)",
+    "source_file": "Msajcea_edc.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "drushaaeswaran@gmail.com",
+      "topic": "Msajcea Edc"
+    }
+  },
+  {
+    "entity_key": "email_advocateadhilogi_gmail_com",
+    "entity_name": "Email: advocateadhilogi@gmail.com (Msajcea Edc)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "advocateadhilogi@gmail.com",
+      "Msajcea edc email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Edc: [advocateadhilogi@gmail.com](mailto:advocateadhilogi@gmail.com)",
+    "source_file": "Msajcea_edc.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "advocateadhilogi@gmail.com",
+      "topic": "Msajcea Edc"
+    }
+  },
+  {
+    "entity_key": "email_ece_manju_msajcea_edu_in",
+    "entity_name": "Email: ece.manju@msajce-edu.in (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "ece.manju@msajce-edu.in",
+      "Msajcea faculty profiles email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Faculty Profiles: [ece.manju@msajce-edu.in](mailto:ece.manju@msajce-edu.in)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "ece.manju@msajce-edu.in",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20214101",
+    "entity_name": "Phone: 20214101 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20214101",
+      "20214101",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20214101](tel:20214101)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20214101",
+      "digits": "20214101",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20214106",
+    "entity_name": "Phone: 20214106 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20214106",
+      "20214106",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20214106](tel:20214106)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20214106",
+      "digits": "20214106",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20201018",
+    "entity_name": "Phone: 20201018 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20201018",
+      "20201018",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20201018](tel:20201018)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20201018",
+      "digits": "20201018",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20204102",
+    "entity_name": "Phone: 20204102 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20204102",
+      "20204102",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20204102](tel:20204102)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20204102",
+      "digits": "20204102",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20224107",
+    "entity_name": "Phone: 20224107 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20224107",
+      "20224107",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20224107](tel:20224107)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20224107",
+      "digits": "20224107",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_36518900",
+    "entity_name": "Phone: 36518900 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "36518900",
+      "36518900",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [36518900](tel:36518900)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "36518900",
+      "digits": "36518900",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20194105",
+    "entity_name": "Phone: 20194105 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20194105",
+      "20194105",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20194105](tel:20194105)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20194105",
+      "digits": "20194105",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20204103",
+    "entity_name": "Phone: 20204103 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20204103",
+      "20204103",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20204103](tel:20204103)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20204103",
+      "digits": "20204103",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20214102",
+    "entity_name": "Phone: 20214102 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20214102",
+      "20214102",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20214102](tel:20214102)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20214102",
+      "digits": "20214102",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20214100",
+    "entity_name": "Phone: 20214100 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20214100",
+      "20214100",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20214100](tel:20214100)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20214100",
+      "digits": "20214100",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_81954927",
+    "entity_name": "Phone: 81954927 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "81954927",
+      "81954927",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [81954927](tel:81954927)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "81954927",
+      "digits": "81954927",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20214105",
+    "entity_name": "Phone: 20214105 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20214105",
+      "20214105",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20214105](tel:20214105)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20214105",
+      "digits": "20214105",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "phone_20204104",
+    "entity_name": "Phone: 20204104 (Msajcea Faculty Profiles)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "20204104",
+      "20204104",
+      "Msajcea faculty profiles phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Faculty Profiles: [20204104](tel:20204104)",
+    "source_file": "Msajcea_faculty_profiles.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "20204104",
+      "digits": "20204104",
+      "topic": "Msajcea Faculty Profiles"
+    }
+  },
+  {
+    "entity_key": "email_grievance_msajcea_edu_in",
+    "entity_name": "Email: grievance@msajce-edu.in (Msajcea Grievanceredressalcommittee)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "grievance@msajce-edu.in",
+      "Msajcea grievanceredressalcommittee email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Grievanceredressalcommittee: [grievance@msajce-edu.in](mailto:grievance@msajce-edu.in)",
+    "source_file": "Msajcea_grievanceredressalcommittee.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "grievance@msajce-edu.in",
+      "topic": "Msajcea Grievanceredressalcommittee"
+    }
+  },
+  {
+    "entity_key": "email_info_siif_ventures",
+    "entity_name": "Email: info@siif.ventures (Msajcea Incubation)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "info@siif.ventures",
+      "Msajcea incubation email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Incubation: [info@siif.ventures](mailto:info@siif.ventures)",
+    "source_file": "Msajcea_incubation.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "info@siif.ventures",
+      "topic": "Msajcea Incubation"
+    }
+  },
+  {
+    "entity_key": "url_2797401928",
+    "entity_name": "Link: http://www.hindawi.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.hindawi.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.hindawi.com/](http://www.hindawi.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.hindawi.com/",
+    "details": {
+      "url": "http://www.hindawi.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2615765661",
+    "entity_name": "Link: http://www.pagebypagebooks.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.pagebypagebooks.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.pagebypagebooks.com/](http://www.pagebypagebooks.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.pagebypagebooks.com/",
+    "details": {
+      "url": "http://www.pagebypagebooks.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_609888184",
+    "entity_name": "Link: https://www.getfreebooks.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.getfreebooks.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.getfreebooks.com/](https://www.getfreebooks.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.getfreebooks.com/",
+    "details": {
+      "url": "https://www.getfreebooks.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_4128935569",
+    "entity_name": "Link: https://www.coursera.org/in (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.coursera.org/in",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.coursera.org/in](https://www.coursera.org/in)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.coursera.org/in",
+    "details": {
+      "url": "https://www.coursera.org/in",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_519683659",
+    "entity_name": "Link: http://thescipub.com (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://thescipub.com",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://thescipub.com](http://thescipub.com)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://thescipub.com",
+    "details": {
+      "url": "http://thescipub.com",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_527838399",
+    "entity_name": "Link: https://www.free-ebooks.net/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.free-ebooks.net/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.free-ebooks.net/](https://www.free-ebooks.net/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.free-ebooks.net/",
+    "details": {
+      "url": "https://www.free-ebooks.net/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3928120826",
+    "entity_name": "Link: http://www.freebookshub.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.freebookshub.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.freebookshub.com/](http://www.freebookshub.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.freebookshub.com/",
+    "details": {
+      "url": "http://www.freebookshub.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3477993575",
+    "entity_name": "Link: https://www.robotshop.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.robotshop.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.robotshop.com/](https://www.robotshop.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.robotshop.com/",
+    "details": {
+      "url": "https://www.robotshop.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1462477498",
+    "entity_name": "Link: https://instuctables.com (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://instuctables.com",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://instuctables.com](https://instuctables.com)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://instuctables.com",
+    "details": {
+      "url": "https://instuctables.com",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_546935595",
+    "entity_name": "Link: https://www.wikihow.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.wikihow.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.wikihow.com/](https://www.wikihow.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.wikihow.com/",
+    "details": {
+      "url": "https://www.wikihow.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_226282208",
+    "entity_name": "Link: http://onlinebooks.library.upenn.edu/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://onlinebooks.library.upenn.edu/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://onlinebooks.library.upenn.edu/](http://onlinebooks.library.upenn.edu/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://onlinebooks.library.upenn.edu/",
+    "details": {
+      "url": "http://onlinebooks.library.upenn.edu/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_248167322",
+    "entity_name": "Link: https://teachable.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://teachable.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://teachable.com/](https://teachable.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://teachable.com/",
+    "details": {
+      "url": "https://teachable.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3395220886",
+    "entity_name": "Link: http://pubs.acs.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://pubs.acs.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://pubs.acs.org/](http://pubs.acs.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://pubs.acs.org/",
+    "details": {
+      "url": "http://pubs.acs.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1670649424",
+    "entity_name": "Link: https://www.skillshare.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.skillshare.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.skillshare.com/](https://www.skillshare.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.skillshare.com/",
+    "details": {
+      "url": "https://www.skillshare.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3795025625",
+    "entity_name": "Link: https://www.scholar.google.com (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.scholar.google.com",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.scholar.google.com](https://www.scholar.google.com)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.scholar.google.com",
+    "details": {
+      "url": "https://www.scholar.google.com",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_4087171403",
+    "entity_name": "Link: https://www.edx.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.edx.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.edx.org/](https://www.edx.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.edx.org/",
+    "details": {
+      "url": "https://www.edx.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_808368274",
+    "entity_name": "Link: http://www.internationaljournalssrg.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.internationaljournalssrg.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.internationaljournalssrg.org/](http://www.internationaljournalssrg.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.internationaljournalssrg.org/",
+    "details": {
+      "url": "http://www.internationaljournalssrg.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3603060533",
+    "entity_name": "Link: http://www.e-booksdirectory.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.e-booksdirectory.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.e-booksdirectory.com/](http://www.e-booksdirectory.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.e-booksdirectory.com/",
+    "details": {
+      "url": "http://www.e-booksdirectory.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3467840718",
+    "entity_name": "Link: https://www.kirkusreviews.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.kirkusreviews.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.kirkusreviews.com/](https://www.kirkusreviews.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.kirkusreviews.com/",
+    "details": {
+      "url": "https://www.kirkusreviews.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_174726994",
+    "entity_name": "Link: https://www.linkedin.com (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.linkedin.com",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.linkedin.com](https://www.linkedin.com)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.linkedin.com",
+    "details": {
+      "url": "https://www.linkedin.com",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3630402008",
+    "entity_name": "Link: http://www.tiprc.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.tiprc.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.tiprc.org/](http://www.tiprc.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.tiprc.org/",
+    "details": {
+      "url": "http://www.tiprc.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2448815277",
+    "entity_name": "Link: https://www.udacity.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.udacity.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.udacity.com/](https://www.udacity.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.udacity.com/",
+    "details": {
+      "url": "https://www.udacity.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_4204723432",
+    "entity_name": "Link: https://www.core.ac.uk/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.core.ac.uk/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.core.ac.uk/](https://www.core.ac.uk/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.core.ac.uk/",
+    "details": {
+      "url": "https://www.core.ac.uk/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1367397585",
+    "entity_name": "Link: http://www.biodiversity.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.biodiversity.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.biodiversity.org/](http://www.biodiversity.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.biodiversity.org/",
+    "details": {
+      "url": "http://www.biodiversity.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1616097820",
+    "entity_name": "Link: http://www.ebooks.com/en-in (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.ebooks.com/en-in",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.ebooks.com/en-in](http://www.ebooks.com/en-in)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.ebooks.com/en-in",
+    "details": {
+      "url": "http://www.ebooks.com/en-in",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1588835212",
+    "entity_name": "Link: https://www.khanacademy.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.khanacademy.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.khanacademy.org/](https://www.khanacademy.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.khanacademy.org/",
+    "details": {
+      "url": "https://www.khanacademy.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1516396806",
+    "entity_name": "Link: https://makeprojects.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://makeprojects.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://makeprojects.com/](https://makeprojects.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://makeprojects.com/",
+    "details": {
+      "url": "https://makeprojects.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3693961977",
+    "entity_name": "Link: https://nlist.inflibnet.ac.in/veresources.php (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://nlist.inflibnet.ac.in/veresources.php",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://nlist.inflibnet.ac.in/veresources.php](https://nlist.inflibnet.ac.in/veresources.php)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://nlist.inflibnet.ac.in/veresources.php",
+    "details": {
+      "url": "https://nlist.inflibnet.ac.in/veresources.php",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3640764382",
+    "entity_name": "Link: http://www.intechopen.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.intechopen.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.intechopen.com/](http://www.intechopen.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.intechopen.com/",
+    "details": {
+      "url": "http://www.intechopen.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3825733440",
+    "entity_name": "Link: https://publishing.cdlib.org/ucpreebooks/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://publishing.cdlib.org/ucpreebooks/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://publishing.cdlib.org/ucpreebooks/](https://publishing.cdlib.org/ucpreebooks/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://publishing.cdlib.org/ucpreebooks/",
+    "details": {
+      "url": "https://publishing.cdlib.org/ucpreebooks/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_4285689263",
+    "entity_name": "Link: https://www.doityourself.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.doityourself.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.doityourself.com/](https://www.doityourself.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.doityourself.com/",
+    "details": {
+      "url": "https://www.doityourself.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1192039238",
+    "entity_name": "Link: https://ikeahackers.net/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://ikeahackers.net/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://ikeahackers.net/](https://ikeahackers.net/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://ikeahackers.net/",
+    "details": {
+      "url": "https://ikeahackers.net/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3803529796",
+    "entity_name": "Link: http://www.worldlibrary.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.worldlibrary.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.worldlibrary.in/](http://www.worldlibrary.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.worldlibrary.in/",
+    "details": {
+      "url": "http://www.worldlibrary.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3752205781",
+    "entity_name": "Link: https://www.howstuffworks.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.howstuffworks.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.howstuffworks.com/](https://www.howstuffworks.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.howstuffworks.com/",
+    "details": {
+      "url": "https://www.howstuffworks.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2122929082",
+    "entity_name": "Link: https://ess.inflibnet.ac.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://ess.inflibnet.ac.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://ess.inflibnet.ac.in/](https://ess.inflibnet.ac.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://ess.inflibnet.ac.in/",
+    "details": {
+      "url": "https://ess.inflibnet.ac.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2389045065",
+    "entity_name": "Link: http://bookboon.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://bookboon.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://bookboon.com/](http://bookboon.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://bookboon.com/",
+    "details": {
+      "url": "http://bookboon.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3615066224",
+    "entity_name": "Link: https://www.udemy.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.udemy.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.udemy.com/](https://www.udemy.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.udemy.com/",
+    "details": {
+      "url": "https://www.udemy.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3845435906",
+    "entity_name": "Link: http://www.biomedcentral.com/journals (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.biomedcentral.com/journals",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.biomedcentral.com/journals](http://www.biomedcentral.com/journals)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.biomedcentral.com/journals",
+    "details": {
+      "url": "http://www.biomedcentral.com/journals",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3459325246",
+    "entity_name": "Link: http://www.blackbookonline.info/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.blackbookonline.info/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.blackbookonline.info/](http://www.blackbookonline.info/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.blackbookonline.info/",
+    "details": {
+      "url": "http://www.blackbookonline.info/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3753850228",
+    "entity_name": "Link: https://books.google.co.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://books.google.co.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://books.google.co.in/](https://books.google.co.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://books.google.co.in/",
+    "details": {
+      "url": "https://books.google.co.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1893259051",
+    "entity_name": "Link: http://www.doabooks.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.doabooks.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.doabooks.org/](http://www.doabooks.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.doabooks.org/",
+    "details": {
+      "url": "http://www.doabooks.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2481235316",
+    "entity_name": "Link: http://www.gutenberg.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.gutenberg.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.gutenberg.org/](http://www.gutenberg.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.gutenberg.org/",
+    "details": {
+      "url": "http://www.gutenberg.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3704494706",
+    "entity_name": "Link: https://shodhganga.inflibnet.ac.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://shodhganga.inflibnet.ac.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://shodhganga.inflibnet.ac.in/](https://shodhganga.inflibnet.ac.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://shodhganga.inflibnet.ac.in/",
+    "details": {
+      "url": "https://shodhganga.inflibnet.ac.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_31509473",
+    "entity_name": "Link: http://www.freebookcentre.net/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.freebookcentre.net/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.freebookcentre.net/](http://www.freebookcentre.net/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.freebookcentre.net/",
+    "details": {
+      "url": "http://www.freebookcentre.net/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_120834958",
+    "entity_name": "Link: http://www.audiobooksforfree.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.audiobooksforfree.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.audiobooksforfree.com/](http://www.audiobooksforfree.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.audiobooksforfree.com/",
+    "details": {
+      "url": "http://www.audiobooksforfree.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_177903313",
+    "entity_name": "Link: https://www.audible.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.audible.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.audible.in/](https://www.audible.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.audible.in/",
+    "details": {
+      "url": "https://www.audible.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2586146266",
+    "entity_name": "Link: http://www.readprint.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.readprint.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.readprint.com/](http://www.readprint.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.readprint.com/",
+    "details": {
+      "url": "http://www.readprint.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1169048112",
+    "entity_name": "Link: http://www.cscjournals.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.cscjournals.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.cscjournals.org/](http://www.cscjournals.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.cscjournals.org/",
+    "details": {
+      "url": "http://www.cscjournals.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2006126156",
+    "entity_name": "Link: http://www.omicsonline.org (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.omicsonline.org",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.omicsonline.org](http://www.omicsonline.org)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.omicsonline.org",
+    "details": {
+      "url": "http://www.omicsonline.org",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2678848892",
+    "entity_name": "Link: https://jgateplus.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://jgateplus.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://jgateplus.com/](https://jgateplus.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://jgateplus.com/",
+    "details": {
+      "url": "https://jgateplus.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2710397571",
+    "entity_name": "Link: https://www.youtube.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.youtube.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.youtube.com/](https://www.youtube.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.youtube.com/",
+    "details": {
+      "url": "https://www.youtube.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_236657697",
+    "entity_name": "Link: http://www.freetechbooks.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.freetechbooks.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.freetechbooks.com/](http://www.freetechbooks.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.freetechbooks.com/",
+    "details": {
+      "url": "http://www.freetechbooks.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2187781705",
+    "entity_name": "Link: http://freecomputerbooks.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://freecomputerbooks.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://freecomputerbooks.com/](http://freecomputerbooks.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://freecomputerbooks.com/",
+    "details": {
+      "url": "http://freecomputerbooks.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_499565544",
+    "entity_name": "Link: http://www.comicextra.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.comicextra.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.comicextra.com/](http://www.comicextra.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.comicextra.com/",
+    "details": {
+      "url": "http://www.comicextra.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1496205415",
+    "entity_name": "Link: https://delnet.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://delnet.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://delnet.in/](https://delnet.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://delnet.in/",
+    "details": {
+      "url": "https://delnet.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_431550918",
+    "entity_name": "Link: https://www.ted.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.ted.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.ted.com/](https://www.ted.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.ted.com/",
+    "details": {
+      "url": "https://www.ted.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2002924830",
+    "entity_name": "Link: https://www.wonderhowto.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.wonderhowto.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.wonderhowto.com/](https://www.wonderhowto.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.wonderhowto.com/",
+    "details": {
+      "url": "https://www.wonderhowto.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3799764589",
+    "entity_name": "Link: http://www.scirp.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.scirp.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.scirp.org/](http://www.scirp.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.scirp.org/",
+    "details": {
+      "url": "http://www.scirp.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1089243060",
+    "entity_name": "Link: https://www.arxiv.org (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.arxiv.org",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.arxiv.org](https://www.arxiv.org)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.arxiv.org",
+    "details": {
+      "url": "https://www.arxiv.org",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3122597620",
+    "entity_name": "Link: http://archive.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://archive.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://archive.org/](http://archive.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://archive.org/",
+    "details": {
+      "url": "http://archive.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_4124189984",
+    "entity_name": "Link: https://www.wdl.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.wdl.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.wdl.org/](https://www.wdl.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.wdl.org/",
+    "details": {
+      "url": "https://www.wdl.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_61104600",
+    "entity_name": "Link: http://www.worldbook.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.worldbook.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.worldbook.com/](http://www.worldbook.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.worldbook.com/",
+    "details": {
+      "url": "http://www.worldbook.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_853585329",
+    "entity_name": "Link: https://www.arbookfind.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.arbookfind.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.arbookfind.com/](https://www.arbookfind.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.arbookfind.com/",
+    "details": {
+      "url": "https://www.arbookfind.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1889129613",
+    "entity_name": "Link: https://www.intechopen.com/books (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.intechopen.com/books",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://www.intechopen.com/books](https://www.intechopen.com/books)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://www.intechopen.com/books",
+    "details": {
+      "url": "https://www.intechopen.com/books",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2303427430",
+    "entity_name": "Link: http://www.gpo.gov/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.gpo.gov/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.gpo.gov/](http://www.gpo.gov/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.gpo.gov/",
+    "details": {
+      "url": "http://www.gpo.gov/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3079630056",
+    "entity_name": "Link: http://www.ias.ac.in (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.ias.ac.in",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.ias.ac.in](http://www.ias.ac.in)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.ias.ac.in",
+    "details": {
+      "url": "http://www.ias.ac.in",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_428377454",
+    "entity_name": "Link: http://www.iaeme.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.iaeme.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.iaeme.com/](http://www.iaeme.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.iaeme.com/",
+    "details": {
+      "url": "http://www.iaeme.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3358110953",
+    "entity_name": "Link: http://doaj.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://doaj.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://doaj.org/](http://doaj.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://doaj.org/",
+    "details": {
+      "url": "http://doaj.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3010618926",
+    "entity_name": "Link: http://www.ams.org/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.ams.org/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.ams.org/](http://www.ams.org/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.ams.org/",
+    "details": {
+      "url": "http://www.ams.org/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3730180903",
+    "entity_name": "Link: http://www.fictiondb.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.fictiondb.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.fictiondb.com/](http://www.fictiondb.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.fictiondb.com/",
+    "details": {
+      "url": "http://www.fictiondb.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_2765892660",
+    "entity_name": "Link: http://www.ripublication.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.ripublication.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.ripublication.com/](http://www.ripublication.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.ripublication.com/",
+    "details": {
+      "url": "http://www.ripublication.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_3766058672",
+    "entity_name": "Link: https://ndl.iitkgp.ac.in/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://ndl.iitkgp.ac.in/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [https://ndl.iitkgp.ac.in/](https://ndl.iitkgp.ac.in/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "https://ndl.iitkgp.ac.in/",
+    "details": {
+      "url": "https://ndl.iitkgp.ac.in/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "url_1190420830",
+    "entity_name": "Link: http://www.nptelvideos.com/ (Msajcea Library)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "http://www.nptelvideos.com/",
+      "Msajcea library link"
+    ],
+    "value": "Verified Resource Link for Msajcea Library: [http://www.nptelvideos.com/](http://www.nptelvideos.com/)",
+    "source_file": "Msajcea_library.md",
+    "source_url": "http://www.nptelvideos.com/",
+    "details": {
+      "url": "http://www.nptelvideos.com/",
+      "topic": "Msajcea Library"
+    }
+  },
+  {
+    "entity_key": "email_helpline_antiragging_in",
+    "entity_name": "Email: helpline@antiragging.in (Msajcea Msajceapolicy)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "helpline@antiragging.in",
+      "Msajcea Msajceapolicy email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Msajceapolicy: [helpline@antiragging.in](mailto:helpline@antiragging.in)",
+    "source_file": "Msajcea_Msajceapolicy.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "helpline@antiragging.in",
+      "topic": "Msajcea Msajceapolicy"
+    }
+  },
+  {
+    "entity_key": "phone_18001805",
+    "entity_name": "Phone: 1800-1805 (Msajcea Msajceapolicy)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "1800-1805",
+      "18001805",
+      "Msajcea Msajceapolicy phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Msajceapolicy: [1800-1805](tel:18001805)",
+    "source_file": "Msajcea_Msajceapolicy.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "1800-1805",
+      "digits": "18001805",
+      "topic": "Msajcea Msajceapolicy"
+    }
+  },
+  {
+    "entity_key": "phone_20162017",
+    "entity_name": "Phone: 2016-2017 (Msajcea Naac)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2016-2017",
+      "20162017",
+      "Msajcea naac phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Naac: [2016-2017](tel:20162017)",
+    "source_file": "Msajcea_naac.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2016-2017",
+      "digits": "20162017",
+      "topic": "Msajcea Naac"
+    }
+  },
+  {
+    "entity_key": "phone_20172018",
+    "entity_name": "Phone: 2017-2018 (Msajcea Naac)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "2017-2018",
+      "20172018",
+      "Msajcea naac phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Naac: [2017-2018](tel:20172018)",
+    "source_file": "Msajcea_naac.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "2017-2018",
+      "digits": "20172018",
+      "topic": "Msajcea Naac"
+    }
+  },
+  {
+    "entity_key": "url_3099365864",
+    "entity_name": "Link: https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2025.pdf (Msajcea Nirf)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.msajce-edu.in/uploads/nift/**msajcea**-overall-2025.pdf",
+      "Msajcea nirf link"
+    ],
+    "value": "Verified Resource Link for Msajcea Nirf: [https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2025.pdf](https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2025.pdf)",
+    "source_file": "Msajcea_nirf.md",
+    "source_url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2025.pdf",
+    "details": {
+      "url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2025.pdf",
+      "topic": "Msajcea Nirf"
+    }
+  },
+  {
+    "entity_key": "url_2441647271",
+    "entity_name": "Link: https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2025.pdf (Msajcea Nirf)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.msajce-edu.in/uploads/nift/**msajcea**-innov-2025.pdf",
+      "Msajcea nirf link"
+    ],
+    "value": "Verified Resource Link for Msajcea Nirf: [https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2025.pdf](https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2025.pdf)",
+    "source_file": "Msajcea_nirf.md",
+    "source_url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2025.pdf",
+    "details": {
+      "url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2025.pdf",
+      "topic": "Msajcea Nirf"
+    }
+  },
+  {
+    "entity_key": "url_3799606668",
+    "entity_name": "Link: https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2025.pdf (Msajcea Nirf)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.msajce-edu.in/uploads/nift/**msajcea**-engg-2025.pdf",
+      "Msajcea nirf link"
+    ],
+    "value": "Verified Resource Link for Msajcea Nirf: [https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2025.pdf](https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2025.pdf)",
+    "source_file": "Msajcea_nirf.md",
+    "source_url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2025.pdf",
+    "details": {
+      "url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2025.pdf",
+      "topic": "Msajcea Nirf"
+    }
+  },
+  {
+    "entity_key": "url_1172715529",
+    "entity_name": "Link: https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2026.pdf (Msajcea Nirf)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.msajce-edu.in/uploads/nift/**msajcea**-innov-2026.pdf",
+      "Msajcea nirf link"
+    ],
+    "value": "Verified Resource Link for Msajcea Nirf: [https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2026.pdf](https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2026.pdf)",
+    "source_file": "Msajcea_nirf.md",
+    "source_url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2026.pdf",
+    "details": {
+      "url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-INNOV-2026.pdf",
+      "topic": "Msajcea Nirf"
+    }
+  },
+  {
+    "entity_key": "url_3400641784",
+    "entity_name": "Link: https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2026.pdf (Msajcea Nirf)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.msajce-edu.in/uploads/nift/**msajcea**-overall-2026.pdf",
+      "Msajcea nirf link"
+    ],
+    "value": "Verified Resource Link for Msajcea Nirf: [https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2026.pdf](https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2026.pdf)",
+    "source_file": "Msajcea_nirf.md",
+    "source_url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2026.pdf",
+    "details": {
+      "url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-OVERALL-2026.pdf",
+      "topic": "Msajcea Nirf"
+    }
+  },
+  {
+    "entity_key": "url_226710308",
+    "entity_name": "Link: https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2026.pdf (Msajcea Nirf)",
+    "entity_type": "RESOURCE_LINK",
+    "aliases": [
+      "https://www.msajce-edu.in/uploads/nift/**msajcea**-engg-2026.pdf",
+      "Msajcea nirf link"
+    ],
+    "value": "Verified Resource Link for Msajcea Nirf: [https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2026.pdf](https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2026.pdf)",
+    "source_file": "Msajcea_nirf.md",
+    "source_url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2026.pdf",
+    "details": {
+      "url": "https://www.msajce-edu.in/uploads/nift/**msajcea**-ENGG-2026.pdf",
+      "topic": "Msajcea Nirf"
+    }
+  },
+  {
+    "entity_key": "phone_90376639",
+    "entity_name": "Phone: 9037 6639 (Msajcea Placement)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "9037 6639",
+      "90376639",
+      "Msajcea placement phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Placement: [9037 6639](tel:90376639)",
+    "source_file": "Msajcea_placement.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "9037 6639",
+      "digits": "90376639",
+      "topic": "Msajcea Placement"
+    }
+  },
+  {
+    "entity_key": "phone_94090225",
+    "entity_name": "Phone: 9409 0225 (Msajcea Placement)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "9409 0225",
+      "94090225",
+      "Msajcea placement phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Placement: [9409 0225](tel:94090225)",
+    "source_file": "Msajcea_placement.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "9409 0225",
+      "digits": "94090225",
+      "topic": "Msajcea Placement"
+    }
+  },
+  {
+    "entity_key": "email_ms_tanscst_nic_in",
+    "entity_name": "Email: ms.tanscst@nic.in (Msajcea Principal)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "ms.tanscst@nic.in",
+      "Msajcea principal email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Principal: [ms.tanscst@nic.in](mailto:ms.tanscst@nic.in)",
+    "source_file": "Msajcea_principal.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "ms.tanscst@nic.in",
+      "topic": "Msajcea Principal"
+    }
+  },
+  {
+    "entity_key": "phone_04422301428",
+    "entity_name": "Phone: 044-22301428 (Msajcea Principal)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "044-22301428",
+      "04422301428",
+      "Msajcea principal phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Principal: [044-22301428](tel:04422301428)",
+    "source_file": "Msajcea_principal.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "044-22301428",
+      "digits": "04422301428",
+      "topic": "Msajcea Principal"
+    }
+  },
+  {
+    "entity_key": "email_parthiban_nitt_edu",
+    "entity_name": "Email: parthiban@nitt.edu (Msajcea Research)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "parthiban@nitt.edu",
+      "Msajcea research email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Research: [parthiban@nitt.edu](mailto:parthiban@nitt.edu)",
+    "source_file": "Msajcea_research.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "parthiban@nitt.edu",
+      "topic": "Msajcea Research"
+    }
+  },
+  {
+    "entity_key": "email_sabitha_ramakrishnan_gmail_com",
+    "entity_name": "Email: sabitha.ramakrishnan@gmail.com (Msajcea Research)",
+    "entity_type": "CONTACT_EMAIL",
+    "aliases": [
+      "sabitha.ramakrishnan@gmail.com",
+      "Msajcea research email",
+      "email",
+      "contact email"
+    ],
+    "value": "Official Email for Msajcea Research: [sabitha.ramakrishnan@gmail.com](mailto:sabitha.ramakrishnan@gmail.com)",
+    "source_file": "Msajcea_research.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "email": "sabitha.ramakrishnan@gmail.com",
+      "topic": "Msajcea Research"
+    }
+  },
+  {
+    "entity_key": "phone_97898950",
+    "entity_name": "Phone: 97898950 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "97898950",
+      "97898950",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [97898950](tel:97898950)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "97898950",
+      "digits": "97898950",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_84088699",
+    "entity_name": "Phone: 8408 8699 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "8408 8699",
+      "84088699",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [8408 8699](tel:84088699)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "8408 8699",
+      "digits": "84088699",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_94031962",
+    "entity_name": "Phone: 9403 1962 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "9403 1962",
+      "94031962",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [9403 1962](tel:94031962)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "9403 1962",
+      "digits": "94031962",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_98492656",
+    "entity_name": "Phone: 98492656 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "98492656",
+      "98492656",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [98492656](tel:98492656)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "98492656",
+      "digits": "98492656",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_95660378",
+    "entity_name": "Phone: 95660378 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "95660378",
+      "95660378",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [95660378](tel:95660378)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "95660378",
+      "digits": "95660378",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_97102090",
+    "entity_name": "Phone: 97102090 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "97102090",
+      "97102090",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [97102090](tel:97102090)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "97102090",
+      "digits": "97102090",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_97109399",
+    "entity_name": "Phone: 97109399 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "97109399",
+      "97109399",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [97109399](tel:97109399)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "97109399",
+      "digits": "97109399",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_73585277",
+    "entity_name": "Phone: 73585277 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "73585277",
+      "73585277",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [73585277](tel:73585277)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "73585277",
+      "digits": "73585277",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_99400506",
+    "entity_name": "Phone: 99400506 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "99400506",
+      "99400506",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [99400506](tel:99400506)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "99400506",
+      "digits": "99400506",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_97899703",
+    "entity_name": "Phone: 97899703 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "97899703",
+      "97899703",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [97899703](tel:97899703)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "97899703",
+      "digits": "97899703",
+      "topic": "Msajcea Transport"
+    }
+  },
+  {
+    "entity_key": "phone_97907509",
+    "entity_name": "Phone: 97907509 (Msajcea Transport)",
+    "entity_type": "CONTACT_PHONE",
+    "aliases": [
+      "97907509",
+      "97907509",
+      "Msajcea transport phone",
+      "phone",
+      "mobile"
+    ],
+    "value": "Contact Number for Msajcea Transport: [97907509](tel:97907509)",
+    "source_file": "Msajcea_transport.md",
+    "source_url": "https://msajce-edu.in",
+    "details": {
+      "phone": "97907509",
+      "digits": "97907509",
+      "topic": "Msajcea Transport"
+    }
+  }
+]
+
+
