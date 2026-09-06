@@ -44,24 +44,24 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   });
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans">
-      <div className={`border rounded-2xl shadow-xl overflow-hidden flex flex-col backdrop-blur-xl transition-colors ${
-        isDark ? 'bg-[#131b26]/80 border-[#243247]' : 'bg-white border-slate-200'
+    <div className="space-y-6 animate-fade-in font-ui">
+      <div className={`border rounded-3xl overflow-hidden flex flex-col backdrop-blur-xl transition-colors ${
+        isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08] shadow-sm'
       }`}>
         {/* Table Header */}
         <div className={`p-6 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${
-          isDark ? 'border-[#243247]' : 'border-slate-200'
+          isDark ? 'border-white/[0.06]' : 'border-black/[0.08]'
         }`}>
           <div>
-            <h2 className={`text-xl font-bold tracking-tight ${isDark ? 'text-[#F7F6ED]' : 'text-slate-900'}`}>
+            <h2 className={`text-xl font-heading font-bold tracking-tight ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
               Real Users & Sessions ({sessions.length} Unique Users)
             </h2>
-            <p className={`text-xs ${isDark ? 'text-[#94a3b8]' : 'text-slate-500'}`}>
+            <p className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>
               Multi-session user tracking grouped by User ID and IP. Total tokens and cost include all sessions created by each user.
             </p>
           </div>
           <div className="relative w-full sm:w-80">
-            <Search className={`w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-[#94a3b8]' : 'text-slate-400'}`} />
+              <Search className={`w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`} />
             <input 
               type="text" 
               value={searchTerm}
@@ -69,8 +69,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               placeholder="Search User ID, IP, session ID or prompt..." 
               className={`w-full pl-9 pr-4 py-2 border rounded-xl text-xs focus:outline-none transition-all ${
                 isDark 
-                  ? 'bg-[#0b0f17] border-[#243247] text-[#F7F6ED] placeholder-[#94a3b8] focus:border-[#D0E7E1]' 
-                  : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-[#2E6B5E]'
+                  ? 'bg-[#0b0c0e] border-white/[0.08] text-[#f4f3ee] placeholder-[#b1ada1]/60 focus:border-[#2E6B5E]' 
+                  : 'bg-[#F7F6ED] border-black/[0.08] text-[#1C1917] placeholder-[#78716C]/60 focus:border-[#2E6B5E]'
               }`}
             />
           </div>
@@ -80,7 +80,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className={`font-mono uppercase tracking-wider border-b ${
-              isDark ? 'bg-[#0b0f17]/90 text-[#94a3b8] border-[#243247]' : 'bg-slate-50 text-slate-500 border-slate-200'
+              isDark ? 'bg-[#0b0c0e]/80 text-[#b1ada1] border-white/[0.06]' : 'bg-[#F7F6ED] text-[#57534E] border-black/[0.08]'
             }`}>
               <tr>
                 <th className="px-6 py-4 font-semibold">User & Device Info</th>
@@ -92,10 +92,10 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                 <th className="px-6 py-4 text-right">Sessions & Traces</th>
               </tr>
             </thead>
-            <tbody className={`divide-y ${isDark ? 'divide-[#243247]/60' : 'divide-slate-100'}`}>
+            <tbody className={`divide-y ${isDark ? 'divide-white/[0.04]' : 'divide-black/[0.04]'}`}>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className={`px-6 py-12 text-center ${isDark ? 'text-[#94a3b8]' : 'text-slate-500'}`}>
+                  <td colSpan={7} className={`px-6 py-12 text-center ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
                     No users logged in database yet. Start a chat on the main app to log live telemetry.
                   </td>
                 </tr>
@@ -118,22 +118,22 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                       {/* USER MASTER ROW */}
                       <tr 
                         className={`transition-colors cursor-pointer font-sans ${
-                          isDark ? 'bg-[#131b26] hover:bg-[#1a2434]' : 'bg-slate-50/50 hover:bg-slate-100/80'
+                          isDark ? 'bg-[#14151a] hover:bg-white/[0.03]' : 'bg-white hover:bg-[#F7F6ED]/60'
                         }`}
                         onClick={() => toggleUser(userId)}
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-xl bg-[#2E6B5E]/20 text-[#059669]">
+                            <div className="p-2 rounded-xl bg-[#2E6B5E]/20 text-[#10b981]">
                               <User className="w-4 h-4" />
                             </div>
                             <div className="flex flex-col gap-0.5">
                               <span className={`font-mono text-xs font-bold ${
-                                isDark ? 'text-[#F7F6ED]' : 'text-slate-900'
+                                isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'
                               }`}>
                                 ID: {userId}
                               </span>
-                              <span className={`text-[11px] font-mono ${isDark ? 'text-[#94a3b8]' : 'text-slate-500'}`}>
+                              <span className={`text-[11px] font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
                                 IP: {item.user_ip || '127.0.0.1'}
                               </span>
                             </div>
@@ -141,37 +141,37 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                         </td>
 
                         <td className="px-6 py-4 text-center whitespace-nowrap">
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#2E6B5E]/30 text-[#059669] border border-[#2E6B5E]/40">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#2E6B5E]/20 text-[#10b981] border border-[#2E6B5E]/30">
                             {totalSessions} Session{totalSessions > 1 ? 's' : ''}
                           </span>
                         </td>
 
                         <td className="px-6 py-4 text-center whitespace-nowrap font-mono font-semibold">
-                          <span className={isDark ? 'text-[#D0E7E1]' : 'text-slate-700'}>
+                          <span className={isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}>
                             {totalMsgs} msgs
                           </span>
                         </td>
 
                         <td className={`px-6 py-4 text-right font-mono font-bold text-xs ${
-                          isDark ? 'text-[#F7F6ED]' : 'text-slate-900'
+                          isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'
                         }`}>
                           {totalTokens.toLocaleString()} tok
                         </td>
 
                         <td className="px-6 py-4 text-right font-mono font-bold whitespace-nowrap">
-                          <div className="text-[#059669] text-xs">${totalCostUsd.toFixed(5)}</div>
-                          <div className="text-[10px] text-slate-400 font-normal">≈ ₹{totalCostInr.toFixed(3)}</div>
+                          <div className="text-[#10b981] text-xs">${totalCostUsd.toFixed(5)}</div>
+                          <div className={`text-[10px] font-normal ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>≈ ₹{totalCostInr.toFixed(3)}</div>
                         </td>
 
-                        <td className={`px-6 py-4 whitespace-nowrap text-xs ${isDark ? 'text-[#94a3b8]' : 'text-slate-500'}`}>
+                        <td className={`px-6 py-4 whitespace-nowrap text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
                           {lastActive}
                         </td>
 
                         <td className="px-6 py-4 text-right">
-                          <button className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                          <button className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
                             isDark 
-                              ? 'bg-[#1a2434] text-[#D0E7E1] border-[#243247] hover:bg-[#2E6B5E] hover:text-white' 
-                              : 'bg-white text-slate-700 border-slate-200 hover:bg-[#059669] hover:text-white shadow-sm'
+                              ? 'bg-white/[0.05] text-[#f4f3ee] border-white/[0.08] hover:bg-[#2E6B5E] hover:text-white' 
+                              : 'bg-white text-[#1C1917] border-black/[0.08] hover:bg-[#2E6B5E] hover:text-white shadow-sm'
                           }`}>
                             <span>{isExpanded ? 'Collapse Sessions' : 'View Sessions'}</span>
                             {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -182,10 +182,10 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                       {/* EXPANDABLE SUB-SESSIONS FOR THIS USER */}
                       {isExpanded && (
                         <tr>
-                          <td colSpan={7} className={`p-0 ${isDark ? 'bg-[#0b0f17]/60' : 'bg-slate-100/50'}`}>
+                          <td colSpan={7} className={`p-0 ${isDark ? 'bg-[#0b0c0e]/50' : 'bg-[#F7F6ED]/50'}`}>
                             <div className="p-4 space-y-2">
                               <div className={`text-[10px] font-mono uppercase tracking-wider font-semibold px-2 ${
-                                isDark ? 'text-[#94a3b8]' : 'text-slate-500'
+                                isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'
                               }`}>
                                 Chat Sessions Created By User ({userSessions.length}):
                               </div>
@@ -193,39 +193,41 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 {userSessions.map((s: any) => (
                                   <div 
                                     key={s.session_id} 
-                                    className={`p-3 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all ${
-                                      isDark ? 'bg-[#131b26] border-[#243247] hover:border-[#2E6B5E]/50' : 'bg-white border-slate-200 hover:border-[#059669]'
+                                    className={`p-3 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all ${
+                                      isDark 
+                                        ? 'bg-[#14151a] border-white/[0.06] hover:border-[#2E6B5E]/50' 
+                                        : 'bg-white border-black/[0.08] hover:border-[#2E6B5E]'
                                     }`}
                                   >
                                     <div className="min-w-0 flex-1 space-y-1">
                                       <div className="flex items-center gap-2">
-                                        <span className={`font-mono text-xs font-bold text-[#059669]`}>
+                                        <span className={`font-mono text-xs font-bold text-[#10b981]`}>
                                           ID: {s.session_id}
                                         </span>
-                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
-                                          isDark ? 'bg-[#1a2434] text-[#94a3b8]' : 'bg-slate-100 text-slate-600'
+                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+                                          isDark ? 'bg-white/[0.06] text-[#b1ada1]' : 'bg-[#F7F6ED] text-[#57534E]'
                                         }`}>
                                           {s.total_messages || 0} msgs
                                         </span>
                                       </div>
-                                      <p className={`text-xs line-clamp-1 italic ${isDark ? 'text-[#D0E7E1]' : 'text-slate-600'}`}>
+                                      <p className={`text-xs line-clamp-1 italic ${isDark ? 'text-[#f4f3ee]' : 'text-[#57534E]'}`}>
                                         "{s.first_user_query || 'No prompt recorded'}"
                                       </p>
                                     </div>
 
                                     <div className="flex items-center gap-4 text-xs font-mono shrink-0">
                                       <div className="text-right">
-                                        <div className={`font-bold ${isDark ? 'text-[#F7F6ED]' : 'text-slate-900'}`}>
+                                        <div className={`font-bold ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
                                           {(s.total_tokens || 0).toLocaleString()} tok
                                         </div>
-                                        <div className="text-[#059669] font-bold text-[11px]">
+                                        <div className="text-[#10b981] font-bold text-[11px]">
                                           ${(s.total_cost_usd || 0).toFixed(5)}
                                         </div>
                                       </div>
 
                                       <button 
                                         onClick={() => onSelectSession(s.session_id)}
-                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#2E6B5E] text-white text-xs font-semibold hover:bg-[#34D399] hover:text-[#0b0f17] transition-all shadow-sm"
+                                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#2E6B5E] text-white text-xs font-semibold hover:bg-[#10b981] transition-all shadow-sm"
                                       >
                                         Inspect Trace <ChevronRight className="w-3.5 h-3.5" />
                                       </button>

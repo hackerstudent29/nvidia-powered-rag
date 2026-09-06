@@ -171,7 +171,7 @@ export default function App() {
               onPastePrompt={(prompt) => setChatInput(prompt)}
             />
           ) : (
-            <div className="flex flex-col space-y-3 sm:space-y-4 pt-2 pb-36 sm:pb-40">
+            <div className="flex flex-col space-y-3 sm:space-y-4 pt-2 pb-48 sm:pb-44">
               {messages.map((msg, idx) => {
                 const prevUserMsg = idx > 0 ? messages.slice(0, idx).reverse().find(m => m.role === 'user') : null;
                 const userQueryText = prevUserMsg ? prevUserMsg.content : "MSAJCEA Inquiry";
@@ -200,7 +200,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => scrollToBottom(false)}
-            className="fixed bottom-28 sm:bottom-32 left-1/2 -translate-x-1/2 z-40 flex size-9 sm:size-10 items-center justify-center rounded-full bg-surface/95 backdrop-blur-md shadow-xl border border-line text-ink-2 hover:bg-hover hover:text-ink hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in-95 cursor-pointer"
+            className="fixed bottom-40 sm:bottom-36 left-1/2 -translate-x-1/2 z-40 flex size-9 sm:size-10 items-center justify-center rounded-full bg-surface/95 dark:bg-surface/90 backdrop-blur-md shadow-xl border border-line text-ink-2 hover:bg-hover hover:text-ink hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in-95 cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />

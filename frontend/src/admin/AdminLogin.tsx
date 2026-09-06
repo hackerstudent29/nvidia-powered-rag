@@ -40,39 +40,39 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] dark:bg-black transition-colors duration-300 font-['Switzer']">
+    <div className="min-h-screen flex items-center justify-center bg-[#F7F6ED] dark:bg-[#0b0c0e] transition-colors duration-300 font-ui relative overflow-hidden">
       
-      {/* Premium Apple-like ambient blur background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#005DA6] rounded-full mix-blend-multiply filter blur-[120px] opacity-20 dark:opacity-40 animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#005DA6] rounded-full mix-blend-multiply filter blur-[120px] opacity-20 dark:opacity-40 animate-pulse" style={{ animationDelay: "2s" }}></div>
+      {/* Premium ambient blur background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[45%] h-[45%] bg-[#2E6B5E]/15 dark:bg-[#10b981]/15 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] bg-[#D0E7E1]/30 dark:bg-[#2E6B5E]/20 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-[120px] animate-pulse" style={{ animationDelay: "2s" }}></div>
       </div>
 
-      <div className="relative w-full max-w-md p-10 space-y-8 bg-white/70 dark:bg-[#111111]/70 backdrop-blur-2xl rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-white/50 dark:border-white/10 z-10">
+      <div className="relative w-full max-w-md p-8 sm:p-10 space-y-8 bg-white/90 dark:bg-[#14151a]/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-black/[0.08] dark:border-white/[0.06] z-10 mx-4">
         
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-[#005DA6] flex items-center justify-center shadow-lg shadow-[#005DA6]/30">
-              <Lock className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 rounded-2xl bg-[#E1EED7] dark:bg-[#2E6B5E]/30 border border-[#2E6B5E]/30 dark:border-emerald-500/40 flex items-center justify-center shadow-lg">
+              <Lock className="w-8 h-8 text-[#2E6B5E] dark:text-[#34d399]" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Admin Portal</h2>
-          <p className="mt-2 text-sm text-[#616161] dark:text-[#a0a0a0]">
-            Sign in to access MSAJCEA Analytics
+          <h2 className="text-2xl sm:text-3xl font-heading font-bold tracking-tight text-ink dark:text-[#f4f3ee]">Admin Portal</h2>
+          <p className="mt-2 text-xs sm:text-sm text-ink-2 dark:text-[#b1ada1]">
+            Sign in to access MSAJCEA Telemetry & Operations
           </p>
         </div>
 
         <form className="space-y-6" onSubmit={handleLogin}>
           {error && (
-            <div className="p-4 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/30 text-center">
+            <div className="p-4 text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/10 rounded-xl border border-red-500/20 text-center">
               {error}
             </div>
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-[#616161]" />
+                <User className="h-5 w-5 text-ink-3 dark:text-zinc-500" />
               </div>
               <input
                 id="username"
@@ -80,14 +80,14 @@ export default function AdminLogin() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="block w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white/50 dark:bg-black/50 text-gray-900 dark:text-white placeholder-[#616161] focus:outline-none focus:ring-2 focus:ring-[#005DA6] transition-all"
+                className="block w-full pl-12 pr-4 py-3.5 border border-line dark:border-white/[0.08] rounded-2xl bg-surface/80 dark:bg-zinc-900/80 text-ink dark:text-[#f4f3ee] placeholder-ink-3 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#2E6B5E] dark:focus:ring-emerald-500 transition-all text-sm"
                 placeholder="Admin ID"
               />
             </div>
 
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-[#616161]" />
+                <Lock className="h-5 w-5 text-ink-3 dark:text-zinc-500" />
               </div>
               <input
                 id="password"
@@ -95,7 +95,7 @@ export default function AdminLogin() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-gray-800 rounded-2xl bg-white/50 dark:bg-black/50 text-gray-900 dark:text-white placeholder-[#616161] focus:outline-none focus:ring-2 focus:ring-[#005DA6] transition-all"
+                className="block w-full pl-12 pr-4 py-3.5 border border-line dark:border-white/[0.08] rounded-2xl bg-surface/80 dark:bg-zinc-900/80 text-ink dark:text-[#f4f3ee] placeholder-ink-3 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#2E6B5E] dark:focus:ring-emerald-500 transition-all text-sm"
                 placeholder="Password"
               />
             </div>
@@ -104,7 +104,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="group relative w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl text-sm font-semibold text-white bg-[#005DA6] hover:bg-[#004a85] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#005DA6] transition-all disabled:opacity-50 shadow-lg shadow-[#005DA6]/20"
+            className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent rounded-2xl text-sm font-bold text-white dark:text-zinc-950 bg-[#2E6B5E] dark:bg-emerald-500 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2E6B5E] transition-all disabled:opacity-50 shadow-lg cursor-pointer"
           >
             {loading ? "Authenticating..." : "Sign In"}
             {!loading && (

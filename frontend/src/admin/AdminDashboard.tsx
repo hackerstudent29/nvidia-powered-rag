@@ -160,33 +160,31 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen font-sans relative pb-16 transition-colors duration-300 ${
-      isDark ? 'bg-[#0b0f17] text-[#F7F6ED]' : 'bg-[#f8fafc] text-[#0f172a]'
+    <div className={`min-h-screen font-ui relative pb-16 transition-colors duration-300 ${
+      isDark ? 'bg-[#0b0c0e] text-[#f4f3ee]' : 'bg-[#F7F6ED] text-[#1C1917]'
     }`}>
       
       {/* Background ambient lighting */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className={`absolute -top-[30%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] blur-3xl opacity-70 rounded-full ${
-          isDark ? 'bg-gradient-to-b from-[#2E6B5E]/20 via-[#D0E7E1]/5 to-transparent' : 'bg-gradient-to-b from-[#2E6B5E]/10 via-[#34D399]/5 to-transparent'
+        <div className={`absolute -top-[30%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] blur-3xl opacity-60 rounded-full ${
+          isDark ? 'bg-gradient-to-b from-[#2E6B5E]/20 via-[#10b981]/5 to-transparent' : 'bg-gradient-to-b from-[#2E6B5E]/15 via-[#D0E7E1]/20 to-transparent'
         }`} />
       </div>
 
       {/* FLOATING TOP NAVBAR */}
-      <div className="fixed top-4 left-0 right-0 z-50 px-4 pointer-events-none">
-        <header className={`pointer-events-auto max-w-7xl mx-auto h-16 backdrop-blur-2xl border rounded-2xl shadow-[0_12px_32px_-4px_rgba(0,0,0,0.3)] flex items-center justify-between px-6 transition-all ${
-          isDark ? 'bg-[#131b26]/80 border-[#243247]' : 'bg-white/90 border-slate-200'
+      <div className="fixed top-4 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none">
+        <header className={`pointer-events-auto max-w-7xl mx-auto h-16 backdrop-blur-2xl border rounded-2xl shadow-xl flex items-center justify-between px-4 sm:px-6 transition-all ${
+          isDark ? 'bg-[#14151a]/90 border-white/[0.06]' : 'bg-white/90 border-black/[0.08]'
         }`}>
           
           {/* Logo & Title */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#2E6B5E]/30 flex items-center justify-center border border-[#2E6B5E]/50">
-              <Activity className="w-5 h-5 text-[#D0E7E1]" />
+            <div className="w-9 h-9 rounded-xl bg-[#2E6B5E]/20 dark:bg-emerald-500/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-emerald-500/40">
+              <Activity className="w-5 h-5 text-[#2E6B5E] dark:text-[#34d399]" />
             </div>
             <div className="flex items-center gap-2">
-              <span className={`font-bold text-base tracking-tight ${isDark ? 'text-[#F7F6ED]' : 'text-[#0f172a]'}`}>Lorin AI</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-mono tracking-wider border ${
-                isDark ? 'bg-[#1a2434] text-[#94a3b8] border-[#243247]' : 'bg-slate-100 text-slate-600 border-slate-200'
-              }`}>
+              <span className="font-heading font-bold text-base tracking-tight text-ink dark:text-[#f4f3ee]">Lorin AI</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#34d399] border border-[#2E6B5E]/30 dark:border-emerald-500/30">
                 MSAJCEA Ops
               </span>
             </div>
@@ -194,7 +192,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* Floating Pill Nav Items */}
           <nav className={`hidden md:flex items-center p-1 rounded-xl border ${
-            isDark ? 'bg-[#0b0f17]/90 border-[#243247]' : 'bg-slate-100/90 border-slate-200'
+            isDark ? 'bg-[#1c1d24]/80 border-white/[0.06]' : 'bg-[#ECEAE0]/80 border-black/[0.06]'
           }`}>
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
@@ -202,10 +200,10 @@ export const AdminDashboard: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as any)}
-                  className={`px-4 py-1.5 rounded-lg font-medium text-xs transition-all ${
+                  className={`px-4 py-1.5 rounded-lg font-medium text-xs transition-all cursor-pointer ${
                     isActive 
-                      ? 'bg-[#005DA6] text-white font-semibold shadow-md shadow-[#005DA6]/30' 
-                      : isDark ? 'text-[#94a3b8] hover:text-[#F7F6ED]' : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-[#2E6B5E] dark:bg-emerald-500 text-white dark:text-zinc-950 font-bold shadow-md' 
+                      : isDark ? 'text-[#b1ada1] hover:text-[#f4f3ee] hover:bg-white/[0.04]' : 'text-[#57534E] hover:text-[#1C1917] hover:bg-black/[0.04]'
                   }`}
                 >
                   {item.label}
@@ -215,22 +213,22 @@ export const AdminDashboard: React.FC = () => {
           </nav>
 
           {/* Controls, Theme Toggle & Sign Out */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border ${
-              isDark ? 'bg-[#0b0f17]/80 border-[#243247] text-[#D0E7E1]' : 'bg-slate-100 border-slate-200 text-slate-700'
+              isDark ? 'bg-[#1c1d24] border-white/[0.06] text-[#b1ada1]' : 'bg-[#ECEAE0] border-black/[0.06] text-[#57534E]'
             }`}>
-              <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-              <span className="text-[11px] font-mono">Live 99.98%</span>
+              <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+              <span className="text-[11px] font-mono font-medium">Live 99.98%</span>
             </div>
 
             {/* Light / Dark Mode Toggle Button */}
             <button
               onClick={toggleTheme}
               title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
-              className={`p-2 rounded-xl transition-all border flex items-center gap-1.5 text-xs font-semibold ${
+              className={`p-2 rounded-xl transition-all border flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
                 isDark 
-                  ? 'bg-[#1a2434] hover:bg-[#243247] text-amber-300 border-[#243247]' 
-                  : 'bg-slate-100 hover:bg-slate-200 text-indigo-600 border-slate-200'
+                  ? 'bg-[#1c1d24] hover:bg-zinc-800 text-amber-300 border-white/[0.06]' 
+                  : 'bg-white hover:bg-[#ECEAE0] text-indigo-600 border-black/[0.08]'
               }`}
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-600" />}
@@ -244,8 +242,8 @@ export const AdminDashboard: React.FC = () => {
                 navigate('/admin/login');
               }}
               title="Sign Out"
-              className={`p-2 rounded-xl transition-all border ${
-                isDark ? 'bg-[#1a2434] hover:bg-rose-500/20 hover:text-rose-300 text-[#94a3b8] border-[#243247]' : 'bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 border-slate-200'
+              className={`p-2 rounded-xl transition-all border cursor-pointer ${
+                isDark ? 'bg-[#1c1d24] hover:bg-rose-500/20 hover:text-rose-300 text-[#b1ada1] border-white/[0.06]' : 'bg-white hover:bg-rose-50 hover:text-rose-600 text-[#57534E] border-black/[0.08]'
               }`}
             >
               <LogOut className="w-4 h-4" />
@@ -255,8 +253,8 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Mobile Tab Bar (sticky bottom for mobile) */}
-      <div className={`md:hidden fixed bottom-4 left-4 right-4 z-50 backdrop-blur-2xl border rounded-2xl p-2 flex justify-around shadow-2xl ${
-        isDark ? 'bg-[#131b26]/95 border-[#243247]' : 'bg-white/95 border-slate-200'
+      <div className={`md:hidden fixed bottom-4 left-4 right-4 z-50 backdrop-blur-2xl border rounded-2xl p-1.5 flex justify-around shadow-2xl ${
+        isDark ? 'bg-[#14151a]/95 border-white/[0.06]' : 'bg-white/95 border-black/[0.08]'
       }`}>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -265,8 +263,8 @@ export const AdminDashboard: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
-              className={`p-2 rounded-xl flex flex-col items-center text-[10px] ${
-                isActive ? 'bg-[#2E6B5E] text-white font-semibold' : isDark ? 'text-[#94a3b8]' : 'text-slate-500'
+              className={`p-2 rounded-xl flex flex-col items-center text-[10px] transition-all cursor-pointer ${
+                isActive ? 'bg-[#2E6B5E] dark:bg-emerald-500 text-white dark:text-zinc-950 font-bold' : isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'
               }`}
             >
               <Icon className="w-4 h-4 mb-0.5" />
@@ -277,7 +275,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* MAIN CONTENT AREA */}
-      <main className="w-full max-w-7xl mx-auto px-4 pt-24 pb-12 relative z-10 space-y-6">
+      <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 pt-24 pb-12 relative z-10 space-y-6">
         
         {error && (
           <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl text-xs font-mono flex items-center justify-between">
