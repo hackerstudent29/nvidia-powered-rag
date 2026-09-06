@@ -589,10 +589,18 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Configuration
+# CORS Configuration — read from ALLOWED_ORIGINS env var for production security
+# In Railway: set ALLOWED_ORIGINS=https://your-app.vercel.app
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+_allowed_origins: List[str] = (
+    ["*"] if _raw_origins.strip() == "*"
+    else [o.strip() for o in _raw_origins.split(",") if o.strip()]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app" if _raw_origins.strip() != "*" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,9 +1,21 @@
+# Secrets — never commit these
 .neon
 .env
 .env.*
+!.env.example
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.venv/
+venv/
+
+# Node / Frontend
 node_modules/
 dist/
+.vercel/
+
+# OS
 .DS_Store
 Thumbs.db
