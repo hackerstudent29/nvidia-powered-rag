@@ -982,8 +982,49 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </span>
                 </button>
               </Tooltip>
+            </div>
 
-              {/* Voice & STT Engine Selector */}
+            {/* Right side controls container (Listening Waveform + Voice Selector + Mic Action Button) */}
+            <div className="absolute right-2 bottom-2 z-[10] flex items-center gap-2">
+              {/* Dynamic Animated Soundwave Visualizer */}
+              <AnimatePresence>
+                {isRecording && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, x: 10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, x: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[#10b981] dark:text-[#10b981] backdrop-blur-md shadow-sm"
+                  >
+                    <div className="flex items-center gap-1 h-4">
+                      {audioData.map((val, i) => (
+                        <motion.span
+                          key={i}
+                          className="w-1 rounded-full bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                          animate={{
+                            height: [
+                              Math.max(4, val * 16),
+                              Math.max(6, val * 26),
+                              Math.max(4, val * 16)
+                            ]
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            repeatType: "mirror",
+                            duration: 0.18 + i * 0.04,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-[#10b981] uppercase">
+                      Listening
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Voice & STT Engine Selector (Placed right beside mic button) */}
               <div className="relative">
                 <Tooltip content="Select Speech Voice & AI STT Model">
                   <button
@@ -1000,10 +1041,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                 {isVoiceMenuOpen && (
                   <div
-                    className="absolute left-0 bottom-full mb-2 w-56 rounded-2xl bg-white/95 dark:bg-[#1a1c1e]/95 backdrop-blur-xl p-2 shadow-2xl border border-black/[0.08] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    className="absolute right-0 bottom-full mb-2 w-56 rounded-2xl bg-white/95 dark:bg-[#1a1c1e]/95 backdrop-blur-xl p-2 shadow-2xl border border-black/[0.08] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
                   >
-                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-zinc-400 border-b border-black/[0.06] dark:border-white/[0.06] mb-1">
-                      Deepgram Aura Voices
+                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-zinc-400 border-b border-black/[0.06] dark:border-white/[0.06] mb-1 flex items-center justify-between">
+                      <span>Deepgram Voices</span>
+                      <span className="text-[9px] text-[#10b981] font-mono">PRIMARY</span>
                     </div>
                     <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
                       {AURA_VOICES.map((v) => (
@@ -1031,79 +1073,62 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </div>
                 )}
               </div>
-            </div>
 
-
-            {/* Audio Wave Visualizer */}
-            <div
-              className={cn(
-                "absolute right-12 bottom-2 z-[10] flex h-7 items-center justify-end gap-[3px] transition-all duration-300",
-                isRecording ? "w-14 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none"
-              )}
-            >
-              {audioData.map((val, i) => (
-                <div
-                  key={i}
-                  className="w-1 rounded-full bg-[#10b981] transition-[height] duration-100 ease-out"
-                  style={{ height: `${Math.max(4, val * 24)}px` }}
-                />
-              ))}
-            </div>
-
-            {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}
-            <Tooltip
-              content={
-                isStreaming
-                  ? "Stop generating"
-                  : isRecording
-                  ? "Stop recording"
-                  : hasValue
-                  ? "Send message (Enter)"
-                  : "Voice Input (Speech to text)"
-              }
-            >
-              <button
-                type="button"
-                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onClick={handleActionButtonClick}
-                disabled={!hasValue && !isRecording && !isStreaming && !!rateLimitInfo?.isLimited}
-                className={cn(
-                  "absolute right-2 bottom-2 z-[10] flex size-8 items-center justify-center rounded-full text-white transition-all duration-300 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
-                  showStop
-                    ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse ring-2 ring-red-400"
-                    : showArrow
-                    ? "bg-[#2E6B5E] dark:bg-[#10b981] dark:text-zinc-950 hover:opacity-90"
-                    : "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E] hover:text-white dark:hover:bg-[#10b981] dark:hover:text-zinc-950"
-                )}
+              {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}
+              <Tooltip
+                content={
+                  isStreaming
+                    ? "Stop generating"
+                    : isRecording
+                    ? "Stop recording"
+                    : hasValue
+                    ? "Send message (Enter)"
+                    : "Voice Input (Speech to text)"
+                }
               >
-                <span className="relative flex h-full w-full items-center justify-center">
-                  <span
-                    className={cn(
-                      "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                      showArrow ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
-                    )}
-                  >
-                    <ArrowUpIcon />
+                <button
+                  type="button"
+                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onClick={handleActionButtonClick}
+                  disabled={!hasValue && !isRecording && !isStreaming && !!rateLimitInfo?.isLimited}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-full text-white transition-all duration-300 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
+                    showStop
+                      ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse ring-2 ring-red-400"
+                      : showArrow
+                      ? "bg-[#2E6B5E] dark:bg-[#10b981] dark:text-zinc-950 hover:opacity-90"
+                      : "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E] hover:text-white dark:hover:bg-[#10b981] dark:hover:text-zinc-950"
+                  )}
+                >
+                  <span className="relative flex h-full w-full items-center justify-center">
+                    <span
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                        showArrow ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
+                      )}
+                    >
+                      <ArrowUpIcon />
+                    </span>
+                    <span
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                        showMic ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 -rotate-45 blur-[1px] pointer-events-none"
+                      )}
+                    >
+                      <MicIcon />
+                    </span>
+                    <span
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                        showStop ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
+                      )}
+                    >
+                      <StopIcon />
+                    </span>
                   </span>
-                  <span
-                    className={cn(
-                      "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                      showMic ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 -rotate-45 blur-[1px] pointer-events-none"
-                    )}
-                  >
-                    <MicIcon />
-                  </span>
-                  <span
-                    className={cn(
-                      "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                      showStop ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
-                    )}
-                  >
-                    <StopIcon />
-                  </span>
-                </span>
-              </button>
-            </Tooltip>
+                </button>
+              </Tooltip>
+            </div>
           </div>
         </div>
 
@@ -1130,4 +1155,5 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 };
 
 export default React.memo(ChatInput);
+
 
