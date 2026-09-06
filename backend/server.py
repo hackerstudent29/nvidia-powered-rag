@@ -3814,7 +3814,7 @@ async def get_assemblyai_token():
 
 class TTSRequest(BaseModel):
     text: str
-    voice: Optional[str] = "aura-asteria-en"
+    voice: Optional[str] = "aura-orion-en"
     rate: Optional[float] = 1.0
 
 @app.post("/api/tts")
@@ -3829,10 +3829,14 @@ async def generate_tts(body: TTSRequest):
         raise HTTPException(status_code=400, detail="Empty text provided for TTS")
 
     dg_key = os.getenv("DEEPGRAM_API_KEY")
-    voice = body.voice or "aura-asteria-en"
+    voice = body.voice or "aura-orion-en"
     
-    if not voice.startswith("aura-"):
-        voice = "aura-asteria-en"
+    # If custom/unknown voice or requested bruce, map to Orion / Asteria
+    if "bruce" in voice.lower() or "orion" in voice.lower():
+        voice = "aura-orion-en"
+    elif not voice.startswith("aura-"):
+        voice = "aura-orion-en"
+
 
     speed_param = min(1.5, max(0.7, body.rate or 1.0))
 

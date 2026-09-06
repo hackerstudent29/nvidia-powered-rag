@@ -186,7 +186,7 @@ const AURA_VOICES: VoiceOption[] = [
   { id: "aura-stella-en", name: "Stella", gender: "Feminine", accent: "American", description: "American Feminine (Pro)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
   { id: "aura-athena-en", name: "Athena", gender: "Feminine", accent: "British", description: "British Feminine (Elegant)", gradient: "from-violet-400 via-purple-500 to-indigo-600" },
   { id: "aura-hera-en", name: "Hera", gender: "Feminine", accent: "American", description: "American Feminine (Expressive)", gradient: "from-rose-400 via-pink-500 to-red-600" },
-  { id: "aura-orion-en", name: "Orion", gender: "Masculine", accent: "American", description: "American Masculine (Deep)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
+  { id: "aura-orion-en", name: "Bruce", gender: "Masculine", accent: "American", description: "American Masculine (Deep)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
   { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "American Masculine (Strong)", gradient: "from-amber-300 via-yellow-500 to-amber-600" },
   { id: "aura-arcas-en", name: "Arcas", gender: "Masculine", accent: "American", description: "American Masculine (Clear)", gradient: "from-cyan-300 via-sky-500 to-blue-600" },
   { id: "aura-helios-en", name: "Helios", gender: "Masculine", accent: "British", description: "British Masculine (Warm)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
@@ -215,7 +215,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [showLockedToast, setShowLockedToast] = useState(false);
 
   const [selectedVoice, setSelectedVoice] = useState(() => {
-    return localStorage.getItem("lorin_tts_voice") || "aura-asteria-en";
+    return localStorage.getItem("lorin_tts_voice") || "aura-orion-en";
   });
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);

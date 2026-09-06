@@ -401,7 +401,7 @@ const MessageItem = React.memo(function MessageItem({
 
     try {
       // Use Python FastAPI HD Neural Voice TTS API (Deepgram Aura primary)
-      const selectedVoice = localStorage.getItem("lorin_tts_voice") || "aura-asteria-en";
+      const selectedVoice = localStorage.getItem("lorin_tts_voice") || "aura-orion-en";
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
