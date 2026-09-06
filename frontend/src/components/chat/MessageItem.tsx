@@ -524,8 +524,16 @@ const MessageItem = React.memo(function MessageItem({
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.rate = ttsSpeed;
-        utterance.pitch = ttsExpressivity === -2 ? 0.6 : ttsExpressivity === 2 ? 1.35 : 1.0;
-        utterance.lang = "en-IN";
+        utterance.pitch = 1.0; // Locked pitch to prevent unnatural tone shifts
+        utterance.lang = "en-US";
+        
+        // Lock explicit consistent voice across WebSpeech playback
+        const availableVoices = window.speechSynthesis.getVoices();
+        const fixedVoice = availableVoices.find(v => v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("Google") || v.name.includes("Zira") || v.name.includes("Samantha"))) || availableVoices.find(v => v.lang.startsWith("en"));
+        if (fixedVoice) {
+          utterance.voice = fixedVoice;
+        }
+
         utterance.onboundary = (e) => {
           if (e.name === "word") {
             const textBefore = cleanText.substring(0, e.charIndex);
