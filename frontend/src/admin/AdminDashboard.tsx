@@ -452,15 +452,6 @@ export const AdminDashboard: React.FC = () => {
           })}
         </motion.nav>
       </div>
-
-      {/* Slide-out Session Trace Inspector Drawer */}
-      <TraceDrawer
-        sessionId={selectedSessionId}
-        sessionDetails={sessionDetails}
-        loading={loadingDetails}
-        onClose={() => setSelectedSessionId(null)}
-        isDark={isDark}
-      />
     </div>
   );
 };

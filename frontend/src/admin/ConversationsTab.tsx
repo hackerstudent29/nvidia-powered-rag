@@ -182,30 +182,32 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                       {/* EXPANDABLE SUB-SESSIONS FOR THIS USER */}
                       {isExpanded && (
                         <tr>
-                          <td colSpan={7} className={`p-0 ${isDark ? 'bg-[#0b0c0e]/50' : 'bg-[#F7F6ED]/50'}`}>
-                            <div className="p-4 space-y-2">
-                              <div className={`text-[10px] font-mono uppercase tracking-wider font-semibold px-2 ${
+                          <td colSpan={7} className={`p-0 ${isDark ? 'bg-[#0b0c0e]/60' : 'bg-[#F7F6ED]/70'}`}>
+                            <div className="p-4 sm:p-5 space-y-2.5">
+                              <div className={`text-[10.5px] font-mono uppercase tracking-wider font-bold px-1 flex items-center gap-1.5 ${
                                 isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'
                               }`}>
-                                Chat Sessions Created By User ({userSessions.length}):
+                                <MessageSquare className="w-3.5 h-3.5 text-[#10b981]" />
+                                <span>Active User Sessions ({userSessions.length}):</span>
                               </div>
+
                               <div className="space-y-2">
                                 {userSessions.map((s: any) => (
                                   <div 
                                     key={s.session_id} 
-                                    className={`p-3 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all ${
+                                    className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all ${
                                       isDark 
-                                        ? 'bg-[#14151a] border-white/[0.06] hover:border-[#2E6B5E]/50' 
-                                        : 'bg-white border-black/[0.08] hover:border-[#2E6B5E]'
+                                        ? 'bg-[#14151a] border-white/[0.06] hover:border-[#10b981]/50 shadow-xs' 
+                                        : 'bg-white border-black/[0.08] hover:border-[#2E6B5E]/50 shadow-xs'
                                     }`}
                                   >
                                     <div className="min-w-0 flex-1 space-y-1">
                                       <div className="flex items-center gap-2">
-                                        <span className={`font-mono text-xs font-bold text-[#10b981]`}>
+                                        <span className="font-mono text-xs font-bold text-[#10b981]">
                                           ID: {s.session_id}
                                         </span>
-                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                                          isDark ? 'bg-white/[0.06] text-[#b1ada1]' : 'bg-[#F7F6ED] text-[#57534E]'
+                                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                                          isDark ? 'bg-white/[0.06] text-[#b1ada1] border-white/[0.06]' : 'bg-[#F7F6ED] text-[#57534E] border-black/[0.06]'
                                         }`}>
                                           {s.total_messages || 0} msgs
                                         </span>
@@ -226,10 +228,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                       </div>
 
                                       <button 
-                                        onClick={() => onSelectSession(s.session_id)}
-                                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#2E6B5E] text-white text-xs font-semibold hover:bg-[#10b981] transition-all shadow-sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onSelectSession(s.session_id);
+                                        }}
+                                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-xs"
                                       >
-                                        Inspect Trace <ChevronRight className="w-3.5 h-3.5" />
+                                        <span>Inspect Trace</span>
+                                        <ChevronRight className="w-3.5 h-3.5" />
                                       </button>
                                     </div>
                                   </div>

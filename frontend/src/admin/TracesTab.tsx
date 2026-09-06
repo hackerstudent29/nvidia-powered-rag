@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, Search, ChevronRight, User, Cpu, Clock, Zap, DollarSign, 
-  Layers, Shield, Tag, Filter, CheckCircle2, AlertCircle, RefreshCw, BarChart2, MessageSquare
+  Layers, Shield, Tag, Filter, CheckCircle2, AlertCircle, RefreshCw, BarChart2, MessageSquare,
+  GraduationCap, Building2, Bus, UserCheck, Code
 } from 'lucide-react';
-import { Tooltip } from '../components/Tooltip';
 
 interface TracesTabProps {
   sessions: any[];
@@ -15,14 +15,19 @@ interface TracesTabProps {
   isDark?: boolean;
 }
 
-// Categorize User Intent Persona based on query history
-export function categorizeUserIntent(queries: string[]): { category: string; icon: string; badgeColor: string; description: string } {
+// Categorize User Intent Persona with clean Lucide icons (0 emojis)
+export function categorizeUserIntent(queries: string[]): { 
+  category: string; 
+  icon: React.ElementType; 
+  badgeColor: string; 
+  description: string 
+} {
   const fullText = (queries || []).join(" ").toLowerCase();
   
   if (/cutoff|admission|apply|eligibility|tnea|seat|application|join|course fee|tuition|scholarship/i.test(fullText)) {
     return {
       category: "Admission Seeker",
-      icon: "🎓",
+      icon: GraduationCap,
       badgeColor: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
       description: "Inquiring about college admissions, cutoff marks, application process, or fee structure."
     };
@@ -30,7 +35,7 @@ export function categorizeUserIntent(queries: string[]): { category: string; ico
   if (/syllabus|exam|result|timetable|semester|gpa|cgpa|pass mark|revaluation|credit|lab/i.test(fullText)) {
     return {
       category: "Current Student",
-      icon: "🏫",
+      icon: Building2,
       badgeColor: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
       description: "Looking up exam timetables, syllabus details, grades, or academic regulations."
     };
@@ -38,7 +43,7 @@ export function categorizeUserIntent(queries: string[]): { category: string; ico
   if (/bus|route|hostel|canteen|mess|timing|pickup|drop|distance|location|transport/i.test(fullText)) {
     return {
       category: "Transport & Facilities",
-      icon: "🚌",
+      icon: Bus,
       badgeColor: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
       description: "Checking college bus routes, hostel amenities, or campus facilities."
     };
@@ -46,20 +51,20 @@ export function categorizeUserIntent(queries: string[]): { category: string; ico
   if (/hod|professor|principal|staff|faculty|department|contact|phone|email|head/i.test(fullText)) {
     return {
       category: "Faculty & Staff Contact",
-      icon: "👨‍🏫",
+      icon: UserCheck,
       badgeColor: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
       description: "Searching for department heads, faculty contact info, or staff details."
     };
   }
   return {
     category: "General Inquiry",
-    icon: "💬",
+    icon: MessageSquare,
     badgeColor: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
     description: "Engaging in general conversation or broad campus information queries."
   };
 }
 
-// Categorize individual query prompt
+// Categorize individual query prompt (0 emojis)
 export function categorizeSingleQuery(query: string): { label: string; color: string } {
   const q = (query || "").toLowerCase();
   if (/cutoff|tnea|admission|apply|eligible/i.test(q)) return { label: "Admissions", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" };
@@ -80,7 +85,6 @@ export const TracesTab: React.FC<TracesTabProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [expandedTraceIdx, setExpandedTraceIdx] = useState<number | null>(0);
 
   const safeSessions = Array.isArray(sessions) ? sessions : [];
 
@@ -121,6 +125,7 @@ export const TracesTab: React.FC<TracesTabProps> = ({
       ? activeQueries 
       : [activeSession?.first_user_query || '']
   );
+  const PersonaIcon = userPersona.icon;
 
   return (
     <div className="space-y-6 font-ui">
@@ -142,7 +147,7 @@ export const TracesTab: React.FC<TracesTabProps> = ({
                 Inspect Traces & Telemetry
               </h1>
               <p className={`text-xs ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>
-                Deep dive execution logs, token usage, cost estimates, response latency & AI user intent categorization.
+                Deep dive execution logs, token usage, cost estimates, response latency and user intent profiling.
               </p>
             </div>
           </div>
@@ -150,25 +155,31 @@ export const TracesTab: React.FC<TracesTabProps> = ({
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {[
-              { id: 'all', label: 'All Traces' },
-              { id: 'Admission Seeker', label: '🎓 Admissions' },
-              { id: 'Current Student', label: '🏫 Students' },
-              { id: 'Transport & Facilities', label: '🚌 Transport' },
-              { id: 'General Inquiry', label: '💬 General' },
-            ].map(cat => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategoryFilter(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  categoryFilter === cat.id
-                    ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold border-transparent shadow-xs'
-                    : isDark ? 'bg-white/[0.04] text-[#b1ada1] border-white/[0.06] hover:bg-white/[0.08]' : 'bg-[#F7F6ED] text-[#57534E] border-black/[0.08] hover:bg-[#edece4]'
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+              { id: 'all', label: 'All Traces', icon: Activity },
+              { id: 'Admission Seeker', label: 'Admissions', icon: GraduationCap },
+              { id: 'Current Student', label: 'Students', icon: Building2 },
+              { id: 'Transport & Facilities', label: 'Transport', icon: Bus },
+              { id: 'General Inquiry', label: 'General', icon: MessageSquare },
+            ].map(cat => {
+              const CatIcon = cat.icon;
+              const isActive = categoryFilter === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setCategoryFilter(cat.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold border-transparent shadow-xs'
+                      : isDark ? 'bg-white/[0.04] text-[#b1ada1] border-white/[0.06] hover:bg-white/[0.08]' : 'bg-[#F7F6ED] text-[#57534E] border-black/[0.08] hover:bg-[#edece4]'
+                  }`}
+                >
+                  <CatIcon className="w-3.5 h-3.5" />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </motion.div>
@@ -178,7 +189,7 @@ export const TracesTab: React.FC<TracesTabProps> = ({
         
         {/* LEFT COLUMN: SESSION SELECTOR LIST (5 COLS) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className={`p-4 rounded-2xl border flex items-center gap-2 ${
+          <div className={`p-3.5 rounded-2xl border flex items-center gap-2 ${
             isDark ? 'bg-[#14151a] border-white/[0.06]' : 'bg-white border-black/[0.08]'
           }`}>
             <Search className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`} />
@@ -203,6 +214,7 @@ export const TracesTab: React.FC<TracesTabProps> = ({
               filteredSessions.map((s) => {
                 const isSelected = (selectedSessionId === s.session_id);
                 const persona = categorizeUserIntent([s.first_user_query || '']);
+                const ItemPersonaIcon = persona.icon;
 
                 return (
                   <motion.div
@@ -224,8 +236,9 @@ export const TracesTab: React.FC<TracesTabProps> = ({
                       <span className="font-mono text-[11px] font-bold text-[#10b981] truncate">
                         ID: {s.session_id}
                       </span>
-                      <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border ${persona.badgeColor}`}>
-                        {persona.icon} {persona.category}
+                      <span className={`text-[9.5px] font-mono px-2 py-0.5 rounded-full border flex items-center gap-1 ${persona.badgeColor}`}>
+                        <ItemPersonaIcon className="w-3 h-3" />
+                        <span>{persona.category}</span>
                       </span>
                     </div>
 
@@ -285,8 +298,8 @@ export const TracesTab: React.FC<TracesTabProps> = ({
               }`}>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4 mb-4 border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/30 flex items-center justify-center border border-[#10b981]/30 shrink-0 text-xl">
-                      {userPersona.icon}
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/30 flex items-center justify-center border border-[#10b981]/30 shrink-0 text-xl text-[#10b981]">
+                      <PersonaIcon className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -302,7 +315,7 @@ export const TracesTab: React.FC<TracesTabProps> = ({
 
                   {/* Persona Badge */}
                   <span className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-mono border flex items-center gap-1.5 ${userPersona.badgeColor}`}>
-                    <span>{userPersona.icon}</span>
+                    <PersonaIcon className="w-4 h-4" />
                     <span>{userPersona.category}</span>
                   </span>
                 </div>
