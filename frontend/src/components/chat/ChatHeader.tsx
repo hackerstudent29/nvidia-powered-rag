@@ -1,19 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { ModelOption } from "../../types/chat";
 import { motion, AnimatePresence } from "framer-motion";
-import { Tooltip } from "../Tooltip";
 import { useNavigate } from "react-router-dom";
 import {
-  Sparkles,
   Clock,
   Type,
   Sun,
   Moon,
   ShieldCheck,
   Plus,
-  ChevronDown,
-  Check,
-  Sliders,
   GraduationCap
 } from "lucide-react";
 
@@ -27,18 +22,16 @@ interface ChatHeaderProps {
 }
 
 export default function ChatHeader({
-  models,
-  selectedModel,
-  onSelectModel,
+  models: _models,
+  selectedModel: _selectedModel,
+  onSelectModel: _onSelectModel,
   onNewChat,
   onOpenHistory,
-  isStreaming,
+  isStreaming: _isStreaming,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
-  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
   const fontSizeMenuRef = useRef<HTMLDivElement>(null);
-  const modelDropdownRef = useRef<HTMLDivElement>(null);
 
   const [activePill, setActivePill] = useState<string>("chat");
 
@@ -67,13 +60,6 @@ export default function ChatHeader({
       document.documentElement.removeAttribute("data-font-size");
     }
   }, [fontSize]);
-
-  const activeModelObj =
-    models.find((m) => m.id === selectedModel) ||
-    models[0] || {
-      id: "zai/glm-5.3-flash",
-      name: "GLM-5.3 Flash",
-    };
 
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem("theme");
@@ -108,13 +94,6 @@ export default function ChatHeader({
       ) {
         setFontSizeMenuOpen(false);
       }
-      if (
-        modelDropdownOpen &&
-        modelDropdownRef.current &&
-        !modelDropdownRef.current.contains(target)
-      ) {
-        setModelDropdownOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleOutside);
     document.addEventListener("touchstart", handleOutside);
@@ -122,7 +101,7 @@ export default function ChatHeader({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("touchstart", handleOutside);
     };
-  }, [fontSizeMenuOpen, modelDropdownOpen]);
+  }, [fontSizeMenuOpen]);
 
   // Pill Header Items
   const headerPills = [
@@ -207,60 +186,7 @@ export default function ChatHeader({
           </div>
         </div>
 
-        {/* ── Model Picker Selector (Center/Left) ── */}
-        <div className="relative shrink-0" ref={modelDropdownRef}>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setModelDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surface dark:bg-[#14151a] border-line dark:border-white/[0.08] text-xs font-semibold text-ink dark:text-[#f4f3ee] shadow-sm hover:bg-hover dark:hover:bg-white/[0.06] transition-all cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#2E6B5E] dark:text-[#10b981]" />
-            <span className="truncate max-w-[100px] sm:max-w-[140px]">
-              {activeModelObj.name}
-            </span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${modelDropdownOpen ? 'rotate-180' : ''}`} />
-          </motion.button>
 
-          <AnimatePresence>
-            {modelDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 6 }}
-                transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 top-11 z-50 w-64 rounded-2xl bg-surface dark:bg-[#14151a] border border-line dark:border-white/[0.08] shadow-2xl p-2 backdrop-blur-2xl"
-              >
-                <div className="px-3 py-1.5 border-b border-line/60 dark:border-white/[0.06]">
-                  <p className="text-[11px] font-bold text-ink dark:text-[#f4f3ee]">NVIDIA LLM Engine</p>
-                  <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">Ultra-fast campus inference</p>
-                </div>
-                <div className="flex flex-col gap-1 mt-1">
-                  {models.map((m) => (
-                    <motion.button
-                      key={m.id}
-                      whileHover={{ x: 2 }}
-                      onClick={() => {
-                        onSelectModel(m.id);
-                        setModelDropdownOpen(false);
-                      }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                        selectedModel === m.id
-                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
-                          : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
-                      }`}
-                    >
-                      <span>{m.name}</span>
-                      {selectedModel === m.id && (
-                        <Check className="w-3.5 h-3.5 text-[#2E6B5E] dark:text-[#10b981]" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
 
         {/* ── EXPANDABLE PILL TOP HEADER NAVBAR (SHADCN / FRAMER MOTION) ── */}
         <div className="flex items-center gap-1.5 relative">

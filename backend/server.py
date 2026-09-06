@@ -69,12 +69,28 @@ EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 # Available LLM Models
 MODELS_CATALOG = [
     {
-        "id": "auto",
-        "name": "⚡ Smart Auto Router",
-        "provider": "Lorin AI Router",
-        "description": "Automatically routes query to the best model",
+        "id": "zai/glm-5.3-flash",
+        "name": "GLM-5.3 Flash",
+        "provider": "Vercel AI Gateway",
+        "description": "Deep reasoning & multi-turn campus assistant",
         "is_default": True,
         "supports_reasoning": True
+    },
+    {
+        "id": "google/gemini-2.5-flash-lite",
+        "name": "Gemini 2.5 Flash Lite",
+        "provider": "Vercel AI Gateway",
+        "description": "Ultra-fast response for instant factoid queries",
+        "is_default": False,
+        "supports_reasoning": False
+    },
+    {
+        "id": "minimax/minimax-m3",
+        "name": "MiniMax M3",
+        "provider": "Vercel AI Gateway",
+        "description": "Detailed department & regulation analysis",
+        "is_default": False,
+        "supports_reasoning": False
     }
 ]
 
