@@ -406,9 +406,9 @@ textarea, input {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SCROLLBARS
+   SCROLLBARS & TABLE HORIZONTAL SCROLLING
    ══════════════════════════════════════════════════════════════ */
-::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar       { width: 5px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: rgba(177, 173, 161, 0.45);
@@ -418,10 +418,48 @@ textarea, input {
 
 /* Dark scrollbar — warm accent */
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(244, 243, 238, 0.15);
+  background: rgba(244, 243, 238, 0.18);
 }
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 243, 238, 0.30);
+  background: rgba(244, 243, 238, 0.35);
+}
+
+/* Actively visible table horizontal scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(46, 107, 94, 0.5) rgba(0, 0, 0, 0.05);
+}
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(52, 211, 153, 0.5) rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 7px;
+  width: 7px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 9999px;
+  margin: 2px 4px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 9999px;
+  margin: 2px 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(46, 107, 94, 0.55);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(46, 107, 94, 0.85);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(52, 211, 153, 0.55);
+  border-radius: 9999px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 211, 153, 0.85);
 }
 
 /* ══════════════════════════════════════════════════════════════
