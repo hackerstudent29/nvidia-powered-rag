@@ -145,13 +145,13 @@ export default function ChatHeader({
   ];
 
   return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 280, damping: 24 }}
-      className="sticky top-0 z-30 w-full bg-canvas/90 dark:bg-[#0b0c0e]/90 backdrop-blur-xl border-b border-line dark:border-white/[0.08]"
-    >
-      <div className="mx-auto max-w-6xl w-full min-w-0 px-3 sm:px-6 py-2.5 flex items-center justify-between box-border gap-2">
+    <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-40 px-2 sm:px-4 pointer-events-none">
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 280, damping: 24 }}
+        className="pointer-events-auto max-w-5xl mx-auto h-14 sm:h-16 backdrop-blur-2xl bg-white/70 dark:bg-[#14151a]/80 border border-black/10 dark:border-white/10 shadow-2xl rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+      >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
           <Tooltip content="Start New Chat" position="bottom">
@@ -319,7 +319,7 @@ export default function ChatHeader({
             )}
           </AnimatePresence>
         </div>
-      </div>
-    </motion.header>
+      </motion.header>
+    </div>
   );
 }

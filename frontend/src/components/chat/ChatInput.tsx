@@ -989,8 +989,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               overflow: (expanded || isVoiceMenuOpen || isModelSelectOpen) ? "visible" : "hidden",
             }}
             className={cn(
-              "relative w-full border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] shadow-lg transition-colors z-10 focus-within:border-[#2E6B5E]/50 dark:focus-within:border-[#10b981]/50",
-              expanded ? "cursor-text" : "cursor-pointer hover:border-[#2E6B5E]/30 dark:hover:border-[#10b981]/30"
+              "relative w-full border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#14151a]/85 backdrop-blur-2xl shadow-2xl transition-all z-10 focus-within:border-[#2E6B5E]/60 dark:focus-within:border-[#10b981]/60 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+              expanded ? "cursor-text" : "cursor-pointer hover:border-[#2E6B5E]/40 dark:hover:border-[#10b981]/40"
             )}
           >
             {/* Expanded Textarea Input */}

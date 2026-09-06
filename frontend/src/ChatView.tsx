@@ -159,7 +159,7 @@ export default function App() {
       <main
         ref={scrollRef}
         onScroll={handleScroll}
-        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-2 gpu-accelerated"
+        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 pt-16 sm:pt-20 pb-28 sm:pb-32 gpu-accelerated"
       >
         <div className="mx-auto max-w-4xl w-full min-h-full flex flex-col justify-start">
           {messages.length === 0 ? (
