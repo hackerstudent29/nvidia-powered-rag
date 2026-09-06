@@ -192,19 +192,15 @@ export interface VoiceOption {
 }
 
 const AURA_VOICES: VoiceOption[] = [
-  // Top 5 Masculine Voices (Bruce as #1 Default)
-  { id: "aura-orion-en", name: "Bruce", gender: "Masculine", accent: "American", description: "American Masculine (Deep - Main Default)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
-  { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "American Masculine (Strong)", gradient: "from-amber-400 via-yellow-500 to-amber-600" },
-  { id: "aura-arcas-en", name: "Arcas", gender: "Masculine", accent: "American", description: "American Masculine (Resonant)", gradient: "from-blue-400 via-indigo-500 to-purple-600" },
-  { id: "aura-perseus-en", name: "Perseus", gender: "Masculine", accent: "American", description: "American Masculine (Smooth)", gradient: "from-emerald-400 via-teal-500 to-cyan-600" },
-  { id: "aura-helios-en", name: "Helios", gender: "Masculine", accent: "American", description: "American Masculine (Warm)", gradient: "from-orange-400 via-amber-500 to-yellow-600" },
+  // Deepgram Flux TTS Voices (Expressivity & Speed Native Support)
+  { id: "flux-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "Flux Expressive (Warm & Natural - Default)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
+  { id: "flux-astrid-en", name: "Astrid", gender: "Feminine", accent: "American", description: "Flux Neural (Clear & Natural)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
+  { id: "flux-orion-en", name: "Orion", gender: "Masculine", accent: "American", description: "Flux Neural (Deep & Resonant)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
+  { id: "flux-stella-en", name: "Stella", gender: "Feminine", accent: "American", description: "Flux Neural (Smooth & Professional)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
   
-  // Top 5 Feminine Voices (Brooke as #1 Main Feminine)
-  { id: "aura-asteria-en", name: "Brooke", gender: "Feminine", accent: "American", description: "American Feminine (Warm - Main)", gradient: "from-emerald-400 via-teal-500 to-green-600" },
-  { id: "aura-luna-en", name: "Luna", gender: "Feminine", accent: "American", description: "American Feminine (Soft)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
-  { id: "aura-stella-en", name: "Stella", gender: "Feminine", accent: "American", description: "American Feminine (Pro)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
-  { id: "aura-athena-en", name: "Athena", gender: "Feminine", accent: "British", description: "British Feminine (Elegant)", gradient: "from-violet-400 via-purple-500 to-indigo-600" },
-  { id: "aura-hera-en", name: "Hera", gender: "Feminine", accent: "American", description: "American Feminine (Expressive)", gradient: "from-rose-400 via-pink-500 to-rose-600" },
+  // Deepgram Aura TTS Voices
+  { id: "aura-orion-en", name: "Bruce", gender: "Masculine", accent: "American", description: "Aura Neural (Deep Masculine)", gradient: "from-amber-400 via-yellow-500 to-amber-600" },
+  { id: "aura-asteria-en", name: "Brooke", gender: "Feminine", accent: "American", description: "Aura Neural (Warm Feminine)", gradient: "from-rose-400 via-pink-500 to-rose-600" },
 ];
 
 
@@ -229,7 +225,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const [selectedVoice, setSelectedVoice] = useState(() => {
     const saved = localStorage.getItem("lorin_tts_voice");
-    return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "aura-orion-en";
+    return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "flux-alexis-en";
   });
   const [expressivity, setExpressivity] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_expressivity");
@@ -1230,66 +1226,68 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       </button>
                     </div>
 
-                    {/* 1. Voice Tone / Expressivity Selector (Robot vs Human) */}
+                    {/* 1. Voice Style & Expressivity (Deepgram Flux Parameter) */}
                     <div className="mb-3 px-1">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
-                          Voice Tone (Robot vs Human)
+                          Voice Style & Expressivity
                         </span>
                         <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-[#10b981]">
                           {expressivity === -2
-                            ? "🤖 Robot"
+                            ? "🤖 Robot (-2)"
                             : expressivity === -1
-                            ? "😐 Calm"
+                            ? "😐 Calm (-1)"
                             : expressivity === 0
-                            ? "💬 Natural"
+                            ? "💬 Normal (0)"
                             : expressivity === 1
-                            ? "🗣️ Human"
-                            : "⚡ Animated"}
+                            ? "🗣️ Animated (+1)"
+                            : "⚡ Expressive (+2)"}
                         </span>
                       </div>
-                      <div className="grid grid-cols-3 gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
+                      <div className="grid grid-cols-5 gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
                         {[
-                          { val: -2, label: "🤖 Robot", desc: "Monotone" },
-                          { val: 0, label: "💬 Natural", desc: "Balanced" },
-                          { val: 2, label: "⚡ Animated", desc: "Human Tone" }
+                          { val: -2, label: "🤖", title: "Robot" },
+                          { val: -1, label: "😐", title: "Calm" },
+                          { val: 0, label: "💬", title: "Normal" },
+                          { val: 1, label: "🗣️", title: "Animated" },
+                          { val: 2, label: "⚡", title: "Expressive" }
                         ].map((item) => (
                           <button
                             key={item.val}
                             type="button"
                             onClick={() => handleExpressivitySelect(item.val)}
                             className={cn(
-                              "flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border",
+                              "flex flex-col items-center justify-center py-1.5 px-0.5 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer border text-center",
                               expressivity === item.val
                                 ? "bg-white dark:bg-[#20222a] text-emerald-600 dark:text-[#10b981] border-emerald-500/40 shadow-sm font-bold scale-[1.02]"
                                 : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.05]"
                             )}
                           >
-                            <span>{item.label}</span>
-                            <span className="text-[9px] opacity-70 font-normal">{item.desc}</span>
+                            <span className="text-sm">{item.label}</span>
+                            <span className="text-[8.5px] truncate max-w-full font-semibold">{item.title}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* 2. Speaking Pace / Speed Selector */}
+                    {/* 2. Speaking Speed / Pace (Deepgram Spec: 0.5x to 1.5x) */}
                     <div className="mb-3 px-1">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
-                          Speaking Pace (Speed)
+                          Speaking Speed (Pace)
                         </span>
                         <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-[#10b981]">
                           {ttsSpeed}x
                         </span>
                       </div>
                       <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
-                        {[0.8, 1.0, 1.25, 1.5].map((spd) => (
+                        {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => (
                           <button
                             key={spd}
                             type="button"
                             onClick={() => handleSpeedSelect(spd)}
                             className={cn(
-                              "flex-1 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer border text-center",
+                              "flex-1 py-1 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer border text-center",
                               ttsSpeed === spd
                                 ? "bg-white dark:bg-[#20222a] text-emerald-600 dark:text-[#10b981] border-emerald-500/40 shadow-sm"
                                 : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.05]"

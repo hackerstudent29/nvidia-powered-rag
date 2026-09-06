@@ -350,9 +350,9 @@ const MessageItem = React.memo(function MessageItem({
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
   const cycleTtsSpeed = () => {
-    const speeds = [1.0, 1.25, 1.5, 1.75, 2.0];
+    const speeds = [0.5, 0.75, 1.0, 1.25, 1.5];
     const currentIdx = speeds.indexOf(ttsSpeed);
-    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % speeds.length : 0;
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % speeds.length : 2;
     const newSpeed = speeds[nextIdx];
     setTtsSpeed(newSpeed);
     localStorage.setItem("lorin_tts_speed", newSpeed.toString());
@@ -362,10 +362,9 @@ const MessageItem = React.memo(function MessageItem({
   };
 
   const cycleTtsExpressivity = () => {
-    // Cycle tone: -2 (Robot), 0 (Natural), 2 (Animated)
-    const tones = [-2, 0, 2];
+    const tones = [-2, -1, 0, 1, 2];
     const currentIdx = tones.indexOf(ttsExpressivity);
-    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % tones.length : 1;
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % tones.length : 2;
     const newTone = tones[nextIdx];
     setTtsExpressivity(newTone);
     localStorage.setItem("lorin_tts_expressivity", newTone.toString());
@@ -946,14 +945,14 @@ const MessageItem = React.memo(function MessageItem({
               </button>
             </Tooltip>
 
-            {/* Animated Voice Speed Control Pill (1.0x, 1.25x, 1.5x, 1.75x, 2.0x) */}
-            <Tooltip content={`Voice Speed: ${ttsSpeed}x (Click to cycle 1.0x, 1.25x, 1.5x, 1.75x, 2.0x)`} position="top">
+            {/* Animated Voice Speed Control Pill (0.5x, 0.75x, 1.0x, 1.25x, 1.5x) */}
+            <Tooltip content={`Voice Speed: ${ttsSpeed}x (Click to cycle 0.5x, 0.75x, 1.0x, 1.25x, 1.5x)`} position="top">
               <button
                 type="button"
                 onClick={cycleTtsSpeed}
                 className={`flex items-center justify-center px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
-                  ttsSpeed > 1.0
-                    ? "bg-accent/15 text-accent border-accent/30 animate-pulse shadow-sm"
+                  ttsSpeed !== 1.0
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse shadow-sm"
                     : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
                 }`}
               >
@@ -961,14 +960,18 @@ const MessageItem = React.memo(function MessageItem({
               </button>
             </Tooltip>
 
-            {/* Voice Tone & Expressivity Pill (Robot -2 vs Natural 0 vs Animated +2) */}
+            {/* Voice Style & Expressivity Pill (Robot -2, Calm -1, Normal 0, Animated +1, Very Animated +2) */}
             <Tooltip
-              content={`Voice Tone: ${
+              content={`Voice Expressivity: ${
                 ttsExpressivity === -2
-                  ? "🤖 Robot Mode (Monotone & Mechanical)"
+                  ? "🤖 Robot (-2 Monotone)"
+                  : ttsExpressivity === -1
+                  ? "😐 Calm (-1 Smooth)"
+                  : ttsExpressivity === 1
+                  ? "🗣️ Animated (+1 Lively)"
                   : ttsExpressivity === 2
-                  ? "⚡ Animated Mode (Expressive & Dynamic)"
-                  : "💬 Natural Mode (Human Tone)"
+                  ? "🔥 Very Animated (+2 Expressive)"
+                  : "💬 Normal (0 Balanced)"
               } (Click to cycle)`}
               position="top"
             >
@@ -976,14 +979,24 @@ const MessageItem = React.memo(function MessageItem({
                 type="button"
                 onClick={cycleTtsExpressivity}
                 className={`flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
-                  ttsExpressivity === -2
+                  ttsExpressivity < 0
                     ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 shadow-sm"
-                    : ttsExpressivity === 2
+                    : ttsExpressivity > 0
                     ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-sm"
                     : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
                 }`}
               >
-                <span>{ttsExpressivity === -2 ? "🤖 Robot" : ttsExpressivity === 2 ? "⚡ Animated" : "💬 Natural"}</span>
+                <span>
+                  {ttsExpressivity === -2
+                    ? "🤖 Robot"
+                    : ttsExpressivity === -1
+                    ? "😐 Calm"
+                    : ttsExpressivity === 1
+                    ? "🗣️ Animated"
+                    : ttsExpressivity === 2
+                    ? "🔥 Expressive"
+                    : "💬 Normal"}
+                </span>
               </button>
             </Tooltip>
 

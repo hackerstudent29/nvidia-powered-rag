@@ -3937,8 +3937,8 @@ def normalize_tts_text_for_speech(markdown_text: str) -> str:
 async def generate_tts(body: TTSRequest):
     """
     Generate Speech Audio payload.
-    Primary Engine: Deepgram Aura / Flux TTS API with Voice Controls & Expressivity
-    Fallback Engine: Edge-TTS
+    Primary Engine: Deepgram Flux TTS API (v2/speak) with Expressivity & Speed Controls
+    Fallback Engine: Deepgram Aura TTS API (v1/speak) / Edge-TTS
     """
     raw_text = body.text.strip()
     if not raw_text:
@@ -3947,39 +3947,53 @@ async def generate_tts(body: TTSRequest):
     text = normalize_tts_text_for_speech(raw_text)
 
     dg_key = os.getenv("DEEPGRAM_API_KEY")
-    valid_aura_voices = {
-        "aura-orion-en", "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
-        "aura-asteria-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
-    }
-    voice = body.voice or "aura-orion-en"
-    
-    # Map friendly names or fallbacks to Bruce (aura-orion-en) / Brooke (aura-asteria-en)
-    if "bruce" in voice.lower() or "orion" in voice.lower():
-        voice = "aura-orion-en"
-    elif "brooke" in voice.lower() or "asteria" in voice.lower():
-        voice = "aura-asteria-en"
-    elif voice not in valid_aura_voices:
-        voice = "aura-orion-en"
+    desired_voice = (body.voice or "flux-alexis-en").strip().lower()
 
-    # Speed parameter (0.7 to 1.5)
+    # Speed parameter (0.5 to 1.5 in 0.05 increments per Deepgram Flux spec)
     desired_rate = body.speed or body.rate or 1.0
-    speed_param = min(1.5, max(0.7, float(desired_rate)))
+    speed_param = round(min(1.5, max(0.5, float(desired_rate))), 2)
 
-    # Expressivity parameter (-2: Robot/Monotone, -1: Calm, 0: Natural, 1: Human, 2: Animated)
+    # Expressivity parameter (-2: Very Calm/Robot, -1: Calm, 0: Normal, 1: Animated, 2: Very Animated)
     expressivity_val = body.expressivity if body.expressivity is not None else 0
     expressivity_param = min(2, max(-2, int(expressivity_val)))
 
-    # 1. Primary Engine: Deepgram TTS (with speed & expressivity query parameters)
+    # Use Flux TTS (v2/speak) whenever expressivity is non-zero or voice is a flux model
+    use_flux = desired_voice.startswith("flux-") or expressivity_param != 0
+
     if dg_key:
         try:
-            # Build query parameters according to Deepgram TTS docs
-            query_params = f"model={voice}&speed={speed_param}"
-            if expressivity_param != 0:
-                query_params += f"&expressivity={expressivity_param}"
-
             async with httpx.AsyncClient() as client:
+                # 1A. Deepgram Flux TTS (v2/speak) — supports speed (0.5-1.5) & expressivity (-2 to +2)
+                if use_flux:
+                    flux_model = desired_voice if desired_voice.startswith("flux-") else "flux-alexis-en"
+                    url = f"https://api.deepgram.com/v2/speak?model={flux_model}&speed={speed_param}&expressivity={expressivity_param}"
+                    dg_resp = await client.post(
+                        url,
+                        headers={
+                            "Authorization": f"Token {dg_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={"text": text[:2000]},
+                        timeout=12.0
+                    )
+
+                    if dg_resp.status_code == 200:
+                        audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
+                        return JSONResponse({
+                            "audio_base64": audio_b64,
+                            "engine": "deepgram_flux_v2",
+                            "model": flux_model,
+                            "speed": speed_param,
+                            "expressivity": expressivity_param
+                        })
+                    else:
+                        print(f"[WARN] Deepgram Flux v2 TTS status {dg_resp.status_code}: {dg_resp.text}")
+
+                # 1B. Deepgram Aura TTS (v1/speak) fallback
+                aura_model = desired_voice if desired_voice.startswith("aura-") else "aura-orion-en"
+                url = f"https://api.deepgram.com/v1/speak?model={aura_model}&speed={speed_param}"
                 dg_resp = await client.post(
-                    f"https://api.deepgram.com/v1/speak?{query_params}",
+                    url,
                     headers={
                         "Authorization": f"Token {dg_key}",
                         "Content-Type": "application/json"
@@ -3992,11 +4006,12 @@ async def generate_tts(body: TTSRequest):
                     audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
                     return JSONResponse({
                         "audio_base64": audio_b64,
-                        "engine": "deepgram_aura",
-                        "voice": voice
+                        "engine": "deepgram_aura_v1",
+                        "model": aura_model,
+                        "speed": speed_param
                     })
                 else:
-                    print(f"[WARN] Deepgram TTS status {dg_resp.status_code}: {dg_resp.text}")
+                    print(f"[WARN] Deepgram Aura v1 TTS status {dg_resp.status_code}: {dg_resp.text}")
         except Exception as e:
             print(f"[WARN] Deepgram TTS exception: {e}")
 
