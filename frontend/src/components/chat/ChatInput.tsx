@@ -232,6 +232,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+
+  const formatRecordingTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
 
   const handleVoiceSelect = (voiceId: string) => {
     setSelectedVoice(voiceId);
@@ -287,9 +294,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [disclaimerIdx, setDisclaimerIdx] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
 
-  // Audio / Voice recording states
   const [isRecording, setIsRecording] = useState(false);
   const [audioData, setAudioData] = useState<number[]>(new Array(5).fill(0.1));
+
+  useEffect(() => {
+    if (!isRecording) {
+      setRecordingSeconds(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setRecordingSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isRecording]);
 
   // Hover sliding background for model dropdown
   const [hoverStyle, setHoverStyle] = useState({ opacity: 0, transform: "translateY(0px) scale(0.95)", transition: "none" });
@@ -395,28 +412,23 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return () => clearInterval(interval);
   }, [isRecording]);
 
-  // Dynamic textarea height calculation
+  // Dynamic textarea height calculation (optimized to eliminate layout trashing on keypress/backspace)
   useEffect(() => {
     if (!textareaRef.current) return;
     const el = textareaRef.current;
     
-    const currentHeight = el.style.height;
-    el.style.transition = 'none';
-    el.style.height = "0px";
+    el.style.height = 'auto';
     const scrollHeight = el.scrollHeight;
-    el.style.height = currentHeight;
-    void el.offsetHeight; 
-    el.style.transition = '';
-    
     const newHeight = Math.max(52, Math.min(scrollHeight, 160));
     el.style.height = `${newHeight}px`;
     
-    setTextareaHeight(newHeight);
+    setTextareaHeight((prev) => (prev !== newHeight ? newHeight : prev));
     setIsScrolling(scrollHeight > 160);
   }, [text, expanded]);
 
   useEffect(() => {
-    setContainerHeight(Math.max(104, textareaHeight + 44));
+    const target = Math.max(104, textareaHeight + 44);
+    setContainerHeight((prev) => (prev !== target ? target : prev));
   }, [textareaHeight]);
 
   // Handle blur to collapse when empty
@@ -1119,13 +1131,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.9, x: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[#10b981] dark:text-[#10b981] backdrop-blur-md shadow-sm"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 border border-emerald-500/40 text-[#10b981] dark:text-[#34d399] backdrop-blur-md shadow-md"
                   >
-                    <div className="flex items-center gap-1 h-4">
-                      {audioData.map((val, i) => (
+                    <div className="flex items-center gap-0.5 h-4 px-0.5">
+                      {audioData.concat(audioData).slice(0, 12).map((val, i) => (
                         <motion.span
                           key={i}
-                          className="w-1 rounded-full bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                          className="w-0.5 rounded-full bg-[#10b981] dark:bg-[#34d399] shadow-[0_0_6px_rgba(16,185,129,0.6)]"
                           animate={{
                             height: [
                               Math.max(4, val * 16),
@@ -1136,14 +1148,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                           transition={{
                             repeat: Infinity,
                             repeatType: "mirror",
-                            duration: 0.18 + i * 0.04,
+                            duration: 0.18 + (i % 5) * 0.04,
                             ease: "easeInOut"
                           }}
                         />
                       ))}
                     </div>
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-[#10b981] uppercase">
-                      Listening
+                    <span className="font-mono text-[11px] font-bold text-[#10b981] dark:text-[#34d399]">
+                      {formatRecordingTime(recordingSeconds)}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-[#10b981] dark:text-[#34d399] uppercase animate-pulse">
+                      Listening...
                     </span>
                   </motion.div>
                 )}

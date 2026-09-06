@@ -899,20 +899,20 @@ const MessageItem = React.memo(function MessageItem({
                 type="button"
                 aria-expanded={sourcesOpen}
                 onClick={() => setSourcesOpen((current) => !current)}
-                className="ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-left transition-colors duration-150 bg-transparent hover:bg-hover border border-line shadow-hairline text-ink-2 hover:text-ink"
+                className="ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold transition-all duration-200 bg-[#E1EED7]/70 dark:bg-[#2E6B5E]/20 text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/30 dark:border-[#10b981]/30 hover:bg-[#E1EED7] dark:hover:bg-[#2E6B5E]/30 shadow-sm cursor-pointer"
               >
                 <span className="flex -space-x-1">
                   {sources.slice(0, 3).map((s, i) => (
                     <div
                       key={s.chunk_id || i}
-                      className="size-3.5 rounded-full bg-accent/20 border border-surface flex items-center justify-center text-[8px] font-bold text-accent"
+                      className="size-3.5 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] border border-white dark:border-zinc-900 flex items-center justify-center text-[8px] font-bold text-white dark:text-zinc-950"
                     >
                       {i + 1}
                     </div>
                   ))}
                 </span>
-                <span className="text-[11.5px] font-medium text-ink-2">
-                  {sources.length} sources
+                <span>
+                  {sources.length} {sources.length === 1 ? "source" : "sources"}
                 </span>
                 <svg
                   width="11"
@@ -920,7 +920,7 @@ const MessageItem = React.memo(function MessageItem({
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   className={`transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`}
                 >
                   <path d="M6 9l6 6 6-6" />
@@ -930,25 +930,42 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
 
-        {/* Expandable Sources Panel */}
+        {/* Expandable Sources Panel (Theme Matched & Optimized) */}
         {sourcesOpen && sources.length > 0 && (
-          <div className="mt-2.5 flex flex-col gap-1.5 p-3 rounded-2xl bg-surface/90 dark:bg-[#14151a]/90 border border-black/[0.08] dark:border-white/[0.08] shadow-md backdrop-blur-xl animate-in fade-in slide-in-from-top-1 duration-200">
-            <div className="text-[11px] font-bold text-ink dark:text-[#f4f3ee] mb-1 flex items-center gap-1.5">
-              <span>📚 Verified Grounding Context Sources</span>
-            </div>
-            {sources.map((source, idx) => (
-              <div
-                key={source.chunk_id || idx}
-                className="group flex items-center gap-2.5 w-full rounded-xl px-2 py-1.5 text-[11.5px] font-medium text-ink-2 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee] transition-all cursor-default"
-              >
-                <span className="flex size-4.5 items-center justify-center rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9.5px] shrink-0 border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
-                  {idx + 1}
-                </span>
-                <span className="truncate flex-1 font-mono text-[11px]">
-                  {source.source_file ? source.source_file.replace(/\.php$/i, '.md') : (source.title || "").replace(/\.php$/i, '.md')}
-                </span>
+          <div className="mt-2.5 flex flex-col gap-1.5 p-3 rounded-2xl bg-[#f8f9fc] dark:bg-[#181a20] border border-black/[0.08] dark:border-white/[0.08] shadow-lg transition-colors animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="text-[11px] font-bold text-ink dark:text-[#f4f3ee] pb-1.5 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="flex size-4 items-center justify-center rounded bg-emerald-500/20 text-[#10b981] text-[10px]">📚</span>
+                <span>Verified Grounding Context Sources</span>
               </div>
-            ))}
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink-3 dark:text-zinc-400 font-mono font-medium">
+                {sources.length} Verified Documents
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 mt-1">
+              {sources.map((source, idx) => {
+                const fileName = source.source_file ? source.source_file.replace(/\.php$/i, '.md') : (source.title || "").replace(/\.php$/i, '.md');
+                return (
+                  <div
+                    key={source.chunk_id || idx}
+                    className="group flex items-center justify-between w-full rounded-xl px-2.5 py-2 text-[11.5px] font-medium bg-white/70 dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/[0.05] text-ink-2 dark:text-[#b1ada1] hover:bg-white dark:hover:bg-white/[0.07] hover:text-ink dark:hover:text-[#f4f3ee] hover:border-emerald-500/30 transition-all cursor-default shadow-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+                      <span className="flex size-4.5 items-center justify-center rounded-md bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9.5px] shrink-0 border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
+                        {idx + 1}
+                      </span>
+                      <span className="text-[11px] text-ink-3 dark:text-zinc-500 shrink-0">📄</span>
+                      <span className="truncate font-mono text-[11px] font-medium text-ink dark:text-zinc-200">
+                        {fileName}
+                      </span>
+                    </div>
+                    <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-[#10b981] dark:text-[#34d399] font-mono shrink-0">
+                      RAG Verified
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
