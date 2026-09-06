@@ -3982,49 +3982,33 @@ async def generate_tts(body: TTSRequest):
     dg_key = os.getenv("DEEPGRAM_API_KEY")
     desired_voice = (body.voice or "flux-alexis-en").strip().lower()
 
-    # Speed parameter (0.5 to 1.5 in 0.05 increments per Deepgram Flux spec)
+    # Speed parameter (0.5 to 1.5)
     desired_rate = body.speed or body.rate or 1.0
     speed_param = round(min(1.5, max(0.5, float(desired_rate))), 2)
 
-    # Expressivity parameter (-2: Very Calm/Robot, -1: Calm, 0: Normal, 1: Animated, 2: Very Animated)
-    expressivity_val = body.expressivity if body.expressivity is not None else 0
-    expressivity_param = min(2, max(-2, int(expressivity_val)))
-
-    # Use Flux TTS (v2/speak) whenever expressivity is non-zero or voice is a flux model
-    use_flux = desired_voice.startswith("flux-") or expressivity_param != 0
+    # Voice Mapping to Deepgram Aura REST TTS Models
+    VOICE_MAP = {
+        "flux-alexis-en": "aura-asteria-en",
+        "flux-astrid-en": "aura-athena-en",
+        "flux-orion-en": "aura-orion-en",
+        "flux-stella-en": "aura-stella-en",
+        "aura-orion-en": "aura-orion-en",
+        "aura-asteria-en": "aura-asteria-en",
+        "aura-zeus-en": "aura-zeus-en",
+        "aura-arcas-en": "aura-arcas-en",
+        "aura-perseus-en": "aura-perseus-en",
+        "aura-helios-en": "aura-helios-en",
+        "aura-luna-en": "aura-luna-en",
+        "aura-stella-en": "aura-stella-en",
+        "aura-athena-en": "aura-athena-en",
+        "aura-hera-en": "aura-hera-en"
+    }
+    target_model = VOICE_MAP.get(desired_voice, "aura-asteria-en")
 
     if dg_key:
         try:
             async with httpx.AsyncClient() as client:
-                # 1A. Deepgram Flux TTS (v2/speak) — supports speed (0.5-1.5) & expressivity (-2 to +2)
-                if use_flux:
-                    flux_model = desired_voice if desired_voice.startswith("flux-") else "flux-alexis-en"
-                    url = f"https://api.deepgram.com/v2/speak?model={flux_model}&speed={speed_param}&expressivity={expressivity_param}"
-                    dg_resp = await client.post(
-                        url,
-                        headers={
-                            "Authorization": f"Token {dg_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={"text": text[:2000]},
-                        timeout=12.0
-                    )
-
-                    if dg_resp.status_code == 200:
-                        audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
-                        return JSONResponse({
-                            "audio_base64": audio_b64,
-                            "engine": "deepgram_flux_v2",
-                            "model": flux_model,
-                            "speed": speed_param,
-                            "expressivity": expressivity_param
-                        })
-                    else:
-                        print(f"[WARN] Deepgram Flux v2 TTS status {dg_resp.status_code}: {dg_resp.text}")
-
-                # 1B. Deepgram Aura TTS (v1/speak) fallback
-                aura_model = desired_voice if desired_voice.startswith("aura-") else "aura-orion-en"
-                url = f"https://api.deepgram.com/v1/speak?model={aura_model}&speed={speed_param}"
+                url = f"https://api.deepgram.com/v1/speak?model={target_model}"
                 dg_resp = await client.post(
                     url,
                     headers={
@@ -4039,12 +4023,13 @@ async def generate_tts(body: TTSRequest):
                     audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
                     return JSONResponse({
                         "audio_base64": audio_b64,
-                        "engine": "deepgram_aura_v1",
-                        "model": aura_model,
+                        "engine": "deepgram_ai",
+                        "model": target_model,
+                        "voice": desired_voice,
                         "speed": speed_param
                     })
                 else:
-                    print(f"[WARN] Deepgram Aura v1 TTS status {dg_resp.status_code}: {dg_resp.text}")
+                    print(f"[WARN] Deepgram v1 TTS status {dg_resp.status_code}: {dg_resp.text}")
         except Exception as e:
             print(f"[WARN] Deepgram TTS exception: {e}")
 

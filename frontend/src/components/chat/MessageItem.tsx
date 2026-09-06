@@ -424,13 +424,15 @@ const MessageItem = React.memo(function MessageItem({
     setIsLoadingAudio(true);
 
     try {
-      // Use Python FastAPI HD Neural Voice TTS API (Deepgram Aura primary - Bruce as default)
-      const rawVoice = localStorage.getItem("lorin_tts_voice") || "aura-orion-en";
+      // Use Python FastAPI HD Neural Voice TTS API (Deepgram Flux primary - Alexis as default)
+      const rawVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
       const validVoices = [
-        "aura-orion-en", "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
-        "aura-asteria-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
+        "flux-alexis-en", "flux-astrid-en", "flux-orion-en", "flux-stella-en",
+        "aura-orion-en", "aura-asteria-en", "aura-zeus-en", "aura-arcas-en",
+        "aura-perseus-en", "aura-helios-en", "aura-luna-en", "aura-stella-en",
+        "aura-athena-en", "aura-hera-en"
       ];
-      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "aura-orion-en";
+      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-alexis-en";
 
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
@@ -449,40 +451,20 @@ const MessageItem = React.memo(function MessageItem({
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");
 
       const audio = new Audio(data.audio_base64);
-      audio.playbackRate = ttsSpeed;
+      // Deepgram backend synthesizes audio with speed applied; do not double-accelerate
+      audio.playbackRate = 1.0;
 
       stopAudio();
 
       audioRef.current = audio;
 
       const totalTTSWords = ttsWords.length;
-      const sentences: Array<{ text: string; start_ms: number; end_ms: number; word_offset: number; word_count: number }> = data.sentences || [];
 
       const updateHighlightLoop = () => {
-        if (audioRef.current && !audioRef.current.paused && audioRef.current.duration) {
-          const currentMs = audioRef.current.currentTime * 1000;
-          let activeDisplayIdx = -1;
-
-          if (sentences.length > 0) {
-            const currentSentence = sentences.find(
-              (s) => currentMs >= s.start_ms && currentMs <= s.end_ms
-            );
-            if (currentSentence) {
-              const sentenceProgress = Math.min(
-                Math.max((currentMs - currentSentence.start_ms) / (currentSentence.end_ms - currentSentence.start_ms || 1), 0),
-                0.999
-              );
-              const sentenceWordOffset = Math.floor(sentenceProgress * currentSentence.word_count);
-              const currentTTSWordIdx = currentSentence.word_offset + sentenceWordOffset;
-              activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
-            }
-          }
-
-          if (activeDisplayIdx < 0) {
-            const progress = Math.min(audioRef.current.currentTime / audioRef.current.duration, 0.999);
-            const currentTTSWordIdx = Math.floor(progress * totalTTSWords);
-            activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
-          }
+        if (audioRef.current && !audioRef.current.paused && audioRef.current.duration > 0) {
+          const progress = Math.min(audioRef.current.currentTime / audioRef.current.duration, 0.999);
+          const currentTTSWordIdx = Math.floor(progress * totalTTSWords);
+          const activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
 
           setActiveWordIdx(activeDisplayIdx);
           animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
