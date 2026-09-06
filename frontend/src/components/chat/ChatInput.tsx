@@ -252,16 +252,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const handleVoiceSelect = (voiceId: string) => {
     setSelectedVoice(voiceId);
     localStorage.setItem("lorin_tts_voice", voiceId);
+    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
 
   const handleExpressivitySelect = (val: number) => {
     setExpressivity(val);
     localStorage.setItem("lorin_tts_expressivity", val.toString());
+    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
 
   const handleSpeedSelect = (val: number) => {
     setTtsSpeed(val);
     localStorage.setItem("lorin_tts_speed", val.toString());
+    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
 
   const handlePlayPreview = async (e: React.MouseEvent, voice: VoiceOption) => {

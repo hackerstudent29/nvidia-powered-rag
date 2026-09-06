@@ -342,12 +342,42 @@ const MessageItem = React.memo(function MessageItem({
   const [isDisliked, setIsDisliked] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  const messageRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const wordCounterRef = useRef<number>(0);
   const ttsToDisplayMapRef = useRef<number[]>([]);
 
   const timeStr = formatTimestampWithSeconds(message.timestamp);
+
+  // Sync voice settings (speed, tone/expressivity) live across all message toolbars & Voice Controls modal
+  useEffect(() => {
+    const syncVoiceSettings = () => {
+      const savedSpeed = localStorage.getItem("lorin_tts_speed");
+      if (savedSpeed) setTtsSpeed(parseFloat(savedSpeed));
+      const savedExpr = localStorage.getItem("lorin_tts_expressivity");
+      if (savedExpr !== null) setTtsExpressivity(parseInt(savedExpr, 10));
+    };
+    window.addEventListener("lorin_voice_settings_changed", syncVoiceSettings);
+    return () => window.removeEventListener("lorin_voice_settings_changed", syncVoiceSettings);
+  }, []);
+
+  // Global click-outside listener: close sources & stats dropdowns when clicking outside or on empty space
+  useEffect(() => {
+    if (!sourcesOpen && !statsOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (messageRef.current && !messageRef.current.contains(e.target as Node)) {
+        setSourcesOpen(false);
+        setStatsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [sourcesOpen, statsOpen]);
 
   const cycleTtsSpeed = () => {
     const speeds = [0.5, 0.75, 1.0, 1.25, 1.5];
@@ -356,9 +386,7 @@ const MessageItem = React.memo(function MessageItem({
     const newSpeed = speeds[nextIdx];
     setTtsSpeed(newSpeed);
     localStorage.setItem("lorin_tts_speed", newSpeed.toString());
-    if (audioRef.current) {
-      audioRef.current.playbackRate = newSpeed;
-    }
+    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
 
   const cycleTtsExpressivity = () => {
@@ -368,6 +396,7 @@ const MessageItem = React.memo(function MessageItem({
     const newTone = tones[nextIdx];
     setTtsExpressivity(newTone);
     localStorage.setItem("lorin_tts_expressivity", newTone.toString());
+    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
 
   const stopAudio = () => {
@@ -645,7 +674,7 @@ const MessageItem = React.memo(function MessageItem({
   };
 
   return (
-    <div className="flex flex-col mt-1 mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
+    <div ref={messageRef} className="flex flex-col mt-1 mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
       <div className="flex items-center gap-2 mb-2 shrink-0">
         <div className="size-6 rounded-lg bg-gradient-to-tr from-[#D0CCE5] via-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E]/40 dark:to-[#10b981]/30 border border-white dark:border-emerald-500/30 shadow-hairline flex items-center justify-center text-[#2E6B5E] dark:text-[#34d399] shrink-0">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -942,54 +971,48 @@ const MessageItem = React.memo(function MessageItem({
               </button>
             </Tooltip>
 
-            {/* Voice Style & Expressivity Pill (Robot -2, Calm -1, Normal 0, Animated +1, Very Animated +2) */}
+            {/* Voice Style & Expressivity Pill (Transparent, No Emojis) */}
             <Tooltip
-              content={`Voice Expressivity: ${
+              content={`Voice Tone: ${
                 ttsExpressivity === -2
-                  ? "🤖 Robot (-2 Monotone)"
+                  ? "Robot"
                   : ttsExpressivity === -1
-                  ? "😐 Calm (-1 Smooth)"
+                  ? "Calm"
                   : ttsExpressivity === 1
-                  ? "🗣️ Animated (+1 Lively)"
+                  ? "Animated"
                   : ttsExpressivity === 2
-                  ? "🔥 Very Animated (+2 Expressive)"
-                  : "💬 Normal (0 Balanced)"
+                  ? "Expressive"
+                  : "Normal"
               } (Click to cycle)`}
               position="top"
             >
               <button
                 type="button"
                 onClick={cycleTtsExpressivity}
-                className={`flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
-                  ttsExpressivity < 0
-                    ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 shadow-sm"
-                    : ttsExpressivity > 0
-                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-sm"
-                    : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
-                }`}
+                className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer border border-black/[0.08] dark:border-white/[0.08] bg-transparent text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200 hover:border-black/20 dark:hover:border-white/20"
               >
                 <span>
                   {ttsExpressivity === -2
-                    ? "🤖 Robot"
+                    ? "Robot"
                     : ttsExpressivity === -1
-                    ? "😐 Calm"
+                    ? "Calm"
                     : ttsExpressivity === 1
-                    ? "🗣️ Animated"
+                    ? "Animated"
                     : ttsExpressivity === 2
-                    ? "🔥 Expressive"
-                    : "💬 Normal"}
+                    ? "Expressive"
+                    : "Normal"}
                 </span>
               </button>
             </Tooltip>
 
-            {/* Token Usage & Cost Badge (Model-Wise, Step-Wise, Final Cost) */}
+            {/* Token Usage & Cost Badge */}
             {message.token_metrics && (
               <div className="ml-1">
                 <TokenCostBadge metrics={message.token_metrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
               </div>
             )}
 
-            {/* Answer Completion Timestamp (Clean, unbordered subtle text) */}
+            {/* Answer Completion Timestamp */}
             {!message.is_streaming && timeStr && (
               <Tooltip content="Answer Completion Timestamp" position="top">
                 <span className="text-[10px] font-mono font-medium text-ink-3/70 select-none shrink-0 ml-1">
@@ -998,15 +1021,18 @@ const MessageItem = React.memo(function MessageItem({
               </Tooltip>
             )}
 
-            {/* Sources Button (Matches TokenCostBadge style: transparent, no emojis) */}
+            {/* Sources Button (Anchored cleanly to the far right with ml-auto) */}
             {sources.length > 0 && (
               <button
                 type="button"
                 aria-expanded={sourcesOpen}
-                onClick={() => setSourcesOpen((current) => !current)}
-                className={`ml-1 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline cursor-pointer ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSourcesOpen((current) => !current);
+                }}
+                className={`ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline cursor-pointer ${
                   sourcesOpen
-                    ? "bg-hover text-ink shadow-sm font-semibold border-line-strong"
+                    ? "bg-hover text-ink shadow-xs font-semibold border-line-strong"
                     : "bg-transparent hover:bg-hover text-ink-2 hover:text-ink"
                 }`}
               >
@@ -1043,27 +1069,25 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
 
-        {/* Expandable Sources Panel (Transparent, Glassmorphism, Theme-Matched with TokenCostPanel, No Emojis) */}
+        {/* Minimal & Small Expandable Sources Panel */}
         {sourcesOpen && sources.length > 0 && (
-          <div className="w-full rounded-2xl bg-surface/90 dark:bg-[#14151a]/90 text-ink dark:text-[#f4f3ee] mt-2 mb-1 p-3.5 border border-black/[0.08] dark:border-white/[0.08] shadow-md backdrop-blur-xl transition-all animate-in fade-in slide-in-from-top-1 duration-200">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/[0.08] dark:border-white/[0.08]">
-              <div className="flex items-center gap-2">
-                <div className="size-6 rounded-lg bg-[#E1EED7] dark:bg-[#2E6B5E]/30 border border-[#2E6B5E]/30 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] shadow-sm shrink-0">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                  </svg>
-                </div>
-                <div className="text-[11.5px] font-bold text-ink dark:text-[#f4f3ee]">
-                  Verified Grounding Context Sources
-                </div>
+          <div className="w-full rounded-xl bg-surface/95 dark:bg-[#14151a]/95 text-ink dark:text-[#f4f3ee] mt-1.5 mb-1 p-2 border border-black/[0.06] dark:border-white/[0.06] shadow-xs backdrop-blur-md transition-all animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-black/[0.06] dark:border-white/[0.06]">
+              <div className="flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-[#10b981]">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                <span className="text-[10.5px] font-bold text-ink dark:text-[#f4f3ee]">
+                  Verified Grounding Sources
+                </span>
               </div>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.05] border border-black/[0.08] dark:border-white/[0.08] text-ink-3 dark:text-[#b1ada1] font-mono font-medium">
-                {sources.length} {sources.length === 1 ? "Verified Document" : "Verified Documents"}
+              <span className="text-[9.5px] px-2 py-0.2 rounded-full bg-black/[0.04] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.06] text-ink-3 dark:text-[#b1ada1] font-mono font-medium">
+                {sources.length} {sources.length === 1 ? "document" : "documents"}
               </span>
             </div>
 
-            <div className="flex flex-col gap-1.5 mt-1">
+            <div className="flex flex-col gap-1">
               {sources.map((source, idx) => {
                 const fileName = source.source_file
                   ? source.source_file.replace(/\.php$/i, '.md')
@@ -1071,21 +1095,21 @@ const MessageItem = React.memo(function MessageItem({
                 return (
                   <div
                     key={source.chunk_id || idx}
-                    className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-[11.5px] font-medium bg-black/[0.02] dark:bg-white/[0.03] hover:bg-black/[0.05] dark:hover:bg-white/[0.07] border border-black/[0.06] dark:border-white/[0.06] transition-all cursor-default"
+                    className="flex items-center justify-between w-full rounded-lg px-2.5 py-1 text-[10.5px] font-medium bg-black/[0.02] dark:bg-white/[0.03] hover:bg-black/[0.05] dark:hover:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.04] transition-all cursor-default"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
-                      <span className="flex size-4.5 items-center justify-center rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9.5px] shrink-0 border border-[#2E6B5E]/20 dark:border-[#10b981]/30">
+                    <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+                      <span className="flex size-4 items-center justify-center rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 text-[#2E6B5E] dark:text-[#10b981] font-bold text-[9px] shrink-0 border border-[#2E6B5E]/20 dark:border-[#10b981]/30">
                         {idx + 1}
                       </span>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3 dark:text-[#b1ada1] shrink-0">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-ink-3 dark:text-[#b1ada1] shrink-0">
                         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                         <polyline points="14 2 14 8 20 8" />
                       </svg>
-                      <span className="truncate font-mono text-[11px] font-medium text-ink dark:text-[#f4f3ee]">
+                      <span className="truncate font-mono text-[10.5px] font-medium text-ink dark:text-[#f4f3ee]">
                         {fileName}
                       </span>
                     </div>
-                    <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-[#10b981]/10 dark:bg-[#10b981]/15 text-[#10b981] dark:text-[#34d399] font-mono shrink-0 font-medium border border-[#10b981]/20">
+                    <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-[#10b981]/10 dark:bg-[#10b981]/15 text-[#10b981] dark:text-[#34d399] font-mono shrink-0 font-medium border border-[#10b981]/20">
                       RAG Verified
                     </span>
                   </div>
