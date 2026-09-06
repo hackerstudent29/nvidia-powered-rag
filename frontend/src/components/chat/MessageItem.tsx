@@ -283,6 +283,16 @@ function buildTTSToDisplayMapping(displayWords: string[], ttsWords: string[]): n
   return map;
 }
 
+function extractRawTextFromNode(node: React.ReactNode): string {
+  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractRawTextFromNode).join("");
+  if (React.isValidElement(node)) {
+    return extractRawTextFromNode((node.props as any)?.children);
+  }
+  return "";
+}
+
 function autoLinkPhoneNumbers(content: string): string {
   if (!content) return "";
   let text = content;
@@ -673,6 +683,10 @@ const MessageItem = React.memo(function MessageItem({
     });
   }, [message.sources]);
 
+  const sanitizedMarkdown = useMemo(() => {
+    return autoLinkPhoneNumbers(sanitizeMarkdownContent(message.content));
+  }, [message.content]);
+
   // Reset document word counter before every render pass
   wordCounterRef.current = 0;
 
@@ -794,8 +808,7 @@ const MessageItem = React.memo(function MessageItem({
               ),
               a: ({ href, children }) => {
                 const rawHref = (href || "").trim();
-                const childrenText = typeof children === "string" ? children : Array.isArray(children) ? children.join("") : "";
-                const copyValue = childrenText || rawHref;
+                const childrenText = extractRawTextFromNode(children).trim();
 
                 const createLongPressCopy = (textToCopy: string, typeName: string) => {
                   let timer: any = null;
@@ -847,18 +860,29 @@ const MessageItem = React.memo(function MessageItem({
                   };
                 };
 
+                const phoneRegex = /(\+91[\s\-]?(?:\d{2,4})[\s\-]?\d{3,4}[\s\-]?\d{3,4}|\b0\d{2,4}[\s\-]?\d{6,8}\b|\b[6-9]\d{9}\b)/;
+                const phoneFromText = childrenText.match(phoneRegex);
+                const phoneFromHref = rawHref.match(phoneRegex);
+                const detectedPhone = (phoneFromText ? phoneFromText[0] : null) || (phoneFromHref ? phoneFromHref[0] : null);
+
                 const isTelScheme = rawHref.startsWith("tel:");
                 const isRawPhone = /^\+?\d[\d\s\-]{6,15}$/.test(rawHref) || /^\+91/.test(rawHref);
-                const isPhoneLink = isTelScheme || isRawPhone;
+                const isPhoneLink = isTelScheme || isRawPhone || !!detectedPhone;
+
+                const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+                const emailFromText = childrenText.match(emailRegex);
+                const emailFromHref = rawHref.match(emailRegex);
+                const detectedEmail = (emailFromText ? emailFromText[0] : null) || (emailFromHref ? emailFromHref[0] : null);
 
                 const isMailtoScheme = rawHref.startsWith("mailto:");
-                const isEmail = isMailtoScheme || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(rawHref);
+                const isEmail = isMailtoScheme || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(rawHref) || !!detectedEmail;
 
                 if (isPhoneLink) {
-                  const rawDigits = rawHref.replace(/^tel:/, "").replace(/[^\d+]/g, "");
-                  const cleanTel = `tel:${rawDigits.startsWith("+") ? rawDigits : `+91${rawDigits}`}`;
-                  const phoneText = copyValue.replace(/^tel:/, "");
-                  const handlers = createLongPressCopy(phoneText, "Phone Number");
+                  const targetPhone = detectedPhone || childrenText || rawHref.replace(/^tel:/, "");
+                  const cleanDigits = targetPhone.replace(/[^\d+]/g, "");
+                  const cleanTel = `tel:${cleanDigits.startsWith("+") ? cleanDigits : cleanDigits.startsWith("0") ? `+91${cleanDigits.slice(1)}` : `+91${cleanDigits}`}`;
+                  const phoneCopyText = detectedPhone || childrenText || cleanDigits;
+                  const handlers = createLongPressCopy(phoneCopyText, "Phone Number");
 
                   return (
                     <a
@@ -876,9 +900,9 @@ const MessageItem = React.memo(function MessageItem({
                 }
 
                 if (isEmail) {
-                  const cleanMail = `mailto:${rawHref.replace(/^mailto:/, "").trim()}`;
-                  const mailText = copyValue.replace(/^mailto:/, "");
-                  const handlers = createLongPressCopy(mailText, "Email Address");
+                  const targetEmail = detectedEmail || childrenText || rawHref.replace(/^mailto:/, "");
+                  const cleanMail = `mailto:${targetEmail.trim()}`;
+                  const handlers = createLongPressCopy(targetEmail, "Email Address");
 
                   return (
                     <a
@@ -897,7 +921,8 @@ const MessageItem = React.memo(function MessageItem({
                 }
 
                 const targetUrl = rawHref.startsWith("http") ? rawHref : `https://${rawHref}`;
-                const handlers = createLongPressCopy(targetUrl, "Link URL");
+                const linkCopyValue = (targetUrl !== "https://" && targetUrl !== "https://") ? targetUrl : childrenText;
+                const handlers = createLongPressCopy(linkCopyValue, "Link URL");
 
                 return (
                   <a
@@ -986,7 +1011,7 @@ const MessageItem = React.memo(function MessageItem({
               },
             }}
           >
-            {autoLinkPhoneNumbers(message.content)}
+            {sanitizedMarkdown}
           </ReactMarkdown>
 
           {message.is_streaming && (

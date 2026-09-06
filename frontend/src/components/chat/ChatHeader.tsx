@@ -186,7 +186,7 @@ export default function ChatHeader({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className="rounded-full flex items-center p-1 border border-white/50 dark:border-white/10 bg-white/40 dark:bg-black/40 shadow-[inset_0_1px_3px_rgba(0,0,0,0.08)] backdrop-blur-md"
+            className="rounded-full flex items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/85 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
           >
             {headerPills.map((pill) => {
               const Icon = pill.icon;
@@ -199,7 +199,7 @@ export default function ChatHeader({
                     whileHover={{ scale: 1.04 }}
                     onClick={pill.action}
                     type="button"
-                    className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[40px] cursor-pointer overflow-hidden ${
+                    className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[38px] cursor-pointer overflow-hidden ${
                       isActive
                         ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
                         : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
@@ -215,9 +215,9 @@ export default function ChatHeader({
                     <motion.div
                       initial={false}
                       animate={{
-                        width: isActive ? "74px" : "0px",
+                        width: isActive ? "62px" : "0px",
                         opacity: isActive ? 1 : 0,
-                        marginLeft: isActive ? "6px" : "0px",
+                        marginLeft: isActive ? "5px" : "0px",
                       }}
                       transition={{
                         width: { type: "spring", stiffness: 350, damping: 30 },
