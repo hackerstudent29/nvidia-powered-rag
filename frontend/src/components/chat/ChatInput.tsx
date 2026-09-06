@@ -175,6 +175,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onClearRateLimit,
   isMobile = false,
 }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [isSmoothResize, setIsSmoothResize] = useState(false);
   const [text, setText] = useState(inputValue || "");
   const [effortIndex, setEffortIndex] = useState(1); // Default "Medium"
   const [selectedModel, setSelectedModel] = useState("Auto (Router)");
@@ -190,9 +192,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   // Hover sliding background for model dropdown
   const [hoverStyle, setHoverStyle] = useState({ opacity: 0, transform: "translateY(0px) scale(0.95)", transition: "none" });
+  const [containerHeight, setContainerHeight] = useState(112);
+  const [textareaHeight, setTextareaHeight] = useState(56);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const internalContainerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef(inputValue || "");
 
   // Audio & SpeechRecognition Refs
@@ -210,8 +215,84 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   useEffect(() => {
     if (inputValue !== undefined && inputValue !== text) {
       setText(inputValue);
+      if (inputValue.trim() !== "" && !expanded) {
+        setIsSmoothResize(false);
+        setExpanded(true);
+      }
     }
-  }, [inputValue]);
+  }, [inputValue, text, expanded]);
+
+  // Expand helper
+  const expand = () => {
+    setIsSmoothResize(false);
+    setExpanded(true);
+  };
+
+  const handleValueChange = useCallback((val: string) => {
+    setIsSmoothResize(true);
+    setText(val);
+    onInputChange?.(val);
+    if (val.trim() !== "" && !expanded) {
+      setIsSmoothResize(false);
+      setExpanded(true);
+    }
+  }, [onInputChange, expanded]);
+
+  // Auto-expand if text typed or streaming
+  useEffect(() => {
+    if ((text.trim() !== "" || isStreaming) && !expanded) {
+      setIsSmoothResize(false);
+      setExpanded(true);
+    }
+  }, [text, expanded, isStreaming]);
+
+  // Auto focus when expanded
+  useEffect(() => {
+    if (expanded && !isRecording) {
+      const timer = setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const length = textareaRef.current.value.length;
+          textareaRef.current.setSelectionRange(length, length);
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [expanded, isRecording]);
+
+  // Dynamic textarea height calculation
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    const el = textareaRef.current;
+    
+    const currentHeight = el.style.height;
+    el.style.transition = 'none';
+    el.style.height = "0px";
+    const scrollHeight = el.scrollHeight;
+    el.style.height = currentHeight;
+    void el.offsetHeight; 
+    el.style.transition = '';
+    
+    const newHeight = Math.max(52, Math.min(scrollHeight, 160));
+    el.style.height = `${newHeight}px`;
+    
+    setTextareaHeight(newHeight);
+    setIsScrolling(scrollHeight > 160);
+  }, [text, expanded]);
+
+  useEffect(() => {
+    setContainerHeight(Math.max(104, textareaHeight + 44));
+  }, [textareaHeight]);
+
+  // Handle blur to collapse when empty
+  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (internalContainerRef.current && internalContainerRef.current.contains(e.relatedTarget as Node)) return;
+    if (text.trim() === "" && !isRecording && !isStreaming) {
+      setIsSmoothResize(false);
+      setExpanded(false);
+      setIsModelSelectOpen(false);
+    }
+  };
 
   // Rotate disclaimer sentences
   useEffect(() => {
@@ -246,18 +327,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return `${secs}s`;
   };
 
-  // Textarea auto-resize
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    const handle = requestAnimationFrame(() => {
-      el.style.height = "auto";
-      const maxHeight = Math.min(window.innerHeight * 0.3, 220);
-      el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
-    });
-    return () => cancelAnimationFrame(handle);
-  }, [text]);
-
   // Voice recording stop handler
   const stopRecording = useCallback(() => {
     if (recognitionRef.current) {
@@ -286,6 +355,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   // Voice recording start handler
   const startRecording = useCallback(async () => {
+    setIsSmoothResize(false);
+    setExpanded(true);
+
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -363,8 +435,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         }
 
         const combined = (baseText + (interimTranscript ? " " + interimTranscript : "")).trim();
-        setText(combined);
-        if (onInputChange) onInputChange(combined);
+        handleValueChange(combined);
       };
 
       recognition.onerror = () => {
@@ -379,7 +450,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     } catch (err) {
       stopRecording();
     }
-  }, [onInputChange, stopRecording]);
+  }, [handleValueChange, stopRecording]);
 
   useEffect(() => {
     return () => {
@@ -391,18 +462,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     if (e) e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
+    setIsSmoothResize(false);
     onSendMessage(trimmed, EFFORTS[effortIndex]);
-    setText("");
-    if (onInputChange) onInputChange("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
+    handleValueChange("");
+    setExpanded(false);
+    setIsModelSelectOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
+    }
+    if (e.key === "Escape" && text.trim() === "") {
+      setIsSmoothResize(false);
+      setExpanded(false);
+      setIsModelSelectOpen(false);
     }
   };
 
@@ -415,7 +490,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   useEffect(() => {
     if (!isModelSelectOpen) return;
     const handleOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (internalContainerRef.current && !internalContainerRef.current.contains(e.target as Node)) {
         setIsModelSelectOpen(false);
         setShowLockedToast(false);
       }
@@ -424,8 +499,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [isModelSelectOpen]);
 
-  const handleModelClick = (modelObj: typeof MODELS_LIST[0]) => {
-    // Show locked feedback notification to user
+  const handleModelClick = () => {
     setShowLockedToast(true);
     setTimeout(() => {
       setShowLockedToast(false);
@@ -452,7 +526,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div
-      ref={containerRef}
       className="sticky bottom-0 z-20 pb-2.5 pt-1 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
       style={{ paddingBottom: `max(10px, calc(10px + var(--keyboard-offset, 0px)))` }}
     >
@@ -509,7 +582,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   <button
                     key={chip.label}
                     type="button"
-                    onClick={() => onSendMessage(chip.query, EFFORTS[effortIndex])}
+                    onClick={() => {
+                      expand();
+                      onSendMessage(chip.query, EFFORTS[effortIndex]);
+                    }}
                     disabled={isStreaming || !!rateLimitInfo?.isLimited}
                     className="rounded-full px-3 py-1 text-[11px] font-medium shrink-0 border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] text-ink dark:text-[#f4f3ee] hover:border-[#2E6B5E] dark:hover:border-[#10b981] active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                   >
@@ -526,7 +602,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     <button
                       key={`${chip.label}-${idx}`}
                       type="button"
-                      onClick={() => onSendMessage(chip.query, EFFORTS[effortIndex])}
+                      onClick={() => {
+                        expand();
+                        onSendMessage(chip.query, EFFORTS[effortIndex]);
+                      }}
                       disabled={isStreaming || !!rateLimitInfo?.isLimited}
                       className="rounded-full px-2.5 py-0.5 text-[10.5px] font-medium shrink-0 border border-black/[0.08] dark:border-white/[0.08] bg-white/90 dark:bg-[#14151a]/90 text-ink dark:text-[#f4f3ee] hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                     >
@@ -539,31 +618,80 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           )
         )}
 
-        {/* ── Main Production Prompt Input Card ── */}
-        <div className="relative w-full rounded-2xl sm:rounded-3xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] shadow-lg transition-all duration-200 p-3 flex flex-col justify-between">
-          
-          {/* Text Area Input */}
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              onInputChange?.(e.target.value);
+        {/* ── Spring Resizing Prompt Input Container ── */}
+        <div
+          ref={internalContainerRef}
+          onBlur={handleBlur}
+          className="relative flex flex-col w-full mx-auto"
+          style={{
+            maxWidth: expanded ? 672 : 360,
+            transition: isSmoothResize
+              ? "max-width 0.15s ease-out"
+              : "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+          }}
+        >
+          {/* Main Input Card */}
+          <div
+            onMouseDown={(e) => {
+              const isTextarea = e.target === textareaRef.current;
+              if (expanded && !isTextarea && !isRecording) {
+                e.preventDefault();
+                textareaRef.current?.focus();
+              }
             }}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask anything about MSAJCEA (fees, courses, cutoff, hostels, faculty, placements)..."
-            rows={1}
-            disabled={isStreaming}
-            className="w-full resize-none bg-transparent px-2 py-1 text-[14px] text-ink dark:text-[#f4f3ee] placeholder:text-ink-3/60 dark:placeholder:text-zinc-500 focus:outline-none max-h-[30vh] overflow-y-auto font-medium leading-relaxed block"
-          />
+            style={{
+              borderRadius: 24,
+              height: expanded ? containerHeight : 48,
+              transition: isSmoothResize ? SMOOTH_HEIGHT_TRANSITION : SPRING_TRANSITION,
+              overflow: expanded ? "visible" : "hidden",
+            }}
+            className={cn(
+              "relative w-full border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] shadow-lg transition-colors z-10 focus-within:border-[#2E6B5E]/50 dark:focus-within:border-[#10b981]/50",
+              expanded ? "cursor-text" : "cursor-pointer hover:border-[#2E6B5E]/30 dark:hover:border-[#10b981]/30"
+            )}
+          >
+            {/* Expanded Textarea Input */}
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={(e) => handleValueChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask anything about MSAJCEA..."
+              disabled={isStreaming}
+              style={{
+                transition: isSmoothResize
+                  ? "height 0.15s ease-out"
+                  : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              }}
+              className={cn(
+                "absolute top-0 inset-x-0 z-[1] w-full resize-none bg-transparent pl-4 pr-12 py-3 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-medium placeholder:text-ink-3/60 dark:placeholder:text-zinc-500 cursor-text",
+                expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-1 pointer-events-none",
+                isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
+              )}
+            />
 
-          {/* Bottom Toolbar Row */}
-          <div className="flex items-center justify-between pt-2.5 px-1 border-t border-black/[0.04] dark:border-white/[0.04] mt-2">
-            
-            {/* Left Controls: Model indicator & Effort Selector */}
-            <div className="flex items-center gap-1.5 relative">
-              
-              {/* Model Dropdown Button */}
+            {/* Collapsed Placeholder Button */}
+            <button
+              type="button"
+              onClick={expand}
+              style={{ transition: isSmoothResize ? "none" : "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
+              className={cn(
+                "absolute inset-x-0 top-0 z-[1] cursor-pointer pl-4 pr-12 py-[14px] text-left text-sm font-medium leading-[17px] text-ink-3/80 dark:text-[#b1ada1]/80 outline-none flex items-center justify-between",
+                !expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-105 translate-y-1 pointer-events-none"
+              )}
+              aria-label="Open prompt input"
+            >
+              <span className="truncate">Ask anything about MSAJCEA...</span>
+            </button>
+
+            {/* Bottom Actions Bar (Model Dropdown & Effort Selector) */}
+            <div
+              className={cn(
+                "absolute bottom-2 left-3 right-12 z-[10] flex items-center gap-1.5 transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                expanded && !isRecording ? "opacity-100 blur-0 translate-y-0 pointer-events-auto" : "opacity-0 blur-sm translate-y-2 pointer-events-none"
+              )}
+            >
+              {/* Model Select Button & Popover */}
               <div className="relative">
                 <button
                   type="button"
@@ -586,7 +714,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   <LockIcon />
                 </button>
 
-                {/* Model List Dropdown with Hover Slider & Locked Notification */}
+                {/* Model Popover */}
                 <div
                   style={{ transformOrigin: "bottom left" }}
                   onMouseLeave={() => {
@@ -620,7 +748,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   )}
 
                   <div className="relative flex flex-col gap-0.5">
-                    {/* Hover highlight background slider */}
                     <div style={hoverStyle} className="absolute left-0 right-0 top-0 h-9 -z-10 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] pointer-events-none" />
                     
                     {MODELS_LIST.map((mItem, idx) => (
@@ -637,7 +764,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleModelClick(mItem);
+                          handleModelClick();
                         }}
                         className="group relative flex h-9 w-full items-center justify-between rounded-xl px-2.5 py-1 text-left text-xs font-medium text-ink dark:text-[#f4f3ee] outline-none cursor-pointer"
                       >
@@ -672,79 +799,76 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               </Tooltip>
             </div>
 
-            {/* Right Controls: Single Action Button + Voice Wave Visualizer */}
-            <div className="flex items-center gap-2">
-              
-              {/* Audio Wave Visualizer (5 animated bars when recording) */}
-              <div
+            {/* Audio Wave Visualizer */}
+            <div
+              className={cn(
+                "absolute right-12 bottom-2 z-[10] flex h-7 items-center justify-end gap-[3px] transition-all duration-300",
+                isRecording ? "w-14 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none"
+              )}
+            >
+              {audioData.map((val, i) => (
+                <div
+                  key={i}
+                  className="w-1 rounded-full bg-[#10b981] transition-[height] duration-100 ease-out"
+                  style={{ height: `${Math.max(4, val * 24)}px` }}
+                />
+              ))}
+            </div>
+
+            {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}
+            <Tooltip
+              content={
+                isStreaming
+                  ? "Stop generating"
+                  : isRecording
+                  ? "Stop recording"
+                  : hasValue
+                  ? "Send message (Enter)"
+                  : "Voice Input (Speech to text)"
+              }
+            >
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onClick={handleActionButtonClick}
+                disabled={!hasValue && !isRecording && !isStreaming && !!rateLimitInfo?.isLimited}
                 className={cn(
-                  "flex h-7 items-center justify-end gap-[3px] transition-all duration-300",
-                  isRecording ? "w-14 opacity-100" : "w-0 opacity-0 overflow-hidden pointer-events-none"
+                  "absolute right-2 bottom-2 z-[10] flex size-8 items-center justify-center rounded-full text-white transition-all duration-300 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
+                  showStop
+                    ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse ring-2 ring-red-400"
+                    : showArrow
+                    ? "bg-[#2E6B5E] dark:bg-[#10b981] dark:text-zinc-950 hover:opacity-90"
+                    : "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E] hover:text-white dark:hover:bg-[#10b981] dark:hover:text-zinc-950"
                 )}
               >
-                {audioData.map((val, i) => (
-                  <div
-                    key={i}
-                    className="w-1 rounded-full bg-[#10b981] transition-[height] duration-100 ease-out"
-                    style={{ height: `${Math.max(4, val * 24)}px` }}
-                  />
-                ))}
-              </div>
-
-              {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}
-              <Tooltip
-                content={
-                  isStreaming
-                    ? "Stop generating"
-                    : isRecording
-                    ? "Stop recording"
-                    : hasValue
-                    ? "Send message (Enter)"
-                    : "Voice Input (Speech to text)"
-                }
-              >
-                <button
-                  type="button"
-                  onClick={handleActionButtonClick}
-                  disabled={!hasValue && !isRecording && !isStreaming && !!rateLimitInfo?.isLimited}
-                  className={cn(
-                    "relative flex size-9 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
-                    showStop
-                      ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse ring-2 ring-red-400"
-                      : showArrow
-                      ? "bg-[#2E6B5E] dark:bg-[#10b981] dark:text-zinc-950 hover:opacity-90"
-                      : "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E] hover:text-white dark:hover:bg-[#10b981] dark:hover:text-zinc-950"
-                  )}
-                >
-                  <span className="relative flex h-full w-full items-center justify-center">
-                    <span
-                      className={cn(
-                        "absolute inset-0 flex items-center justify-center transition-all duration-250 ease-out",
-                        showArrow ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 rotate-45 pointer-events-none"
-                      )}
-                    >
-                      <ArrowUpIcon />
-                    </span>
-                    <span
-                      className={cn(
-                        "absolute inset-0 flex items-center justify-center transition-all duration-250 ease-out",
-                        showMic ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 -rotate-45 pointer-events-none"
-                      )}
-                    >
-                      <MicIcon />
-                    </span>
-                    <span
-                      className={cn(
-                        "absolute inset-0 flex items-center justify-center transition-all duration-250 ease-out",
-                        showStop ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 rotate-45 pointer-events-none"
-                      )}
-                    >
-                      <StopIcon />
-                    </span>
+                <span className="relative flex h-full w-full items-center justify-center">
+                  <span
+                    className={cn(
+                      "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                      showArrow ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
+                    )}
+                  >
+                    <ArrowUpIcon />
                   </span>
-                </button>
-              </Tooltip>
-            </div>
+                  <span
+                    className={cn(
+                      "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                      showMic ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 -rotate-45 blur-[1px] pointer-events-none"
+                    )}
+                  >
+                    <MicIcon />
+                  </span>
+                  <span
+                    className={cn(
+                      "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
+                      showStop ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
+                    )}
+                  >
+                    <StopIcon />
+                  </span>
+                </span>
+              </button>
+            </Tooltip>
           </div>
         </div>
 
