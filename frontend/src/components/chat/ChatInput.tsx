@@ -552,23 +552,73 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       baseTextRef.current = baseText;
 
       // 2. Connect to STT Proxy WebSocket Endpoint on Backend
-      const envUrl = import.meta.env.VITE_API_URL;
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
       let wsProxyUrl: string;
-      if (envUrl) {
-        const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
-        const host = envUrl.replace(/^https?:\/\//, "");
-        wsProxyUrl = `${wsProto}://${host}/ws/stt`;
+      if (isLocal) {
+        wsProxyUrl = `ws://${window.location.hostname}:8000/ws/stt`;
       } else {
-        const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
-        wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
+        const envUrl = import.meta.env.VITE_API_URL;
+        if (envUrl) {
+          const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
+          const host = envUrl.replace(/^https?:\/\//, "");
+          wsProxyUrl = `${wsProto}://${host}/ws/stt`;
+        } else {
+          const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+          wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
+        }
       }
 
-      let ws: WebSocket;
+      const startWebSpeechFallback = () => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          console.warn("[STT Engine] WebSpeech API not supported in this browser.");
+          return;
+        }
+        try {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "en-US";
+          recognitionRef.current = recognition;
+
+          recognition.onresult = (event: any) => {
+            let interim = "";
+            let finalStr = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              if (event.results[i].isFinal) {
+                finalStr += event.results[i][0].transcript;
+              } else {
+                interim += event.results[i][0].transcript;
+              }
+            }
+            const textToUse = finalStr || interim;
+            if (textToUse.trim()) {
+              const combined = (baseTextRef.current ? baseTextRef.current.trim() + " " : "") + textToUse.trim();
+              handleValueChange(combined);
+              if (finalStr.trim()) {
+                baseTextRef.current = combined;
+              }
+            }
+          };
+
+          recognition.onerror = (e: any) => {
+            console.warn("[STT Engine] WebSpeech fallback error:", e.error);
+          };
+
+          recognition.start();
+          console.log("[STT Engine] WebSpeech fallback engine active.");
+        } catch (e) {
+          console.error("[STT Engine] Failed starting WebSpeech fallback:", e);
+        }
+      };
+
+      let hasOpened = false;
       try {
-        ws = new WebSocket(wsProxyUrl);
+        const ws = new WebSocket(wsProxyUrl);
         wsRef.current = ws;
 
         ws.onopen = () => {
+          hasOpened = true;
           console.log("[STT Engine] Connected to backend STT proxy.");
         };
 
@@ -595,27 +645,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         };
 
         ws.onerror = (err) => {
-          console.error("[STT Engine] Proxy WS error:", err);
+          console.warn("[STT Engine] Proxy WS connection failed:", err);
+          if (!hasOpened) {
+            startWebSpeechFallback();
+          }
+        };
+
+        ws.onclose = () => {
+          if (!hasOpened && isRecordingRef.current) {
+            console.warn("[STT Engine] Proxy WS closed before open, activating WebSpeech fallback.");
+            startWebSpeechFallback();
+          }
         };
       } catch (proxyErr) {
-        console.warn("[STT Engine] Proxy connection error, dropping to AssemblyAI direct:", proxyErr);
-        const apiBase = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "/api";
-        const tokenRes = await fetch(`${apiBase}/assemblyai/token`);
-        const { token } = await tokenRes.json();
-        const aaiUrl = `wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=universal-3-5-pro&mode=balanced&token=${token}`;
-        ws = new WebSocket(aaiUrl);
-        wsRef.current = ws;
-
-        ws.onmessage = (event) => {
-          try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === "Turn" && msg.transcript?.trim()) {
-              const combined = (baseTextRef.current ? baseTextRef.current.trim() + " " : "") + msg.transcript.trim();
-              handleValueChange(combined);
-              if (msg.end_of_turn) baseTextRef.current = combined;
-            }
-          } catch (e) {}
-        };
+        console.warn("[STT Engine] Proxy WS instantiation error, activating WebSpeech fallback:", proxyErr);
+        startWebSpeechFallback();
       }
 
 
