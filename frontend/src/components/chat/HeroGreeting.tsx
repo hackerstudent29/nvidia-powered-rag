@@ -124,28 +124,18 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
       className="flex flex-col items-center w-full max-w-[1020px] mx-auto px-3 sm:px-6 pt-4 pb-6"
     >
       {/* ── Hero headline ── */}
-      <div className="relative flex flex-col items-center text-center mb-8 w-full">
+      <div className="relative flex flex-col items-center text-center mb-4 sm:mb-6 w-full">
         {/* Ambient glow backing */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[140px] rounded-full blur-[80px] opacity-30 dark:opacity-20 pointer-events-none"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[120px] rounded-full blur-[80px] opacity-30 dark:opacity-20 pointer-events-none"
           style={{ background: "radial-gradient(ellipse, #2E6B5E 0%, transparent 70%)" }}
         />
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/30 border border-[#2E6B5E]/30 dark:border-[#10b981]/30 text-[#2E6B5E] dark:text-[#10b981] text-xs font-semibold mb-3 shadow-sm"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>MSAJCEA AI Knowledge Hub</span>
-        </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="hero-title relative text-[2.2rem] sm:text-[3.2rem] lg:text-[3.8rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] z-10"
+          className="hero-title relative text-[1.35rem] min-[360px]:text-[1.55rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] z-10 whitespace-nowrap"
         >
           Hello, Future Engineer.
         </motion.h1>
@@ -154,7 +144,7 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="relative z-10 mt-3.5 text-[13.5px] sm:text-[15px] text-ink-3 dark:text-[#b1ada1] max-w-[580px] leading-relaxed font-ui"
+          className="relative z-10 mt-2 sm:mt-3 text-[12.5px] sm:text-[14.5px] text-ink-3 dark:text-[#b1ada1] max-w-[580px] leading-relaxed font-ui"
         >
           Explore&nbsp;
           <span className="font-bold text-ink dark:text-[#f4f3ee]">
@@ -164,30 +154,33 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
         </motion.p>
       </div>
 
-      {/* ── 12-card Grid ── */}
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5">
+      {/* ── 12-card Grid (Compact, Small & Fits in One Screen) ── */}
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
         {FAQ_CARDS.map((card, idx) => (
           <motion.button
             key={card.id}
             type="button"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 + idx * 0.015, duration: 0.2 }}
+            transition={{ delay: 0.03 + idx * 0.01, duration: 0.18 }}
             onClick={() => handleCardClick(card.q)}
-            className="group flex flex-col justify-between items-start text-left rounded-2xl p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-sm hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md transform-gpu hover:-translate-y-1 hover:scale-[1.01] transition-all duration-150 ease-out cursor-pointer w-full active:scale-[0.98]"
-            style={{ minHeight: "115px" }}
+            className="group flex flex-col sm:flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-2.5 sm:p-3 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md transform-gpu hover:-translate-y-0.5 transition-all duration-150 ease-out cursor-pointer w-full active:scale-[0.98] min-h-[72px] sm:min-h-[92px]"
           >
-            {/* Icon Pill Container */}
-            <div className="size-9 rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:scale-105 group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-150 shadow-sm shrink-0">
-              {card.icon}
-            </div>
+            <div className="flex items-center gap-2 sm:gap-2.5 w-full">
+              {/* Icon Pill Container */}
+              <div className="size-7 sm:size-8 rounded-lg sm:rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-150 shadow-xs shrink-0">
+                {card.icon}
+              </div>
 
-            {/* Content */}
-            <div className="mt-3 w-full">
-              <p className="text-[13.5px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors duration-150">
+              {/* Title */}
+              <p className="text-[12px] sm:text-[13px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors duration-150">
                 {card.title}
               </p>
-              <p className="text-[11px] text-ink-3 dark:text-[#b1ada1] leading-snug mt-1 line-clamp-2">
+            </div>
+
+            {/* Subtitle */}
+            <div className="mt-1 sm:mt-1.5 w-full">
+              <p className="text-[10px] sm:text-[11px] text-ink-3 dark:text-[#b1ada1] leading-tight line-clamp-1">
                 {card.subtitle}
               </p>
             </div>

@@ -27,8 +27,17 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
     });
   };
 
+  const isTouchScreen = () => {
+    if (typeof window === "undefined") return false;
+    return (
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia("(pointer: coarse)").matches
+    );
+  };
+
   const showTooltip = () => {
-    if (disabled || !content) return;
+    if (disabled || !content || isTouchScreen()) return;
     timeoutRef.current = setTimeout(() => {
       updatePosition();
       setIsVisible(true);
@@ -50,7 +59,7 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
   const clone = React.cloneElement(child, {
     ref: triggerRef,
     onMouseEnter: (e: any) => {
-      showTooltip();
+      if (!isTouchScreen()) showTooltip();
       if (child.props?.onMouseEnter) child.props.onMouseEnter(e);
     },
     onMouseLeave: (e: any) => {
@@ -58,12 +67,16 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
       if (child.props?.onMouseLeave) child.props.onMouseLeave(e);
     },
     onFocus: (e: any) => {
-      showTooltip();
+      if (!isTouchScreen()) showTooltip();
       if (child.props?.onFocus) child.props.onFocus(e);
     },
     onBlur: (e: any) => {
       hideTooltip();
       if (child.props?.onBlur) child.props.onBlur(e);
+    },
+    onTouchStart: (e: any) => {
+      hideTooltip();
+      if (child.props?.onTouchStart) child.props.onTouchStart(e);
     },
     onClick: (e: any) => {
       hideTooltip(); 
