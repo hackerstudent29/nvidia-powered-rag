@@ -265,7 +265,7 @@ function buildTTSToDisplayMapping(displayWords: string[], ttsWords: string[]): n
     }
 
     let matched = false;
-    for (let lookahead = 0; lookahead < 6 && dIdx + lookahead < displayWords.length; lookahead++) {
+    for (let lookahead = 0; lookahead < 10 && dIdx + lookahead < displayWords.length; lookahead++) {
       const dClean = displayWords[dIdx + lookahead].toLowerCase().replace(/[^a-z0-9]/g, "");
       if (dClean && (dClean.includes(tClean) || tClean.includes(dClean))) {
         dIdx = dIdx + lookahead;
@@ -695,7 +695,7 @@ const MessageItem = React.memo(function MessageItem({
           return (
             <mark
               key={i}
-              className="bg-[#10B981]/35 dark:bg-[#34D399]/40 text-ink dark:text-white font-extrabold px-1 -mx-0.5 rounded transition-all duration-75 shadow-xs ring-1 ring-[#10b981]/50 inline-block align-baseline"
+              className="bg-[#10B981]/35 dark:bg-[#34D399]/40 text-ink dark:text-white font-extrabold px-1 -mx-0.5 rounded-sm transition-all duration-75 shadow-xs ring-1 ring-[#10b981]/60"
             >
               {token}
             </mark>

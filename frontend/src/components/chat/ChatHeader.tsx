@@ -150,7 +150,7 @@ export default function ChatHeader({
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 280, damping: 24 }}
-        className="pointer-events-auto max-w-5xl mx-auto h-14 sm:h-16 backdrop-blur-2xl bg-white/70 dark:bg-[#14151a]/70 border border-white/60 dark:border-white/10 shadow-2xl shadow-black/5 rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+        className="pointer-events-auto max-w-5xl mx-auto h-14 sm:h-16 backdrop-blur-2xl backdrop-saturate-180 bg-white/45 dark:bg-[#14151a]/55 border border-white/70 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
       >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
@@ -186,7 +186,7 @@ export default function ChatHeader({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className="rounded-full flex items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/80 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+            className="rounded-full flex items-center p-1 border border-white/50 dark:border-white/10 bg-white/40 dark:bg-black/40 shadow-[inset_0_1px_3px_rgba(0,0,0,0.08)] backdrop-blur-md"
           >
             {headerPills.map((pill) => {
               const Icon = pill.icon;
@@ -201,8 +201,8 @@ export default function ChatHeader({
                     type="button"
                     className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[40px] cursor-pointer overflow-hidden ${
                       isActive
-                        ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md"
-                        : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
+                        ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
+                        : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
                     }`}
                     aria-label={pill.label}
                   >
@@ -215,7 +215,7 @@ export default function ChatHeader({
                     <motion.div
                       initial={false}
                       animate={{
-                        width: isActive ? "72px" : "0px",
+                        width: isActive ? "74px" : "0px",
                         opacity: isActive ? 1 : 0,
                         marginLeft: isActive ? "6px" : "0px",
                       }}
@@ -224,7 +224,7 @@ export default function ChatHeader({
                         opacity: { duration: 0.18 },
                         marginLeft: { duration: 0.18 },
                       }}
-                      className="overflow-hidden flex items-center whitespace-nowrap hidden sm:flex"
+                      className="overflow-hidden flex items-center whitespace-nowrap"
                     >
                       <span
                         className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
