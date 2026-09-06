@@ -75,9 +75,9 @@
     --surface:     #14151a;   /* Clean elevated card & panel background */
     --inset:       #1c1d24;   /* Inset containers, inputs, code blocks */
 
-    /* ── Borders & Dividers ── */
-    --line:        rgba(244, 243, 238, 0.08);   /* Hairline warm-white border */
-    --line-strong: rgba(244, 243, 238, 0.16);   /* Prominent separator */
+    /* ── Borders & Dividers (Subtle, non-glaring) ── */
+    --line:        rgba(255, 255, 255, 0.04);   /* Soft hairline border */
+    --line-strong: rgba(255, 255, 255, 0.08);   /* Delicate divider line */
 
     /* ── Typography (Exact user colors) ── */
     --ink:   #f4f3ee;   /* Primary text — crisp warm white */

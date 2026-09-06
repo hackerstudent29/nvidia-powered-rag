@@ -526,7 +526,7 @@ const MessageItem = React.memo(function MessageItem({
   if (isUser) {
     return (
       <div className="flex flex-col w-full max-w-full min-w-0 box-border mt-3 mb-2 sm:mt-4 sm:mb-2 animate-in fade-in duration-200">
-        <div className="w-full border-t border-line/60 dark:border-line/40 mb-2 sm:mb-3" />
+        <div className="w-full border-t border-line/40 dark:border-white/[0.04] mb-2 sm:mb-3" />
         {timeStr && (
           <div className="w-full flex justify-end pb-1 pr-0.5">
             <Tooltip content="Question Timestamp" position="top">
@@ -537,7 +537,7 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
         <div className="flex justify-end items-end gap-2.5 w-full max-w-full min-w-0 box-border">
-          <div className="user-msg-bubble max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-3.5 bg-surface dark:bg-surface border border-line text-ink dark:text-ink text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
+          <div className="user-msg-bubble max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-3.5 bg-surface dark:bg-surface border border-line dark:border-white/[0.08] text-ink dark:text-ink text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
             {message.content}
           </div>
           <div className="size-8 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/40 dark:to-[#9D174D]/40 border border-white/80 dark:border-white/20 shadow-hairline flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
@@ -632,10 +632,10 @@ const MessageItem = React.memo(function MessageItem({
               ol: ({ children }) => <ol className="list-decimal pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ol>,
               li: ({ children }) => <li className="mb-1">{processHighlightedChildren(children)}</li>,
               h1: ({ children }) => <h1 className="font-heading font-bold tracking-tight mt-5 mb-2.5 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
-              h2: ({ children }) => <h2 className="font-heading font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
+              h2: ({ children }) => <h2 className="font-heading font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 dark:border-white/[0.05] text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
               h3: ({ children }) => <h3 className="font-heading font-bold mt-3.5 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
               h4: ({ children }) => <h4 className="font-heading font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
-              hr: () => <hr className="my-4 border-line/60 dark:border-line/40" />,
+              hr: () => <hr className="my-4 border-line/50 dark:border-white/[0.05]" />,
               blockquote: ({ children }) => <blockquote className="font-heading border-l-4 border-[#2E6B5E] dark:border-[#4ade80] bg-[#2E6B5E]/5 dark:bg-[#4ade80]/8 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
               strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
@@ -802,7 +802,7 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Action Icons, Token & Cost Badge & Sources Row */}
         {!message.is_streaming && (
-          <div className="mt-3 flex flex-wrap items-center gap-1 sm:gap-1.5 pt-2 border-t border-line/40">
+          <div className="mt-3 flex flex-wrap items-center gap-1 sm:gap-1.5 pt-2 border-t border-line/40 dark:border-white/[0.04]">
             <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
               <button
                 type="button"
