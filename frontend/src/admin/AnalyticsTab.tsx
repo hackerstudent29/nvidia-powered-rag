@@ -9,11 +9,12 @@ interface AnalyticsTabProps {
 }
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ 
-  cacheEntries, 
+  cacheEntries = [], 
   onPurgeCache,
   isDark = true
 }) => {
-  const totalHits = cacheEntries.reduce((acc, curr) => acc + (curr.hit_count || 0), 0);
+  const safeEntries = Array.isArray(cacheEntries) ? cacheEntries : [];
+  const totalHits = safeEntries.reduce((acc, curr) => acc + (curr.hit_count || 0), 0);
 
   return (
     <div className="space-y-6 animate-fade-in font-ui">
@@ -25,7 +26,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
           }`}>
             <div>
               <div className={`text-xs uppercase tracking-wider font-mono font-semibold ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>Real Cache Entries</div>
-              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{cacheEntries.length} Entries</div>
+              <div className={`text-2xl font-heading font-bold my-1 ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{safeEntries.length} Entries</div>
               <div className="text-xs text-[#10b981] font-semibold">Stored in query_cache table</div>
             </div>
             <div className="p-3 rounded-2xl bg-[#2E6B5E]/20 text-[#10b981]">
@@ -102,14 +103,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
               </tr>
             </thead>
             <tbody className={`divide-y ${isDark ? 'divide-white/[0.04]' : 'divide-black/[0.04]'}`}>
-              {cacheEntries.length === 0 ? (
+              {safeEntries.length === 0 ? (
                 <tr>
                   <td colSpan={3} className={`px-6 py-12 text-center ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
                     Cache is currently empty in database.
                   </td>
                 </tr>
               ) : (
-                cacheEntries.map((entry, i) => (
+                safeEntries.map((entry, i) => (
                   <tr key={i} className={`transition-colors ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#F7F6ED]/60'}`}>
                     <td className={`px-6 py-4 font-medium ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{entry.query_text}</td>
                     <td className="px-6 py-4 text-center">

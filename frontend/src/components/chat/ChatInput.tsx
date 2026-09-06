@@ -619,8 +619,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       const envUrl = import.meta.env.VITE_API_URL;
       if (envUrl) {
         const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
-        const host = envUrl.replace(/^https?:\/\//, "");
+        const host = envUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
         wsProxyUrl = `${wsProto}://${host}/ws/stt`;
+      } else if (window.location.hostname.includes("vercel.app")) {
+        wsProxyUrl = "wss://nvidia-powered-rag-production.up.railway.app/ws/stt";
       } else {
         const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
         wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
@@ -1317,15 +1319,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                       key={item.val}
                                       type="button"
                                       onClick={() => handleExpressivitySelect(item.val)}
-                                      className={cn(
-                                        "flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[10.5px] font-medium transition-all cursor-pointer border text-center gap-1",
-                                        isSelected
-                                          ? "bg-white dark:bg-emerald-500/20 text-[#10b981] border border-black/[0.08] dark:border-emerald-500/50 shadow-md font-bold scale-[1.02]"
-                                          : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-zinc-200"
-                                      )}
+                                      className="relative flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[10.5px] font-medium transition-colors cursor-pointer text-center gap-1 z-10"
                                     >
-                                      <ItemIcon className={cn("size-4", isSelected ? "text-[#10b981]" : "text-ink-3 dark:text-zinc-400")} />
-                                      <span className="text-[9px] truncate max-w-full font-semibold">{item.title}</span>
+                                      {isSelected && (
+                                        <motion.div
+                                          layoutId="expressivityHighlight"
+                                          className="absolute inset-0 rounded-lg bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-sm"
+                                          transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                                        />
+                                      )}
+                                      <ItemIcon className={cn("relative z-10 size-4 transition-colors", isSelected ? "text-[#10b981]" : "text-ink-3 dark:text-zinc-400")} />
+                                      <span className={cn("relative z-10 text-[9px] truncate max-w-full font-semibold transition-colors", isSelected ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400")}>{item.title}</span>
                                     </button>
                                   );
                                 })}
@@ -1346,21 +1350,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 bg-black/[0.03] dark:bg-black/40 p-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.06]">
-                                {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => (
-                                  <button
-                                    key={spd}
-                                    type="button"
-                                    onClick={() => handleSpeedSelect(spd)}
-                                    className={cn(
-                                      "flex-1 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all cursor-pointer border text-center",
-                                      ttsSpeed === spd
-                                        ? "bg-white dark:bg-emerald-500/20 text-[#10b981] border border-black/[0.08] dark:border-emerald-500/50 shadow-sm"
-                                        : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-zinc-200"
-                                    )}
-                                  >
-                                    {spd}x
-                                  </button>
-                                ))}
+                                {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => {
+                                  const isSelected = ttsSpeed === spd;
+                                  return (
+                                    <button
+                                      key={spd}
+                                      type="button"
+                                      onClick={() => handleSpeedSelect(spd)}
+                                      className="relative flex-1 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-colors cursor-pointer text-center z-10"
+                                    >
+                                      {isSelected && (
+                                        <motion.div
+                                          layoutId="speedHighlight"
+                                          className="absolute inset-0 rounded-lg bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-sm"
+                                          transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                                        />
+                                      )}
+                                      <span className={cn("relative z-10 transition-colors", isSelected ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400")}>
+                                        {spd}x
+                                      </span>
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}

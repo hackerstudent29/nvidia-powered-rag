@@ -71,9 +71,18 @@ export const AdminDashboard: React.FC = () => {
       ]);
 
       if (mRes.ok) setMetrics(await mRes.json());
-      if (sRes.ok) setSessions(await sRes.json());
-      if (dRes.ok) setDislikes(await dRes.json());
-      if (kRes.ok) setKnowledgeGaps(await kRes.json());
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        setSessions(Array.isArray(sData) ? sData : []);
+      }
+      if (dRes.ok) {
+        const dData = await dRes.json();
+        setDislikes(Array.isArray(dData) ? dData : []);
+      }
+      if (kRes.ok) {
+        const kData = await kRes.json();
+        setKnowledgeGaps(Array.isArray(kData) ? kData : []);
+      }
     } catch (err) {
       console.error("Failed to fetch admin dashboard telemetry:", err);
     } finally {

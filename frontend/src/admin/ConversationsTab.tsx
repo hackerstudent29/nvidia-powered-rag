@@ -22,8 +22,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }));
   };
 
-  // Filter users or sessions based on search term
-  const filteredUsers = sessions.filter(item => {
+  const safeSessions = Array.isArray(sessions) ? sessions : [];
+  const filteredUsers = safeSessions.filter(item => {
     const query = searchTerm.toLowerCase();
     if (item.sessions) {
       // User group object

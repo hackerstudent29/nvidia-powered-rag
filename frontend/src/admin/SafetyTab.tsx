@@ -71,8 +71,8 @@ export const SafetyTab: React.FC<SafetyTabProps> = ({ metrics, isDark = true }) 
     });
   };
 
-  const bannedUsers = securityData?.banned_users || [];
-  const attackLogs = securityData?.attack_logs || [];
+  const bannedUsers = Array.isArray(securityData?.banned_users) ? securityData.banned_users : [];
+  const attackLogs = Array.isArray(securityData?.attack_logs) ? securityData.attack_logs : [];
   const activeBannedCount = securityData?.active_banned_count || 0;
   const totalAttackCount = securityData?.total_attack_count || 0;
 

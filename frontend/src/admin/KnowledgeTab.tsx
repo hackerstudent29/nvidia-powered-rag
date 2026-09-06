@@ -9,13 +9,16 @@ interface KnowledgeTabProps {
   isDark?: boolean;
 }
 
-export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({ knowledgeGaps, dislikes = [], metrics, isDark = true }) => {
+export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({ knowledgeGaps = [], dislikes = [], metrics, isDark = true }) => {
   const [docSearch, setDocSearch] = useState('');
+
+  const safeDislikes = Array.isArray(dislikes) ? dislikes : [];
+  const safeGaps = Array.isArray(knowledgeGaps) ? knowledgeGaps : [];
 
   const indexSources = metrics?.index_sources || 50;
   const totalChunks = metrics?.total_chunks || 1380;
   const vectorModel = metrics?.vector_model || "NVIDIA Llama-Nemotron 2048-dim Vectors";
-  const catalog = metrics?.document_catalog || [];
+  const catalog = Array.isArray(metrics?.document_catalog) ? metrics.document_catalog : [];
 
   const filteredCatalog = catalog.filter((doc: any) => 
     (doc.source_file || '').toLowerCase().includes(docSearch.toLowerCase()) ||
@@ -85,7 +88,7 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({ knowledgeGaps, disli
             <AlertCircle className="w-5 h-5 text-amber-500" />
             <div>
               <h2 className={`text-lg font-heading font-bold ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>
-                User Dislikes & AI Re-Evaluated Ground-Truth Corrections ({dislikes.length})
+                User Dislikes & AI Re-Evaluated Ground-Truth Corrections ({safeDislikes.length})
               </h2>
               <p className={`text-xs ${isDark ? 'text-amber-300/80' : 'text-amber-700'}`}>
                 AI-as-a-Judge diagnoses why answers were disliked, fetches dataset ground truth, and caches verified corrections for future users.
@@ -110,14 +113,14 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({ knowledgeGaps, disli
               </tr>
             </thead>
             <tbody className={`divide-y ${isDark ? 'divide-white/[0.04]' : 'divide-black/[0.04]'}`}>
-              {dislikes.length === 0 ? (
+              {safeDislikes.length === 0 ? (
                 <tr>
                   <td colSpan={4} className={`px-6 py-12 text-center ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
                     No user dislikes or correction candidates recorded yet.
                   </td>
                 </tr>
               ) : (
-                dislikes.map((item, idx) => (
+                safeDislikes.map((item, idx) => (
                   <tr key={idx} className={`transition-colors ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#F7F6ED]/60'}`}>
                     <td className={`px-6 py-4 font-medium ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>
                       {item.user_query}
@@ -258,14 +261,14 @@ export const KnowledgeTab: React.FC<KnowledgeTabProps> = ({ knowledgeGaps, disli
               </tr>
             </thead>
             <tbody className={`divide-y ${isDark ? 'divide-white/[0.04]' : 'divide-black/[0.04]'}`}>
-              {knowledgeGaps.length === 0 ? (
+              {safeGaps.length === 0 ? (
                 <tr>
                   <td colSpan={3} className={`px-6 py-12 text-center ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
                     No low-confidence knowledge gaps logged in database yet.
                   </td>
                 </tr>
               ) : (
-                knowledgeGaps.map((gap, i) => (
+                safeGaps.map((gap, i) => (
                   <tr key={i} className={`transition-colors ${isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-[#F7F6ED]/60'}`}>
                     <td className={`px-6 py-4 font-medium ${isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'}`}>{gap.user_query}</td>
                     <td className={`px-6 py-4 italic ${isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'}`}>{gap.bot_response}</td>

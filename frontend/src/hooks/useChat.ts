@@ -88,7 +88,9 @@ export function useChat() {
   // Helper to load messages for a specific session ID
   const loadSessionMessages = async (targetSessionId: string) => {
     try {
-      const res = await fetch(`${API_BASE}/sessions/${targetSessionId}`);
+      const res = await fetch(`${API_BASE}/sessions/${targetSessionId}`, {
+        headers: { "X-User-ID": userId }
+      });
       if (res.ok) {
         const history = await res.json();
         if (Array.isArray(history) && history.length > 0) {
@@ -115,18 +117,22 @@ export function useChat() {
     return false;
   };
 
-  // Fetch past sessions
+  // Fetch past sessions for THIS specific user
   const fetchSessions = async () => {
     try {
-      const res = await fetch(`${API_BASE}/sessions`);
+      const res = await fetch(`${API_BASE}/sessions?user_id=${encodeURIComponent(userId)}`, {
+        headers: { "X-User-ID": userId }
+      });
       if (res.ok) {
-        const data: Session[] = await res.json();
-        setSessions(data);
-        return data;
+        const data = await res.json();
+        const safeData: Session[] = Array.isArray(data) ? data : [];
+        setSessions(safeData);
+        return safeData;
       }
     } catch (err) {
       console.error("Error fetching sessions:", err);
     }
+    setSessions([]);
     return [];
   };
 
@@ -142,8 +148,8 @@ export function useChat() {
       ]);
 
       if (Array.isArray(pastSessions) && pastSessions.length > 0) {
-        const targetSession = pastSessions.find((s) => s.id === storedId) || pastSessions[0];
-        if (targetSession && targetSession.id && targetSession.id !== storedId) {
+        const targetSession = pastSessions.find((s) => s.id === storedId);
+        if (targetSession && targetSession.id) {
           setSessionId(targetSession.id);
           localStorage.setItem("lorin_session_id", targetSession.id);
           await loadSessionMessages(targetSession.id);
@@ -152,7 +158,7 @@ export function useChat() {
     };
 
     initLastSession();
-  }, []);
+  }, [userId]);
 
   // Fetch live stats
   const fetchStats = async () => {

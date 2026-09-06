@@ -3286,38 +3286,67 @@ async def get_chat_history_alias(session_id: str):
 # Session Management Endpoints
 # ---------------------------------------------------------
 @app.get("/api/sessions")
-async def list_sessions():
-    """Retrieve all active past chat sessions from Neon Postgres (deduplicated by initial question title)."""
+async def list_sessions(user_id: Optional[str] = Query(None), x_user_id: Optional[str] = Header(None)):
+    """Retrieve active past chat sessions from Neon Postgres for a specific user ID."""
+    eff_user_id = user_id or x_user_id
     try:
         with DBContext() as conn:
             if not conn:
                 return JSONResponse([])
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
-                    WITH ranked_sessions AS (
-                        SELECT 
-                            s.session_id, 
-                            s.created_at, 
-                            s.last_active_at, 
-                            m.content as first_query,
-                            ROW_NUMBER() OVER (
-                                PARTITION BY LOWER(TRIM(m.content)) 
-                                ORDER BY s.last_active_at DESC
-                            ) as rn
-                        FROM chat_sessions s
-                        JOIN LATERAL (
-                            SELECT content FROM chat_messages 
-                            WHERE session_id = s.session_id AND role = 'user' 
-                            ORDER BY created_at ASC LIMIT 1
-                        ) m ON TRUE
-                        WHERE COALESCE(s.is_archived, FALSE) = FALSE
-                    )
-                    SELECT session_id, created_at, last_active_at, first_query
-                    FROM ranked_sessions
-                    WHERE rn = 1
-                    ORDER BY last_active_at DESC
-                    LIMIT 50;
-                """)
+                if eff_user_id:
+                    cur.execute("""
+                        WITH ranked_sessions AS (
+                            SELECT 
+                                s.session_id, 
+                                s.created_at, 
+                                s.last_active_at, 
+                                m.content as first_query,
+                                ROW_NUMBER() OVER (
+                                    PARTITION BY LOWER(TRIM(m.content)) 
+                                    ORDER BY s.last_active_at DESC
+                                ) as rn
+                            FROM chat_sessions s
+                            JOIN LATERAL (
+                                SELECT content FROM chat_messages 
+                                WHERE session_id = s.session_id AND role = 'user' 
+                                ORDER BY created_at ASC LIMIT 1
+                            ) m ON TRUE
+                            WHERE COALESCE(s.is_archived, FALSE) = FALSE
+                              AND (s.user_id = %s OR s.user_id IS NULL)
+                        )
+                        SELECT session_id, created_at, last_active_at, first_query
+                        FROM ranked_sessions
+                        WHERE rn = 1
+                        ORDER BY last_active_at DESC
+                        LIMIT 50;
+                    """, (eff_user_id,))
+                else:
+                    cur.execute("""
+                        WITH ranked_sessions AS (
+                            SELECT 
+                                s.session_id, 
+                                s.created_at, 
+                                s.last_active_at, 
+                                m.content as first_query,
+                                ROW_NUMBER() OVER (
+                                    PARTITION BY LOWER(TRIM(m.content)) 
+                                    ORDER BY s.last_active_at DESC
+                                ) as rn
+                            FROM chat_sessions s
+                            JOIN LATERAL (
+                                SELECT content FROM chat_messages 
+                                WHERE session_id = s.session_id AND role = 'user' 
+                                ORDER BY created_at ASC LIMIT 1
+                            ) m ON TRUE
+                            WHERE COALESCE(s.is_archived, FALSE) = FALSE
+                        )
+                        SELECT session_id, created_at, last_active_at, first_query
+                        FROM ranked_sessions
+                        WHERE rn = 1
+                        ORDER BY last_active_at DESC
+                        LIMIT 50;
+                    """)
                 rows = cur.fetchall()
                 sessions = []
                 for r in rows:
@@ -4572,17 +4601,17 @@ async def get_admin_sessions(request: Request):
                 s["created_at"] = s["created_at"].isoformat() if s.get("created_at") else None
                 s["last_active_at"] = s["last_active_at"].isoformat() if s.get("last_active_at") else None
 
-            # Group sessions by IP instead of USER_ID to prevent duplication when users clear local storage
+            # Group sessions by USER_ID to correctly separate mobile vs desktop devices
             users_map = {}
             for s in raw_sessions:
+                uid = s.get("user_id") or f"usr_ip_{(s.get('user_ip') or '127.0.0.1').replace('.', '_')}"
                 u_ip = s.get("user_ip") or "127.0.0.1"
                 u_agent = s.get("user_agent") or "Unknown"
                 
-                # We use the IP address as the primary identifier to prevent fragmentation
-                group_key = u_ip
+                group_key = uid
                 if group_key not in users_map:
                     users_map[group_key] = {
-                        "user_id": f"usr_ip_{group_key.replace('.', '_')}", # Visual ID based on IP
+                        "user_id": uid,
                         "user_ip": u_ip,
                         "user_agent": u_agent,
                         "total_sessions": 0,
