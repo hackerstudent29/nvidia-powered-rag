@@ -136,7 +136,7 @@ export const AdminDashboard: React.FC = () => {
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'conversations', label: 'Chats', icon: MessageSquare },
-    { id: 'traces', label: 'Traces', icon: Activity },
+    ...(selectedSessionId || activeTab === 'traces' ? [{ id: 'traces', label: 'Traces', icon: Activity }] : []),
     { id: 'knowledge', label: 'Knowledge', icon: BookOpen },
     { id: 'analytics', label: 'Analytics', icon: BarChart2 },
     { id: 'safety', label: 'Safety', icon: ShieldCheck },
