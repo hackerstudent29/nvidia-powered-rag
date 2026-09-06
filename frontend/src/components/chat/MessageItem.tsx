@@ -237,15 +237,19 @@ function prepareCleanTTSText(markdown: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+function isWordToken(token: string): boolean {
+  if (!token || /^\s+$/.test(token)) return false;
+  return /[a-zA-Z0-9]/.test(token);
+}
+
 function extractDisplayWords(markdown: string): string[] {
   if (!markdown) return [];
   let text = markdown;
   text = text.replace(/```[\s\S]*?```/g, "");
   text = text.replace(/`([^`]+)`/g, "$1");
   text = text.replace(/\[\s*([^\]]+?)\s*\]\(\s*([^\)]+?)\s*\)/g, "$1");
-  text = text.replace(/[*_~#|>•\-\+]/g, " ");
-  text = text.replace(/[\:\(\)\[\]\{\}\\\/]/g, " ");
-  return text.split(/\s+/).map((w) => w.trim()).filter(Boolean);
+  const rawTokens = text.split(/\s+/);
+  return rawTokens.map((w) => w.trim()).filter((w) => isWordToken(w));
 }
 
 function buildTTSToDisplayMapping(displayWords: string[], ttsWords: string[]): number[] {
@@ -552,6 +556,8 @@ const MessageItem = React.memo(function MessageItem({
       };
 
       audio.onplay = () => {
+        setIsPlayingAudio(true);
+        setIsLoadingAudio(false);
         if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
       };
@@ -704,14 +710,15 @@ const MessageItem = React.memo(function MessageItem({
       return tokens.map((token, i) => {
         if (!token || /^\s+$/.test(token)) return token;
 
-        const currentWordIdx = wordCounterRef.current++;
-        const isMatch = isPlayingAudio && activeWordIdx >= 0 && currentWordIdx === activeWordIdx;
+        const isWord = isWordToken(token);
+        const currentWordIdx = isWord ? wordCounterRef.current++ : -1;
+        const isMatch = isPlayingAudio && activeWordIdx >= 0 && isWord && currentWordIdx === activeWordIdx;
 
         if (isMatch) {
           return (
             <mark
               key={i}
-              className="bg-[#10B981]/35 dark:bg-[#34D399]/40 text-ink dark:text-white font-extrabold px-1 -mx-0.5 rounded-sm transition-all duration-75 shadow-xs ring-1 ring-[#10b981]/60"
+              className="bg-[#10B981]/40 dark:bg-[#34D399]/50 text-ink dark:text-white font-extrabold px-1 -mx-0.5 rounded transition-all duration-75 shadow-xs ring-2 ring-[#10b981]/70"
             >
               {token}
             </mark>
@@ -890,7 +897,7 @@ const MessageItem = React.memo(function MessageItem({
                     <a
                       href={cleanTel}
                       {...handlers}
-                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-300 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-emerald-500/15 dark:bg-emerald-500/25 px-2 py-0.5 rounded-md select-text"
+                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text"
                       title="Tap to call on default phone app | Long press to copy"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0 text-emerald-600 dark:text-emerald-400">
@@ -910,7 +917,7 @@ const MessageItem = React.memo(function MessageItem({
                     <a
                       href={cleanMail}
                       {...handlers}
-                      className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5 bg-accent/10 dark:bg-accent/20 px-2 py-0.5 rounded-md select-text"
+                      className="relative z-10 cursor-pointer font-semibold text-[#2E6B5E] dark:text-[#34D399] underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text"
                       title="Tap to open Email client | Long press to copy"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
