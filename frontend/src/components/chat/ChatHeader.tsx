@@ -142,15 +142,6 @@ export default function ChatHeader({
         setActivePill("theme");
       },
     },
-    {
-      id: "admin",
-      label: "Admin Portal",
-      icon: ShieldCheck,
-      action: () => {
-        navigate("/admin");
-        setActivePill("admin");
-      },
-    },
   ];
 
   return (

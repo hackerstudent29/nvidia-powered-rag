@@ -272,6 +272,12 @@ export function useChat() {
     if (!text.trim() || isStreaming) return;
     audioManager.stopAll();
 
+    const cleanText = text.trim().toLowerCase();
+    if (cleanText === "/admin" || cleanText === "/ admin" || cleanText === "admin/") {
+      window.location.href = "/admin";
+      return;
+    }
+
     const userMessage: Message = {
       id: `user_${Date.now()}`,
       role: "user",

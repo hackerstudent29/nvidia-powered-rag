@@ -57,7 +57,7 @@ VERCEL_AI_GATEWAY_URL = os.getenv("VERCEL_AI_GATEWAY_URL", "https://ai-gateway.v
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "msajcea_secure_admin_2026")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "msajceadmin")
 JWT_SECRET = os.getenv("JWT_SECRET", "msajcea_super_secret_jwt_key_2026")
 ALGORITHM = "HS256"
 
@@ -3924,7 +3924,7 @@ def verify_admin_token(request: Request):
 
 @app.post("/api/admin/login", response_model=AdminLoginResponse)
 async def admin_login(request: AdminLoginRequest, response: Response):
-    valid_passwords = {ADMIN_PASSWORD, "msajce_secure_admin_2026", "msajcea_secure_admin_2026", "msajcea"}
+    valid_passwords = {ADMIN_PASSWORD, "msajceadmin", "msajce_secure_admin_2026", "msajcea_secure_admin_2026", "msajcea"}
     if request.username == ADMIN_USERNAME and (request.password == ADMIN_PASSWORD or request.password in valid_passwords):
         expiration = datetime.utcnow() + timedelta(hours=24)
         token = jwt.encode(

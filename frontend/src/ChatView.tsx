@@ -215,6 +215,12 @@ export default function App() {
         inputValue={chatInput}
         onInputChange={setChatInput}
         onSendMessage={(msg) => {
+          const clean = msg.trim().toLowerCase();
+          if (clean === "/admin" || clean === "/ admin" || clean === "admin/") {
+            setChatInput("");
+            window.location.href = "/admin";
+            return;
+          }
           sendMessage(msg);
           setChatInput("");
         }}
