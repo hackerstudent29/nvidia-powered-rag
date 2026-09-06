@@ -195,7 +195,7 @@ export default function ChatHeader({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className="rounded-full flex items-center p-1 border shadow-lg backdrop-blur-xl bg-surface/90 border-line dark:bg-[#14151a]/90 dark:border-white/[0.08]"
+            className="rounded-full flex items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/80 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
           >
             {headerPills.map((pill) => {
               const Icon = pill.icon;

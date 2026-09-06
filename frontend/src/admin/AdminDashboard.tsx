@@ -204,9 +204,7 @@ export const AdminDashboard: React.FC = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className={`hidden md:flex items-center p-1 rounded-full border shadow-inner ${
-              isDark ? 'bg-[#0b0c0e]/80 border-white/[0.06]' : 'bg-[#F7F6ED]/80 border-black/[0.06]'
-            }`}
+            className="hidden md:flex items-center p-1 rounded-full border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/80 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
           >
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -411,9 +409,7 @@ export const AdminDashboard: React.FC = () => {
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 26 }}
-          className={`pointer-events-auto rounded-full flex items-center p-1.5 shadow-2xl border backdrop-blur-2xl ${
-            isDark ? 'bg-[#14151a]/95 border-white/[0.08]' : 'bg-white/95 border-black/[0.08]'
-          }`}
+          className="pointer-events-auto rounded-full flex items-center p-1.5 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/90 dark:bg-[#07080a]/95 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08),0_10px_30px_rgba(0,0,0,0.2)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7),0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
