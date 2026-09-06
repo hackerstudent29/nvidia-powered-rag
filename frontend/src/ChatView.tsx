@@ -105,20 +105,20 @@ export default function App() {
     const isNewMsgAdded = msgCount > prevMsgCountRef.current;
     const isStreamingStarted = isStreaming && !prevStreamingRef.current;
 
-    if (isNewMsgAdded || isStreamingStarted) {
-      if (scrollRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-        if (isNearBottom || isNewMsgAdded) {
-          endRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
+    if ((isNewMsgAdded || isStreamingStarted) && scrollRef.current) {
+      const { scrollHeight, clientHeight } = scrollRef.current;
+      // Only scroll to end if content actually overflows the visible container
+      if (scrollHeight > clientHeight + 40) {
+        endRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
 
     if (isStreaming && scrollRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 180;
-      if (isNearBottom) scrollRef.current.scrollTop = scrollHeight;
+      if (isNearBottom && scrollHeight > clientHeight + 40) {
+        scrollRef.current.scrollTop = scrollHeight;
+      }
     }
 
     prevStreamingRef.current = isStreaming;
@@ -161,7 +161,7 @@ export default function App() {
         onScroll={handleScroll}
         className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 py-2 gpu-accelerated"
       >
-        <div className="mx-auto max-w-5xl w-full min-h-full flex flex-col justify-between">
+        <div className="mx-auto max-w-4xl w-full min-h-full flex flex-col justify-start">
           {messages.length === 0 ? (
             <HeroGreeting
               onSelectPrompt={(prompt) => {
@@ -171,7 +171,7 @@ export default function App() {
               onPastePrompt={(prompt) => setChatInput(prompt)}
             />
           ) : (
-            <div className="flex flex-col space-y-3 sm:space-y-4 pt-2 pb-48 sm:pb-44">
+            <div className="flex flex-col space-y-4 sm:space-y-6 pt-3 pb-8 sm:pb-12">
               {messages.map((msg, idx) => {
                 const prevUserMsg = idx > 0 ? messages.slice(0, idx).reverse().find(m => m.role === 'user') : null;
                 const userQueryText = prevUserMsg ? prevUserMsg.content : "MSAJCEA Inquiry";
