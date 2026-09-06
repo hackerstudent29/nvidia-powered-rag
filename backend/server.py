@@ -3829,14 +3829,18 @@ async def generate_tts(body: TTSRequest):
         raise HTTPException(status_code=400, detail="Empty text provided for TTS")
 
     dg_key = os.getenv("DEEPGRAM_API_KEY")
+    valid_aura_voices = {
+        "aura-orion-en", "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
+        "aura-asteria-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
+    }
     voice = body.voice or "aura-orion-en"
     
-    # If custom/unknown voice or requested bruce/brooke, map to Orion / Asteria
+    # Map friendly names or fallbacks to Bruce (aura-orion-en) / Brooke (aura-asteria-en)
     if "bruce" in voice.lower() or "orion" in voice.lower():
         voice = "aura-orion-en"
     elif "brooke" in voice.lower() or "asteria" in voice.lower():
         voice = "aura-asteria-en"
-    elif not voice.startswith("aura-"):
+    elif voice not in valid_aura_voices:
         voice = "aura-orion-en"
 
 

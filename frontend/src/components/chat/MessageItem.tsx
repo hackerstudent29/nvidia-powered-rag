@@ -400,8 +400,14 @@ const MessageItem = React.memo(function MessageItem({
     setIsLoadingAudio(true);
 
     try {
-      // Use Python FastAPI HD Neural Voice TTS API (Deepgram Aura primary)
-      const selectedVoice = localStorage.getItem("lorin_tts_voice") || "aura-orion-en";
+      // Use Python FastAPI HD Neural Voice TTS API (Deepgram Aura primary - Bruce as default)
+      const rawVoice = localStorage.getItem("lorin_tts_voice") || "aura-orion-en";
+      const validVoices = [
+        "aura-orion-en", "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
+        "aura-asteria-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
+      ];
+      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "aura-orion-en";
+
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
