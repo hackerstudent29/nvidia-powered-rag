@@ -308,7 +308,6 @@ function formatTimestampWithSeconds(ts?: string | Date): string {
     return date.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit",
       hour12: true,
     });
   } catch {
@@ -802,7 +801,7 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Action Icons, Token & Cost Badge & Sources Row */}
         {!message.is_streaming && (
-          <div className="mt-3 flex flex-wrap items-center gap-1 sm:gap-1.5 pt-2 border-t border-line/40 dark:border-white/[0.04]">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1 pt-1.5 border-t border-line/30 dark:border-white/[0.04]">
             <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
               <button
                 type="button"

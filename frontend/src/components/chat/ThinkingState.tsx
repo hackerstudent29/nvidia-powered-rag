@@ -30,9 +30,10 @@ export default function ThinkingState({
   // Steps are open by default during live streaming, but automatically collapse when streaming finishes unless user explicitly toggles it
   const isOpen = userToggled !== null ? userToggled : isLiveStreaming;
 
+  const formattedSec = Number(durationSeconds || 0).toFixed(1);
   const label = isLiveStreaming
     ? "Thinking..."
-    : `Thought for ${Math.max(1, durationSeconds)}s`;
+    : `Thought for ${formattedSec}s`;
 
   return (
     <div className="w-full max-w-xl my-1.5 font-sans">
