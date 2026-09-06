@@ -150,7 +150,7 @@ export const AdminDashboard: React.FC = () => {
       
       {/* FLOATING TOP EXPANDABLE PILL NAVBAR */}
       <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-50 px-2 sm:px-4 pointer-events-none">
-        <header className={`pointer-events-auto max-w-7xl mx-auto h-14 sm:h-16 backdrop-blur-2xl border rounded-full shadow-2xl flex items-center justify-between px-3 sm:px-6 transition-all ${
+        <header className={`pointer-events-auto max-w-5xl lg:max-w-6xl mx-auto h-14 sm:h-16 backdrop-blur-2xl border rounded-full shadow-2xl flex items-center justify-between px-3 sm:px-6 transition-all ${
           isDark ? 'bg-[#14151a]/70 border-white/10 shadow-black/40' : 'bg-white/70 border-white/60 shadow-black/5'
         }`}>
           

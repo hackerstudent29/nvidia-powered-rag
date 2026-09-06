@@ -653,19 +653,21 @@ const MessageItem = React.memo(function MessageItem({
   if (isUser) {
     return (
       <div className="flex flex-col items-end my-3.5 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-        <div className="flex items-center gap-2 mb-1 shrink-0 pr-1">
-          <span className="text-[11px] font-semibold text-ink-3">You</span>
+        {/* User Profile Header (You + Timestamp + Avatar) aligned to top right */}
+        <div className="flex items-center gap-2 mb-1.5 shrink-0 justify-end pr-1">
+          <span className="text-[11.5px] font-bold text-ink-2 dark:text-zinc-300">You</span>
           {timeStr && <span className="text-[10px] font-mono text-ink-3/70">• {timeStr}</span>}
-        </div>
-        <div className="flex items-start gap-2 max-w-2xl min-w-0 box-border">
-          <div className="bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-2xl rounded-tr-sm border border-[#2E6B5E]/20 dark:border-[#10b981]/30 font-sans text-sm font-medium leading-relaxed break-words shadow-sm overflow-hidden min-w-0">
-            {message.content}
-          </div>
-          <div className="size-8 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/40 dark:to-[#9D174D]/40 border border-white/80 dark:border-white/20 shadow-hairline flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
-            <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="size-7 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/50 dark:to-[#9D174D]/50 border border-white/80 dark:border-white/20 shadow-xs flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
+          </div>
+        </div>
+        {/* User Chat Bubble placed directly BELOW the profile */}
+        <div className="max-w-2xl min-w-0 box-border">
+          <div className="bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-2xl rounded-tr-xs border border-[#2E6B5E]/20 dark:border-[#10b981]/30 font-sans text-sm font-medium leading-relaxed break-words shadow-sm overflow-hidden min-w-0">
+            {message.content}
           </div>
         </div>
       </div>
@@ -963,50 +965,26 @@ const MessageItem = React.memo(function MessageItem({
                           <h4 className="text-[13.5px] font-bold text-ink">
                             {isRoute ? "Directions to MSAJCEA Campus" : "MSAJCEA Campus Location & Map"}
                           </h4>
-                          <p className="text-[11px] text-ink-3">
-                            SIPCOT IT Park, Egattur, Navalur, OMR, Siruseri, Chennai – 603103
-                          </p>
+                          <p className="text-[11px] text-ink-3">Mohamed Sathak A.J. College of Engineering, Egattur, OMR, Chennai</p>
                         </div>
                       </div>
-
-                      <div className="w-full h-52 rounded-xl overflow-hidden border border-line/60 relative bg-canvas">
-                        <iframe
-                          title="MSAJCEA Campus Location Map"
-                          src="https://maps.google.com/maps?q=Mohamed%20Sathak%20A.J.%20College%20of%20Engineering%20Siruseri%20Chennai&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                          className="w-full h-full border-0"
-                          loading="lazy"
-                          allowFullScreen
-                        />
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      <div className="flex flex-col sm:flex-row gap-2 mt-3">
                         <a
-                          href="https://www.google.com/maps/dir/?api=1&destination=Mohamed+Sathak+A+J+College+of+Engineering+Siruseri+Chennai"
+                          href="https://maps.google.com/?q=Mohamed+Sathak+A.J.+College+of+Engineering+Chennai"
                           target="_blank"
                           rel="noreferrer"
-                          className="px-3 py-1.5 rounded-lg bg-accent text-white font-semibold text-[11.5px] inline-flex items-center gap-1.5 hover:opacity-90 transition-opacity"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold text-xs shadow-sm hover:opacity-90 transition-opacity"
                         >
-                          🧭 Get Live Directions
-                        </a>
-                        <a
-                          href="https://maps.google.com/?q=Mohamed+Sathak+A+J+College+of+Engineering+Siruseri+Chennai"
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1.5 rounded-lg bg-hover border border-line text-ink font-semibold text-[11.5px] inline-flex items-center gap-1.5 hover:bg-hover-2 transition-colors"
-                        >
-                          🗺️ Open Google Maps
+                          Google Maps Navigation ↗
                         </a>
                       </div>
                     </div>
                   );
                 }
-                const isInline = !className && !String(children).includes("\n");
-                return isInline ? (
-                  <code className="bg-inset px-1.5 py-0.5 rounded text-[12.5px] font-mono text-ink">{children}</code>
-                ) : (
-                  <pre className="bg-slate-900 text-slate-100 p-3 rounded-xl overflow-x-auto text-[12.5px] font-mono my-2.5">
-                    <code>{children}</code>
-                  </pre>
+                return (
+                  <code className="rounded bg-surface-2 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[12.5px] text-accent" {...props}>
+                    {children}
+                  </code>
                 );
               },
             }}
@@ -1021,196 +999,169 @@ const MessageItem = React.memo(function MessageItem({
           )}
         </div>
 
-        {/* Verified Download & Media Attachments (Rendered ONLY after full answer streaming completes at the last) */}
+        {/* Verified Download & Media Attachments */}
         {!message.is_streaming && message.resource_attachments && message.resource_attachments.length > 0 && (
           <ResourceCards attachments={message.resource_attachments} />
         )}
 
-        {/* Action Icons, Token & Cost Badge & Sources Row */}
+        {/* Restructured Bottom Toolbar for AI Messages */}
         {!message.is_streaming && (
-          <div className="mt-1.5 flex flex-wrap items-center gap-0.5 pt-1.5 border-t border-line/30 dark:border-white/[0.04]">
-            <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
-              >
-                {copied ? (
-                  <span className="text-[10px] font-bold text-green">✓</span>
-                ) : (
-                  ACTION_ICONS.copy
-                )}
-              </button>
-            </Tooltip>
-
-            {onRegenerate && (
-              <Tooltip content="Regenerate response" position="top">
+          <div className="mt-2 flex flex-col gap-2 pt-2 border-t border-line/30 dark:border-white/[0.04]">
+            {/* Row 1: Action Buttons & Answer Completion Timestamp */}
+            <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+              <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
                 <button
                   type="button"
-                  onClick={onRegenerate}
+                  onClick={handleCopy}
                   className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
                 >
-                  {ACTION_ICONS.retry}
+                  {copied ? <span className="text-[10px] font-bold text-green">✓</span> : ACTION_ICONS.copy}
                 </button>
               </Tooltip>
-            )}
 
-            <Tooltip content="Helpful response" position="top">
-              <button
-                type="button"
-                onClick={() => handleThumbs(1)}
-                className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
-                  isLiked ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-green"
-                }`}
-              >
-                {ACTION_ICONS.up}
-              </button>
-            </Tooltip>
+              {onRegenerate && (
+                <Tooltip content="Regenerate response" position="top">
+                  <button
+                    type="button"
+                    onClick={onRegenerate}
+                    className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
+                  >
+                    {ACTION_ICONS.retry}
+                  </button>
+                </Tooltip>
+              )}
 
-            <Tooltip content="Needs improvement" position="top">
-              <button
-                type="button"
-                onClick={() => handleThumbs(-1)}
-                className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
-                  isDisliked ? "bg-red/20 text-red font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-red"
-                }`}
-              >
-                {ACTION_ICONS.down}
-              </button>
-            </Tooltip>
-
-            <Tooltip content={isPlayingAudio ? "Stop HD Voice" : isLoadingAudio ? "Synthesizing HD Voice..." : "Read Aloud (HD Neural Voice)"} position="top">
-              <button
-                type="button"
-                onClick={handleTTS}
-                disabled={isLoadingAudio}
-                className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 hover:bg-hover-2 cursor-pointer ${
-                  isPlayingAudio
-                    ? "text-accent bg-accent/15 animate-pulse"
-                    : isLoadingAudio
-                    ? "text-orange"
-                    : "text-ink-3 hover:text-ink-2"
-                }`}
-              >
-                {isLoadingAudio ? (
-                  <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                  </svg>
-                ) : (
-                  ACTION_ICONS.tts
-                )}
-              </button>
-            </Tooltip>
-
-            {/* Animated Voice Speed Control Pill (0.5x, 0.75x, 1.0x, 1.25x, 1.5x) */}
-            <Tooltip content={`Voice Speed: ${ttsSpeed}x (Click to cycle 0.5x, 0.75x, 1.0x, 1.25x, 1.5x)`} position="top">
-              <button
-                type="button"
-                onClick={cycleTtsSpeed}
-                className={`flex items-center justify-center px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
-                  ttsSpeed !== 1.0
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse shadow-sm"
-                    : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
-                }`}
-              >
-                {ttsSpeed}x
-              </button>
-            </Tooltip>
-
-            {/* Voice Style & Expressivity Pill (Transparent, No Emojis) */}
-            <Tooltip
-              content={`Voice Tone: ${
-                ttsExpressivity === -2
-                  ? "Robot"
-                  : ttsExpressivity === -1
-                  ? "Calm"
-                  : ttsExpressivity === 1
-                  ? "Animated"
-                  : ttsExpressivity === 2
-                  ? "Expressive"
-                  : "Normal"
-              } (Click to cycle)`}
-              position="top"
-            >
-              <button
-                type="button"
-                onClick={cycleTtsExpressivity}
-                className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer border border-black/[0.08] dark:border-white/[0.08] bg-transparent text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200 hover:border-black/20 dark:hover:border-white/20"
-              >
-                <span>
-                  {ttsExpressivity === -2
-                    ? "Robot"
-                    : ttsExpressivity === -1
-                    ? "Calm"
-                    : ttsExpressivity === 1
-                    ? "Animated"
-                    : ttsExpressivity === 2
-                    ? "Expressive"
-                    : "Normal"}
-                </span>
-              </button>
-            </Tooltip>
-
-            {/* Token Usage & Cost Badge */}
-            {message.token_metrics && (
-              <div className="ml-1">
-                <TokenCostBadge metrics={message.token_metrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
-              </div>
-            )}
-
-            {/* Answer Completion Timestamp */}
-            {!message.is_streaming && timeStr && (
-              <Tooltip content="Answer Completion Timestamp" position="top">
-                <span className="text-[10px] font-mono font-medium text-ink-3/70 select-none shrink-0 ml-1">
-                  {timeStr}
-                </span>
+              <Tooltip content="Helpful response" position="top">
+                <button
+                  type="button"
+                  onClick={() => handleThumbs(1)}
+                  className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
+                    isLiked ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-green"
+                  }`}
+                >
+                  {ACTION_ICONS.up}
+                </button>
               </Tooltip>
-            )}
 
-            {/* Sources Button (Anchored cleanly to the far right with ml-auto) */}
-            {sources.length > 0 && (
-              <button
-                type="button"
-                aria-expanded={sourcesOpen}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSourcesOpen((current) => !current);
-                }}
-                className={`ml-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline cursor-pointer ${
-                  sourcesOpen
-                    ? "bg-hover text-ink shadow-xs font-semibold border-line-strong"
-                    : "bg-transparent hover:bg-hover text-ink-2 hover:text-ink"
-                }`}
-              >
-                <svg
-                  width="11"
-                  height="11"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-accent"
+              <Tooltip content="Needs improvement" position="top">
+                <button
+                  type="button"
+                  onClick={() => handleThumbs(-1)}
+                  className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
+                    isDisliked ? "bg-red/20 text-red font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-red"
+                  }`}
                 >
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
-                <span className="tabular-nums font-mono text-ink-2">
-                  {sources.length} {sources.length === 1 ? "source" : "sources"}
-                </span>
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  className={`transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`}
+                  {ACTION_ICONS.down}
+                </button>
+              </Tooltip>
+
+              <Tooltip content={isPlayingAudio ? "Stop HD Voice" : isLoadingAudio ? "Synthesizing HD Voice..." : "Read Aloud (HD Neural Voice)"} position="top">
+                <button
+                  type="button"
+                  onClick={handleTTS}
+                  disabled={isLoadingAudio}
+                  className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 hover:bg-hover-2 cursor-pointer ${
+                    isPlayingAudio ? "text-accent bg-accent/15 animate-pulse" : isLoadingAudio ? "text-orange" : "text-ink-3 hover:text-ink-2"
+                  }`}
                 >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
+                  {isLoadingAudio ? (
+                    <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    </svg>
+                  ) : (
+                    ACTION_ICONS.tts
+                  )}
+                </button>
+              </Tooltip>
+
+              <Tooltip content={`Voice Speed: ${ttsSpeed}x (Click to cycle)`} position="top">
+                <button
+                  type="button"
+                  onClick={cycleTtsSpeed}
+                  className={`flex items-center justify-center px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
+                    ttsSpeed !== 1.0
+                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse shadow-sm"
+                      : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
+                  }`}
+                >
+                  {ttsSpeed}x
+                </button>
+              </Tooltip>
+
+              <Tooltip content={`Voice Tone: ${ttsExpressivity === -2 ? "Robot" : ttsExpressivity === -1 ? "Calm" : ttsExpressivity === 1 ? "Animated" : ttsExpressivity === 2 ? "Expressive" : "Normal"} (Click to cycle)`} position="top">
+                <button
+                  type="button"
+                  onClick={cycleTtsExpressivity}
+                  className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer border border-black/[0.08] dark:border-white/[0.08] bg-transparent text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200 hover:border-black/20 dark:hover:border-white/20"
+                >
+                  <span>
+                    {ttsExpressivity === -2 ? "Robot" : ttsExpressivity === -1 ? "Calm" : ttsExpressivity === 1 ? "Animated" : ttsExpressivity === 2 ? "Expressive" : "Normal"}
+                  </span>
+                </button>
+              </Tooltip>
+
+              {/* Answer Completion Timestamp placed right in the top action row! */}
+              {timeStr && (
+                <Tooltip content="Answer Completion Timestamp" position="top">
+                  <span className="text-[10.5px] font-mono font-medium text-ink-3/70 select-none shrink-0 ml-1">
+                    {timeStr}
+                  </span>
+                </Tooltip>
+              )}
+            </div>
+
+            {/* Row 2: Model Badge & Sources Button aligned side-by-side */}
+            {(message.token_metrics || sources.length > 0) && (
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                {message.token_metrics && (
+                  <TokenCostBadge metrics={message.token_metrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
+                )}
+
+                {sources.length > 0 && (
+                  <button
+                    type="button"
+                    aria-expanded={sourcesOpen}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSourcesOpen((current) => !current);
+                    }}
+                    className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline cursor-pointer ${
+                      sourcesOpen
+                        ? "bg-hover text-ink shadow-xs font-semibold border-line-strong"
+                        : "bg-transparent hover:bg-hover text-ink-2 hover:text-ink"
+                    }`}
+                  >
+                    <svg
+                      width="11"
+                      height="11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-accent"
+                    >
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <span className="tabular-nums font-mono text-ink-2">
+                      {sources.length} {sources.length === 1 ? "source" : "sources"}
+                    </span>
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      className={`transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`}
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
