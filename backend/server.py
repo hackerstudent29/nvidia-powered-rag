@@ -3817,6 +3817,120 @@ class TTSRequest(BaseModel):
     voice: Optional[str] = "aura-orion-en"
     rate: Optional[float] = 1.0
 
+def normalize_tts_text_for_speech(markdown_text: str) -> str:
+    if not markdown_text:
+        return ""
+    
+    text = markdown_text
+
+    # 1. Clean code blocks, URLs & raw formatting tags
+    text = re.sub(r'```[\s\S]*?```', '', text)
+    text = re.sub(r'`([^`]+)`', r'\1', text)
+    text = re.sub(r'\[\d+\]|\[Source:[^\]]+\]|📌|⚡|✓|✉️|📞|👉|🗺️|🧭|📍', '', text)
+
+    # 2. Markdown tables & structured lists transformation
+    lines = text.split("\n")
+    processed_lines = []
+    table_headers = []
+    
+    for line in lines:
+        l = line.strip()
+        if not l:
+            continue
+        
+        # Skip table separator lines (e.g. |---|---|)
+        if re.match(r'^\|?[\s\-:|]+\|?$', l):
+            continue
+            
+        if l.startswith("|") and l.endswith("|"):
+            cells = [c.strip() for c in l.split("|") if c.strip()]
+            if not table_headers:
+                table_headers = cells
+                continue
+            else:
+                row_parts = []
+                for idx, cell in enumerate(cells):
+                    header = table_headers[idx] if idx < len(table_headers) else f"Column {idx+1}"
+                    clean_cell = re.sub(r'[*_`]', '', cell)
+                    row_parts.append(f"{header}: {clean_cell}")
+                processed_lines.append("... " + ", ".join(row_parts) + ".")
+                continue
+        else:
+            table_headers = []
+
+        # Bullet points transformation with intonation pauses
+        if re.match(r'^[-\*\+•]\s+', l):
+            bullet = re.sub(r'^[-\*\+•]\s+', '', l).strip()
+            bullet = re.sub(r'[*_`]', '', bullet)
+            processed_lines.append(f"... {bullet}.")
+            continue
+
+        # Headers transformation with natural cadence
+        if re.match(r'^#{1,6}\s+', l):
+            header_text = re.sub(r'^#{1,6}\s+', '', l).strip()
+            header_text = re.sub(r'[*_`]', '', header_text)
+            if header_text and not header_text.endswith(('.', '!', '?', ':')):
+                header_text += "."
+            processed_lines.append(f"{header_text} ...")
+            continue
+
+        clean_l = re.sub(r'[*_`]', '', l).strip()
+        if clean_l and not clean_l.endswith(('.', '!', '?', ':')):
+            clean_l += "."
+        processed_lines.append(clean_l)
+
+    text = " ".join(processed_lines)
+
+    # 3. Links & URLs & Emails
+    text = re.sub(r'\[\s*([^\]]+?)\s*\]\(\s*([^\)]+?)\s*\)', r'\1', text)
+    text = re.sub(r'https?://[^\s\)]+', '', text)
+    text = re.sub(r'mailto:[^\s\)]+', '', text)
+    text = re.sub(r'tel:[^\s\)]+', '', text)
+
+    # 4. College Name, Campus & Phonetic Pronunciations
+    text = re.sub(r'\bMSAJCEA\b|\bMSAJCE\b', 'Mohamed Sathak A. J. College of Engineering', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bSIPCOT\b', 'Sip-cot', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bOMR\b', 'O. M. R.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bSiruseri\b', 'Siru-seri', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bEgattur\b', 'Ega-ttoor', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bNavalur\b', 'Nava-loor', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bNAAC\b', 'NAAK', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bTNEA\b', 'T. N. E. A.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bNBA\b', 'N. B. A.', text, flags=re.IGNORECASE)
+
+    # Academic Departments & Degrees
+    text = re.sub(r'\bAI&DS\b|\bAIDS\b', 'A. I. and Data Science', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bCSE\b', 'C. S. E.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bECE\b', 'E. C. E.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bEEE\b', 'E. E. E.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bMECH\b', 'Mechanical', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bCIVIL\b', 'Civil', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bB\.Tech\b|\bBTech\b', 'B. Tech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bM\.Tech\b|\bMTech\b', 'M. Tech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bB\.E\b|\bBE\b', 'B. E.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bM\.E\b|\bME\b', 'M. E.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bPh\.D\b|\bPhD\b', 'P. h. D.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bCGPA\b', 'C. G. P. A.', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bLPA\b|\blpa\b', 'Lakhs per annum', text)
+
+    # General abbreviations & acronyms
+    text = re.sub(r'\be\.g\.\b|\beg\b', 'for example,', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bi\.e\.\b|\bie\b', 'that is,', text, flags=re.IGNORECASE)
+    text = re.sub(r'\betc\.\b|\betc\b', 'and so forth,', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bvs\.\b|\bvs\b', 'versus', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bAI\b', 'A. I.', text)
+    text = re.sub(r'\bLLM\b|\bLLMs\b', 'L. L. M.', text)
+    text = re.sub(r'\bAPI\b|\bAPIs\b', 'A. P. I.', text)
+
+    # 5. Number Formatting & Range Enunciation
+    text = re.sub(r'(\d+)\s*[\–\-]\s*(\d+)', r'\1 to \2', text)
+    text = re.sub(r'(\d+)\+', r'\1 plus', text)
+    text = re.sub(r'\+91[\s\-]?([6-9]\d{9})', r'plus 9 1, \1', text)
+
+    # Clean multiple spaces & normalize punctuation pauses
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
 @app.post("/api/tts")
 async def generate_tts(body: TTSRequest):
     """
@@ -3824,9 +3938,11 @@ async def generate_tts(body: TTSRequest):
     Primary Engine: Deepgram Aura TTS API
     Fallback Engine: Edge-TTS
     """
-    text = body.text.strip()
-    if not text:
+    raw_text = body.text.strip()
+    if not raw_text:
         raise HTTPException(status_code=400, detail="Empty text provided for TTS")
+
+    text = normalize_tts_text_for_speech(raw_text)
 
     dg_key = os.getenv("DEEPGRAM_API_KEY")
     valid_aura_voices = {

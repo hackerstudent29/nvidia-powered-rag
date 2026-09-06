@@ -326,13 +326,16 @@ const MessageItem = React.memo(function MessageItem({
   onSubmitFeedback,
 }: MessageItemProps) {
   const isUser = message.role === "user";
-  const [isTyping, setIsTyping] = useState(true);
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [activeWordIdx, setActiveWordIdx] = useState<number>(-1);
+  const [ttsSpeed, setTtsSpeed] = useState<number>(() => {
+    const saved = localStorage.getItem("lorin_tts_speed");
+    return saved ? parseFloat(saved) : 1.0;
+  });
   const [feedbackRating, setFeedbackRating] = useState<number | null>(null);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -345,6 +348,18 @@ const MessageItem = React.memo(function MessageItem({
   const ttsToDisplayMapRef = useRef<number[]>([]);
 
   const timeStr = formatTimestampWithSeconds(message.timestamp);
+
+  const cycleTtsSpeed = () => {
+    const speeds = [1.0, 1.25, 1.5, 1.75, 2.0];
+    const currentIdx = speeds.indexOf(ttsSpeed);
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % speeds.length : 0;
+    const newSpeed = speeds[nextIdx];
+    setTtsSpeed(newSpeed);
+    localStorage.setItem("lorin_tts_speed", newSpeed.toString());
+    if (audioRef.current) {
+      audioRef.current.playbackRate = newSpeed;
+    }
+  };
 
   const stopAudio = () => {
     if (audioRef.current) {
@@ -411,7 +426,7 @@ const MessageItem = React.memo(function MessageItem({
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: cleanText, voice: selectedVoice }),
+        body: JSON.stringify({ text: cleanText, voice: selectedVoice, rate: ttsSpeed }),
       });
 
       if (!res.ok) throw new Error(`TTS API HTTP Error: ${res.status}`);
@@ -419,6 +434,7 @@ const MessageItem = React.memo(function MessageItem({
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");
 
       const audio = new Audio(data.audio_base64);
+      audio.playbackRate = ttsSpeed;
 
       stopAudio();
 
@@ -481,7 +497,7 @@ const MessageItem = React.memo(function MessageItem({
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = 0.98;
+        utterance.rate = ttsSpeed;
         utterance.pitch = 1.0;
         utterance.lang = "en-IN";
         utterance.onboundary = (e) => {
@@ -530,21 +546,34 @@ const MessageItem = React.memo(function MessageItem({
     }
   };
 
+  const handleFeedbackSubmit = async (reason: string, customFeedback?: string) => {
+    setIsFeedbackOpen(false);
+    setToastMsg("Feedback submitted into Neon DB!");
+    setTimeout(() => setToastMsg(null), 2500);
+
+    const query = userQuery || "MSAJCEA Campus Inquiry";
+    if (onSubmitFeedback) {
+      await onSubmitFeedback({
+        message_id: message.id,
+        session_id: sessionId,
+        query_text: query,
+        response_text: message.content,
+        rating: -1,
+        category: reason,
+        user_comment: customFeedback || reason,
+      });
+    }
+  };
+
   if (isUser) {
     return (
-      <div className="flex flex-col w-full max-w-full min-w-0 box-border mt-3 mb-2 sm:mt-4 sm:mb-2 animate-in fade-in duration-200">
-        <div className="w-full border-t border-line/40 dark:border-white/[0.04] mb-2 sm:mb-3" />
-        {timeStr && (
-          <div className="w-full flex justify-end pb-1 pr-0.5">
-            <Tooltip content="Question Timestamp" position="top">
-              <span className="text-[10px] font-mono font-medium text-ink-3/70 select-none">
-                {timeStr}
-              </span>
-            </Tooltip>
-          </div>
-        )}
-        <div className="flex justify-end items-end gap-2.5 w-full max-w-full min-w-0 box-border">
-          <div className="user-msg-bubble max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-3.5 bg-surface dark:bg-surface border border-line dark:border-white/[0.08] text-ink dark:text-ink text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
+      <div className="flex flex-col items-end my-3.5 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="flex items-center gap-2 mb-1 shrink-0 pr-1">
+          <span className="text-[11px] font-semibold text-ink-3">You</span>
+          {timeStr && <span className="text-[10px] font-mono text-ink-3/70">• {timeStr}</span>}
+        </div>
+        <div className="flex items-start gap-2 max-w-2xl min-w-0 box-border">
+          <div className="bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-2xl rounded-tr-sm border border-[#2E6B5E]/20 dark:border-[#10b981]/30 font-sans text-sm font-medium leading-relaxed break-words shadow-sm overflow-hidden min-w-0">
             {message.content}
           </div>
           <div className="size-8 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/40 dark:to-[#9D174D]/40 border border-white/80 dark:border-white/20 shadow-hairline flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
@@ -572,32 +601,50 @@ const MessageItem = React.memo(function MessageItem({
   // Reset document word counter before every render pass
   wordCounterRef.current = 0;
 
-  const processHighlightedChildren = (children: React.ReactNode): React.ReactNode => {
-    return React.Children.map(children, (child) => {
-      if (typeof child === "string") {
-        if (!child) return child;
-        const tokens = child.split(/(\s+)/);
-        return tokens.map((token, i) => {
-          if (!token || /^\s+$/.test(token)) return token;
+  const processHighlightedChildren = (node: React.ReactNode): React.ReactNode => {
+    if (node === null || node === undefined || typeof node === "boolean") {
+      return node;
+    }
 
-          const currentWordIdx = wordCounterRef.current++;
-          const isMatch = isPlayingAudio && activeWordIdx >= 0 && currentWordIdx === activeWordIdx;
+    if (typeof node === "string" || typeof node === "number") {
+      const textStr = String(node);
+      if (!textStr) return node;
+      const tokens = textStr.split(/(\s+)/);
+      return tokens.map((token, i) => {
+        if (!token || /^\s+$/.test(token)) return token;
 
-          if (isMatch) {
-            return (
-              <mark
-                key={i}
-                className="bg-[#10B981]/35 dark:bg-[#34D399]/40 text-ink font-semibold px-1 py-0.5 rounded transition-all duration-100 shadow-sm"
-              >
-                {token}
-              </mark>
-            );
-          }
-          return token;
-        });
+        const currentWordIdx = wordCounterRef.current++;
+        const isMatch = isPlayingAudio && activeWordIdx >= 0 && currentWordIdx === activeWordIdx;
+
+        if (isMatch) {
+          return (
+            <mark
+              key={i}
+              className="bg-[#10B981]/40 dark:bg-[#34D399]/45 text-ink font-bold px-1 py-0.5 rounded transition-all duration-100 shadow-sm animate-pulse"
+            >
+              {token}
+            </mark>
+          );
+        }
+        return token;
+      });
+    }
+
+    if (React.isValidElement(node)) {
+      const children = (node.props as any)?.children;
+      if (children !== undefined && children !== null) {
+        const processed = Array.isArray(children)
+          ? React.Children.map(children, (child) => processHighlightedChildren(child))
+          : processHighlightedChildren(children);
+        return React.cloneElement(node, {}, processed);
       }
-      return child;
-    });
+    }
+
+    if (Array.isArray(node)) {
+      return React.Children.map(node, (child) => processHighlightedChildren(child));
+    }
+
+    return node;
   };
 
   return (
@@ -644,8 +691,8 @@ const MessageItem = React.memo(function MessageItem({
               h4: ({ children }) => <h4 className="font-heading font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
               hr: () => <hr className="my-4 border-line/50 dark:border-white/[0.05]" />,
               blockquote: ({ children }) => <blockquote className="font-heading border-l-4 border-[#2E6B5E] dark:border-[#4ade80] bg-[#2E6B5E]/5 dark:bg-[#4ade80]/8 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
-              strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
-              em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
+              strong: ({ children }) => <strong className="font-bold text-ink">{children}</strong>,
+              em: ({ children }) => <em className="italic">{children}</em>,
               table: ({ children }) => (
                 <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4 rounded-2xl bg-surface/50 dark:bg-surface/30 box-border backdrop-blur-sm transition-all duration-200 border-none">
                   <table className="w-full max-w-full border-collapse text-left border-none table-auto">{children}</table>
@@ -880,6 +927,21 @@ const MessageItem = React.memo(function MessageItem({
                 ) : (
                   ACTION_ICONS.tts
                 )}
+              </button>
+            </Tooltip>
+
+            {/* Animated Voice Speed Control Pill (1.0x, 1.25x, 1.5x, 1.75x, 2.0x) */}
+            <Tooltip content={`Voice Speed: ${ttsSpeed}x (Click to cycle 1.0x, 1.25x, 1.5x, 1.75x, 2.0x)`} position="top">
+              <button
+                type="button"
+                onClick={cycleTtsSpeed}
+                className={`flex items-center justify-center px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
+                  ttsSpeed > 1.0
+                    ? "bg-accent/15 text-accent border-accent/30 animate-pulse shadow-sm"
+                    : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
+                }`}
+              >
+                {ttsSpeed}x
               </button>
             </Tooltip>
 
