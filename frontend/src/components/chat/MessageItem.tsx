@@ -537,10 +537,10 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
         <div className="flex justify-end items-end gap-2.5 w-full max-w-full min-w-0 box-border">
-          <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-5 py-3.5 bg-surface dark:bg-surface border border-line text-ink dark:text-ink text-[13.5px] sm:text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
+          <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl rounded-tr-md px-4 sm:px-5 py-3 sm:py-3.5 bg-surface dark:bg-surface border border-line text-ink dark:text-ink text-[13.5px] sm:text-[14px] font-medium shadow-hairline leading-relaxed break-words overflow-hidden box-border">
             {message.content}
           </div>
-          <div className="size-8 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] border border-white/80 dark:border-white/20 shadow-hairline flex items-center justify-center text-[#4C1D95] dark:text-[#F2CFDF] shrink-0">
+          <div className="size-8 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/40 dark:to-[#9D174D]/40 border border-white/80 dark:border-white/20 shadow-hairline flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
             <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
@@ -596,7 +596,7 @@ const MessageItem = React.memo(function MessageItem({
   return (
     <div className="flex flex-col mt-1 mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
       <div className="flex items-center gap-2 mb-2 shrink-0">
-        <div className="size-6 rounded-lg bg-gradient-to-tr from-[#D0CCE5] via-[#D0E7E1] to-[#E1EED7] border border-white dark:border-white/20 shadow-hairline flex items-center justify-center text-[#2E6B5E] dark:text-[#E1EED7] shrink-0">
+        <div className="size-6 rounded-lg bg-gradient-to-tr from-[#D0CCE5] via-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E]/40 dark:to-[#10b981]/30 border border-white dark:border-emerald-500/30 shadow-hairline flex items-center justify-center text-[#2E6B5E] dark:text-[#34d399] shrink-0">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
@@ -614,8 +614,8 @@ const MessageItem = React.memo(function MessageItem({
         </div>
       </div>
 
-      {/* AI message body — remove desktop-only pl-7 indent on mobile */}
-      <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 sm:pl-7 overflow-hidden">
+      {/* AI message body — symmetric pl-0 sm:pl-7 and pr-2 sm:pr-10 right alignment buffer */}
+      <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 sm:pl-7 pr-2 sm:pr-10 overflow-hidden">
         <ThinkingState
           variant="Steps"
           isLiveStreaming={message.is_streaming}
