@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Activity, MessageSquare, BookOpen, BarChart2, ShieldCheck, Cpu, 
-  Search, Bell, LogOut, LayoutDashboard, RefreshCw, Zap, Sun, Moon
+  LogOut, LayoutDashboard, RefreshCw, Zap, Sun, Moon, ArrowLeft,
+  Lock, AlertTriangle
 } from 'lucide-react';
 import { OverviewTab } from './OverviewTab';
 import { ConversationsTab } from './ConversationsTab';
@@ -160,7 +162,7 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen font-ui relative pb-16 transition-colors duration-300 ${
+    <div className={`min-h-screen font-ui relative pb-20 transition-colors duration-300 ${
       isDark ? 'bg-[#0b0c0e] text-[#f4f3ee]' : 'bg-[#F7F6ED] text-[#1C1917]'
     }`}>
       
@@ -171,165 +173,301 @@ export const AdminDashboard: React.FC = () => {
         }`} />
       </div>
 
-      {/* FLOATING TOP NAVBAR */}
-      <div className="fixed top-4 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none">
-        <header className={`pointer-events-auto max-w-7xl mx-auto h-16 backdrop-blur-2xl border rounded-2xl shadow-xl flex items-center justify-between px-4 sm:px-6 transition-all ${
-          isDark ? 'bg-[#14151a]/90 border-white/[0.06]' : 'bg-white/90 border-black/[0.08]'
+      {/* FLOATING TOP EXPANDABLE PILL NAVBAR */}
+      <div className="fixed top-3 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none">
+        <header className={`pointer-events-auto max-w-7xl mx-auto h-16 backdrop-blur-2xl border rounded-full shadow-2xl flex items-center justify-between px-3 sm:px-6 transition-all ${
+          isDark ? 'bg-[#14151a]/90 border-white/[0.08]' : 'bg-white/90 border-black/[0.08]'
         }`}>
           
           {/* Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#2E6B5E]/20 dark:bg-emerald-500/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-emerald-500/40">
-              <Activity className="w-5 h-5 text-[#2E6B5E] dark:text-[#34d399]" />
-            </div>
+          <div className="flex items-center gap-2.5">
+            <motion.div 
+              whileHover={{ rotate: 15, scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/')}
+              className="w-9 h-9 rounded-full bg-[#2E6B5E]/20 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#2E6B5E]/40 dark:border-[#10b981]/40 cursor-pointer"
+            >
+              <Activity className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
+            </motion.div>
             <div className="flex items-center gap-2">
-              <span className="font-heading font-bold text-base tracking-tight text-ink dark:text-[#f4f3ee]">Lorin AI</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#34d399] border border-[#2E6B5E]/30 dark:border-emerald-500/30">
-                MSAJCEA Ops
+              <span className="font-heading font-bold text-sm sm:text-base tracking-tight text-[#1C1917] dark:text-[#f4f3ee]">
+                Lorin AI
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[9.5px] uppercase font-bold tracking-wider bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/30 dark:border-[#10b981]/30">
+                Ops Center
               </span>
             </div>
           </div>
 
-          {/* Floating Pill Nav Items */}
-          <nav className={`hidden md:flex items-center p-1 rounded-xl border ${
-            isDark ? 'bg-[#1c1d24]/80 border-white/[0.06]' : 'bg-[#ECEAE0]/80 border-black/[0.06]'
-          }`}>
+          {/* ── EXPANDABLE PILL TAB NAVIGATION (SHADCN / FRAMER MOTION) ── */}
+          <motion.nav
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
+            className={`hidden md:flex items-center p-1 rounded-full border shadow-inner ${
+              isDark ? 'bg-[#0b0c0e]/80 border-white/[0.06]' : 'bg-[#F7F6ED]/80 border-black/[0.06]'
+            }`}
+          >
             {navItems.map((item) => {
+              const Icon = item.icon;
               const isActive = activeTab === item.id;
+
               return (
-                <button
+                <motion.button
                   key={item.id}
+                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.03 }}
                   onClick={() => setActiveTab(item.id as any)}
-                  className={`px-4 py-1.5 rounded-lg font-medium text-xs transition-all cursor-pointer ${
-                    isActive 
-                      ? 'bg-[#2E6B5E] dark:bg-emerald-500 text-white dark:text-zinc-950 font-bold shadow-md' 
-                      : isDark ? 'text-[#b1ada1] hover:text-[#f4f3ee] hover:bg-white/[0.04]' : 'text-[#57534E] hover:text-[#1C1917] hover:bg-black/[0.04]'
+                  type="button"
+                  className={`flex items-center gap-0 px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[38px] cursor-pointer overflow-hidden ${
+                    isActive
+                      ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md'
+                      : 'bg-transparent text-[#57534E] dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-[#1C1917] dark:hover:text-[#f4f3ee]'
                   }`}
                 >
-                  {item.label}
-                </button>
+                  <Icon
+                    size={17}
+                    strokeWidth={isActive ? 2.3 : 1.8}
+                    className="shrink-0 transition-transform duration-200"
+                  />
+
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      width: isActive ? "84px" : "0px",
+                      opacity: isActive ? 1 : 0,
+                      marginLeft: isActive ? "6px" : "0px",
+                    }}
+                    transition={{
+                      width: { type: "spring", stiffness: 350, damping: 30 },
+                      opacity: { duration: 0.18 },
+                      marginLeft: { duration: 0.18 },
+                    }}
+                    className="overflow-hidden flex items-center whitespace-nowrap"
+                  >
+                    <span
+                      className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                        isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </motion.div>
+                </motion.button>
               );
             })}
-          </nav>
+          </motion.nav>
 
-          {/* Controls, Theme Toggle & Sign Out */}
+          {/* Controls, Theme Toggle & Back to App */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border ${
-              isDark ? 'bg-[#1c1d24] border-white/[0.06] text-[#b1ada1]' : 'bg-[#ECEAE0] border-black/[0.06] text-[#57534E]'
-            }`}>
-              <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-              <span className="text-[11px] font-mono font-medium">Live 99.98%</span>
-            </div>
-
-            {/* Light / Dark Mode Toggle Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
               title={isDark ? "Switch to Light Theme" : "Switch to Dark Theme"}
-              className={`p-2 rounded-xl transition-all border flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+              className={`p-2 rounded-full transition-all border flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
                 isDark 
-                  ? 'bg-[#1c1d24] hover:bg-zinc-800 text-amber-300 border-white/[0.06]' 
-                  : 'bg-white hover:bg-[#ECEAE0] text-indigo-600 border-black/[0.08]'
+                  ? 'bg-white/[0.06] hover:bg-white/[0.1] text-amber-300 border-white/[0.08]' 
+                  : 'bg-[#F7F6ED] hover:bg-[#edece4] text-indigo-600 border-black/[0.08]'
               }`}
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-indigo-600" />}
-              <span className="hidden sm:inline text-[11px]">{isDark ? "Light" : "Dark"}</span>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/')}
+              title="Return to Student AI Chat"
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                isDark 
+                  ? 'bg-white/[0.06] hover:bg-white/[0.1] text-[#f4f3ee] border-white/[0.08]' 
+                  : 'bg-[#F7F6ED] hover:bg-[#edece4] text-[#1C1917] border-black/[0.08]'
+              }`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Exit to Chat</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 localStorage.removeItem("adminToken");
                 document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
                 navigate('/admin/login');
               }}
               title="Sign Out"
-              className={`p-2 rounded-xl transition-all border cursor-pointer ${
-                isDark ? 'bg-[#1c1d24] hover:bg-rose-500/20 hover:text-rose-300 text-[#b1ada1] border-white/[0.06]' : 'bg-white hover:bg-rose-50 hover:text-rose-600 text-[#57534E] border-black/[0.08]'
+              className={`p-2 rounded-full transition-all border cursor-pointer ${
+                isDark 
+                  ? 'bg-white/[0.06] hover:bg-rose-500/20 hover:text-rose-300 text-[#b1ada1] border-white/[0.08]' 
+                  : 'bg-white hover:bg-rose-50 hover:text-rose-600 text-[#57534E] border-black/[0.08]'
               }`}
             >
               <LogOut className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
         </header>
       </div>
 
-      {/* Mobile Tab Bar (sticky bottom for mobile) */}
-      <div className={`md:hidden fixed bottom-4 left-4 right-4 z-50 backdrop-blur-2xl border rounded-2xl p-1.5 flex justify-around shadow-2xl ${
-        isDark ? 'bg-[#14151a]/95 border-white/[0.06]' : 'bg-white/95 border-black/[0.08]'
-      }`}>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`p-2 rounded-xl flex flex-col items-center text-[10px] transition-all cursor-pointer ${
-                isActive ? 'bg-[#2E6B5E] dark:bg-emerald-500 text-white dark:text-zinc-950 font-bold' : isDark ? 'text-[#b1ada1]' : 'text-[#57534E]'
-              }`}
-            >
-              <Icon className="w-4 h-4 mb-0.5" />
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="w-full max-w-7xl mx-auto px-3 sm:px-4 pt-24 pb-12 relative z-10 space-y-6">
+      {/* DASHBOARD CONTENT BODY */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-12 relative z-10">
         
-        {error && (
-          <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl text-xs font-mono flex items-center justify-between">
-            <span>⚠️ {error}</span>
-            <button onClick={fetchData} className="underline text-xs">Retry API Fetch</button>
+        {/* Error Alert */}
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-semibold flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" />
+                <span>{error}</span>
+              </div>
+              <button 
+                onClick={fetchData}
+                className="px-3 py-1 rounded-xl bg-rose-500 text-white text-[11px] font-bold hover:bg-rose-600 transition-colors"
+              >
+                Retry Fetch
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Loading Spinner */}
+        {loading && !metrics ? (
+          <div className="flex flex-col items-center justify-center py-28 space-y-4">
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="w-10 h-10 border-3 border-[#2E6B5E] dark:border-[#10b981] border-t-transparent rounded-full"
+            />
+            <p className="text-xs font-medium text-[#57534E] dark:text-[#b1ada1]">
+              Fetching real telemetry from database...
+            </p>
           </div>
-        )}
-
-        {activeTab === 'overview' && (
-          <OverviewTab 
-            metrics={metrics} 
-            period={period} 
-            setPeriod={setPeriod} 
-            onRefresh={fetchData} 
-            isDark={isDark}
-          />
-        )}
-
-        {activeTab === 'conversations' && (
-          <ConversationsTab 
-            sessions={sessions} 
-            onSelectSession={fetchSessionDetails} 
-            isDark={isDark}
-          />
-        )}
-
-        {activeTab === 'knowledge' && (
-          <KnowledgeTab 
-            knowledgeGaps={knowledgeGaps}
-            dislikes={dislikes}
-            metrics={metrics}
-            isDark={isDark}
-          />
-        )}
-
-        {activeTab === 'analytics' && (
-          <AnalyticsTab 
-            cacheEntries={cacheEntries} 
-            onPurgeCache={purgeCache} 
-            isDark={isDark}
-          />
-        )}
-
-        {activeTab === 'safety' && (
-          <SafetyTab metrics={metrics} isDark={isDark} />
-        )}
-
-        {activeTab === 'system' && (
-          <SystemTab metrics={metrics} isDark={isDark} />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              {activeTab === 'overview' && (
+                <OverviewTab 
+                  metrics={metrics} 
+                  period={period} 
+                  setPeriod={setPeriod} 
+                  onRefresh={fetchData}
+                  isDark={isDark}
+                />
+              )}
+              {activeTab === 'conversations' && (
+                <ConversationsTab 
+                  sessions={sessions} 
+                  onSelectSession={fetchSessionDetails} 
+                  isDark={isDark}
+                />
+              )}
+              {activeTab === 'knowledge' && (
+                <KnowledgeTab 
+                  knowledgeGaps={knowledgeGaps} 
+                  dislikes={dislikes}
+                  metrics={metrics}
+                  isDark={isDark}
+                />
+              )}
+              {activeTab === 'analytics' && (
+                <AnalyticsTab 
+                  cacheEntries={cacheEntries} 
+                  onPurgeCache={purgeCache}
+                  isDark={isDark}
+                />
+              )}
+              {activeTab === 'safety' && (
+                <SafetyTab 
+                  metrics={metrics}
+                  isDark={isDark}
+                />
+              )}
+              {activeTab === 'system' && (
+                <SystemTab 
+                  metrics={metrics}
+                  isDark={isDark}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         )}
       </main>
 
-      {/* Slide-out Deep RAG Trace Drawer */}
-      <TraceDrawer 
+      {/* MOBILE STICKY BOTTOM NAV BAR (SHADCN / FRAMER MOTION EXPANDING PILLS) */}
+      <div className="fixed inset-x-0 bottom-4 z-40 md:hidden flex justify-center px-4 pointer-events-none">
+        <motion.nav
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 26 }}
+          className={`pointer-events-auto rounded-full flex items-center p-1.5 shadow-2xl border backdrop-blur-2xl ${
+            isDark ? 'bg-[#14151a]/95 border-white/[0.08]' : 'bg-white/95 border-black/[0.08]'
+          }`}
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+
+            return (
+              <motion.button
+                key={item.id}
+                whileTap={{ scale: 0.94 }}
+                onClick={() => setActiveTab(item.id as any)}
+                type="button"
+                className={`flex items-center gap-0 px-3 py-2 rounded-full transition-all duration-200 relative h-10 min-w-[42px] cursor-pointer overflow-hidden ${
+                  isActive
+                    ? 'bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md'
+                    : 'bg-transparent text-[#57534E] dark:text-[#b1ada1]'
+                }`}
+                aria-label={item.label}
+              >
+                <Icon
+                  size={19}
+                  strokeWidth={isActive ? 2.3 : 1.8}
+                  className="shrink-0"
+                />
+
+                <motion.div
+                  initial={false}
+                  animate={{
+                    width: isActive ? "72px" : "0px",
+                    opacity: isActive ? 1 : 0,
+                    marginLeft: isActive ? "6px" : "0px",
+                  }}
+                  transition={{
+                    width: { type: "spring", stiffness: 350, damping: 30 },
+                    opacity: { duration: 0.18 },
+                    marginLeft: { duration: 0.18 },
+                  }}
+                  className="overflow-hidden flex items-center whitespace-nowrap"
+                >
+                  <span
+                    className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                      isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </motion.div>
+              </motion.button>
+            );
+          })}
+        </motion.nav>
+      </div>
+
+      {/* Slide-out Session Trace Inspector Drawer */}
+      <TraceDrawer
         sessionId={selectedSessionId}
         sessionDetails={sessionDetails}
         loading={loadingDetails}

@@ -2,6 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { ModelOption } from "../../types/chat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "../Tooltip";
+import { useNavigate } from "react-router-dom";
+import {
+  Sparkles,
+  Clock,
+  Type,
+  Sun,
+  Moon,
+  ShieldCheck,
+  Plus,
+  ChevronDown,
+  Check,
+  Sliders,
+  GraduationCap
+} from "lucide-react";
 
 interface ChatHeaderProps {
   models: ModelOption[];
@@ -20,20 +34,21 @@ export default function ChatHeader({
   onOpenHistory,
   isStreaming,
 }: ChatHeaderProps) {
+  const navigate = useNavigate();
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
-  // Mobile overflow menu (History + Theme + Font Size)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
-
-  // Accessibility Font Size menu popover state
   const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
   const fontSizeMenuRef = useRef<HTMLDivElement>(null);
+  const modelDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [fontSize, setFontSizeState] = useState<"normal" | "large" | "xlarge">(() => {
-    const saved = localStorage.getItem("fontSize");
-    if (saved === "large" || saved === "xlarge") return saved;
-    return "normal";
-  });
+  const [activePill, setActivePill] = useState<string>("chat");
+
+  const [fontSize, setFontSizeState] = useState<"normal" | "large" | "xlarge">(
+    () => {
+      const saved = localStorage.getItem("fontSize");
+      if (saved === "large" || saved === "xlarge") return saved;
+      return "normal";
+    }
+  );
 
   const changeFontSize = (size: "normal" | "large" | "xlarge") => {
     setFontSizeState(size);
@@ -45,7 +60,6 @@ export default function ChatHeader({
     }
   };
 
-  // Sync initial font size attribute on mount
   useEffect(() => {
     if (fontSize !== "normal") {
       document.documentElement.setAttribute("data-font-size", fontSize);
@@ -54,10 +68,12 @@ export default function ChatHeader({
     }
   }, [fontSize]);
 
-  const activeModelObj = models.find((m) => m.id === selectedModel) || models[0] || {
-    id: "zai/glm-5.3-flash",
-    name: "GLM-5.3 Flash",
-  };
+  const activeModelObj =
+    models.find((m) => m.id === selectedModel) ||
+    models[0] || {
+      id: "zai/glm-5.3-flash",
+      name: "GLM-5.3 Flash",
+    };
 
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem("theme");
@@ -83,20 +99,21 @@ export default function ChatHeader({
   };
 
   useEffect(() => {
-    const handleToggleEvent = () => toggleTheme();
-    window.addEventListener("toggle-theme", handleToggleEvent);
-    return () => window.removeEventListener("toggle-theme", handleToggleEvent);
-  }, [isDark]);
-
-  // Close mobile menu & font size menu when tapping outside
-  useEffect(() => {
     const handleOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;
-      if (mobileMenuOpen && mobileMenuRef.current && !mobileMenuRef.current.contains(target)) {
-        setMobileMenuOpen(false);
-      }
-      if (fontSizeMenuOpen && fontSizeMenuRef.current && !fontSizeMenuRef.current.contains(target)) {
+      if (
+        fontSizeMenuOpen &&
+        fontSizeMenuRef.current &&
+        !fontSizeMenuRef.current.contains(target)
+      ) {
         setFontSizeMenuOpen(false);
+      }
+      if (
+        modelDropdownOpen &&
+        modelDropdownRef.current &&
+        !modelDropdownRef.current.contains(target)
+      ) {
+        setModelDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -105,236 +122,285 @@ export default function ChatHeader({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("touchstart", handleOutside);
     };
-  }, [mobileMenuOpen, fontSizeMenuOpen]);
+  }, [fontSizeMenuOpen, modelDropdownOpen]);
 
-  const MoonIcon = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  );
-
-  const SunIcon = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  );
-
-  const HistoryIcon = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-
-  const FontSizeIcon = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 7V4h16v3" />
-      <path d="M9 20h6" />
-      <path d="M12 4v16" />
-    </svg>
-  );
+  // Pill Header Items
+  const headerPills = [
+    {
+      id: "new",
+      label: "New Chat",
+      icon: Plus,
+      action: () => {
+        onNewChat();
+        setActivePill("new");
+      },
+    },
+    {
+      id: "history",
+      label: "History",
+      icon: Clock,
+      action: () => {
+        onOpenHistory();
+        setActivePill("history");
+      },
+    },
+    {
+      id: "font",
+      label: fontSize === "normal" ? "Font Size" : fontSize === "large" ? "Font A+" : "Font A++",
+      icon: Type,
+      action: () => {
+        setFontSizeMenuOpen((prev) => !prev);
+        setActivePill("font");
+      },
+    },
+    {
+      id: "theme",
+      label: isDark ? "Dark" : "Light",
+      icon: isDark ? Moon : Sun,
+      action: () => {
+        toggleTheme();
+        setActivePill("theme");
+      },
+    },
+    {
+      id: "admin",
+      label: "Admin Ops",
+      icon: ShieldCheck,
+      action: () => {
+        navigate("/admin");
+        setActivePill("admin");
+      },
+    },
+  ];
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-canvas/90 backdrop-blur-md border-b border-line">
-      <div className="mx-auto max-w-5xl w-full min-w-0 px-3 sm:px-6 py-2 flex items-center justify-between box-border gap-2">
+    <motion.header
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 280, damping: 24 }}
+      className="sticky top-0 z-30 w-full bg-canvas/90 dark:bg-[#0b0c0e]/90 backdrop-blur-xl border-b border-line dark:border-white/[0.08]"
+    >
+      <div className="mx-auto max-w-6xl w-full min-w-0 px-3 sm:px-6 py-2.5 flex items-center justify-between box-border gap-2">
         {/* ── Brand & Badges ── */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <motion.div
-            whileHover={{ rotate: 10, scale: 1.05 }}
-            className="flex size-7.5 sm:size-8 items-center justify-center rounded-xl bg-surface shadow-hairline border border-line shrink-0"
+            whileHover={{ rotate: 12, scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onNewChat}
+            className="flex size-9 items-center justify-center rounded-2xl bg-surface dark:bg-[#14151a] shadow-sm border border-line dark:border-white/[0.08] cursor-pointer shrink-0"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E6B5E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-              <path d="M6 12v5c3 3 9 3 12 0v-5" />
-            </svg>
+            <GraduationCap className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
           </motion.div>
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-xs sm:text-sm font-bold text-ink tracking-tight whitespace-nowrap">Lorin AI</h1>
-              <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/30 px-1.5 py-0.5 text-[9.5px] font-semibold text-[#2E6B5E] dark:text-[#6ee7b7] dark:border dark:border-[#2E6B5E]/40 whitespace-nowrap">
+              <h1 className="text-xs sm:text-sm font-heading font-bold text-ink dark:text-[#f4f3ee] tracking-tight whitespace-nowrap">
+                Lorin AI
+              </h1>
+              <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/30 px-2 py-0.5 text-[9.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] dark:border dark:border-[#2E6B5E]/40 whitespace-nowrap">
                 MSAJCEA
               </span>
-              {/* TNEA badge — hidden on mobile to save space */}
-              <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.5 text-[9.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40">
+              <span className="hidden md:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-2 py-0.5 text-[9.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40">
                 TNEA 1301
               </span>
             </div>
           </div>
         </div>
 
-        {/* ── Desktop Actions (sm and above) ── */}
-        <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
-          {/* ── Accessibility Font Size Control Popover ── */}
-          <div className="relative" ref={fontSizeMenuRef}>
-            <Tooltip content="Font Size (Parents & Low Vision Support)" position="bottom">
-              <button
-                type="button"
-                onClick={() => setFontSizeMenuOpen((p) => !p)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold transition-colors shadow-hairline cursor-pointer ${
-                  fontSize !== "normal"
-                    ? "bg-[#2E6B5E]/15 border-[#2E6B5E]/40 text-[#2E6B5E] dark:text-[#10b981]"
-                    : "bg-surface border-line text-ink hover:bg-hover"
-                }`}
-              >
-                <FontSizeIcon />
-                <span className="text-[11px] uppercase tracking-wider">{fontSize === "xlarge" ? "A++" : fontSize === "large" ? "A+" : "A"}</span>
-              </button>
-            </Tooltip>
-
-            <AnimatePresence>
-              {fontSizeMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.94, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-10 z-50 w-52 rounded-2xl bg-surface border border-line shadow-2xl p-1.5 backdrop-blur-xl"
-                >
-                  <div className="px-3 py-1.5 border-b border-line/60">
-                    <p className="text-[11px] font-bold text-ink">Text Size Settings</p>
-                    <p className="text-[9.5px] text-ink-3">Easy reading for parents & low vision</p>
-                  </div>
-                  <div className="flex flex-col gap-0.5 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => { changeFontSize("normal"); setFontSizeMenuOpen(false); }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                        fontSize === "normal" ? "bg-[#2E6B5E]/10 text-accent font-bold" : "text-ink hover:bg-hover"
-                      }`}
-                    >
-                      <span>Standard (100%)</span>
-                      {fontSize === "normal" && <span className="text-accent text-[10px]">✓ Active</span>}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { changeFontSize("large"); setFontSizeMenuOpen(false); }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                        fontSize === "large" ? "bg-[#2E6B5E]/10 text-accent font-bold" : "text-ink hover:bg-hover"
-                      }`}
-                    >
-                      <span>Large (+15% Parents)</span>
-                      {fontSize === "large" && <span className="text-accent text-[10px]">✓ Active</span>}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { changeFontSize("xlarge"); setFontSizeMenuOpen(false); }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                        fontSize === "xlarge" ? "bg-[#2E6B5E]/10 text-accent font-bold" : "text-ink hover:bg-hover"
-                      }`}
-                    >
-                      <span>Extra Large (+30%)</span>
-                      {fontSize === "xlarge" && <span className="text-accent text-[10px]">✓ Active</span>}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <Tooltip content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"} position="bottom">
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="button" onClick={toggleTheme}
-              className="flex size-8 items-center justify-center rounded-full bg-surface border border-line text-ink hover:bg-hover transition-colors shadow-hairline cursor-pointer">
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </motion.button>
-          </Tooltip>
-
-          <Tooltip content="Chat History (Ctrl+J)" position="bottom">
-            <button type="button" onClick={onOpenHistory}
-              className="flex size-8 items-center justify-center rounded-full bg-surface border border-line text-ink hover:bg-hover transition-colors shadow-hairline cursor-pointer">
-              <HistoryIcon />
-            </button>
-          </Tooltip>
-
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="button" onClick={onNewChat}
-            disabled={isStreaming}
-            className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E] dark:to-[#10b981] px-3.5 py-1.5 text-xs font-semibold text-[#1E293B] dark:text-white shadow-hairline border border-white dark:border-emerald-400/30 hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer">
-            <span>+</span> New Chat
+        {/* ── Model Picker Selector (Center/Left) ── */}
+        <div className="relative shrink-0" ref={modelDropdownRef}>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setModelDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-surface dark:bg-[#14151a] border-line dark:border-white/[0.08] text-xs font-semibold text-ink dark:text-[#f4f3ee] shadow-sm hover:bg-hover dark:hover:bg-white/[0.06] transition-all cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#2E6B5E] dark:text-[#10b981]" />
+            <span className="truncate max-w-[100px] sm:max-w-[140px]">
+              {activeModelObj.name}
+            </span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${modelDropdownOpen ? 'rotate-180' : ''}`} />
           </motion.button>
+
+          <AnimatePresence>
+            {modelDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 6 }}
+                transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 top-11 z-50 w-64 rounded-2xl bg-surface dark:bg-[#14151a] border border-line dark:border-white/[0.08] shadow-2xl p-2 backdrop-blur-2xl"
+              >
+                <div className="px-3 py-1.5 border-b border-line/60 dark:border-white/[0.06]">
+                  <p className="text-[11px] font-bold text-ink dark:text-[#f4f3ee]">NVIDIA LLM Engine</p>
+                  <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">Ultra-fast campus inference</p>
+                </div>
+                <div className="flex flex-col gap-1 mt-1">
+                  {models.map((m) => (
+                    <motion.button
+                      key={m.id}
+                      whileHover={{ x: 2 }}
+                      onClick={() => {
+                        onSelectModel(m.id);
+                        setModelDropdownOpen(false);
+                      }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        selectedModel === m.id
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                          : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <span>{m.name}</span>
+                      {selectedModel === m.id && (
+                        <Check className="w-3.5 h-3.5 text-[#2E6B5E] dark:text-[#10b981]" />
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* ── Mobile Actions (below sm) ── */}
-        <div className="flex sm:hidden items-center gap-1.5 shrink-0" ref={mobileMenuRef}>
-          {/* New Chat — icon only on mobile for minimal footprint */}
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            type="button"
-            onClick={onNewChat}
-            disabled={isStreaming}
-            aria-label="New Chat"
-            className="tap-target flex items-center justify-center size-9 rounded-full bg-gradient-to-r from-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E] dark:to-[#10b981] border border-white/80 dark:border-emerald-400/30 shadow-hairline text-[#1E293B] dark:text-white disabled:opacity-50 cursor-pointer"
+        {/* ── EXPANDABLE PILL TOP HEADER NAVBAR (SHADCN / FRAMER MOTION) ── */}
+        <div className="flex items-center gap-1.5 relative">
+          <motion.nav
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 26 }}
+            className="rounded-full flex items-center p-1 border shadow-lg backdrop-blur-xl bg-surface/90 border-line dark:bg-[#14151a]/90 dark:border-white/[0.08]"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </motion.button>
+            {headerPills.map((pill) => {
+              const Icon = pill.icon;
+              const isActive = activePill === pill.id;
 
-          {/* ⋯ Overflow menu — opens popover with History, Stats, Theme, Font Size */}
-          <div className="relative">
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              type="button"
-              onClick={() => setMobileMenuOpen((p) => !p)}
-              aria-label="More options"
-              className="tap-target flex items-center justify-center size-9 rounded-full bg-surface border border-line text-ink shadow-hairline cursor-pointer"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="5" r="1" fill="currentColor" />
-                <circle cx="12" cy="12" r="1" fill="currentColor" />
-                <circle cx="12" cy="19" r="1" fill="currentColor" />
-              </svg>
-            </motion.button>
-
-            {/* Dropdown popover */}
-            <AnimatePresence>
-              {mobileMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.92, y: -6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -6 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute right-0 top-11 z-50 w-48 rounded-2xl bg-surface border border-line shadow-2xl backdrop-blur-xl overflow-hidden"
+              return (
+                <motion.button
+                  key={pill.id}
+                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.04 }}
+                  onClick={pill.action}
+                  type="button"
+                  className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[40px] cursor-pointer overflow-hidden ${
+                    isActive
+                      ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md"
+                      : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
+                  }`}
+                  aria-label={pill.label}
                 >
-                  <button type="button" onClick={() => { onOpenHistory(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-3 text-[13px] font-medium text-ink hover:bg-hover active:bg-hover-2 transition-colors tap-target">
-                    <HistoryIcon /> Chat History
-                  </button>
+                  <Icon
+                    size={17}
+                    strokeWidth={isActive ? 2.3 : 1.8}
+                    className="shrink-0 transition-transform duration-200"
+                  />
 
-                  {/* Font Size cycle button on mobile */}
-                  <button type="button" onClick={() => {
-                    const nextSize = fontSize === "normal" ? "large" : fontSize === "large" ? "xlarge" : "normal";
-                    changeFontSize(nextSize);
-                  }}
-                    className="w-full flex items-center justify-between px-3 py-3 text-[13px] font-medium text-ink hover:bg-hover active:bg-hover-2 transition-colors tap-target border-t border-line/40">
-                    <div className="flex items-center gap-3">
-                      <FontSizeIcon />
-                      <span>Font Size</span>
-                    </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent/15 text-accent uppercase">
-                      {fontSize === "xlarge" ? "XL (130%)" : fontSize === "large" ? "L (115%)" : "100%"}
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      width: isActive ? "72px" : "0px",
+                      opacity: isActive ? 1 : 0,
+                      marginLeft: isActive ? "6px" : "0px",
+                    }}
+                    transition={{
+                      width: { type: "spring", stiffness: 350, damping: 30 },
+                      opacity: { duration: 0.18 },
+                      marginLeft: { duration: 0.18 },
+                    }}
+                    className="overflow-hidden flex items-center whitespace-nowrap hidden sm:flex"
+                  >
+                    <span
+                      className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                        isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                      }`}
+                    >
+                      {pill.label}
                     </span>
-                  </button>
+                  </motion.div>
+                </motion.button>
+              );
+            })}
+          </motion.nav>
 
-                  <button type="button" onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-3 text-[13px] font-medium text-ink hover:bg-hover active:bg-hover-2 transition-colors tap-target border-t border-line/40">
-                    {isDark ? <SunIcon /> : <MoonIcon />}
-                    {isDark ? "Light Mode" : "Dark Mode"}
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Accessibility Font Size Popover Modal */}
+          <AnimatePresence>
+            {fontSizeMenuOpen && (
+              <motion.div
+                ref={fontSizeMenuRef}
+                initial={{ opacity: 0, scale: 0.94, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: 6 }}
+                transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                className="absolute right-0 top-12 z-50 w-56 rounded-2xl bg-surface dark:bg-[#14151a] border border-line dark:border-white/[0.08] shadow-2xl p-2 backdrop-blur-2xl"
+              >
+                <div className="px-3 py-1.5 border-b border-line/60 dark:border-white/[0.06]">
+                  <p className="text-[11px] font-bold text-ink dark:text-[#f4f3ee]">
+                    Text Size Settings
+                  </p>
+                  <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">
+                    Easy reading for parents & low vision
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1 mt-1">
+                  <motion.button
+                    whileHover={{ x: 2 }}
+                    type="button"
+                    onClick={() => {
+                      changeFontSize("normal");
+                      setFontSizeMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                      fontSize === "normal"
+                        ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                        : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <span>Standard (100%)</span>
+                    {fontSize === "normal" && (
+                      <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ x: 2 }}
+                    type="button"
+                    onClick={() => {
+                      changeFontSize("large");
+                      setFontSizeMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                      fontSize === "large"
+                        ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                        : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <span>Large (+15% Parents)</span>
+                    {fontSize === "large" && (
+                      <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ x: 2 }}
+                    type="button"
+                    onClick={() => {
+                      changeFontSize("xlarge");
+                      setFontSizeMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                      fontSize === "xlarge"
+                        ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                        : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <span>Extra Large (+30%)</span>
+                    {fontSize === "xlarge" && (
+                      <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                    )}
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
