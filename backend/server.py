@@ -23,9 +23,11 @@ import httpx
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, HTTPException, Query, Depends, Header
+import websockets
+from fastapi import FastAPI, Request, HTTPException, Query, Depends, Header, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 from qdrant_client import QdrantClient
@@ -44,10 +46,13 @@ except ImportError:
 
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
-else:
-    load_dotenv()
+if os.path.exists(backend_env_path):
+    load_dotenv(backend_env_path, override=True)
+load_dotenv()
+
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 QDRANT_URL = os.getenv("QDRANT_URL")
@@ -3772,6 +3777,214 @@ async def health_check():
         "version": "2.0.0",
         "timestamp": datetime.utcnow().isoformat()
     })
+
+@app.get("/api/assemblyai/token")
+async def get_assemblyai_token():
+    """Mint a temporary 60-second token for AssemblyAI Realtime WebSocket connections."""
+    api_key = os.getenv("ASSEMBLYAI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="AssemblyAI API key not configured on server.")
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.get(
+                "https://streaming.assemblyai.com/v3/token?expires_in_seconds=60",
+                headers={"Authorization": api_key},
+                timeout=10.0
+            )
+            if resp.status_code != 200:
+                print(f"[AssemblyAI] Token minting error ({resp.status_code}): {resp.text}")
+                raise HTTPException(status_code=resp.status_code, detail=f"AssemblyAI token error: {resp.text}")
+            
+            data = resp.json()
+            return JSONResponse({"token": data.get("token")})
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"[AssemblyAI] Exception requesting token: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+class TTSRequest(BaseModel):
+    text: str
+    voice: Optional[str] = "aura-asteria-en"
+    rate: Optional[float] = 1.0
+
+@app.post("/api/tts")
+async def generate_tts(body: TTSRequest):
+    """
+    Generate Speech Audio payload.
+    Primary Engine: Deepgram Aura TTS API
+    Fallback Engine: Edge-TTS
+    """
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Empty text provided for TTS")
+
+    dg_key = os.getenv("DEEPGRAM_API_KEY")
+    voice = body.voice or "aura-asteria-en"
+    
+    if not voice.startswith("aura-"):
+        voice = "aura-asteria-en"
+
+    # 1. Primary Engine: Deepgram Aura TTS
+    if dg_key:
+        try:
+            async with httpx.AsyncClient() as client:
+                dg_resp = await client.post(
+                    f"https://api.deepgram.com/v1/speak?model={voice}",
+                    headers={
+                        "Authorization": f"Token {dg_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={"text": text[:2000]},
+                    timeout=12.0
+                )
+                if dg_resp.status_code == 200:
+                    audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
+                    return JSONResponse({
+                        "audio_base64": audio_b64,
+                        "engine": "deepgram_aura",
+                        "voice": voice
+                    })
+                else:
+                    print(f"[WARN] Deepgram TTS status {dg_resp.status_code}: {dg_resp.text}")
+        except Exception as e:
+            print(f"[WARN] Deepgram TTS exception: {e}")
+
+    # 2. Fallback Engine: Edge-TTS
+    if edge_tts:
+        try:
+            communicate = edge_tts.Communicate(text[:1500], "en-IN-NeerjaNeural")
+            mp3_bytes = bytearray()
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    mp3_bytes.extend(chunk["data"])
+            if mp3_bytes:
+                audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(bytes(mp3_bytes)).decode('utf-8')}"
+                return JSONResponse({
+                    "audio_base64": audio_b64,
+                    "engine": "edge_tts_fallback",
+                    "voice": "en-IN-NeerjaNeural"
+                })
+        except Exception as e:
+            print(f"[WARN] Edge-TTS exception: {e}")
+
+    raise HTTPException(status_code=500, detail="Failed to synthesize speech using available TTS engines")
+
+@app.websocket("/ws/stt")
+async def websocket_stt_proxy(websocket: WebSocket, model: str = Query("nova-3")):
+    """
+    Realtime Speech-to-Text WebSocket Proxy Endpoint.
+    Primary Engine: Deepgram (nova-3, nova-2, enhanced, base)
+    Automatic Fallback Engine: AssemblyAI Universal-3.5 Pro
+    """
+    await websocket.accept()
+    
+    dg_key = os.getenv("DEEPGRAM_API_KEY")
+    aai_key = os.getenv("ASSEMBLYAI_API_KEY")
+    
+    connected_engine = None
+    upstream_ws = None
+    requested_model = model.strip().lower() if model else "nova-3"
+
+    # If explicitly requested AssemblyAI
+    if requested_model in ["assemblyai", "universal-3-5-pro", "aai"]:
+        requested_model = "universal-3-5-pro"
+
+    # 1. Attempt Primary Connection: Deepgram Realtime STT (if not explicitly AssemblyAI)
+    if dg_key and requested_model != "universal-3-5-pro":
+        try:
+            dg_model = requested_model if requested_model in ["nova-3", "nova-2", "enhanced", "base"] else "nova-3"
+            dg_url = f"wss://api.deepgram.com/v1/listen?endpointing=10&interim_results=true&smart_format=true&language=en&model={dg_model}&encoding=linear16&sample_rate=16000"
+            upstream_ws = await websockets.connect(dg_url, additional_headers={"Authorization": f"Token {dg_key}"})
+            connected_engine = "deepgram"
+            print(f"[STT Proxy] Connected to Primary Engine: Deepgram ({dg_model})")
+        except Exception as e:
+            print(f"[STT Proxy] Deepgram ({requested_model}) connection failed: {e}. Switching to AssemblyAI fallback...")
+
+    # 2. Attempt Fallback / Explicit Connection: AssemblyAI Realtime STT (Universal-3.5 Pro)
+    if not connected_engine and aai_key:
+        try:
+            async with httpx.AsyncClient() as client:
+                token_resp = await client.get(
+                    "https://streaming.assemblyai.com/v3/token?expires_in_seconds=60",
+                    headers={"Authorization": aai_key},
+                    timeout=5.0
+                )
+                if token_resp.status_code == 200:
+                    token = token_resp.json().get("token")
+                    aai_url = f"wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=universal-3-5-pro&mode=balanced&token={token}"
+                    upstream_ws = await websockets.connect(aai_url)
+                    connected_engine = "assemblyai"
+                    print("[STT Proxy] Connected to Fallback Engine: AssemblyAI Universal-3.5 Pro")
+        except Exception as e:
+            print(f"[STT Proxy] AssemblyAI fallback connection failed: {e}")
+
+    if not connected_engine or not upstream_ws:
+        await websocket.close(code=1011, reason="All STT engines failed to connect")
+        return
+
+    await websocket.send_json({"type": "engine_info", "provider": connected_engine, "model": requested_model})
+
+    async def forward_client_to_upstream():
+        try:
+            while True:
+                message = await websocket.receive()
+                if "bytes" in message and message["bytes"]:
+                    await upstream_ws.send(message["bytes"])
+                elif "text" in message and message["text"]:
+                    if connected_engine == "deepgram":
+                        await upstream_ws.send(json.dumps({"type": "CloseStream"}))
+                    elif connected_engine == "assemblyai":
+                        await upstream_ws.send(json.dumps({"type": "Terminate"}))
+                    break
+        except Exception:
+            pass
+
+    async def forward_upstream_to_client():
+        try:
+            async for raw in upstream_ws:
+                msg = json.loads(raw)
+                if connected_engine == "deepgram":
+                    channel = msg.get("channel", {})
+                    alternatives = channel.get("alternatives", [{}])
+                    transcript = alternatives[0].get("transcript", "") if alternatives else ""
+                    is_final = msg.get("is_final", False)
+                    if transcript.strip():
+                        await websocket.send_json({
+                            "type": "transcript",
+                            "transcript": transcript,
+                            "is_final": is_final,
+                            "provider": "deepgram"
+                        })
+                elif connected_engine == "assemblyai":
+                    if msg.get("type") == "Turn":
+                        transcript = msg.get("transcript", "")
+                        is_final = msg.get("end_of_turn", False)
+                        if transcript.strip():
+                            await websocket.send_json({
+                                "type": "transcript",
+                                "transcript": transcript,
+                                "is_final": is_final,
+                                "provider": "assemblyai"
+                            })
+        except Exception:
+            pass
+
+    try:
+        await asyncio.gather(forward_client_to_upstream(), forward_upstream_to_client())
+    finally:
+        try:
+            await upstream_ws.close()
+        except Exception:
+            pass
+        try:
+            await websocket.close()
+        except Exception:
+            pass
+
+
+
 
 def format_bullet_point_for_speech(bullet_text: str) -> str:
     text = bullet_text.strip()

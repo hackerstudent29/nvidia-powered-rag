@@ -400,12 +400,14 @@ const MessageItem = React.memo(function MessageItem({
     setIsLoadingAudio(true);
 
     try {
-      // Use Python FastAPI HD Neural Voice TTS API
+      // Use Python FastAPI HD Neural Voice TTS API (Deepgram Aura primary)
+      const selectedVoice = localStorage.getItem("lorin_tts_voice") || "aura-asteria-en";
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: cleanText, voice: "en-IN-NeerjaNeural" }),
+        body: JSON.stringify({ text: cleanText, voice: selectedVoice }),
       });
+
       if (!res.ok) throw new Error(`TTS API HTTP Error: ${res.status}`);
       const data = await res.json();
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");

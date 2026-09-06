@@ -164,6 +164,15 @@ const QUICK_CHIPS = [
   { label: "Contact Info", query: "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?" },
 ];
 
+const AURA_VOICES = [
+  { id: "aura-asteria-en", name: "Asteria", gender: "Female", desc: "Warm & Natural" },
+  { id: "aura-luna-en", name: "Luna", gender: "Female", desc: "Soft & Gentle" },
+  { id: "aura-stella-en", name: "Stella", gender: "Female", desc: "Professional" },
+  { id: "aura-athena-en", name: "Athena", gender: "Female", desc: "Elegant (UK)" },
+  { id: "aura-orion-en", name: "Orion", gender: "Male", desc: "Deep & Clear" },
+  { id: "aura-zeus-en", name: "Zeus", gender: "Male", desc: "Authoritative" },
+];
+
 export const ChatInput: React.FC<ChatInputProps> = ({
   inputValue = "",
   onInputChange,
@@ -182,6 +191,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [selectedModel, setSelectedModel] = useState("Auto (Router)");
   const [isModelSelectOpen, setIsModelSelectOpen] = useState(false);
   const [showLockedToast, setShowLockedToast] = useState(false);
+
+  const [selectedVoice, setSelectedVoice] = useState(() => {
+    return localStorage.getItem("lorin_tts_voice") || "aura-asteria-en";
+  });
+  const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
+
+  const handleVoiceSelect = (voiceId: string) => {
+    setSelectedVoice(voiceId);
+    localStorage.setItem("lorin_tts_voice", voiceId);
+    setIsVoiceMenuOpen(false);
+  };
+
 
   const [disclaimerIdx, setDisclaimerIdx] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
@@ -361,9 +382,65 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return `${secs}s`;
   };
 
-  // Voice recording stop handler
+  // Audio processing helpers for AssemblyAI Realtime (16kHz PCM16)
+  const downsampleBuffer = (buffer: Float32Array, inputSampleRate: number, outputSampleRate = 16000): Float32Array => {
+    if (inputSampleRate === outputSampleRate) return buffer;
+    const sampleRateRatio = inputSampleRate / outputSampleRate;
+    const newLength = Math.round(buffer.length / sampleRateRatio);
+    const result = new Float32Array(newLength);
+    let offsetResult = 0;
+    let offsetBuffer = 0;
+    while (offsetResult < result.length) {
+      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+      let accum = 0, count = 0;
+      for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+        accum += buffer[i];
+        count++;
+      }
+      result[offsetResult] = count > 0 ? accum / count : 0;
+      offsetResult++;
+      offsetBuffer = nextOffsetBuffer;
+    }
+    return result;
+  };
+
+  const convertFloat32ToPCM16 = (float32Array: Float32Array): ArrayBuffer => {
+    const buffer = new ArrayBuffer(float32Array.length * 2);
+    const view = new DataView(buffer);
+    for (let i = 0; i < float32Array.length; i++) {
+      const s = Math.max(-1, Math.min(1, float32Array[i]));
+      view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    return buffer;
+  };
+
+  const wsRef = useRef<WebSocket | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const baseTextRef = useRef<string>("");
+
+  // Voice recording stop handler — AssemblyAI Session Termination
   const stopRecording = useCallback(() => {
     isRecordingRef.current = false;
+    
+    if (wsRef.current) {
+      try {
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          // Send explicit Terminate event to stop session billing
+          wsRef.current.send(JSON.stringify({ type: "Terminate" }));
+        }
+        wsRef.current.close();
+      } catch (e) {}
+      wsRef.current = null;
+    }
+
+    if (processorRef.current) {
+      try {
+        processorRef.current.onaudioprocess = null;
+        processorRef.current.disconnect();
+      } catch (e) {}
+      processorRef.current = null;
+    }
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.onend = null;
@@ -372,133 +449,166 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       } catch (e) {}
       recognitionRef.current = null;
     }
+
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+
     if (audioContextRef.current) {
       try {
         audioContextRef.current.close();
       } catch (e) {}
       audioContextRef.current = null;
     }
+
     setIsRecording(false);
     setAudioData(new Array(5).fill(0.1));
   }, []);
 
-  // Voice recording start handler — Real-time Speech-to-Text Dictation
+  // Voice recording start handler — Primary: Deepgram Nova-2, Fallback: AssemblyAI Universal-3.5 Pro
   const startRecording = useCallback(async () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      alert("Speech-to-Text is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari.");
-      return;
-    }
-
     setIsSmoothResize(false);
     setExpanded(true);
     isRecordingRef.current = true;
     setIsRecording(true);
 
     try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        streamRef.current = stream;
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const audioCtx = new AudioCtx();
-        audioContextRef.current = audioCtx;
+      // 1. Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+      streamRef.current = stream;
 
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 64;
-        const source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
+      const baseText = textRef.current;
+      baseTextRef.current = baseText;
 
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-        const updateVisualizer = () => {
-          if (!isRecordingRef.current) return;
-          analyser.getByteFrequencyData(dataArray);
-          const bands = new Array(5).fill(0);
-          const step = Math.floor(dataArray.length / 5);
-          for (let i = 0; i < 5; i++) {
-            let sum = 0;
-            for (let j = 0; j < step; j++) {
-              sum += dataArray[i * step + j];
-            }
-            bands[i] = Math.min(1, Math.max(0.2, sum / step / 180));
-          }
-          setAudioData(bands);
-          rafRef.current = requestAnimationFrame(updateVisualizer);
-        };
-        updateVisualizer();
+      // 2. Connect to STT Proxy WebSocket Endpoint on Backend
+      const envUrl = import.meta.env.VITE_API_URL;
+      let wsProxyUrl: string;
+      if (envUrl) {
+        const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
+        const host = envUrl.replace(/^https?:\/\//, "");
+        wsProxyUrl = `${wsProto}://${host}/ws/stt`;
+      } else {
+        const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+        wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
       }
-    } catch (err) {
-      console.warn("Microphone visualizer notice:", err);
-    }
 
-    try {
-      const recognition = new SpeechRecognition();
-      recognitionRef.current = recognition;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = navigator.language || "en-US";
+      let ws: WebSocket;
+      try {
+        ws = new WebSocket(wsProxyUrl);
+        wsRef.current = ws;
 
-      let baseText = textRef.current;
+        ws.onopen = () => {
+          console.log("[STT Engine] Connected to backend STT proxy.");
+        };
 
-      recognition.onresult = (event: any) => {
-        let interimTranscript = "";
-        let finalTranscript = "";
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        if (finalTranscript) {
-          baseText = (baseText ? baseText.trim() + " " : "") + finalTranscript.trim();
-        }
-
-        const combined = (baseText + (interimTranscript ? " " + interimTranscript : "")).trim();
-        handleValueChange(combined);
-      };
-
-      recognition.onerror = (event: any) => {
-        console.warn("Speech recognition notice:", event.error);
-        if (event.error === "no-speech" || event.error === "audio-capture") {
-          return; // Stay active during quiet pauses
-        }
-        if (event.error === "not-allowed") {
-          alert("Microphone permission denied. Please allow microphone access in your browser settings.");
-          stopRecording();
-        }
-      };
-
-      recognition.onend = () => {
-        // Automatically restart speech recognition if user has not clicked stop button
-        if (isRecordingRef.current) {
+        ws.onmessage = (event) => {
           try {
-            recognition.start();
+            const msg = JSON.parse(event.data);
+            if (msg.type === "engine_info") {
+              console.log(`[STT Engine] Active provider: ${msg.provider}`);
+            } else if (msg.type === "transcript") {
+              const transcript = msg.transcript ? msg.transcript.trim() : "";
+              if (transcript) {
+                const currentBase = baseTextRef.current;
+                const combined = (currentBase ? currentBase.trim() + " " : "") + transcript;
+                handleValueChange(combined);
+                
+                if (msg.is_final) {
+                  baseTextRef.current = combined;
+                }
+              }
+            }
           } catch (e) {
-            // Ignore if already active
+            console.error("[STT Engine] Message parsing error:", e);
           }
+        };
+
+        ws.onerror = (err) => {
+          console.error("[STT Engine] Proxy WS error:", err);
+        };
+      } catch (proxyErr) {
+        console.warn("[STT Engine] Proxy connection error, dropping to AssemblyAI direct:", proxyErr);
+        const apiBase = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : "/api";
+        const tokenRes = await fetch(`${apiBase}/assemblyai/token`);
+        const { token } = await tokenRes.json();
+        const aaiUrl = `wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=universal-3-5-pro&mode=balanced&token=${token}`;
+        ws = new WebSocket(aaiUrl);
+        wsRef.current = ws;
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === "Turn" && msg.transcript?.trim()) {
+              const combined = (baseTextRef.current ? baseTextRef.current.trim() + " " : "") + msg.transcript.trim();
+              handleValueChange(combined);
+              if (msg.end_of_turn) baseTextRef.current = combined;
+            }
+          } catch (e) {}
+        };
+      }
+
+
+      // 4. Setup AudioContext and Audio Processor
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const audioCtx = new AudioCtx();
+      audioContextRef.current = audioCtx;
+
+      const source = audioCtx.createMediaStreamSource(stream);
+
+      // Visualizer node for mic bars animation
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      source.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const updateVisualizer = () => {
+        if (!isRecordingRef.current) return;
+        analyser.getByteFrequencyData(dataArray);
+        const bands = new Array(5).fill(0);
+        const step = Math.floor(dataArray.length / 5);
+        for (let i = 0; i < 5; i++) {
+          let sum = 0;
+          for (let j = 0; j < step; j++) {
+            sum += dataArray[i * step + j];
+          }
+          bands[i] = Math.min(1, Math.max(0.2, sum / step / 180));
         }
+        setAudioData(bands);
+        rafRef.current = requestAnimationFrame(updateVisualizer);
+      };
+      updateVisualizer();
+
+      // Audio Processor for streaming 16kHz PCM16 audio chunks to AssemblyAI
+      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+      processorRef.current = processor;
+      source.connect(processor);
+      processor.connect(audioCtx.destination);
+
+      processor.onaudioprocess = (e) => {
+        if (!isRecordingRef.current || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          return;
+        }
+        const inputData = e.inputBuffer.getChannelData(0);
+        const downsampled = downsampleBuffer(inputData, audioCtx.sampleRate, 16000);
+        const pcm16 = convertFloat32ToPCM16(downsampled);
+        wsRef.current.send(pcm16);
       };
 
-      recognition.start();
-    } catch (err) {
-      console.error("Failed to start SpeechRecognition:", err);
+    } catch (err: any) {
+      console.error("[AssemblyAI STT] Start recording error:", err);
+      alert(`Speech-to-Text Error: ${err.message || "Failed to connect to AssemblyAI"}`);
       stopRecording();
     }
   }, [handleValueChange, stopRecording]);
+
 
   useEffect(() => {
     return () => {
@@ -872,7 +982,57 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </span>
                 </button>
               </Tooltip>
+
+              {/* Voice & STT Engine Selector */}
+              <div className="relative">
+                <Tooltip content="Select Speech Voice & AI STT Model">
+                  <button
+                    type="button"
+                    onClick={() => setIsVoiceMenuOpen(!isVoiceMenuOpen)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
+                  >
+                    <span className="text-[11px]">🎙️</span>
+                    <span>
+                      {AURA_VOICES.find(v => v.id === selectedVoice)?.name || "Asteria"}
+                    </span>
+                  </button>
+                </Tooltip>
+
+                {isVoiceMenuOpen && (
+                  <div
+                    className="absolute left-0 bottom-full mb-2 w-56 rounded-2xl bg-white/95 dark:bg-[#1a1c1e]/95 backdrop-blur-xl p-2 shadow-2xl border border-black/[0.08] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                  >
+                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-zinc-400 border-b border-black/[0.06] dark:border-white/[0.06] mb-1">
+                      Deepgram Aura Voices
+                    </div>
+                    <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+                      {AURA_VOICES.map((v) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => handleVoiceSelect(v.id)}
+                          className={cn(
+                            "flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs font-medium transition-colors cursor-pointer",
+                            selectedVoice === v.id
+                              ? "bg-[#10b981]/15 text-[#10b981] font-semibold"
+                              : "hover:bg-black/[0.05] dark:hover:bg-white/[0.06] text-ink dark:text-zinc-200"
+                          )}
+                        >
+                          <div className="flex flex-col">
+                            <span>{v.name} ({v.gender})</span>
+                            <span className="text-[9.5px] opacity-60">{v.desc}</span>
+                          </div>
+                          {selectedVoice === v.id && (
+                            <span className="text-[#10b981]">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
 
             {/* Audio Wave Visualizer */}
             <div
