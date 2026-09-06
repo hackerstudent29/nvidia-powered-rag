@@ -164,14 +164,36 @@ const QUICK_CHIPS = [
   { label: "Contact Info", query: "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?" },
 ];
 
-const AURA_VOICES = [
-  { id: "aura-asteria-en", name: "Asteria", gender: "Female", desc: "Warm & Natural" },
-  { id: "aura-luna-en", name: "Luna", gender: "Female", desc: "Soft & Gentle" },
-  { id: "aura-stella-en", name: "Stella", gender: "Female", desc: "Professional" },
-  { id: "aura-athena-en", name: "Athena", gender: "Female", desc: "Elegant (UK)" },
-  { id: "aura-orion-en", name: "Orion", gender: "Male", desc: "Deep & Clear" },
-  { id: "aura-zeus-en", name: "Zeus", gender: "Male", desc: "Authoritative" },
+export interface VoiceOption {
+  id: string;
+  name: string;
+  gender: "Feminine" | "Masculine";
+  accent: "American" | "British" | "Irish";
+  description: string;
+  gradient: string;
+}
+
+const AURA_VOICES: VoiceOption[] = [
+  { id: "aura-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-amber-400 via-orange-500 to-red-500" },
+  { id: "aura-asteria-en", name: "Asteria", gender: "Feminine", accent: "American", description: "American Feminine (Warm)", gradient: "from-emerald-400 via-teal-500 to-green-600" },
+  { id: "aura-cliff-en", name: "Cliff", gender: "Masculine", accent: "American", description: "American Masculine", gradient: "from-emerald-400 via-cyan-500 to-blue-600" },
+  { id: "aura-sienna-en", name: "Sienna", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-orange-400 via-amber-500 to-yellow-600" },
+  { id: "aura-cole-en", name: "Cole", gender: "Masculine", accent: "American", description: "American Masculine", gradient: "from-blue-400 via-indigo-500 to-purple-600" },
+  { id: "aura-colin-en", name: "Colin", gender: "Masculine", accent: "British", description: "British Masculine", gradient: "from-cyan-400 via-blue-500 to-indigo-600" },
+  { id: "aura-gemma-en", name: "Gemma", gender: "Feminine", accent: "British", description: "British Feminine", gradient: "from-purple-400 via-fuchsia-500 to-pink-600" },
+  { id: "aura-haley-en", name: "Haley", gender: "Feminine", accent: "American", description: "American Feminine", gradient: "from-pink-400 via-purple-500 to-indigo-600" },
+  { id: "aura-luna-en", name: "Luna", gender: "Feminine", accent: "American", description: "American Feminine (Soft)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
+  { id: "aura-stella-en", name: "Stella", gender: "Feminine", accent: "American", description: "American Feminine (Pro)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
+  { id: "aura-athena-en", name: "Athena", gender: "Feminine", accent: "British", description: "British Feminine (Elegant)", gradient: "from-violet-400 via-purple-500 to-indigo-600" },
+  { id: "aura-hera-en", name: "Hera", gender: "Feminine", accent: "American", description: "American Feminine (Expressive)", gradient: "from-rose-400 via-pink-500 to-red-600" },
+  { id: "aura-orion-en", name: "Orion", gender: "Masculine", accent: "American", description: "American Masculine (Deep)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
+  { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "American Masculine (Strong)", gradient: "from-amber-300 via-yellow-500 to-amber-600" },
+  { id: "aura-arcas-en", name: "Arcas", gender: "Masculine", accent: "American", description: "American Masculine (Clear)", gradient: "from-cyan-300 via-sky-500 to-blue-600" },
+  { id: "aura-helios-en", name: "Helios", gender: "Masculine", accent: "British", description: "British Masculine (Warm)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
+  { id: "aura-angus-en", name: "Angus", gender: "Masculine", accent: "Irish", description: "Irish Masculine", gradient: "from-green-400 via-emerald-500 to-teal-600" },
+  { id: "aura-orpheus-en", name: "Orpheus", gender: "Masculine", accent: "American", description: "American Masculine (Confident)", gradient: "from-blue-500 via-indigo-600 to-slate-700" },
 ];
+
 
 export const ChatInput: React.FC<ChatInputProps> = ({
   inputValue = "",
@@ -196,12 +218,58 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return localStorage.getItem("lorin_tts_voice") || "aura-asteria-en";
   });
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
+  const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleVoiceSelect = (voiceId: string) => {
     setSelectedVoice(voiceId);
     localStorage.setItem("lorin_tts_voice", voiceId);
     setIsVoiceMenuOpen(false);
   };
+
+  const handlePlayPreview = async (e: React.MouseEvent, voice: VoiceOption) => {
+    e.stopPropagation();
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
+    if (previewingVoiceId === voice.id) {
+      setPreviewingVoiceId(null);
+      return;
+    }
+
+    setPreviewingVoiceId(voice.id);
+    try {
+      const apiBase = (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
+        ? "http://localhost:8000/api"
+        : import.meta.env.VITE_API_URL
+        ? `${import.meta.env.VITE_API_URL}/api`
+        : "/api";
+
+      const res = await fetch(`${apiBase}/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: `Hello! I am ${voice.name}, your AI voice assistant.`,
+          voice: voice.id
+        })
+      });
+      const data = await res.json();
+      if (data.audio_base64) {
+        const audio = new Audio(data.audio_base64);
+        previewAudioRef.current = audio;
+        audio.onended = () => setPreviewingVoiceId(null);
+        audio.onerror = () => setPreviewingVoiceId(null);
+        await audio.play();
+      } else {
+        setPreviewingVoiceId(null);
+      }
+    } catch (err) {
+      console.error("Preview voice error:", err);
+      setPreviewingVoiceId(null);
+    }
+  };
+
 
 
   const [disclaimerIdx, setDisclaimerIdx] = useState(0);
@@ -1041,37 +1109,77 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                 {isVoiceMenuOpen && (
                   <div
-                    className="absolute right-0 bottom-full mb-2 w-56 rounded-2xl bg-white/95 dark:bg-[#1a1c1e]/95 backdrop-blur-xl p-2 shadow-2xl border border-black/[0.08] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    className="absolute right-0 bottom-full mb-2 w-72 rounded-2xl bg-white/95 dark:bg-[#121417]/95 backdrop-blur-xl p-2.5 shadow-2xl border border-black/[0.1] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
                   >
-                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-zinc-400 border-b border-black/[0.06] dark:border-white/[0.06] mb-1 flex items-center justify-between">
-                      <span>Deepgram Voices</span>
-                      <span className="text-[9px] text-[#10b981] font-mono">PRIMARY</span>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-ink dark:text-zinc-200 border-b border-black/[0.06] dark:border-white/[0.06] mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold">{AURA_VOICES.length} Voices</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-[#10b981] font-mono">Deepgram Aura</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsVoiceMenuOpen(false)}
+                        className="text-ink-3 dark:text-zinc-500 hover:text-ink text-xs p-1 cursor-pointer"
+                      >
+                        ✕
+                      </button>
                     </div>
-                    <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+
+                    <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-1">
                       {AURA_VOICES.map((v) => (
-                        <button
+                        <div
                           key={v.id}
-                          type="button"
                           onClick={() => handleVoiceSelect(v.id)}
                           className={cn(
-                            "flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left text-xs font-medium transition-colors cursor-pointer",
+                            "group relative flex items-center justify-between p-2 rounded-xl border transition-all cursor-pointer",
                             selectedVoice === v.id
-                              ? "bg-[#10b981]/15 text-[#10b981] font-semibold"
-                              : "hover:bg-black/[0.05] dark:hover:bg-white/[0.06] text-ink dark:text-zinc-200"
+                              ? "bg-black/[0.04] dark:bg-white/[0.08] border-[#10b981]/50 shadow-sm"
+                              : "bg-black/[0.02] dark:bg-white/[0.03] border-transparent hover:bg-black/[0.05] dark:hover:bg-white/[0.06]"
                           )}
                         >
-                          <div className="flex flex-col">
-                            <span>{v.name} ({v.gender})</span>
-                            <span className="text-[9.5px] opacity-60">{v.desc}</span>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {/* Play Preview Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => handlePlayPreview(e, v)}
+                              title="Play voice preview"
+                              className={cn(
+                                "size-6 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm",
+                                previewingVoiceId === v.id
+                                  ? "bg-[#10b981] text-white animate-pulse"
+                                  : "bg-black/10 dark:bg-white/10 text-ink dark:text-zinc-200 hover:bg-[#10b981] hover:text-white"
+                              )}
+                            >
+                              {previewingVoiceId === v.id ? (
+                                <span className="text-[10px]">⏸</span>
+                              ) : (
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                  <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                              )}
+                            </button>
+
+                            {/* 3D Gradient Orb Avatar */}
+                            <div className={cn("size-6 rounded-full bg-gradient-to-tr shadow-md shrink-0 ring-1 ring-white/20", v.gradient)} />
+
+                            {/* Voice Name & Accent */}
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-xs leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
+                              <span className="text-[10px] text-ink-3 dark:text-zinc-400 truncate">{v.description}</span>
+                            </div>
                           </div>
+
                           {selectedVoice === v.id && (
-                            <span className="text-[#10b981]">✓</span>
+                            <span className="text-[#10b981] font-bold text-xs shrink-0 pl-1">
+                              ✓
+                            </span>
                           )}
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
+
               </div>
 
               {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}

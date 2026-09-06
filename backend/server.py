@@ -613,19 +613,27 @@ app = FastAPI(
 # CORS Configuration — read from ALLOWED_ORIGINS env var for production security
 # In Railway: set ALLOWED_ORIGINS=https://your-app.vercel.app
 _raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
-_allowed_origins: List[str] = (
-    ["*"] if _raw_origins.strip() == "*"
-    else [o.strip() for o in _raw_origins.split(",") if o.strip()]
-)
+_allowed_origins: List[str] = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://nvidia-powered-rag.vercel.app",
+]
+if _raw_origins.strip() != "*":
+    for o in _raw_origins.split(","):
+        if o.strip() and o.strip() not in _allowed_origins:
+            _allowed_origins.append(o.strip())
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_allowed_origins,
+    allow_origins=["*"] if _raw_origins.strip() == "*" else _allowed_origins,
     allow_origin_regex=r"https://.*\.vercel\.app" if _raw_origins.strip() != "*" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ---------------------------------------------------------
 # Health Check — required for Railway deployment
@@ -3826,12 +3834,14 @@ async def generate_tts(body: TTSRequest):
     if not voice.startswith("aura-"):
         voice = "aura-asteria-en"
 
+    speed_param = min(1.5, max(0.7, body.rate or 1.0))
+
     # 1. Primary Engine: Deepgram Aura TTS
     if dg_key:
         try:
             async with httpx.AsyncClient() as client:
                 dg_resp = await client.post(
-                    f"https://api.deepgram.com/v1/speak?model={voice}",
+                    f"https://api.deepgram.com/v1/speak?model={voice}&speed={speed_param}",
                     headers={
                         "Authorization": f"Token {dg_key}",
                         "Content-Type": "application/json"
@@ -3839,6 +3849,7 @@ async def generate_tts(body: TTSRequest):
                     json={"text": text[:2000]},
                     timeout=12.0
                 )
+
                 if dg_resp.status_code == 200:
                     audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
                     return JSONResponse({
