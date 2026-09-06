@@ -332,6 +332,10 @@ const MessageItem = React.memo(function MessageItem({
     const saved = localStorage.getItem("lorin_tts_speed");
     return saved ? parseFloat(saved) : 1.0;
   });
+  const [ttsExpressivity, setTtsExpressivity] = useState<number>(() => {
+    const saved = localStorage.getItem("lorin_tts_expressivity");
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
   const [feedbackRating, setFeedbackRating] = useState<number | null>(null);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -355,6 +359,16 @@ const MessageItem = React.memo(function MessageItem({
     if (audioRef.current) {
       audioRef.current.playbackRate = newSpeed;
     }
+  };
+
+  const cycleTtsExpressivity = () => {
+    // Cycle tone: -2 (Robot), 0 (Natural), 2 (Animated)
+    const tones = [-2, 0, 2];
+    const currentIdx = tones.indexOf(ttsExpressivity);
+    const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % tones.length : 1;
+    const newTone = tones[nextIdx];
+    setTtsExpressivity(newTone);
+    localStorage.setItem("lorin_tts_expressivity", newTone.toString());
   };
 
   const stopAudio = () => {
@@ -422,7 +436,13 @@ const MessageItem = React.memo(function MessageItem({
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: cleanText, voice: selectedVoice, rate: ttsSpeed }),
+        body: JSON.stringify({
+          text: cleanText,
+          voice: selectedVoice,
+          speed: ttsSpeed,
+          rate: ttsSpeed,
+          expressivity: ttsExpressivity
+        }),
       });
 
       if (!res.ok) throw new Error(`TTS API HTTP Error: ${res.status}`);
@@ -494,7 +514,7 @@ const MessageItem = React.memo(function MessageItem({
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.rate = ttsSpeed;
-        utterance.pitch = 1.0;
+        utterance.pitch = ttsExpressivity === -2 ? 0.6 : ttsExpressivity === 2 ? 1.35 : 1.0;
         utterance.lang = "en-IN";
         utterance.onboundary = (e) => {
           if (e.name === "word") {
@@ -938,6 +958,32 @@ const MessageItem = React.memo(function MessageItem({
                 }`}
               >
                 {ttsSpeed}x
+              </button>
+            </Tooltip>
+
+            {/* Voice Tone & Expressivity Pill (Robot -2 vs Natural 0 vs Animated +2) */}
+            <Tooltip
+              content={`Voice Tone: ${
+                ttsExpressivity === -2
+                  ? "🤖 Robot Mode (Monotone & Mechanical)"
+                  : ttsExpressivity === 2
+                  ? "⚡ Animated Mode (Expressive & Dynamic)"
+                  : "💬 Natural Mode (Human Tone)"
+              } (Click to cycle)`}
+              position="top"
+            >
+              <button
+                type="button"
+                onClick={cycleTtsExpressivity}
+                className={`flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
+                  ttsExpressivity === -2
+                    ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 shadow-sm"
+                    : ttsExpressivity === 2
+                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-sm"
+                    : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
+                }`}
+              >
+                <span>{ttsExpressivity === -2 ? "🤖 Robot" : ttsExpressivity === 2 ? "⚡ Animated" : "💬 Natural"}</span>
               </button>
             </Tooltip>
 

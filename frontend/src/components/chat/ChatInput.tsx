@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "../Tooltip";
 import { RateLimitInfo } from "../../types/chat";
 import { cn } from "../../lib/utils";
+import { AIVoiceInput } from "../ui/AIVoiceInput";
 
 // ----------------------------------------------------------------------
 // Physics & Animation Constants
@@ -230,6 +231,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const saved = localStorage.getItem("lorin_tts_voice");
     return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "aura-orion-en";
   });
+  const [expressivity, setExpressivity] = useState<number>(() => {
+    const saved = localStorage.getItem("lorin_tts_expressivity");
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
+  const [ttsSpeed, setTtsSpeed] = useState<number>(() => {
+    const saved = localStorage.getItem("lorin_tts_speed");
+    return saved !== null ? parseFloat(saved) : 1.0;
+  });
+
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -244,7 +254,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const handleVoiceSelect = (voiceId: string) => {
     setSelectedVoice(voiceId);
     localStorage.setItem("lorin_tts_voice", voiceId);
-    setIsVoiceMenuOpen(false);
+  };
+
+  const handleExpressivitySelect = (val: number) => {
+    setExpressivity(val);
+    localStorage.setItem("lorin_tts_expressivity", val.toString());
+  };
+
+  const handleSpeedSelect = (val: number) => {
+    setTtsSpeed(val);
+    localStorage.setItem("lorin_tts_speed", val.toString());
   };
 
   const handlePlayPreview = async (e: React.MouseEvent, voice: VoiceOption) => {
@@ -267,13 +286,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: `Hello! I am ${voice.name}, your AI voice assistant.`,
-          voice: voice.id
+          voice: voice.id,
+          speed: ttsSpeed,
+          rate: ttsSpeed,
+          expressivity: expressivity
         })
       });
       const data = await res.json();
       if (data.audio_base64) {
         const audio = new Audio(data.audio_base64);
         previewAudioRef.current = audio;
+        audio.playbackRate = ttsSpeed;
         audio.onended = () => setPreviewingVoiceId(null);
         audio.onerror = () => setPreviewingVoiceId(null);
         await audio.play();
@@ -1190,12 +1213,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                 {isVoiceMenuOpen && (
                   <div
-                    className="absolute right-0 bottom-full mb-2 w-72 rounded-2xl bg-white/95 dark:bg-[#121417]/95 backdrop-blur-xl p-2.5 shadow-2xl border border-black/[0.1] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    className="absolute right-0 bottom-full mb-2 w-80 rounded-2xl bg-white/95 dark:bg-[#121417]/95 backdrop-blur-xl p-3 shadow-2xl border border-black/[0.1] dark:border-white/[0.1] z-50 animate-in fade-in slide-in-from-bottom-2 duration-200 cursor-default"
                   >
-                    <div className="px-2 py-1.5 text-xs font-semibold text-ink dark:text-zinc-200 border-b border-black/[0.06] dark:border-white/[0.06] mb-2 flex items-center justify-between">
+                    {/* Header */}
+                    <div className="px-1 py-1 text-xs font-semibold text-ink dark:text-zinc-200 border-b border-black/[0.06] dark:border-white/[0.06] mb-2 flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold">{AURA_VOICES.length} Voices</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-[#10b981] font-mono">Deepgram Aura</span>
+                        <span className="font-bold">Voice Controls & Tone</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-[#10b981] font-mono font-bold">Deepgram AI</span>
                       </div>
                       <button
                         type="button"
@@ -1206,7 +1230,85 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       </button>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-1">
+                    {/* 1. Voice Tone / Expressivity Selector (Robot vs Human) */}
+                    <div className="mb-3 px-1">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
+                          Voice Tone (Robot vs Human)
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-[#10b981]">
+                          {expressivity === -2
+                            ? "🤖 Robot"
+                            : expressivity === -1
+                            ? "😐 Calm"
+                            : expressivity === 0
+                            ? "💬 Natural"
+                            : expressivity === 1
+                            ? "🗣️ Human"
+                            : "⚡ Animated"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
+                        {[
+                          { val: -2, label: "🤖 Robot", desc: "Monotone" },
+                          { val: 0, label: "💬 Natural", desc: "Balanced" },
+                          { val: 2, label: "⚡ Animated", desc: "Human Tone" }
+                        ].map((item) => (
+                          <button
+                            key={item.val}
+                            type="button"
+                            onClick={() => handleExpressivitySelect(item.val)}
+                            className={cn(
+                              "flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border",
+                              expressivity === item.val
+                                ? "bg-white dark:bg-[#20222a] text-emerald-600 dark:text-[#10b981] border-emerald-500/40 shadow-sm font-bold scale-[1.02]"
+                                : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.05]"
+                            )}
+                          >
+                            <span>{item.label}</span>
+                            <span className="text-[9px] opacity-70 font-normal">{item.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 2. Speaking Pace / Speed Selector */}
+                    <div className="mb-3 px-1">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
+                          Speaking Pace (Speed)
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-[#10b981]">
+                          {ttsSpeed}x
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.04] p-1 rounded-xl border border-black/[0.05] dark:border-white/[0.05]">
+                        {[0.8, 1.0, 1.25, 1.5].map((spd) => (
+                          <button
+                            key={spd}
+                            type="button"
+                            onClick={() => handleSpeedSelect(spd)}
+                            className={cn(
+                              "flex-1 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer border text-center",
+                              ttsSpeed === spd
+                                ? "bg-white dark:bg-[#20222a] text-emerald-600 dark:text-[#10b981] border-emerald-500/40 shadow-sm"
+                                : "text-ink-3 dark:text-zinc-400 border-transparent hover:bg-black/[0.03] dark:hover:bg-white/[0.05]"
+                            )}
+                          >
+                            {spd}x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 3. Voice Model List */}
+                    <div className="px-1 mb-1">
+                      <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400">
+                        AI Speaker Voice ({AURA_VOICES.length})
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
                       {AURA_VOICES.map((v) => (
                         <div
                           key={v.id}

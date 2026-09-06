@@ -3816,6 +3816,8 @@ class TTSRequest(BaseModel):
     text: str
     voice: Optional[str] = "aura-orion-en"
     rate: Optional[float] = 1.0
+    speed: Optional[float] = 1.0
+    expressivity: Optional[int] = 0
 
 def normalize_tts_text_for_speech(markdown_text: str) -> str:
     if not markdown_text:
@@ -3935,7 +3937,7 @@ def normalize_tts_text_for_speech(markdown_text: str) -> str:
 async def generate_tts(body: TTSRequest):
     """
     Generate Speech Audio payload.
-    Primary Engine: Deepgram Aura TTS API
+    Primary Engine: Deepgram Aura / Flux TTS API with Voice Controls & Expressivity
     Fallback Engine: Edge-TTS
     """
     raw_text = body.text.strip()
@@ -3959,15 +3961,25 @@ async def generate_tts(body: TTSRequest):
     elif voice not in valid_aura_voices:
         voice = "aura-orion-en"
 
+    # Speed parameter (0.7 to 1.5)
+    desired_rate = body.speed or body.rate or 1.0
+    speed_param = min(1.5, max(0.7, float(desired_rate)))
 
-    speed_param = min(1.5, max(0.7, body.rate or 1.0))
+    # Expressivity parameter (-2: Robot/Monotone, -1: Calm, 0: Natural, 1: Human, 2: Animated)
+    expressivity_val = body.expressivity if body.expressivity is not None else 0
+    expressivity_param = min(2, max(-2, int(expressivity_val)))
 
-    # 1. Primary Engine: Deepgram Aura TTS
+    # 1. Primary Engine: Deepgram TTS (with speed & expressivity query parameters)
     if dg_key:
         try:
+            # Build query parameters according to Deepgram TTS docs
+            query_params = f"model={voice}&speed={speed_param}"
+            if expressivity_param != 0:
+                query_params += f"&expressivity={expressivity_param}"
+
             async with httpx.AsyncClient() as client:
                 dg_resp = await client.post(
-                    f"https://api.deepgram.com/v1/speak?model={voice}",
+                    f"https://api.deepgram.com/v1/speak?{query_params}",
                     headers={
                         "Authorization": f"Token {dg_key}",
                         "Content-Type": "application/json"
