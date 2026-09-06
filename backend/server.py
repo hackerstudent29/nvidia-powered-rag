@@ -4201,7 +4201,16 @@ async def websocket_stt_proxy(websocket: WebSocket, model: str = Query("nova-3")
 
     requested_model = model.strip().lower() if model else "nova-3"
     dg_model = requested_model if requested_model in ["nova-3", "nova-2", "enhanced", "base"] else "nova-3"
-    dg_url = f"wss://api.deepgram.com/v1/listen?endpointing=10&interim_results=true&smart_format=true&language=en&model={dg_model}&encoding=linear16&sample_rate=16000"
+    
+    # Domain keywords to boost recognition accuracy for institutional terms & acronyms
+    college_keywords = [
+        "keywords=MSAJCE:5", "keywords=MSAJCEA:5", "keywords=SIPCOT:5", "keywords=TNEA:5",
+        "keywords=Siruseri:5", "keywords=Egattur:5", "keywords=Navalur:5", "keywords=CSE:4",
+        "keywords=ECE:4", "keywords=EEE:4", "keywords=HOD:4", "keywords=NAAC:4",
+        "keywords=BTech:4", "keywords=cutoff:3", "keywords=fees:3", "keywords=placements:3"
+    ]
+    keywords_query = "&".join(college_keywords)
+    dg_url = f"wss://api.deepgram.com/v1/listen?endpointing=500&interim_results=true&smart_format=true&language=en&model={dg_model}&encoding=linear16&sample_rate=16000&{keywords_query}"
     
     try:
         upstream_ws = await websockets.connect(dg_url, additional_headers={"Authorization": f"Token {dg_key}"})

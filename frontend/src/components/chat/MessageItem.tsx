@@ -440,6 +440,12 @@ const MessageItem = React.memo(function MessageItem({
       return;
     }
 
+    // Stop all audio across any other message components immediately!
+    window.dispatchEvent(new CustomEvent("stop-all-audio"));
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
     // Enforce global single-audio playback across all messages!
     audioManager.registerAudio(message.id, stopAudio);
 

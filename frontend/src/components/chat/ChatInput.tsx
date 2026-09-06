@@ -641,7 +641,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           const recognition = new SpeechRecognition();
           recognition.continuous = true;
           recognition.interimResults = true;
-          recognition.lang = "en-US";
+          recognition.lang = "en-IN";
+          recognition.maxAlternatives = 1;
           recognitionRef.current = recognition;
 
           recognition.onresult = (event: any) => {
