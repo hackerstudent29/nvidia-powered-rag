@@ -9,6 +9,7 @@ import {
 import { Tooltip } from '../components/Tooltip';
 import { OverviewTab } from './OverviewTab';
 import { ConversationsTab } from './ConversationsTab';
+import { TracesTab } from './TracesTab';
 import { KnowledgeTab } from './KnowledgeTab';
 import { AnalyticsTab } from './AnalyticsTab';
 import { SafetyTab } from './SafetyTab';
@@ -17,7 +18,7 @@ import { TraceDrawer } from './TraceDrawer';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'conversations' | 'knowledge' | 'analytics' | 'safety' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'conversations' | 'traces' | 'knowledge' | 'analytics' | 'safety' | 'system'>('overview');
   const [period, setPeriod] = useState<string>('24h');
   
   // Theme state (Dark vs Light mode toggle, defaults to Light theme for Admin)
@@ -98,6 +99,7 @@ export const AdminDashboard: React.FC = () => {
 
   const handleSelectSessionTrace = async (sessId: string) => {
     setSelectedSessionId(sessId);
+    setActiveTab('traces');
     setLoadingDetails(true);
     try {
       const token = localStorage.getItem("adminToken");
@@ -134,6 +136,7 @@ export const AdminDashboard: React.FC = () => {
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'conversations', label: 'Chats', icon: MessageSquare },
+    { id: 'traces', label: 'Traces', icon: Activity },
     { id: 'knowledge', label: 'Knowledge', icon: BookOpen },
     { id: 'analytics', label: 'Analytics', icon: BarChart2 },
     { id: 'safety', label: 'Safety', icon: ShieldCheck },
@@ -346,6 +349,16 @@ export const AdminDashboard: React.FC = () => {
                 <ConversationsTab 
                   sessions={sessions} 
                   onSelectSession={handleSelectSessionTrace} 
+                  isDark={isDark}
+                />
+              )}
+              {activeTab === 'traces' && (
+                <TracesTab
+                  sessions={sessions}
+                  selectedSessionId={selectedSessionId}
+                  sessionDetails={sessionDetails}
+                  loadingDetails={loadingDetails}
+                  onSelectSession={handleSelectSessionTrace}
                   isDark={isDark}
                 />
               )}
