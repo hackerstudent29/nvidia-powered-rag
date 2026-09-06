@@ -1146,7 +1146,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
                 >
                   <DynamicBarsIcon level={EFFORTS[effortIndex]} />
-                  <span className="hidden xs:inline sm:inline">
+                  <span className="inline text-[11px] font-semibold">
                     <MorphingText text={EFFORTS[effortIndex]} />
                   </span>
                 </button>

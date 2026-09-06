@@ -75,10 +75,12 @@ export function useChat() {
   useEffect(() => {
     fetch(`${API_BASE}/models`)
       .then((res) => res.json())
-      .then((data: ModelOption[]) => {
-        setModels(data);
-        const defaultMod = data.find((m) => m.is_default);
-        if (defaultMod) setSelectedModel(defaultMod.id);
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setModels(data);
+          const defaultMod = data.find((m: any) => m.is_default);
+          if (defaultMod) setSelectedModel(defaultMod.id);
+        }
       })
       .catch((err) => console.error("Error fetching models:", err));
   }, []);
