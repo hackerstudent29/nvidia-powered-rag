@@ -1213,32 +1213,37 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                 {isVoiceMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute right-0 bottom-full mb-2 w-84 sm:w-96 rounded-2xl bg-white/95 dark:bg-[#12141a]/95 backdrop-blur-2xl p-3.5 shadow-2xl border border-black/[0.08] dark:border-white/[0.1] z-50 cursor-default text-ink dark:text-white"
+                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 rounded-xl bg-white/98 dark:bg-[#12141a]/98 backdrop-blur-xl p-2.5 shadow-xl border border-black/[0.08] dark:border-white/[0.1] z-50 cursor-default text-ink dark:text-white"
                   >
-                    {/* Header */}
-                    <div className="px-1 pb-2.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <SlidersHorizontal className="size-4 text-[#10b981]" />
-                        <span className="font-bold text-xs tracking-tight text-ink dark:text-white">Voice Controls & Tone</span>
-                        <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#10b981] font-mono font-bold border border-emerald-500/30">
-                          Deepgram AI
+                    {/* Compact Header */}
+                    <div className="px-1 pb-1.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <SlidersHorizontal className="size-3.5 text-[#10b981]" />
+                        <span className="font-bold text-[11px] tracking-tight text-ink dark:text-white">Voice & Tone</span>
+                        <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-[#10b981] font-mono font-bold border border-emerald-500/30">
+                          AI
                         </span>
                       </div>
                       <button
                         type="button"
-                        onClick={() => setIsVoiceMenuOpen(false)}
-                        className="text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-white p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsVoiceMenuOpen(false);
+                        }}
+                        className="text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-white p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                       >
-                        <X className="size-4" />
+                        <X className="size-3.5" />
                       </button>
                     </div>
 
-                    {/* Navbar Component with Framer Motion Sliding Indicator */}
-                    <div className="relative flex items-center gap-1 p-1 bg-black/[0.04] dark:bg-black/40 rounded-xl border border-black/[0.06] dark:border-white/[0.06] mb-3.5">
+                    {/* Compact Navbar Component with Framer Motion Sliding Indicator */}
+                    <div className="relative flex items-center gap-0.5 p-0.5 bg-black/[0.04] dark:bg-black/40 rounded-lg border border-black/[0.06] dark:border-white/[0.06] mb-2.5">
                       {[
                         { id: "all", label: "All", icon: SlidersHorizontal },
                         { id: "style", label: "Style", icon: Sparkles },
@@ -1251,18 +1256,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                           <button
                             key={tab.id}
                             type="button"
-                            onClick={() => setActiveVoiceTab(tab.id as any)}
-                            className="relative flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer z-10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveVoiceTab(tab.id as any);
+                            }}
+                            className="relative flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer z-10"
                           >
                             {isActive && (
                               <motion.div
                                 layoutId="voiceTabHighlight"
-                                className="absolute inset-0 rounded-lg bg-white dark:bg-[#20222a] border border-black/[0.08] dark:border-emerald-500/40 shadow-sm"
+                                className="absolute inset-0 rounded-md bg-white dark:bg-[#20222a] border border-black/[0.08] dark:border-emerald-500/40 shadow-xs"
                                 transition={{ type: "spring", stiffness: 450, damping: 30 }}
                               />
                             )}
-                            <span className={cn("relative z-10 flex items-center gap-1.5", isActive ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200")}>
-                              <Icon className="size-3.5" />
+                            <span className={cn("relative z-10 flex items-center gap-1", isActive ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200")}>
+                              <Icon className="size-3" />
                               <span>{tab.label}</span>
                             </span>
                           </button>
@@ -1279,20 +1287,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       <AnimatePresence mode="wait">
                         <motion.div
                           key={activeVoiceTab}
-                          initial={{ opacity: 0, y: 6 }}
+                          initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.15 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.12 }}
                         >
                           {/* Section 1: Voice Style & Expressivity */}
                           {(activeVoiceTab === "all" || activeVoiceTab === "style") && (
-                            <div className="mb-3.5 px-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1.5">
-                                  <Sparkles className="size-3 text-[#10b981]" />
-                                  Voice Style & Expressivity
+                            <div className="mb-2.5 px-0.5">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
+                                  <Sparkles className="size-2.5 text-[#10b981]" />
+                                  Style & Tone
                                 </span>
-                                <span className="text-[10px] font-mono font-bold text-[#10b981]">
+                                <span className="text-[9px] font-mono font-bold text-[#10b981]">
                                   {expressivity === -2
                                     ? "Robot (-2)"
                                     : expressivity === -1
@@ -1304,7 +1312,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                     : "Expressive (+2)"}
                                 </span>
                               </div>
-                              <div className="grid grid-cols-5 gap-1.5 bg-black/[0.03] dark:bg-black/40 p-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.06]">
+                              <div className="grid grid-cols-5 gap-1 bg-black/[0.03] dark:bg-black/40 p-1 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
                                 {[
                                   { val: -2, icon: Bot, title: "Robot" },
                                   { val: -1, icon: Volume1, title: "Calm" },
@@ -1318,18 +1326,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                     <button
                                       key={item.val}
                                       type="button"
-                                      onClick={() => handleExpressivitySelect(item.val)}
-                                      className="relative flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[10.5px] font-medium transition-colors cursor-pointer text-center gap-1 z-10"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleExpressivitySelect(item.val);
+                                      }}
+                                      className="relative flex flex-col items-center justify-center py-1.5 px-0.5 rounded-md text-[9px] font-medium transition-colors cursor-pointer text-center gap-0.5 z-10"
                                     >
                                       {isSelected && (
                                         <motion.div
                                           layoutId="expressivityHighlight"
-                                          className="absolute inset-0 rounded-lg bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-sm"
+                                          className="absolute inset-0 rounded-md bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-xs"
                                           transition={{ type: "spring", stiffness: 450, damping: 30 }}
                                         />
                                       )}
-                                      <ItemIcon className={cn("relative z-10 size-4 transition-colors", isSelected ? "text-[#10b981]" : "text-ink-3 dark:text-zinc-400")} />
-                                      <span className={cn("relative z-10 text-[9px] truncate max-w-full font-semibold transition-colors", isSelected ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400")}>{item.title}</span>
+                                      <ItemIcon className={cn("relative z-10 size-3.5 transition-colors", isSelected ? "text-[#10b981]" : "text-ink-3 dark:text-zinc-400")} />
+                                      <span className={cn("relative z-10 text-[8.5px] truncate max-w-full font-semibold transition-colors", isSelected ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400")}>{item.title}</span>
                                     </button>
                                   );
                                 })}
@@ -1339,30 +1350,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                           {/* Section 2: Speaking Speed (Pace) */}
                           {(activeVoiceTab === "all" || activeVoiceTab === "speed") && (
-                            <div className="mb-3.5 px-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1.5">
-                                  <Gauge className="size-3 text-[#10b981]" />
-                                  Speaking Speed (Pace)
+                            <div className="mb-2.5 px-0.5">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
+                                  <Gauge className="size-2.5 text-[#10b981]" />
+                                  Speaking Speed
                                 </span>
-                                <span className="text-[10px] font-mono font-bold text-[#10b981]">
+                                <span className="text-[9px] font-mono font-bold text-[#10b981]">
                                   {ttsSpeed}x
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1.5 bg-black/[0.03] dark:bg-black/40 p-1.5 rounded-xl border border-black/[0.06] dark:border-white/[0.06]">
+                              <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-black/40 p-1 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
                                 {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => {
                                   const isSelected = ttsSpeed === spd;
                                   return (
                                     <button
                                       key={spd}
                                       type="button"
-                                      onClick={() => handleSpeedSelect(spd)}
-                                      className="relative flex-1 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-colors cursor-pointer text-center z-10"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSpeedSelect(spd);
+                                      }}
+                                      className="relative flex-1 py-1 rounded-md text-[10px] font-mono font-bold transition-colors cursor-pointer text-center z-10"
                                     >
                                       {isSelected && (
                                         <motion.div
                                           layoutId="speedHighlight"
-                                          className="absolute inset-0 rounded-lg bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-sm"
+                                          className="absolute inset-0 rounded-md bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-xs"
                                           transition={{ type: "spring", stiffness: 450, damping: 30 }}
                                         />
                                       )}
@@ -1378,58 +1392,64 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
                           {/* Section 3: AI Speaker Voice List */}
                           {(activeVoiceTab === "all" || activeVoiceTab === "voices") && (
-                            <div className="px-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1.5">
-                                  <AudioWaveform className="size-3 text-[#10b981]" />
-                                  AI Speaker Voice ({AURA_VOICES.length})
+                            <div className="px-0.5">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
+                                  <AudioWaveform className="size-2.5 text-[#10b981]" />
+                                  AI Speakers ({AURA_VOICES.length})
                                 </span>
                               </div>
 
-                              <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
+                              <div className="flex flex-col gap-1 max-h-40 overflow-y-auto pr-0.5 custom-scrollbar">
                                 {AURA_VOICES.map((v) => (
                                   <div
                                     key={v.id}
-                                    onClick={() => handleVoiceSelect(v.id)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleVoiceSelect(v.id);
+                                    }}
                                     className={cn(
-                                      "group relative flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer",
+                                      "group relative flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer",
                                       selectedVoice === v.id
-                                        ? "bg-black/[0.04] dark:bg-white/[0.08] border border-black/[0.08] dark:border-[#10b981]/50 shadow-sm"
+                                        ? "bg-black/[0.04] dark:bg-white/[0.08] border-black/[0.08] dark:border-[#10b981]/50 shadow-xs"
                                         : "bg-black/[0.02] dark:bg-white/[0.03] border-transparent hover:bg-black/[0.05] dark:hover:bg-white/[0.06]"
                                     )}
                                   >
-                                    <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="flex items-center gap-2 min-w-0">
                                       {/* Play Preview Button */}
                                       <button
                                         type="button"
-                                        onClick={(e) => handlePlayPreview(e, v)}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handlePlayPreview(e, v);
+                                        }}
                                         title="Play voice preview"
                                         className={cn(
-                                          "size-6 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm",
+                                          "size-5 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-xs",
                                           previewingVoiceId === v.id
                                             ? "bg-[#10b981] text-white animate-pulse"
                                             : "bg-black/10 dark:bg-white/10 text-ink dark:text-zinc-300 hover:bg-[#10b981] hover:text-white"
                                         )}
                                       >
                                         {previewingVoiceId === v.id ? (
-                                          <Square className="size-2.5 fill-current" />
+                                          <Square className="size-2 fill-current" />
                                         ) : (
-                                          <Play className="size-2.5 fill-current ml-0.5" />
+                                          <Play className="size-2 fill-current ml-0.5" />
                                         )}
                                       </button>
 
                                       {/* 3D Gradient Orb Avatar */}
-                                      <div className={cn("size-6 rounded-full bg-gradient-to-tr shadow-md shrink-0 ring-1 ring-black/10 dark:ring-white/20", v.gradient)} />
+                                      <div className={cn("size-5 rounded-full bg-gradient-to-tr shadow-xs shrink-0 ring-1 ring-black/10 dark:ring-white/20", v.gradient)} />
 
                                       {/* Voice Name & Description */}
                                       <div className="flex flex-col min-w-0">
-                                        <span className="font-semibold text-xs leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
-                                        <span className="text-[10px] text-ink-3 dark:text-zinc-400 truncate">{v.description}</span>
+                                        <span className="font-semibold text-[11px] leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
+                                        <span className="text-[9px] text-ink-3 dark:text-zinc-400 truncate">{v.description}</span>
                                       </div>
                                     </div>
 
                                     {selectedVoice === v.id && (
-                                      <Check className="size-4 text-[#10b981] shrink-0 pl-0.5" />
+                                      <Check className="size-3.5 text-[#10b981] shrink-0 pl-0.5" />
                                     )}
                                   </div>
                                 ))}
