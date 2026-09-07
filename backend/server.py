@@ -2509,21 +2509,132 @@ async def tts_endpoint(req: TTSRequest):
     speech_text = re.sub(r'\b(\+?\d{2,4})[\s\-]+(\d{3,5})[\s\-]+(\d{3,5})\b', r'\1, \2, \3', speech_text)
     speech_text = re.sub(r'\b(\+?\d{2,4})[\s\-]+(\d{6,8})\b', r'\1, \2', speech_text)
 
-    # 6. Domain-specific acronyms and pronunciations
-    speech_text = re.sub(r'\bMSAJCEA\b', 'M S A J C E A', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bMSAJCE\b', 'M S A J C E', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bSiruseri\b', 'Seeru-seri', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bEgattur\b', 'Eh-gat-toor', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bNavalur\b', 'Nah-vah-loor', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bTNEA\b', 'T N E A', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bCGPA\b', 'C G P A', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bB\.Tech\b', 'B Tech', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bM\.Tech\b', 'M Tech', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bPh\.D\b', 'Ph D', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bECE\b', 'E C E', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bCSE\b', 'C S E', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bEEE\b', 'E E E', speech_text, flags=re.IGNORECASE)
-    speech_text = re.sub(r'\bLPA\b', 'Lakhs per annum', speech_text, flags=re.IGNORECASE)
+    # 6. Domain-specific acronyms & comprehensive phonetic pronunciations for bus stops, area names, leadership & recruiters
+    phonetic_map = [
+        (r'\bMSAJCEA\b', 'M S A J C E A'),
+        (r'\bMSAJCE\b', 'M S A J C E'),
+        (r'\bSrinivasan\b', 'Sree-ni-vaa-san'),
+        (r'\bMohamed Sathak\b', 'Moh-hah-med Sah-thak'),
+        (r'\bSanthosh Nathan\b', 'San-thosh Naa-than'),
+        (r'\bAbdul Gafoor\b', 'Abdul Gah-foor'),
+        (r'\bVamsi Naga Mohan\b', 'Vam-see Nah-gah Moh-han'),
+        (r'\bSethuraman\b', 'Se-thoo-rah-man'),
+        (r'\bRamanathan\b', 'Rah-mah-naa-than'),
+        (r'\bWeslin\b', 'Wes-lin'),
+        (r'\bJaffar\b', 'Jaf-far'),
+        (r'\bRavindran\b', 'Rah-vin-dran'),
+        (r'\bSiruseri\b', 'Seeru-seri'),
+        (r'\bEgattur\b', 'Eh-gat-toor'),
+        (r'\bNavalur\b', 'Nah-vah-loor'),
+        (r'\bKelambakkam\b', 'Ke-lam-bah-kam'),
+        (r'\bSholinganallur\b', 'Sho-lin-gah-nal-loor'),
+        (r'\bSemmancheri\b', 'Sem-man-che-ree'),
+        (r'\bPadur\b', 'Pah-door'),
+        (r'\bThalambur\b', 'Tha-lam-boor'),
+        (r'\bVaniyanchavadi\b', 'Vah-nee-yan-chah-vah-dee'),
+        (r'\bKazhipattur\b', 'Kah-zhi-pat-toor'),
+        (r'\bThiruporur\b', 'Thi-roo-po-roor'),
+        (r'\bThirukazhukundram\b', 'Thi-roo-kah-zhoo-kun-dram'),
+        (r'\bVelachery\b', 'Ve-lah-che-ree'),
+        (r'\bThiruvanmiyur\b', 'Thi-roo-van-mee-yoor'),
+        (r'\bNeelankarai\b', 'Nee-lan-kah-rye'),
+        (r'\bThoraipakkam\b', 'Tho-rye-pah-kam'),
+        (r'\bMedavakkam\b', 'Me-dah-vah-kam'),
+        (r'\bPallikaranai\b', 'Pal-li-kah-rah-nye'),
+        (r'\bPerumbakkam\b', 'Pe-rum-bah-kam'),
+        (r'\bMadipakkam\b', 'Mah-di-pah-kam'),
+        (r'\bKilkattalai\b', 'Keel-kat-tah-lai'),
+        (r'\bKeelkattalai\b', 'Keel-kat-tah-lai'),
+        (r'\bTambaram\b', 'Tam-bah-ram'),
+        (r'\bChrompet\b', 'Chrome-pet'),
+        (r'\bPallavaram\b', 'Pal-lah-vah-ram'),
+        (r'\bMeenambakkam\b', 'Mee-nam-bah-kam'),
+        (r'\bGuindy\b', 'Gin-dee'),
+        (r'\bEkkattuthangal\b', 'Eh-kat-too-than-gal'),
+        (r'\bKathipara\b', 'Kah-thi-pah-rah'),
+        (r'\bRoyapettah\b', 'Roy-ah-pet-tah'),
+        (r'\bMylapore\b', 'My-lah-pore'),
+        (r'\bMandaveli\b', 'Man-dah-veh-lee'),
+        (r'\bTriplicane\b', 'Trip-li-cane'),
+        (r'\bPerambur\b', 'Per-am-boor'),
+        (r'\bMoolakadai\b', 'Moo-lah-kah-dye'),
+        (r'\bPeriyamet\b', 'Pe-ri-yah-met'),
+        (r'\bTeynampet\b', 'Tay-nam-pet'),
+        (r'\bKotturpuram\b', 'Kot-toor-pu-ram'),
+        (r'\bNesapakkam\b', 'Ne-sah-pah-kam'),
+        (r'\bThirumangalam\b', 'Thi-roo-man-gah-lam'),
+        (r'\bKoyambedu\b', 'Ko-yam-bay-doo'),
+        (r'\bAdyar\b', 'Ah-dyar'),
+        (r'\bPorur\b', 'Po-roor'),
+        (r'\bPoonamallee\b', 'Poo-nah-mal-lee'),
+        (r'\bValasaravakkam\b', 'Vah-lah-sah-rah-vah-kam'),
+        (r'\bRamapuram\b', 'Rah-mah-pu-ram'),
+        (r'\bKundrathur\b', 'Kun-drah-thoor'),
+        (r'\bSelaiyur\b', 'Se-lai-yoor'),
+        (r'\bPerungalathur\b', 'Pe-run-gah-lah-thoor'),
+        (r'\bUrapakkam\b', 'Oo-rah-pah-kam'),
+        (r'\bGuduvanchery\b', 'Goo-doo-van-che-ree'),
+        (r'\bMaraimalai Nagar\b', 'Mah-rye-mah-lye Nah-gar'),
+        (r'\bKilambakkam\b', 'Kee-lam-bah-kam'),
+        (r'\bUthiramerur\b', 'Oo-thi-rah-me-roor'),
+        (r'\bParanur\b', 'Pah-rah-noor'),
+        (r'\bVandalur\b', 'Van-dah-loor'),
+        (r'\bChunambedu\b', 'Choo-nam-bay-doo'),
+        (r'\bKadapakkam\b', 'Kah-dah-pah-kam'),
+        (r'\bKalpakkam\b', 'Kal-pah-kam'),
+        (r'\bPaiyanur\b', 'Pie-yah-noor'),
+        (r'\bManjambakkam\b', 'Man-jam-bah-kam'),
+        (r'\bRetteri\b', 'Ret-te-ree'),
+        (r'\bAdambakkam\b', 'Ah-dam-bah-kam'),
+        (r'\bAadampakkam\b', 'Ah-dam-bah-kam'),
+        (r'\bEnnore\b', 'En-noor'),
+        (r'\bPammal\b', 'Pam-mal'),
+        (r'\bKovoor\b', 'Koh-voor'),
+        (r'\bNemilichery\b', 'Ne-mi-li-che-ree'),
+        (r'\bPadi\b', 'Pah-dee'),
+        (r'\bChoolaimedu\b', 'Choo-lai-may-doo'),
+        (r'\bOtteri\b', 'Ot-te-ree'),
+        (r'\bChinthamani\b', 'Chin-tha-mah-nee'),
+        (r'\bArumbakkam\b', 'Ah-rum-bah-kam'),
+        (r'\bNungambakkam\b', 'Nun-gam-bah-kam'),
+        (r'\bKodambakkam\b', 'Koh-dam-bah-kam'),
+        (r'\bSaidapet\b', 'Sai-dah-pet'),
+        (r'\bVadapalani\b', 'Vah-dah-pah-lah-nee'),
+        (r'\bAshok Nagar\b', 'Ah-shok Nah-gar'),
+        (r'\bKattupakkam\b', 'Kat-too-pah-kam'),
+        (r'\bKumananchavadi\b', 'Koo-mah-nan-chah-vah-dee'),
+        (r'\bAnakaputhur\b', 'Ah-nah-kah-poo-thoor'),
+        (r'\bKandigai\b', 'Kan-di-gai'),
+        (r'\bMambakkam\b', 'Mam-bah-kam'),
+        (r'\bPuthupakkam\b', 'Poo-thoo-pah-kam'),
+        (r'\bThaiyur\b', 'Thai-yoor'),
+        (r'\bKalavakkam\b', 'Kah-lah-vah-kam'),
+        (r'\bAlathur\b', 'Ah-lah-thoor'),
+        (r'\bPalavakkam\b', 'Pah-lah-vah-kam'),
+        (r'\bAkkarai\b', 'Ak-kah-rye'),
+        (r'\bEchankadu\b', 'Eh-chan-kah-doo'),
+        (r'\bTNEA\b', 'T N E A'),
+        (r'\bCGPA\b', 'C G P A'),
+        (r'\bB\.Tech\b', 'B Tech'),
+        (r'\bM\.Tech\b', 'M Tech'),
+        (r'\bPh\.D\b', 'Ph D'),
+        (r'\bECE\b', 'E C E'),
+        (r'\bCSE\b', 'C S E'),
+        (r'\bEEE\b', 'E E E'),
+        (r'\bAI&DS\b', 'A I and D S'),
+        (r'\bAIDS\b', 'A I and D S'),
+        (r'\bLPA\b', 'Lakhs per annum'),
+        (r'\bInfosys\b', 'Info-sys'),
+        (r'\bCognizant\b', 'Cog-ni-zant'),
+        (r'\bCapgemini\b', 'Cap-gem-i-ni'),
+        (r'\bAccenture\b', 'Ac-cen-ture'),
+        (r'\bMindtree\b', 'Mind-tree'),
+        (r'\bHexaware\b', 'Hex-a-ware'),
+        (r'\bVirtusa\b', 'Vir-too-sah'),
+        (r'\bHyundai\b', 'Hun-day')
+    ]
+    for _pat, _repl in phonetic_map:
+        speech_text = re.sub(_pat, _repl, speech_text, flags=re.IGNORECASE)
 
     # 7. Convert digit ranges like 2024-2025 to 2024 to 2025
     speech_text = re.sub(r'(\d{4})\s*[\–\-]\s*(\d{4})', r'\1 to \2', speech_text)
@@ -2973,7 +3084,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "   - Start with a warm, informative 2-3 sentence overview tailored for a parent or prospective student.\n"
                     "   - Follow with concise, clean bullet points (`- `) with bold headings for key highlights (e.g. **TNEA Code:** 1301.).\n"
                     "   - Ensure sentences are short and easily readable on mobile screens (320px to 480px) without horizontal scrolling or dense text blocks.\n"
-                    "   - End with a friendly, helpful follow-up offer for additional details."
+                    "   - End with a friendly, helpful follow-up offer for additional details.\n"
+                    "10. NATIVE HUMAN INTONATION & PROSODIC RHYTHM:\n"
+                    "    - Speak naturally like a real native human. Use a fluid, lively conversational rhythm when setting context or explaining background details.\n"
+                    "    - When stating important points (such as key numbers, deadlines, TNEA Code 1301, fee amounts, specific bus stop names, contact numbers, or crucial rules), shift tone smoothly with deliberate, clear emphasis so important information stands out naturally.\n"
+                    "    - Use natural speech punctuation (commas for short breaths, periods for complete thoughts) to guide expressive, native human intonation."
                 )
 
             # Multi-turn history (scaled by query class) - Fetch latest HISTORY_LIMIT messages in chronological order, excluding user_msg_id
