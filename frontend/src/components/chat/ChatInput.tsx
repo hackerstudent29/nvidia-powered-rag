@@ -427,11 +427,23 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   }, [expand]);
 
   // Global click-outside listener: close model & voice popovers immediately on outside click
+  // Global click-outside listener: when clicking empty space outside prompt box,
+  // blur active textarea (hides virtual keyboard on mobile) and collapse prompt box to compact size
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (internalContainerRef.current && !internalContainerRef.current.contains(e.target as Node)) {
         setIsModelSelectOpen(false);
         setIsVoiceMenuOpen(false);
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        if (textareaRef.current) {
+          textareaRef.current.blur();
+        }
+        if (!isStreaming && !isRecording) {
+          setIsSmoothResize(false);
+          setExpanded(false);
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -440,7 +452,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, []);
+  }, [isStreaming, isRecording]);
 
   // Auto-expand if text typed or streaming
   useEffect(() => {
@@ -449,20 +461,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       setExpanded(true);
     }
   }, [text, expanded, isStreaming]);
-
-  // Auto focus when expanded
-  useEffect(() => {
-    if (expanded && !isRecording) {
-      const timer = setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-          const length = textareaRef.current.value.length;
-          textareaRef.current.setSelectionRange(length, length);
-        }
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [expanded, isRecording]);
 
   // Dynamic visualizer animation loop whenever recording is active
   useEffect(() => {

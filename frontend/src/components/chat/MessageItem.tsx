@@ -460,9 +460,17 @@ function buildTTSToDisplayMapping(displayWords: string[], ttsWords: string[]): n
     }
 
     let matched = false;
-    for (let lookahead = 0; lookahead < 10 && dIdx + lookahead < displayWords.length; lookahead++) {
+    for (let lookahead = 0; lookahead <= 5 && dIdx + lookahead < displayWords.length; lookahead++) {
       const dClean = displayWords[dIdx + lookahead].toLowerCase().replace(/[^a-z0-9]/g, "");
-      if (dClean && (dClean.includes(tClean) || tClean.includes(dClean))) {
+      if (!dClean) continue;
+
+      if (tClean === dClean) {
+        dIdx = dIdx + lookahead;
+        map[tIdx] = dIdx;
+        matched = true;
+        break;
+      }
+      if (tClean.length >= 4 && dClean.length >= 4 && (dClean.startsWith(tClean) || tClean.startsWith(dClean))) {
         dIdx = dIdx + lookahead;
         map[tIdx] = dIdx;
         matched = true;
@@ -685,13 +693,14 @@ const MessageItem = React.memo(function MessageItem({
 
     const isMidSpeechSwitch = startWordOffset > 0 && isPlayingAudio;
 
-    if (!isMidSpeechSwitch) {
-      // Stop all audio across any other message components immediately!
-      window.dispatchEvent(new CustomEvent("stop-all-audio"));
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    } else {
+    // 1. Immediately register with global audioManager and stop all other audio playback
+    window.dispatchEvent(new CustomEvent("stop-all-audio"));
+    audioManager.registerAudio(message.id, stopAudio);
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    if (isMidSpeechSwitch) {
       // Smoothly pause current audio without resetting word index or stopping playback UI state
       if (audioRef.current) {
         audioRef.current.pause();
@@ -723,9 +732,6 @@ const MessageItem = React.memo(function MessageItem({
     audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
     audio.play().catch(() => {});
     audioRef.current = audio;
-
-    // Enforce global single-audio playback across all messages!
-    audioManager.registerAudio(message.id, stopAudio);
 
     setIsLoadingAudio(true);
 
@@ -759,6 +765,12 @@ const MessageItem = React.memo(function MessageItem({
 
       const data = await res.json();
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");
+
+      // Verify that this message is STILL the active message selected by the user before playing
+      if (!audioManager.isPlaying(message.id)) {
+        setIsLoadingAudio(false);
+        return;
+      }
 
       let wordStartTimes: number[] = [];
 

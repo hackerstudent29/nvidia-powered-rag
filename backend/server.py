@@ -2681,6 +2681,10 @@ async def tts_endpoint(req: TTSRequest):
     if speech_text and not re.search(r'[.!?]$', speech_text):
         speech_text += '.'
     
+    # Cap text length to ~1200 chars for ultra-fast TTS synthesis (< 2s latency)
+    if len(speech_text) > 1250:
+        speech_text = speech_text[:1200].rsplit('.', 1)[0] + '.'
+    
     # Deepgram API endpoint selection with resilient multi-tier fallback
     if deepgram_key:
         headers = {
@@ -2689,28 +2693,33 @@ async def tts_endpoint(req: TTSRequest):
         }
         payload = {"text": speech_text}
         
-        urls_to_try = []
+        raw_urls = []
         is_flux = selected_voice.startswith("flux-")
         if is_flux:
             expr_param = f"&expressivity={req.expressivity}" if (req.expressivity is not None and req.expressivity != 0) else ""
-            urls_to_try.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3{expr_param}")
-            urls_to_try.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3")
-            urls_to_try.append("https://api.deepgram.com/v2/speak?model=flux-alexis-en&encoding=mp3")
+            raw_urls.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3{expr_param}")
+            raw_urls.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3")
+            raw_urls.append("https://api.deepgram.com/v2/speak?model=flux-alexis-en&encoding=mp3")
         else:
-            urls_to_try.append(f"https://api.deepgram.com/v1/speak?model={selected_voice}&encoding=mp3")
-            urls_to_try.append("https://api.deepgram.com/v1/speak?model=aura-bruce-en&encoding=mp3")
+            raw_urls.append(f"https://api.deepgram.com/v1/speak?model={selected_voice}&encoding=mp3")
+            raw_urls.append("https://api.deepgram.com/v1/speak?model=aura-bruce-en&encoding=mp3")
 
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            for dg_url in urls_to_try:
-                try:
-                    resp = await client.post(dg_url, headers=headers, json=payload)
-                    if resp.status_code == 200 and resp.content:
-                        b64_audio = base64.b64encode(resp.content).decode("utf-8")
-                        return {"audio_base64": f"data:audio/mp3;base64,{b64_audio}", "provider": "deepgram", "voice": selected_voice}
-                    else:
-                        print(f"[WARN] Deepgram endpoint {dg_url} returned {resp.status_code}: {resp.text[:120]}")
-                except Exception as attempt_err:
-                    print(f"[WARN] Deepgram attempt failed for {dg_url}: {attempt_err}")
+        urls_to_try = []
+        for u in raw_urls:
+            if u not in urls_to_try:
+                urls_to_try.append(u)
+
+        client_to_use = http_client if http_client else httpx.AsyncClient(timeout=15.0)
+        for dg_url in urls_to_try:
+            try:
+                resp = await client_to_use.post(dg_url, headers=headers, json=payload, timeout=12.0)
+                if resp.status_code == 200 and resp.content:
+                    b64_audio = base64.b64encode(resp.content).decode("utf-8")
+                    return {"audio_base64": f"data:audio/mp3;base64,{b64_audio}", "provider": "deepgram", "voice": selected_voice}
+                else:
+                    print(f"[WARN] Deepgram endpoint {dg_url} returned {resp.status_code}: {resp.text[:120]}")
+            except Exception as attempt_err:
+                print(f"[WARN] Deepgram attempt failed for {dg_url}: {attempt_err}")
 
     # Fallback to EdgeTTS if available
     if edge_tts:
