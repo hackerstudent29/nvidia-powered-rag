@@ -271,8 +271,8 @@ function prepareCleanTTSText(markdown: string): string {
   text = text.replace(/\s+-\s+/g, ", ");
   text = text.replace(/:\s+/g, ", ");
 
-  // 9. Thoroughly remove all emojis & unicode symbols across all browser engines
-  text = text.replace(/[\u1F300-\u1F9FF\u2600-\u27BF\u1F600-\u1F64F\u1F680-\u1F6FF\u1F1E6-\u1F1FF\u2300-\u23FF\u2B00-\u2BFF]/g, "");
+  // 9. Thoroughly remove all emojis & unicode symbols without stripping English text
+  text = text.replace(/[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}]/gu, "");
 
   // 10. Remove remaining non-speech punctuation/symbols
   text = text.replace(/[#*`_~[\](){}<>|]/g, "");
