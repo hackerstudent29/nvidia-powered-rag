@@ -410,12 +410,40 @@ function prepareCleanTTSText(markdown: string): string {
   return text;
 }
 
+function countWordSyllables(word: string): number {
+  const clean = word.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!clean) return 1;
+
+  // Pure digits: count digits as spoken words (e.g. "1301" -> 5 spoken syllables)
+  if (/^\d+$/.test(clean)) {
+    return Math.max(1, Math.round(clean.length * 1.3));
+  }
+
+  // Acronyms (e.g. "MSAJCEA", "TNEA", "AI&DS") -> 1 syllable per capital letter
+  if (/^[A-Z0-9]{2,}$/.test(word.replace(/[^A-Za-z0-9]/g, ""))) {
+    return Math.max(1, word.replace(/[^A-Za-z0-9]/g, "").length);
+  }
+
+  // Vowel group counting for English words
+  const vowels = clean.match(/[aeiouy]{1,2}/g);
+  let count = vowels ? vowels.length : 1;
+  if (clean.endsWith("e") && !clean.endsWith("le") && count > 1) {
+    count--;
+  }
+
+  return Math.max(1, count);
+}
+
 function computeTTSWordStartTimes(ttsWords: string[], duration: number): number[] {
   if (ttsWords.length === 0 || duration <= 0) return [];
   const weights = ttsWords.map((w) => {
-    let weight = Math.max(1, w.replace(/[^a-zA-Z0-9]/g, "").length);
-    if (/[,\-;:]/.test(w)) weight += 2.5; // Short pause
-    if (/[.!?]/.test(w)) weight += 4.5;   // Full stop pause
+    const syllables = countWordSyllables(w);
+    let weight = syllables * 2.0;
+
+    // Pause weights for speech prosody & Deepgram Flux phrasing
+    if (/[,\-;:]/.test(w)) weight += 2.8;  // Clause break pause (~300ms)
+    if (/[.!?]/.test(w)) weight += 5.2;    // Sentence end pause (~600ms)
+
     return weight;
   });
 
@@ -460,18 +488,32 @@ function buildTTSToDisplayMapping(displayWords: string[], ttsWords: string[]): n
     }
 
     let matched = false;
-    for (let lookahead = 0; lookahead <= 5 && dIdx + lookahead < displayWords.length; lookahead++) {
-      const dClean = displayWords[dIdx + lookahead].toLowerCase().replace(/[^a-z0-9]/g, "");
+    // Search within a forward window of up to 6 display words
+    for (let lookahead = 0; lookahead <= 6 && dIdx + lookahead < displayWords.length; lookahead++) {
+      const targetDIdx = dIdx + lookahead;
+      const dRaw = displayWords[targetDIdx];
+      const dClean = dRaw.toLowerCase().replace(/[^a-z0-9]/g, "");
       if (!dClean) continue;
 
+      // 1. Exact token match
       if (tClean === dClean) {
-        dIdx = dIdx + lookahead;
+        dIdx = targetDIdx;
         map[tIdx] = dIdx;
         matched = true;
         break;
       }
-      if (tClean.length >= 4 && dClean.length >= 4 && (dClean.startsWith(tClean) || tClean.startsWith(dClean))) {
-        dIdx = dIdx + lookahead;
+
+      // 2. Acronym or Number expansion match (e.g. spoken token "m", "s", "a" matching display token "msajcea")
+      if (dClean.length > tClean.length && dClean.includes(tClean) && (dClean.startsWith(tClean) || tClean.length >= 2)) {
+        dIdx = targetDIdx;
+        map[tIdx] = dIdx;
+        matched = true;
+        break;
+      }
+
+      // 3. Prefix match for words >= 3 characters
+      if (tClean.length >= 3 && dClean.length >= 3 && (dClean.startsWith(tClean) || tClean.startsWith(dClean))) {
+        dIdx = targetDIdx;
         map[tIdx] = dIdx;
         matched = true;
         break;
@@ -569,13 +611,13 @@ const MessageItem = React.memo(function MessageItem({
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
   const currentTTSWordIdxRef = useRef<number>(0);
-  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-maeve-en");
+  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-brooke-en");
 
   // Sync voice settings live across all message toolbars & Voice Controls modal
   useEffect(() => {
     const syncVoiceSettings = () => {
       const savedSpeed = localStorage.getItem("lorin_tts_speed");
-      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-maeve-en";
+      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-brooke-en";
       const savedExpr = localStorage.getItem("lorin_tts_expressivity");
 
       if (savedSpeed) {
@@ -737,14 +779,14 @@ const MessageItem = React.memo(function MessageItem({
 
     try {
       // Use Deepgram Flux HD Neural Voice Agent TTS API
-      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "flux-maeve-en";
+      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "flux-brooke-en";
       const validVoices = [
-        "flux-maeve-en", "flux-cliff-en", "flux-alexis-en", "flux-hannah-en",
-        "flux-brooke-en", "flux-gemma-en", "flux-meena-en", "flux-priya-en",
+        "flux-brooke-en", "flux-cliff-en", "flux-maeve-en", "flux-alexis-en",
+        "flux-hannah-en", "flux-gemma-en", "flux-meena-en", "flux-priya-en",
         "flux-sharon-en", "flux-bruce-en", "flux-colin-en", "flux-naveen-en",
         "flux-kit-en", "flux-miles-en", "flux-kai-en"
       ];
-      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-maeve-en";
+      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-brooke-en";
 
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
