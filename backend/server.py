@@ -2583,14 +2583,13 @@ async def tts_endpoint(req: TTSRequest):
         if is_flux:
             expr_param = f"&expressivity={req.expressivity}" if (req.expressivity is not None and req.expressivity != 0) else ""
             urls_to_try.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3{expr_param}")
-            urls_to_try.append(f"https://api.deepgram.com/v1/speak?model={selected_voice}&encoding=mp3")
-            urls_to_try.append("https://api.deepgram.com/v1/speak?model=flux-alexis-en&encoding=mp3")
+            urls_to_try.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3")
+            urls_to_try.append("https://api.deepgram.com/v2/speak?model=flux-alexis-en&encoding=mp3")
         else:
             urls_to_try.append(f"https://api.deepgram.com/v1/speak?model={selected_voice}&encoding=mp3")
-        
-        urls_to_try.append("https://api.deepgram.com/v1/speak?model=aura-bruce-en&encoding=mp3")
+            urls_to_try.append("https://api.deepgram.com/v1/speak?model=aura-bruce-en&encoding=mp3")
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=45.0) as client:
             for dg_url in urls_to_try:
                 try:
                     resp = await client.post(dg_url, headers=headers, json=payload)
@@ -2968,10 +2967,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "   - Use punctuation intentionally to create natural pauses (commas for short pauses, periods for complete thoughts, ellipses '...' sparingly for thoughtful transitions).\n"
                     "   - Combine facts into natural, flowing prose rather than breaking every sentence into separate bullet points.\n"
                     "7. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text.\n"
-                    "8. STRUCTURED ANSWER FOR THE 12 CATEGORY CARDS (FOR PARENTS & NEW STUDENTS):\n"
+                    "8. ENGLISH GRAMMAR & PUNCTUATION MANDATE: Every single sentence, bullet point (`- `), list item, numbered point (`1. `), and paragraph MUST end with proper English grammar punctuation, specifically a terminating full stop (`.`) or question mark (`?`). Never leave bullet points, list items, or sentences without a full stop at the end.\n"
+                    "9. STRUCTURED ANSWER FOR THE 12 CATEGORY CARDS (FOR PARENTS & NEW STUDENTS):\n"
                     "   - For category questions (Admissions, Courses, Placements, Scholarships, Hostels, Transport, Mess, Library, Labs, Campus Life, Contact Info):\n"
                     "   - Start with a warm, informative 2-3 sentence overview tailored for a parent or prospective student.\n"
-                    "   - Follow with concise, clean bullet points (`- `) with bold headings for key highlights (e.g. **TNEA Code:** 1301).\n"
+                    "   - Follow with concise, clean bullet points (`- `) with bold headings for key highlights (e.g. **TNEA Code:** 1301.).\n"
                     "   - Ensure sentences are short and easily readable on mobile screens (320px to 480px) without horizontal scrolling or dense text blocks.\n"
                     "   - End with a friendly, helpful follow-up offer for additional details."
                 )
@@ -3420,6 +3420,7 @@ async def chat_sync_endpoint(req: ChatRequest):
     system_prompt = (
         "You are Lorin AI, the official campus guide for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA).\n"
         "STRICT EMOJI BAN: DO NOT use any emojis in your response. Zero emojis across titles, headers, callouts, lists, or text.\n"
+        "ENGLISH GRAMMAR MANDATE: Every bullet point, numbered item, list item, and sentence MUST end with a full stop (.).\n"
         "NO FAQ FORMAT: Never format response body as FAQ (such as Q: ... A: ...).\n"
         "Use structured Markdown formats (Headings, Key-Value pairs, Bullet points, Numbered steps, Checklists, Callout boxes, Tables).\n"
         "Answer directly, concisely, and accurately based strictly on official MSAJCEA records."
