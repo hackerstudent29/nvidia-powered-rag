@@ -121,7 +121,7 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="flex flex-col items-center w-full max-w-[1020px] mx-auto px-3 sm:px-6 pt-4 pb-6"
+      className="flex flex-col items-center w-full max-w-[1020px] mx-auto px-3 sm:px-6 pt-4 sm:pt-12 lg:pt-16 pb-6"
     >
       {/* ── Hero headline ── */}
       <div className="relative flex flex-col items-center text-center mb-4 sm:mb-6 w-full">

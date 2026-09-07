@@ -256,6 +256,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
 
+  const [isMobileViewport, setIsMobileViewport] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 640;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileViewport(window.innerWidth < 640);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const formatRecordingTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -869,8 +884,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div
-      className="sticky bottom-0 z-20 pb-5 sm:pb-6 pt-2 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
-      style={{ paddingBottom: `max(28px, calc(28px + var(--keyboard-offset, 0px)))` }}
+      className="sticky bottom-0 z-20 pb-5 sm:pb-1 pt-1.5 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
+      style={{
+        paddingBottom: (isMobile || isMobileViewport)
+          ? "max(28px, calc(28px + var(--keyboard-offset, 0px)))"
+          : "8px"
+      }}
     >
       <div className="mx-auto max-w-4xl w-full min-w-0 px-3 sm:px-6 box-border">
         {/* Rate Limit Alert Banner Tab */}
