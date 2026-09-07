@@ -569,13 +569,13 @@ const MessageItem = React.memo(function MessageItem({
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
   const currentTTSWordIdxRef = useRef<number>(0);
-  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-alexis-en");
+  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-maeve-en");
 
   // Sync voice settings live across all message toolbars & Voice Controls modal
   useEffect(() => {
     const syncVoiceSettings = () => {
       const savedSpeed = localStorage.getItem("lorin_tts_speed");
-      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
+      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-maeve-en";
       const savedExpr = localStorage.getItem("lorin_tts_expressivity");
 
       if (savedSpeed) {
@@ -737,14 +737,14 @@ const MessageItem = React.memo(function MessageItem({
 
     try {
       // Use Deepgram Flux HD Neural Voice Agent TTS API
-      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
+      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "flux-maeve-en";
       const validVoices = [
-        "flux-alexis-en", "flux-hannah-en", "flux-brooke-en", "flux-gemma-en",
-        "flux-maeve-en", "flux-meena-en", "flux-priya-en", "flux-sharon-en",
-        "flux-bruce-en", "flux-cliff-en", "flux-colin-en", "flux-naveen-en",
+        "flux-maeve-en", "flux-cliff-en", "flux-alexis-en", "flux-hannah-en",
+        "flux-brooke-en", "flux-gemma-en", "flux-meena-en", "flux-priya-en",
+        "flux-sharon-en", "flux-bruce-en", "flux-colin-en", "flux-naveen-en",
         "flux-kit-en", "flux-miles-en", "flux-kai-en"
       ];
-      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-alexis-en";
+      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-maeve-en";
 
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",

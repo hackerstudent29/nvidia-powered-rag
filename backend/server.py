@@ -2469,7 +2469,7 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
 # ---------------------------------------------------------
 class TTSRequest(BaseModel):
     text: str = Field(..., description="Text payload to synthesize")
-    voice: Optional[str] = Field("flux-alexis-en", description="TTS voice model (Flux)")
+    voice: Optional[str] = Field("flux-maeve-en", description="TTS voice model (Flux)")
     speed: Optional[float] = Field(1.0, description="Playback speed modifier")
     rate: Optional[float] = Field(1.0, description="Rate modifier")
     expressivity: Optional[int] = Field(0, description="Expressivity control (-2 to 2)")
@@ -2481,7 +2481,7 @@ async def tts_endpoint(req: TTSRequest):
         raise HTTPException(status_code=400, detail="TTS text cannot be empty")
     
     deepgram_key = os.getenv("DEEPGRAM_API_KEY")
-    selected_voice = req.voice or "flux-alexis-en"
+    selected_voice = req.voice or "flux-maeve-en"
     
     # Comprehensive speech sanitization to eliminate spoken dashes, emojis, colons, and markdown artifacts
     speech_text = text
@@ -2699,7 +2699,7 @@ async def tts_endpoint(req: TTSRequest):
             expr_param = f"&expressivity={req.expressivity}" if (req.expressivity is not None and req.expressivity != 0) else ""
             raw_urls.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3{expr_param}")
             raw_urls.append(f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3")
-            raw_urls.append("https://api.deepgram.com/v2/speak?model=flux-alexis-en&encoding=mp3")
+            raw_urls.append("https://api.deepgram.com/v2/speak?model=flux-maeve-en&encoding=mp3")
         else:
             raw_urls.append(f"https://api.deepgram.com/v1/speak?model={selected_voice}&encoding=mp3")
             raw_urls.append("https://api.deepgram.com/v1/speak?model=aura-bruce-en&encoding=mp3")
