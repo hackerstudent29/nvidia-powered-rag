@@ -265,19 +265,28 @@ function prepareCleanTTSText(markdown: string): string {
 
   text = processedLines.join(" ");
 
-  // 8. Replace em-dashes, en-dashes, double-dashes, isolated hyphens, colons with natural pause commas
+  // 8. Replace slashes & ampersands to prevent speaking "forward slash"
+  text = text.replace(/\band\/or\b/gi, "or");
+  text = text.replace(/\b([A-Za-z0-9.]+)\s*\/\s*([A-Za-z0-9.]+)\b/g, "$1 or $2");
+  text = text.replace(/[/\\_]/g, " ");
+  text = text.replace(/\s*&\s*/g, " and ");
+
+  // 9. Replace em-dashes, en-dashes, double-dashes, isolated hyphens, colons with natural pause commas
   text = text.replace(/\s*[\—\–]\s*/g, ", ");
   text = text.replace(/\s+--\s+/g, ", ");
   text = text.replace(/\s+-\s+/g, ", ");
   text = text.replace(/:\s+/g, ", ");
 
-  // 9. Thoroughly remove all emojis & unicode symbols without stripping English text
+  // 10. Thoroughly remove all emojis & unicode symbols without stripping English text
   text = text.replace(/[\u{1F300}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E6}-\u{1F1FF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}]/gu, "");
 
-  // 10. Remove remaining non-speech punctuation/symbols
-  text = text.replace(/[#*`_~[\](){}<>|]/g, "");
+  // 11. Remove remaining non-speech punctuation/symbols
+  text = text.replace(/[#*`~[\](){}<>|]/g, "");
 
-  // 11. Fix double punctuation & clean extra spaces
+  // 12. Deduplicate repeated conjunction words like "and and and" or "or or"
+  text = text.replace(/\b(and|or|the|in|of|to)([,\s]+\1\b)+/gi, "$1");
+
+  // 13. Fix double punctuation & clean extra spaces
   text = text.replace(/,\s*,/g, ",");
   text = text.replace(/\.\s*\./g, ".");
   text = text.replace(/,\s*\./g, ".");

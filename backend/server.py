@@ -2541,19 +2541,28 @@ async def tts_endpoint(req: TTSRequest):
         _cleaned_lines.append(_l)
     speech_text = ' '.join(_cleaned_lines)
 
-    # 9. Replace em-dashes, en-dashes, double-dashes, isolated hyphens, colons with pause commas
+    # 9. Replace slashes & ampersands to prevent speaking "forward slash"
+    speech_text = re.sub(r'\band/or\b', 'or', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\b([A-Za-z0-9.]+)\s*/\s*([A-Za-z0-9.]+)\b', r'\1 or \2', speech_text)
+    speech_text = re.sub(r'[/\\_]', ' ', speech_text)
+    speech_text = re.sub(r'\s*&\s*', ' and ', speech_text)
+
+    # 10. Replace em-dashes, en-dashes, double-dashes, isolated hyphens, colons with pause commas
     speech_text = re.sub(r'\s*[\—\–]\s*', ', ', speech_text)
     speech_text = re.sub(r'\s+--\s+', ', ', speech_text)
     speech_text = re.sub(r'\s+-\s+', ', ', speech_text)
     speech_text = re.sub(r':\s+', ', ', speech_text)
 
-    # 10. Strip emojis and extended pictographs
-    speech_text = re.sub(r'[\U00010000-\U0010FFFF\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\u2000-\u206F]', '', speech_text)
+    # 11. Strip emojis and extended pictographs
+    speech_text = re.sub(r'[\U00010000-\U0010FFFF\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF]', '', speech_text)
 
-    # 11. Strip remaining markdown symbols
-    speech_text = re.sub(r'[#*`_~[\](){}<>|]', '', speech_text)
+    # 12. Strip remaining markdown symbols
+    speech_text = re.sub(r'[#*`~[\](){}<>|]', '', speech_text)
 
-    # 12. Normalize punctuation & extra spaces
+    # 13. Deduplicate repeated conjunction words like "and and and" or "or or"
+    speech_text = re.sub(r'\b(and|or|the|in|of|to)([,\s]+\1\b)+', r'\1', speech_text, flags=re.IGNORECASE)
+
+    # 14. Normalize punctuation & extra spaces
     speech_text = re.sub(r',\s*,', ',', speech_text)
     speech_text = re.sub(r'\.\s*\.', '.', speech_text)
     speech_text = re.sub(r',\s*\.', '.', speech_text)

@@ -839,18 +839,27 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setEffortIndex((prev) => (prev + 1) % EFFORTS.length);
   };
 
-  // Close dropdown on outside click
+  // Close prompt box & popovers on outside click
   useEffect(() => {
-    if (!isModelSelectOpen) return;
-    const handleOutside = (e: MouseEvent) => {
+    if (!expanded && !isModelSelectOpen && !isVoiceMenuOpen) return;
+    const handleOutside = (e: MouseEvent | TouchEvent) => {
       if (internalContainerRef.current && !internalContainerRef.current.contains(e.target as Node)) {
+        if (text.trim() === "") {
+          setIsSmoothResize(false);
+          setExpanded(false);
+        }
         setIsModelSelectOpen(false);
+        setIsVoiceMenuOpen(false);
         setShowLockedToast(false);
       }
     };
     document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
-  }, [isModelSelectOpen]);
+    document.addEventListener("touchstart", handleOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, [expanded, isModelSelectOpen, isVoiceMenuOpen, text]);
 
   const handleModelClick = () => {
     setIsModelSelectOpen(false);
@@ -1025,7 +1034,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               onChange={(e) => handleValueChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask anything about MSAJCEA..."
-              disabled={isStreaming}
               style={{
                 transition: isSmoothResize
                   ? "height 0.15s ease-out"
