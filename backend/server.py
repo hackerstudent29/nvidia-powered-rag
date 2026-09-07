@@ -2473,6 +2473,8 @@ class ChatRequest(BaseModel):
     user_id: Optional[str] = Field(None, description="Persistent client user identifier")
     model: Optional[str] = Field("auto", description="LLM model identifier")
     effort: Optional[str] = Field("Medium", description="Reasoning effort: Low, Medium, Max Effort")
+    is_regeneration: Optional[bool] = Field(False, description="Flag indicating in-place response regeneration")
+    target_message_id: Optional[str] = Field(None, description="Target assistant message ID for in-place regeneration")
 
 @app.post("/api/chat/stream")
 async def chat_stream_endpoint(req: ChatRequest, request: Request):
@@ -2536,11 +2538,13 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     last_active_at = NOW(), 
                                     is_archived = chat_sessions.is_archived;
                             """, (session_id, user_id, user_ip, user_agent))
-                            user_msg_id = f"msg_{int(time.time()*1000)}_u"
-                            cur.execute("""
-                                INSERT INTO chat_messages (message_id, session_id, role, content, category)
-                                VALUES (%s, %s, 'user', %s, %s);
-                            """, (user_msg_id, session_id, user_query, query_cat))
+                            
+                            if not req.is_regeneration:
+                                user_msg_id = f"msg_{int(time.time()*1000)}_u"
+                                cur.execute("""
+                                    INSERT INTO chat_messages (message_id, session_id, role, content, category)
+                                    VALUES (%s, %s, 'user', %s, %s);
+                                """, (user_msg_id, session_id, user_query, query_cat))
                             conn.commit()
             except Exception as e:
                 print(f"[WARN] Immediate user message save error: {e}")
@@ -3077,22 +3081,43 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 SET last_active_at = NOW();
                             """, (session_id,))
 
-                            asst_msg_id = f"msg_{int(time.time()*1000)}_a"
-
-                            # Insert assistant message
-                            cur.execute("""
-                                INSERT INTO chat_messages (message_id, session_id, role, content, model_used, latency_ms, citations, token_usage, suggestions)
-                                VALUES (%s, %s, 'assistant', %s, %s, %s, %s, %s, %s);
-                            """, (
-                                asst_msg_id,
-                                session_id,
-                                structured_answer,
-                                model_id,
-                                total_latency_ms,
-                                json.dumps(sources_payload),
-                                json.dumps(token_metrics) if token_metrics else '{}',
-                                json.dumps(suggestions) if suggestions else '[]'
-                            ))
+                            if req.is_regeneration and req.target_message_id:
+                                asst_msg_id = req.target_message_id
+                                cur.execute("""
+                                    INSERT INTO chat_messages (message_id, session_id, role, content, model_used, latency_ms, citations, token_usage, suggestions)
+                                    VALUES (%s, %s, 'assistant', %s, %s, %s, %s, %s, %s)
+                                    ON CONFLICT (message_id) DO UPDATE SET
+                                        content = EXCLUDED.content,
+                                        model_used = EXCLUDED.model_used,
+                                        latency_ms = EXCLUDED.latency_ms,
+                                        citations = EXCLUDED.citations,
+                                        token_usage = EXCLUDED.token_usage,
+                                        suggestions = EXCLUDED.suggestions;
+                                """, (
+                                    asst_msg_id,
+                                    session_id,
+                                    structured_answer,
+                                    model_id,
+                                    total_latency_ms,
+                                    json.dumps(sources_payload),
+                                    json.dumps(token_metrics) if token_metrics else '{}',
+                                    json.dumps(suggestions) if suggestions else '[]'
+                                ))
+                            else:
+                                asst_msg_id = f"msg_{int(time.time()*1000)}_a"
+                                cur.execute("""
+                                    INSERT INTO chat_messages (message_id, session_id, role, content, model_used, latency_ms, citations, token_usage, suggestions)
+                                    VALUES (%s, %s, 'assistant', %s, %s, %s, %s, %s, %s);
+                                """, (
+                                    asst_msg_id,
+                                    session_id,
+                                    structured_answer,
+                                    model_id,
+                                    total_latency_ms,
+                                    json.dumps(sources_payload),
+                                    json.dumps(token_metrics) if token_metrics else '{}',
+                                    json.dumps(suggestions) if suggestions else '[]'
+                                ))
                             conn.commit()
             except Exception as e:
                 print(f"[WARN] Message persistence error: {e}")

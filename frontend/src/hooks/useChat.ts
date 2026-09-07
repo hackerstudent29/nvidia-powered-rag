@@ -481,11 +481,200 @@ export function useChat() {
     }
   };
 
-  // Regenerate last assistant response
-  const regenerateLastMessage = () => {
-    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
-    if (lastUserMsg) {
-      sendMessage(lastUserMsg.content);
+  // Regenerate assistant response in-place without duplicating user questions
+  const regenerateLastMessage = async (targetMessageId?: string) => {
+    if (isStreaming) return;
+    audioManager.stopAll();
+
+    const reversed = [...messages].reverse();
+    let targetAsst = targetMessageId ? messages.find((m) => m.id === targetMessageId) : reversed.find((m) => m.role === "assistant");
+    
+    if (!targetAsst) return;
+
+    const targetIdx = messages.findIndex((m) => m.id === targetAsst!.id);
+    const prevUserMsg = targetIdx > 0 ? messages.slice(0, targetIdx).reverse().find((m) => m.role === "user") : reversed.find((m) => m.role === "user");
+
+    if (!prevUserMsg) return;
+
+    const userQueryText = prevUserMsg.content;
+
+    // Reset target assistant message in-place in UI state (DO NOT append a new user message!)
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === targetAsst!.id
+          ? {
+              ...msg,
+              content: "",
+              is_streaming: true,
+              sources: [],
+              reasoning_steps: [],
+              token_metrics: undefined,
+              resource_attachments: undefined,
+            }
+          : msg
+      )
+    );
+    setIsStreaming(true);
+
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    try {
+      const response = await fetch(`${API_BASE}/chat/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userQueryText,
+          session_id: sessionId,
+          user_id: userId,
+          model: selectedModel,
+          effort: "Medium",
+          is_regeneration: true,
+          target_message_id: targetAsst.id,
+        }),
+        signal: abortController.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No readable stream");
+
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
+      let accumulatedSources: any[] = [];
+      let accumulatedAttachments: any[] = [];
+      let accumulatedReasoning: string[] = [];
+      let accumulatedSuggestions: string[] = [];
+      let streamMetrics: any = null;
+      let tokenMetrics: any = null;
+
+      let buffer = "";
+      let lastFlushTime = 0;
+      let pendingFlushTimeout: any = null;
+
+      const flushState = () => {
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.id !== targetAsst!.id) return msg;
+            return {
+              ...msg,
+              content: accumulatedContent,
+              sources: accumulatedSources.length > 0 ? accumulatedSources : msg.sources,
+              resource_attachments: accumulatedAttachments.length > 0 ? accumulatedAttachments : msg.resource_attachments,
+              reasoning_steps: [...accumulatedReasoning],
+              suggestions: accumulatedSuggestions.length > 0 ? accumulatedSuggestions : msg.suggestions,
+              token_metrics: tokenMetrics || msg.token_metrics,
+              latency_ms: streamMetrics?.latency_ms || msg.latency_ms,
+              model: streamMetrics?.model || msg.model,
+              is_cached: streamMetrics?.cache_hit ?? msg.is_cached,
+            };
+          })
+        );
+      };
+
+      const requestFlush = (force = false) => {
+        const now = Date.now();
+        if (force || now - lastFlushTime >= 30) {
+          if (pendingFlushTimeout) {
+            clearTimeout(pendingFlushTimeout);
+            pendingFlushTimeout = null;
+          }
+          lastFlushTime = now;
+          flushState();
+        } else if (!pendingFlushTimeout) {
+          pendingFlushTimeout = setTimeout(() => {
+            pendingFlushTimeout = null;
+            lastFlushTime = Date.now();
+            flushState();
+          }, 30);
+        }
+      };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || !trimmed.startsWith("data: ")) continue;
+
+          const dataStr = trimmed.replace(/^data:\s*/, "");
+          if (dataStr === "[DONE]") break;
+
+          try {
+            const data = JSON.parse(dataStr);
+
+            if (data.type === "token") {
+              accumulatedContent += data.token;
+              requestFlush(false);
+            } else if (data.type === "sources") {
+              accumulatedSources = data.sources || [];
+              requestFlush(true);
+            } else if (data.type === "resource_attachments") {
+              accumulatedAttachments = data.attachments || [];
+              requestFlush(true);
+            } else if (data.type === "reasoning") {
+              if (data.step && data.step.trim().length > 3) {
+                const cleanStep = data.step.trim();
+                if (!accumulatedReasoning.includes(cleanStep)) {
+                  accumulatedReasoning.push(cleanStep);
+                }
+              }
+              requestFlush(true);
+            } else if (data.type === "suggestions") {
+              accumulatedSuggestions = data.suggestions || [];
+              requestFlush(true);
+            } else if (data.type === "token_metrics") {
+              tokenMetrics = data.metrics;
+              requestFlush(true);
+            } else if (data.type === "metrics") {
+              streamMetrics = data;
+              requestFlush(true);
+            } else if (data.type === "error") {
+              const errStr = data.error || "";
+              if (!accumulatedContent.trim()) {
+                accumulatedContent = errStr || "I am temporarily unable to connect to the Lorin AI campus service. Please try again in a moment.";
+              }
+              requestFlush(true);
+            }
+          } catch (e) {}
+        }
+      }
+
+      requestFlush(true);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === targetAsst!.id
+            ? { ...msg, is_streaming: false }
+            : msg
+        )
+      );
+      fetchSessions();
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        console.error("Regeneration error:", err);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === targetAsst!.id
+              ? {
+                  ...msg,
+                  content: msg.content.trim() || "I am temporarily unable to connect to the Lorin AI campus service. Please try again in a moment.",
+                  is_streaming: false,
+                }
+              : msg
+          )
+        );
+      }
+    } finally {
+      setIsStreaming(false);
+      abortControllerRef.current = null;
     }
   };
 

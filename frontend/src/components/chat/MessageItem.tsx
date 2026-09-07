@@ -20,7 +20,7 @@ interface MessageItemProps {
   sessionId: string;
   isLatestMessage?: boolean;
   onSendPrompt?: (prompt: string) => void;
-  onRegenerate?: () => void;
+  onRegenerate?: (targetMessageId?: string) => void;
   onRegenerateWithNeMo?: (queryText: string, targetMessageId?: string) => void;
   onSubmitFeedback?: (data: {
     message_id: string;
@@ -1076,7 +1076,7 @@ const MessageItem = React.memo(function MessageItem({
                   <Tooltip content="Regenerate response" position="top">
                     <button
                       type="button"
-                      onClick={onRegenerate}
+                      onClick={() => onRegenerate?.(message.id)}
                       className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
                     >
                       {ACTION_ICONS.retry}

@@ -183,7 +183,7 @@ export default function App() {
                     sessionId={sessionId}
                     isLatestMessage={idx === messages.length - 1}
                     onSendPrompt={(prompt) => sendMessage(prompt)}
-                    onRegenerate={regenerateLastMessage}
+                    onRegenerate={(targetId) => regenerateLastMessage(targetId || msg.id)}
                     onRegenerateWithNeMo={regenerateWithNeMo}
                     onSubmitFeedback={submitFeedback}
                   />
