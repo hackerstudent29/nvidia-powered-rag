@@ -99,7 +99,7 @@ function sanitizeMarkdownContent(content: string): string {
   // 4. Remove duplicate emojis right before [link]
   text = text.replace(/(?:✉️|📧|✉|📞|📱)\s*(\[[^\]]+\]\((?:mailto|tel):[^\)]+\))/g, "$1");
 
-  // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Line-wise key-value and feature formatting
+  // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Line-wise key-value formatting only when multiple items are smashed inline
   const lines = text.split("\n");
   const processedLines: string[] = [];
 
@@ -112,23 +112,19 @@ function sanitizeMarkdownContent(content: string): string {
       continue;
     }
 
-    // A. Break consecutive inline bold key-value pairs (e.g. "**Name:** ... **Designation:** ...") into separate bullet lines
-    line = line.replace(/([^\n])\s*(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*)\s*/g, "$1\n- $2 ");
-
-    // B. Break consecutive inline feature headers (e.g. "🎓 **Explore Courses** ... 💰 **Scholarships** ...") into separate bullet lines
-    line = line.replace(/([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n- $2 ");
-
-    // C. Ensure standalone bold key-value lines have a bullet marker if not already a list item
-    const subLines = line.split("\n");
-    for (let sub of subLines) {
-      const subStripped = sub.trim();
-      if (/^\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*/.test(subStripped)) {
-        if (!/^(?:[\-\*\+\>]|1\.|2\.|3\.)/.test(subStripped)) {
-          sub = `- ${subStripped}`;
-        }
-      }
-      processedLines.push(sub);
+    // A. Break consecutive inline bold key-value pairs ONLY if multiple exist on the exact same line
+    const kvCount = (line.match(/\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*/g) || []).length;
+    if (kvCount > 1) {
+      line = line.replace(/([^\n])\s*(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*)\s*/g, "$1\n- $2 ");
     }
+
+    // B. Break consecutive inline feature headers ONLY if multiple exist on the same line
+    const featCount = (line.match(/[🎓💰🏫📝✨🔥📌⚡💡•]\s*\*\*/g) || []).length;
+    if (featCount > 1) {
+      line = line.replace(/([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n- $2 ");
+    }
+
+    processedLines.push(line);
   }
 
   text = processedLines.join("\n");
