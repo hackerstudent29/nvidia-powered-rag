@@ -173,11 +173,52 @@ function prepareCleanTTSText(markdown: string): string {
   if (!markdown) return "";
   let text = markdown;
 
+  // 1. Remove code blocks & HTML tags
+  text = text.replace(/```[\s\S]*?```/g, "");
+  text = text.replace(/<[^>]+>/g, "");
+
+  // 2. Remove URLs
+  text = text.replace(/https?:\/\/[^\s\)]+/gi, "");
+  text = text.replace(/mailto:[^\s\)]+/gi, "");
+  text = text.replace(/tel:[^\s\)]+/gi, "");
+
+  // 3. Transform markdown links [text](url) -> text
+  text = text.replace(/\[\s*([^\]]+?)\s*\]\(\s*([^\)]+?)\s*\)/g, "$1");
+
+  // 4. Clean email addresses for natural reading: user@domain.ext -> user at domain dot ext
+  text = text.replace(
+    /\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})\b/g,
+    (_, user, domain, ext) => {
+      const cleanDomain = domain.replace(/-/g, " ").replace(/\./g, " dot ");
+      return `${user} at ${cleanDomain} dot ${ext}`;
+    }
+  );
+
+  // 5. Format phone numbers before digit ranges (e.g. 044-27470025 -> 044, 27470025)
+  text = text.replace(/\b(\+?\d{2,4})[\s\-]+(\d{3,5})[\s\-]+(\d{3,5})\b/g, "$1, $2, $3");
+  text = text.replace(/\b(\+?\d{2,4})[\s\-]+(\d{6,8})\b/g, "$1, $2");
+
+  // 6. Expand common acronyms & college names for clear pronunciation
+  text = text.replace(/\bMSAJCEA\b/gi, "M S A J C E A");
+  text = text.replace(/\bMSAJCE\b/gi, "M S A J C E");
+  text = text.replace(/\bSiruseri\b/gi, "Seeru-seri");
+  text = text.replace(/\bEgattur\b/gi, "Eh-gat-toor");
+  text = text.replace(/\bNavalur\b/gi, "Nah-vah-loor");
+  text = text.replace(/\bTNEA\b/gi, "T N E A");
+  text = text.replace(/\bCGPA\b/gi, "C G P A");
+  text = text.replace(/\bB\.Tech\b/gi, "B Tech");
+  text = text.replace(/\bM\.Tech\b/gi, "M Tech");
+  text = text.replace(/\bPh\.D\b/gi, "Ph D");
+  text = text.replace(/\bECE\b/gi, "E C E");
+  text = text.replace(/\bCSE\b/gi, "C S E");
+  text = text.replace(/\bEEE\b/gi, "E E E");
+
+  // 7. Line by line Markdown parsing
   const lines = text.split("\n");
   const processedLines: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    let line = lines[i].trim();
     if (!line) continue;
 
     if (/^\|?[\s\-:|]+\|?$/.test(line)) {
@@ -205,68 +246,46 @@ function prepareCleanTTSText(markdown: string): string {
       continue;
     }
 
+    // Remove heading markers (### )
     if (/^#{1,6}\s+/.test(line)) {
-      let headingText = line.replace(/^#{1,6}\s+/, "").replace(/[*_`]/g, "").trim();
-      if (headingText) {
-        if (!/[.!?:]$/.test(headingText)) headingText += ".";
-        processedLines.push(headingText);
-      }
-      continue;
+      line = line.replace(/^#{1,6}\s+/, "");
     }
 
-    if (/^\d+\.\s+[A-Z]/.test(line)) {
-      let sectionText = line.replace(/[*_`]/g, "").trim();
-      if (sectionText && !/[.!?:]$/.test(sectionText)) sectionText += ".";
-      processedLines.push(sectionText);
-      continue;
-    }
-
-    if (/^[-\*\+•]\s+/.test(line)) {
-      let bulletText = line.replace(/^[-\*\+•]\s+/, "").replace(/[*_`]/g, "").trim();
-      if (bulletText) {
-        processedLines.push(formatBulletPointForSpeech(bulletText));
-      }
-      continue;
-    }
+    // Remove list markers
+    line = line.replace(/^(\d+\.|\*|\-|\+|•|▪|►|▶|◆|★|✓|✔|✕|✖)\s+/, "");
 
     let cleanLine = line.replace(/[*_`]/g, "").trim();
-    cleanLine = cleanLine.replace(/(\d+)\s*[\–\-]\s*(\d+)/g, "$1 to $2");
+    cleanLine = cleanLine.replace(/(\d{4})\s*[\–\-]\s*(\d{4})/g, "$1 to $2");
     cleanLine = cleanLine.replace(/(\d+)\+/g, "$1 plus");
     cleanLine = cleanLine.replace(/\bLPA\b/gi, "Lakhs per annum");
-    if (cleanLine && !/[.!?:]$/.test(cleanLine)) cleanLine += ".";
-    processedLines.push(cleanLine);
+    if (cleanLine) {
+      processedLines.push(cleanLine);
+    }
   }
 
   text = processedLines.join(" ");
 
-  text = text.replace(/\[\s*([^\]]+?)\s*\]\(\s*([^\)]+?)\s*\)/g, "$1");
+  // 8. Replace em-dashes, en-dashes, double-dashes, isolated hyphens, colons with natural pause commas
+  text = text.replace(/\s*[\—\–]\s*/g, ", ");
+  text = text.replace(/\s+--\s+/g, ", ");
+  text = text.replace(/\s+-\s+/g, ", ");
+  text = text.replace(/:\s+/g, ", ");
 
-  text = text.replace(
-    /\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})\b/g,
-    (_, user, domain, ext) => {
-      const cleanDomain = domain.replace(/-/g, " hyphen ").replace(/\./g, " dot ");
-      return `${user} at ${cleanDomain} dot ${ext}`;
-    }
-  );
+  // 9. Thoroughly remove all emojis & extended pictographs
+  text = text.replace(/\p{Extended_Pictographic}/gu, "");
+  text = text.replace(/[\u2600-\u27BF\u1F300-\u1F9FF]/g, "");
 
-  text = text.replace(/\b(\+?\d{2,4})[\s\-]?(\d{3,5})[\s\-]?(\d{3,5})\b/g, "$1, $2, $3");
+  // 10. Remove remaining non-speech punctuation/symbols
+  text = text.replace(/[#*`_~[\](){}<>|]/g, "");
 
-  text = text.replace(/\bMSAJCEA\b/gi, "M S A J C E A");
-  text = text.replace(/\bMSAJCE\b/gi, "M S A J C E");
-  text = text.replace(/\bTNEA\b/gi, "T N E A");
-  text = text.replace(/\bCGPA\b/gi, "C G P A");
-  text = text.replace(/\bB\.Tech\b/gi, "B Tech");
-  text = text.replace(/\bM\.Tech\b/gi, "M Tech");
-  text = text.replace(/\bPh\.D\b/gi, "Ph D");
-  text = text.replace(/\bECE\b/gi, "E C E");
-  text = text.replace(/\bCSE\b/gi, "C S E");
-  text = text.replace(/\bEEE\b/gi, "E E E");
+  // 11. Fix double punctuation & clean extra spaces
+  text = text.replace(/,\s*,/g, ",");
+  text = text.replace(/\.\s*\./g, ".");
+  text = text.replace(/,\s*\./g, ".");
+  text = text.replace(/\s+/g, " ").trim();
 
-  text = text.replace(/https?:\/\/[^\s\)]+/gi, "");
-  text = text.replace(/mailto:[^\s\)]+/gi, "");
-  text = text.replace(/tel:[^\s\)]+/gi, "");
-  text = text.replace(/```[\s\S]*?```/g, "");
-  return text.replace(/\s+/g, " ").trim();
+  if (text && !/[.!?]$/.test(text)) text += ".";
+  return text;
 }
 
 function computeTTSWordStartTimes(ttsWords: string[], duration: number): number[] {

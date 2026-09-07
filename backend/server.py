@@ -2483,8 +2483,33 @@ async def tts_endpoint(req: TTSRequest):
     deepgram_key = os.getenv("DEEPGRAM_API_KEY")
     selected_voice = req.voice or "flux-alexis-en"
     
-    # Domain-specific pronunciation pre-processing for natural speech
+    # Comprehensive speech sanitization to eliminate spoken dashes, emojis, colons, and markdown artifacts
     speech_text = text
+    
+    # 1. Remove code blocks & HTML tags
+    speech_text = re.sub(r'```[\s\S]*?```', '', speech_text)
+    speech_text = re.sub(r'<[^>]+>', '', speech_text)
+    
+    # 2. Remove URLs
+    speech_text = re.sub(r'https?://[^\s\)]+', '', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'mailto:[^\s\)]+', '', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'tel:[^\s\)]+', '', speech_text, flags=re.IGNORECASE)
+    
+    # 3. Transform markdown links [text](url) -> text
+    speech_text = re.sub(r'\[\s*([^\]]+?)\s*\]\(\s*([^\)]+?)\s*\)', r'\1', speech_text)
+    
+    # 4. Clean email addresses for natural speech: user@domain.ext -> user at domain dot ext
+    def _clean_email(m):
+        user, domain, ext = m.group(1), m.group(2), m.group(3)
+        clean_dom = domain.replace('-', ' ').replace('.', ' dot ')
+        return f"{user} at {clean_dom} dot {ext}"
+    speech_text = re.sub(r'\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})\b', _clean_email, speech_text)
+
+    # 5. Format phone numbers before digit ranges (044-27470025 -> 044, 27470025)
+    speech_text = re.sub(r'\b(\+?\d{2,4})[\s\-]+(\d{3,5})[\s\-]+(\d{3,5})\b', r'\1, \2, \3', speech_text)
+    speech_text = re.sub(r'\b(\+?\d{2,4})[\s\-]+(\d{6,8})\b', r'\1, \2', speech_text)
+
+    # 6. Domain-specific acronyms and pronunciations
     speech_text = re.sub(r'\bMSAJCEA\b', 'M S A J C E A', speech_text, flags=re.IGNORECASE)
     speech_text = re.sub(r'\bMSAJCE\b', 'M S A J C E', speech_text, flags=re.IGNORECASE)
     speech_text = re.sub(r'\bSiruseri\b', 'Seeru-seri', speech_text, flags=re.IGNORECASE)
@@ -2492,6 +2517,49 @@ async def tts_endpoint(req: TTSRequest):
     speech_text = re.sub(r'\bNavalur\b', 'Nah-vah-loor', speech_text, flags=re.IGNORECASE)
     speech_text = re.sub(r'\bTNEA\b', 'T N E A', speech_text, flags=re.IGNORECASE)
     speech_text = re.sub(r'\bCGPA\b', 'C G P A', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bB\.Tech\b', 'B Tech', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bM\.Tech\b', 'M Tech', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bPh\.D\b', 'Ph D', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bECE\b', 'E C E', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bCSE\b', 'C S E', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bEEE\b', 'E E E', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bLPA\b', 'Lakhs per annum', speech_text, flags=re.IGNORECASE)
+
+    # 7. Convert digit ranges like 2024-2025 to 2024 to 2025
+    speech_text = re.sub(r'(\d{4})\s*[\–\-]\s*(\d{4})', r'\1 to \2', speech_text)
+    speech_text = re.sub(r'(\d+)\+', r'\1 plus', speech_text)
+
+    # 8. Remove list markers (1. , - , * , • , etc)
+    _lines = speech_text.split('\n')
+    _cleaned_lines = []
+    for _line in _lines:
+        _l = _line.strip()
+        if not _l or re.match(r'^\|?[\s\-:|]+\|?$', _l):
+            continue
+        _l = re.sub(r'^[#*_\-\+•▪►▶◆★✓✔✕✖]+\s*', '', _l)
+        _l = re.sub(r'^\d+\.\s*', '', _l)
+        _cleaned_lines.append(_l)
+    speech_text = ' '.join(_cleaned_lines)
+
+    # 9. Replace em-dashes, en-dashes, double-dashes, isolated hyphens, colons with pause commas
+    speech_text = re.sub(r'\s*[\—\–]\s*', ', ', speech_text)
+    speech_text = re.sub(r'\s+--\s+', ', ', speech_text)
+    speech_text = re.sub(r'\s+-\s+', ', ', speech_text)
+    speech_text = re.sub(r':\s+', ', ', speech_text)
+
+    # 10. Strip emojis and extended pictographs
+    speech_text = re.sub(r'[\U00010000-\U0010FFFF\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\u2000-\u206F]', '', speech_text)
+
+    # 11. Strip remaining markdown symbols
+    speech_text = re.sub(r'[#*`_~[\](){}<>|]', '', speech_text)
+
+    # 12. Normalize punctuation & extra spaces
+    speech_text = re.sub(r',\s*,', ',', speech_text)
+    speech_text = re.sub(r'\.\s*\.', '.', speech_text)
+    speech_text = re.sub(r',\s*\.', '.', speech_text)
+    speech_text = re.sub(r'\s+', ' ', speech_text).strip()
+    if speech_text and not re.search(r'[.!?]$', speech_text):
+        speech_text += '.'
     
     # Deepgram API endpoint selection with resilient multi-tier fallback
     if deepgram_key:
