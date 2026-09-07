@@ -2806,7 +2806,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "   - MARKDOWN TABLES (| Header 1 | Header 2 |): Compact 2-column tables for structured data comparisons or fee breakdowns.\n"
                     "4. STRICT FACTUAL GROUNDING: Answer strictly based ONLY on verified MSAJCEA campus records and knowledge base entities. Never invent or extrapolate details.\n"
                     "5. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text.\n"
-                    "6. UNIVERSAL LINKING: Format emails as `[email](mailto:email)` and phone numbers as `[number](tel:+91...)`. Use native directional arrows (→) without LaTeX math notation."
+                    "6. UNIVERSAL LINKING: Format emails as `[email](mailto:email)` and phone numbers as `[number](tel:+91...)`. Use native directional arrows (→) without LaTeX math notation.\n"
+                    "7. DYNAMIC STRUCTURAL VARIATION & NATURAL DIVERSITY:\n"
+                    "   - NEVER use the exact same rigid layout or repetitive template response for every query, persona, or entity.\n"
+                    "   - Adapt layout dynamically based on user question context: use bulleted key highlights for quick lookups, structured profile cards with section headers for detailed entity queries, or compact 2-column comparison tables.\n"
+                    "   - Vary introductory phrasing naturally while remaining 100% accurate to grounded campus facts."
                 )
 
             # Multi-turn history (scaled by query class) - Fetch latest HISTORY_LIMIT messages in chronological order, excluding user_msg_id
@@ -2898,7 +2902,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             llm_payload = {
                 "model": model_id,
                 "messages": messages,
-                "temperature": 0.4,
+                "temperature": 0.55,
                 "max_tokens": MAX_TOKENS,
                 "stream": True
             }

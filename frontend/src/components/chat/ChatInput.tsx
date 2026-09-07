@@ -894,7 +894,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       <div className="mx-auto max-w-4xl w-full min-w-0 px-3 sm:px-6 box-border">
         {/* Rate Limit Alert Banner Tab */}
         <AnimatePresence>
-          {rateLimitInfo && rateLimitInfo.isLimited && (
+          {rateLimitInfo && rateLimitInfo.isLimited && rateLimitInfo.untilTimestamp > Date.now() && secondsLeft > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -930,6 +930,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     {formatCountdown(secondsLeft)}
                   </span>
                 </div>
+                {onClearRateLimit && (
+                  <button
+                    type="button"
+                    onClick={onClearRateLimit}
+                    title="Dismiss rate limit banner"
+                    className="flex size-7 items-center justify-center rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 transition-colors cursor-pointer"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

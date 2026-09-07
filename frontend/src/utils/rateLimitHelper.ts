@@ -30,13 +30,14 @@ export function detectRateLimitFromText(text: string): RateLimitInfo | null {
                        text.match(/(?:try again in|wait)\s*(\d+)\s*second/i);
   const parsedSeconds = secondsMatch ? parseInt(secondsMatch[1], 10) : null;
 
-  // 1. Daily limit (20 req/day)
+  // 1. Daily limit (20 req/day) - Require explicit rate limit error markers
   if (
-    lower.includes("20 queries per day") || 
-    lower.includes("20 requests per day") || 
-    lower.includes("daily quota") || 
-    lower.includes("daily limit") ||
-    lower.includes("20/20")
+    lower.includes("20 queries per day limit") || 
+    lower.includes("20 requests per day limit") || 
+    lower.includes("daily limit reached") || 
+    lower.includes("daily quota exhausted") ||
+    lower.includes("daily limit exceeded") ||
+    (lower.includes("20/20") && lower.includes("exhausted"))
   ) {
     const dailyReset = getDailyResetTime();
     const until = parsedSeconds !== null ? Date.now() + parsedSeconds * 1000 : dailyReset.untilTimestamp;
@@ -53,10 +54,11 @@ export function detectRateLimitFromText(text: string): RateLimitInfo | null {
   
   // 2. Minute limit (5 req/min)
   if (
-    lower.includes("5 queries per minute") || 
-    lower.includes("5 requests per minute") || 
-    lower.includes("maximum 5 queries") ||
-    lower.includes("rate limit exceeded")
+    lower.includes("5 queries per minute limit") || 
+    lower.includes("5 requests per minute limit") || 
+    lower.includes("maximum 5 queries per minute") ||
+    lower.includes("rate limit exceeded") ||
+    lower.includes("too many requests")
   ) {
     const secsLeft = parsedSeconds !== null ? parsedSeconds : 60;
     const until = Date.now() + secsLeft * 1000;

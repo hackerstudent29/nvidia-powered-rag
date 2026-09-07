@@ -402,8 +402,6 @@ export function useChat() {
 
             if (data.type === "token") {
               accumulatedContent += data.token;
-              const detected = detectRateLimitFromText(data.token);
-              if (detected) setRateLimitInfo(detected);
               requestFlush(false);
             } else if (data.type === "sources") {
               accumulatedSources = data.sources || [];
@@ -445,6 +443,13 @@ export function useChat() {
 
       // Ensure 100% final flush of all content & turn off streaming flag
       requestFlush(true);
+
+      // Auto-clear rate limit banner if request completed successfully or reset time passed
+      setRateLimitInfo((current) => {
+        if (!current) return null;
+        if (current.untilTimestamp && current.untilTimestamp <= Date.now()) return null;
+        return current;
+      });
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantPlaceholderId
