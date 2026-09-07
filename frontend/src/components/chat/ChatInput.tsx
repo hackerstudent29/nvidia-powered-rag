@@ -193,27 +193,16 @@ export interface VoiceOption {
 }
 
 const AURA_VOICES: VoiceOption[] = [
-  // Default & Featured Voices (Bruce, Brook, Alexis)
-  { id: "aura-bruce-en", name: "Bruce", gender: "Masculine", accent: "American", description: "Deep & Resonant Male (Default)", gradient: "from-blue-500 via-indigo-600 to-slate-800" },
-  { id: "aura-brook-en", name: "Brook", gender: "Masculine", accent: "American", description: "Warm & Natural Male (Default)", gradient: "from-cyan-400 via-teal-500 to-emerald-700" },
-  { id: "flux-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "Flux Expressive (Warm Female)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
-
-  // Deepgram Flux Models
-  { id: "flux-astrid-en", name: "Astrid", gender: "Feminine", accent: "American", description: "Flux Expressive (Clear & Expressive)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
-  { id: "flux-orion-en", name: "Orion Flux", gender: "Masculine", accent: "American", description: "Flux Expressive (Deep & Resonant)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
-  { id: "flux-stella-en", name: "Stella Flux", gender: "Feminine", accent: "American", description: "Flux Expressive (Smooth & Professional)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
-
-  // Deepgram Aura Neural Models
-  { id: "aura-asteria-en", name: "Brooke", gender: "Feminine", accent: "American", description: "Aura Neural (Warm Feminine)", gradient: "from-rose-400 via-pink-500 to-rose-600" },
-  { id: "aura-athena-en", name: "Athena", gender: "Feminine", accent: "American", description: "Aura Neural (Clear & Authoritative)", gradient: "from-amber-400 via-orange-500 to-red-600" },
-  { id: "aura-orion-en", name: "Orion Aura", gender: "Masculine", accent: "American", description: "Aura Neural (Strong & Confident)", gradient: "from-blue-600 via-sky-500 to-indigo-800" },
-  { id: "aura-zeus-en", name: "Zeus", gender: "Masculine", accent: "American", description: "Aura Neural (Commanding Male)", gradient: "from-purple-600 via-indigo-600 to-slate-900" },
-  { id: "aura-arcas-en", name: "Arcas", gender: "Masculine", accent: "American", description: "Aura Neural (Warm & Friendly Male)", gradient: "from-emerald-500 via-teal-600 to-cyan-700" },
-  { id: "aura-perseus-en", name: "Perseus", gender: "Masculine", accent: "American", description: "Aura Neural (Professional Male)", gradient: "from-slate-600 via-zinc-700 to-neutral-800" },
-  { id: "aura-helios-en", name: "Helios", gender: "Masculine", accent: "British", description: "Aura Neural (British Accent Male)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
-  { id: "aura-angus-en", name: "Angus", gender: "Masculine", accent: "Irish", description: "Aura Neural (Irish Accent Male)", gradient: "from-green-500 via-emerald-600 to-teal-700" },
-  { id: "aura-luna-en", name: "Luna", gender: "Feminine", accent: "American", description: "Aura Neural (Gentle Soft Female)", gradient: "from-fuchsia-400 via-purple-500 to-pink-600" },
-  { id: "aura-hera-en", name: "Hera", gender: "Feminine", accent: "American", description: "Aura Neural (Polished Female)", gradient: "from-violet-400 via-purple-600 to-indigo-600" },
+  { id: "flux-alexis-en", name: "Alexis (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Warm & Conversational)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
+  { id: "flux-astrid-en", name: "Astrid (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Clear & Expressive)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
+  { id: "flux-stella-en", name: "Stella (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Smooth & Professional)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
+  { id: "flux-luna-en", name: "Luna (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Gentle & Soft)", gradient: "from-fuchsia-400 via-purple-500 to-pink-600" },
+  { id: "flux-hera-en", name: "Hera (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Polished & Articulate)", gradient: "from-violet-400 via-purple-600 to-indigo-600" },
+  { id: "flux-orion-en", name: "Orion (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Deep & Resonant)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
+  { id: "flux-arcas-en", name: "Arcas (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Warm & Friendly)", gradient: "from-emerald-500 via-teal-600 to-cyan-700" },
+  { id: "flux-perseus-en", name: "Perseus (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Confident & Clear)", gradient: "from-slate-600 via-zinc-700 to-neutral-800" },
+  { id: "flux-zeus-en", name: "Zeus (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Commanding Male)", gradient: "from-purple-600 via-indigo-600 to-slate-900" },
+  { id: "flux-helios-en", name: "Helios (Flux)", gender: "Masculine", accent: "British", description: "Deepgram Flux Voice Agent (Expressive British)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
 ];
 
 
@@ -238,7 +227,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const [selectedVoice, setSelectedVoice] = useState(() => {
     const saved = localStorage.getItem("lorin_tts_voice");
-    return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "aura-bruce-en";
+    return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "flux-alexis-en";
   });
   const [expressivity, setExpressivity] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_expressivity");
@@ -1018,7 +1007,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               overflow: (expanded || isVoiceMenuOpen || isModelSelectOpen) ? "visible" : "hidden",
             }}
             className={cn(
-              "relative w-full border border-black/10 dark:border-white/10 bg-white/80 dark:bg-[#14151a]/85 backdrop-blur-2xl shadow-2xl transition-all z-10 focus-within:border-[#2E6B5E]/60 dark:focus-within:border-[#10b981]/60 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+              "relative w-full border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#12141c]/95 backdrop-blur-2xl shadow-2xl transition-all z-10 focus-within:border-[#2E6B5E]/60 dark:focus-within:border-[#10b981]/60 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
               expanded ? "cursor-text" : "cursor-pointer hover:border-[#2E6B5E]/40 dark:hover:border-[#10b981]/40"
             )}
           >
@@ -1099,7 +1088,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     }));
                   }}
                   className={cn(
-                    "absolute bottom-full left-0 mb-2.5 z-50 w-72 sm:w-80 rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white/95 dark:bg-[#1c1d24]/95 p-2 shadow-2xl backdrop-blur-md flex flex-col gap-2 transition-all duration-300 cursor-default",
+                    "absolute bottom-full left-0 mb-2.5 z-50 w-72 sm:w-80 rounded-2xl border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#12141c]/95 p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl flex flex-col gap-2 transition-all duration-300 cursor-default",
                     isModelSelectOpen
                       ? "opacity-100 scale-100 translate-y-0 pointer-events-auto ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                       : "opacity-0 scale-95 translate-y-3 pointer-events-none ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
@@ -1265,7 +1254,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     transition={{ duration: 0.15, ease: "easeOut" }}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 rounded-2xl bg-white/80 dark:bg-[#12141c]/80 backdrop-blur-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-black/10 dark:border-white/15 z-50 cursor-default text-ink dark:text-white"
+                    className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#12141c]/95 backdrop-blur-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.4)] border border-black/10 dark:border-white/15 z-50 cursor-default text-ink dark:text-white"
                   >
                     {/* Compact Header */}
                     <div className="px-1 pb-1.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-2 flex items-center justify-between">

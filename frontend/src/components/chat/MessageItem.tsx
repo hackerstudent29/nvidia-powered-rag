@@ -266,9 +266,25 @@ function prepareCleanTTSText(markdown: string): string {
   text = text.replace(/mailto:[^\s\)]+/gi, "");
   text = text.replace(/tel:[^\s\)]+/gi, "");
   text = text.replace(/```[\s\S]*?```/g, "");
-  text = text.replace(/\[\d+\]|\[Source:[^\]]+\]|📌|⚡|✓|✉️|📞|👉/g, "");
-
   return text.replace(/\s+/g, " ").trim();
+}
+
+function computeTTSWordStartTimes(ttsWords: string[], duration: number): number[] {
+  if (ttsWords.length === 0 || duration <= 0) return [];
+  const weights = ttsWords.map((w) => {
+    let weight = Math.max(1, w.replace(/[^a-zA-Z0-9]/g, "").length);
+    if (/[,\-;:]/.test(w)) weight += 2.5; // Short pause
+    if (/[.!?]/.test(w)) weight += 4.5;   // Full stop pause
+    return weight;
+  });
+
+  const totalWeight = weights.reduce((sum, val) => sum + val, 0);
+  let accumulated = 0;
+  return ttsWords.map((_, i) => {
+    const start = (accumulated / totalWeight) * duration;
+    accumulated += weights[i];
+    return start;
+  });
 }
 
 function isWordToken(token: string): boolean {
@@ -403,13 +419,13 @@ const MessageItem = React.memo(function MessageItem({
 
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
-  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "aura-bruce-en");
+  const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-alexis-en");
 
   // Sync voice settings (speed, tone/expressivity) live across all message toolbars & Voice Controls modal
   useEffect(() => {
     const syncVoiceSettings = () => {
       const savedSpeed = localStorage.getItem("lorin_tts_speed");
-      const savedVoice = localStorage.getItem("lorin_tts_voice") || "aura-bruce-en";
+      const savedVoice = localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
       const savedExpr = localStorage.getItem("lorin_tts_expressivity");
 
       if (savedSpeed) {
@@ -550,15 +566,14 @@ const MessageItem = React.memo(function MessageItem({
     setIsLoadingAudio(true);
 
     try {
-      // Use Python FastAPI HD Neural Voice TTS API (Bruce as default)
-      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "aura-bruce-en";
+      // Use Deepgram Flux HD Neural Voice Agent TTS API
+      const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
       const validVoices = [
-        "aura-bruce-en", "aura-brook-en", "flux-alexis-en", "flux-astrid-en",
-        "flux-orion-en", "flux-stella-en", "aura-orion-en", "aura-asteria-en",
-        "aura-zeus-en", "aura-arcas-en", "aura-perseus-en", "aura-helios-en",
-        "aura-angus-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en"
+        "flux-alexis-en", "flux-astrid-en", "flux-stella-en", "flux-luna-en",
+        "flux-hera-en", "flux-orion-en", "flux-arcas-en", "flux-perseus-en",
+        "flux-zeus-en", "flux-helios-en"
       ];
-      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "aura-bruce-en";
+      const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-alexis-en";
 
       const res = await fetch(`${API_BASE}/tts`, {
         method: "POST",
@@ -585,15 +600,27 @@ const MessageItem = React.memo(function MessageItem({
       audioRef.current = audio;
 
       const totalTTSWords = ttsWords.length;
+      let wordStartTimes: number[] = [];
 
       const updateHighlightLoop = () => {
         if (audioRef.current && !audioRef.current.paused) {
           const duration = audioRef.current.duration;
           if (duration && duration > 0 && totalTTSWords > 0) {
-            const progress = Math.min(audioRef.current.currentTime / duration, 0.999);
-            const currentTTSWordIdx = Math.floor(progress * totalTTSWords);
-            const activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
+            if (wordStartTimes.length === 0) {
+              wordStartTimes = computeTTSWordStartTimes(ttsWords, duration);
+            }
 
+            const currTime = audioRef.current.currentTime;
+            let currentTTSWordIdx = 0;
+            for (let i = 0; i < wordStartTimes.length; i++) {
+              if (currTime >= wordStartTimes[i]) {
+                currentTTSWordIdx = i;
+              } else {
+                break;
+              }
+            }
+
+            const activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
             setActiveWordIdx(activeDisplayIdx);
           }
           animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
