@@ -14,8 +14,8 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
 
   const formattedCostUsd =
     metrics.total_cost_usd < 0.0001
-      ? `$${metrics.total_cost_usd.toFixed(6)}`
-      : `$${metrics.total_cost_usd.toFixed(4)}`;
+      ? `${metrics.total_cost_usd.toFixed(6)} USD`
+      : `${metrics.total_cost_usd.toFixed(4)} USD`;
 
   const formattedCostInr = `₹${metrics.total_cost_inr.toFixed(3)}`;
 
@@ -97,8 +97,8 @@ interface TokenCostPanelProps {
 export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
   const formattedCostUsd =
     metrics.total_cost_usd < 0.0001
-      ? `$${metrics.total_cost_usd.toFixed(6)}`
-      : `$${metrics.total_cost_usd.toFixed(4)}`;
+      ? `${metrics.total_cost_usd.toFixed(6)} USD`
+      : `${metrics.total_cost_usd.toFixed(4)} USD`;
 
   const formattedCostInr = `₹${metrics.total_cost_inr.toFixed(3)}`;
 

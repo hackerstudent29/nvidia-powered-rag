@@ -301,6 +301,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
 
     setPreviewingVoiceId(voice.id);
+    const audio = new Audio();
+    previewAudioRef.current = audio;
+
     try {
       const apiBase = "/api";
 
@@ -317,8 +320,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       });
       const data = await res.json();
       if (data.audio_base64) {
-        const audio = new Audio(data.audio_base64);
-        previewAudioRef.current = audio;
+        audio.src = data.audio_base64;
         audio.playbackRate = ttsSpeed;
         audio.onended = () => setPreviewingVoiceId(null);
         audio.onerror = () => setPreviewingVoiceId(null);
