@@ -595,8 +595,10 @@ const MessageItem = React.memo(function MessageItem({
     const textToSynthesize = segmentTTSWords.join(" ");
     if (!textToSynthesize) return;
 
-    // Pre-create Audio element during user click gesture to preserve browser autoplay permissions
+    // Pre-create & synchronously pre-unlock Audio element during user click gesture to preserve browser autoplay permissions
     const audio = new Audio();
+    audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+    audio.play().catch(() => {});
     audioRef.current = audio;
 
     // Enforce global single-audio playback across all messages!
