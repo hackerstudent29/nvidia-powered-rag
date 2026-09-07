@@ -187,22 +187,27 @@ export interface VoiceOption {
   id: string;
   name: string;
   gender: "Feminine" | "Masculine";
-  accent: "American" | "British" | "Irish";
+  accent: "American" | "British" | "Irish" | "Indian" | "Australian" | "Singaporean";
   description: string;
   gradient: string;
 }
 
 const AURA_VOICES: VoiceOption[] = [
-  { id: "flux-alexis-en", name: "Alexis (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Warm & Conversational)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
-  { id: "flux-astrid-en", name: "Astrid (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Clear & Expressive)", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
-  { id: "flux-stella-en", name: "Stella (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Smooth & Professional)", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
-  { id: "flux-luna-en", name: "Luna (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Gentle & Soft)", gradient: "from-fuchsia-400 via-purple-500 to-pink-600" },
-  { id: "flux-hera-en", name: "Hera (Flux)", gender: "Feminine", accent: "American", description: "Deepgram Flux Voice Agent (Polished & Articulate)", gradient: "from-violet-400 via-purple-600 to-indigo-600" },
-  { id: "flux-orion-en", name: "Orion (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Deep & Resonant)", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
-  { id: "flux-arcas-en", name: "Arcas (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Warm & Friendly)", gradient: "from-emerald-500 via-teal-600 to-cyan-700" },
-  { id: "flux-perseus-en", name: "Perseus (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Confident & Clear)", gradient: "from-slate-600 via-zinc-700 to-neutral-800" },
-  { id: "flux-zeus-en", name: "Zeus (Flux)", gender: "Masculine", accent: "American", description: "Deepgram Flux Voice Agent (Commanding Male)", gradient: "from-purple-600 via-indigo-600 to-slate-900" },
-  { id: "flux-helios-en", name: "Helios (Flux)", gender: "Masculine", accent: "British", description: "Deepgram Flux Voice Agent (Expressive British)", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
+  { id: "flux-alexis-en", name: "Alexis", gender: "Feminine", accent: "American", description: "Professional, calm, caring & empathetic (Default)", gradient: "from-emerald-400 via-teal-500 to-indigo-600" },
+  { id: "flux-hannah-en", name: "Hannah", gender: "Feminine", accent: "American", description: "Clear, confident, thoughtful & pleasant", gradient: "from-teal-300 via-cyan-400 to-blue-500" },
+  { id: "flux-brooke-en", name: "Brooke", gender: "Feminine", accent: "American", description: "Friendly, intelligent & energetic", gradient: "from-indigo-400 via-purple-500 to-violet-600" },
+  { id: "flux-gemma-en", name: "Gemma", gender: "Feminine", accent: "British", description: "Friendly, kind & approachable British", gradient: "from-rose-400 via-pink-500 to-rose-600" },
+  { id: "flux-maeve-en", name: "Maeve", gender: "Feminine", accent: "Irish", description: "Friendly, energetic & gentle Irish", gradient: "from-fuchsia-400 via-purple-500 to-pink-600" },
+  { id: "flux-meena-en", name: "Meena", gender: "Feminine", accent: "Indian", description: "Empathetic, professional & reassuring Indian", gradient: "from-amber-400 via-orange-500 to-red-600" },
+  { id: "flux-priya-en", name: "Priya", gender: "Feminine", accent: "Indian", description: "Confident, empathetic & professional Indian", gradient: "from-violet-400 via-purple-600 to-indigo-600" },
+  { id: "flux-sharon-en", name: "Sharon", gender: "Feminine", accent: "Australian", description: "Calm, relaxed & confident Australian", gradient: "from-cyan-400 via-teal-500 to-emerald-700" },
+  { id: "flux-bruce-en", name: "Bruce", gender: "Masculine", accent: "American", description: "Friendly, natural & believable Male", gradient: "from-blue-500 via-indigo-600 to-slate-800" },
+  { id: "flux-cliff-en", name: "Cliff", gender: "Masculine", accent: "American", description: "Deep, confident & calm Male", gradient: "from-slate-600 via-zinc-700 to-neutral-800" },
+  { id: "flux-colin-en", name: "Colin", gender: "Masculine", accent: "British", description: "Warm, friendly & trustworthy British", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
+  { id: "flux-naveen-en", name: "Naveen", gender: "Masculine", accent: "Indian", description: "Professional, knowledgeable & calm Indian", gradient: "from-emerald-500 via-teal-600 to-cyan-700" },
+  { id: "flux-kit-en", name: "Kit", gender: "Masculine", accent: "British", description: "Friendly, energetic & thoughtful British", gradient: "from-purple-600 via-indigo-600 to-slate-900" },
+  { id: "flux-miles-en", name: "Miles", gender: "Masculine", accent: "American", description: "Calm, professional & confident Male", gradient: "from-blue-600 via-sky-500 to-indigo-800" },
+  { id: "flux-kai-en", name: "Kai", gender: "Masculine", accent: "Singaporean", description: "Calm, professional & knowledgeable Asian", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
 ];
 
 

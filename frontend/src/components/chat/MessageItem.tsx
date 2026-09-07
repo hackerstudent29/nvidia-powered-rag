@@ -569,9 +569,10 @@ const MessageItem = React.memo(function MessageItem({
       // Use Deepgram Flux HD Neural Voice Agent TTS API
       const rawVoice = overrideVoice || localStorage.getItem("lorin_tts_voice") || "flux-alexis-en";
       const validVoices = [
-        "flux-alexis-en", "flux-astrid-en", "flux-stella-en", "flux-luna-en",
-        "flux-hera-en", "flux-orion-en", "flux-arcas-en", "flux-perseus-en",
-        "flux-zeus-en", "flux-helios-en"
+        "flux-alexis-en", "flux-hannah-en", "flux-brooke-en", "flux-gemma-en",
+        "flux-maeve-en", "flux-meena-en", "flux-priya-en", "flux-sharon-en",
+        "flux-bruce-en", "flux-cliff-en", "flux-colin-en", "flux-naveen-en",
+        "flux-kit-en", "flux-miles-en", "flux-kai-en"
       ];
       const selectedVoice = validVoices.includes(rawVoice) ? rawVoice : "flux-alexis-en";
 
