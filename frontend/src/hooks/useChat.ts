@@ -484,28 +484,56 @@ export function useChat() {
     }
   };
 
-  // Regenerate response using NVIDIA Nemotron Reranker (nvidia/llama-nemotron-rerank-1b-v2)
-  const regenerateWithNeMo = async (queryText: string) => {
-    if (isStreaming) return;
+  // Regenerate response using NVIDIA Nemotron Reranker in-place on target message
+  const regenerateWithNeMo = async (queryText: string, targetMessageId?: string) => {
+    if (isStreaming || !queryText) return;
     setIsStreaming(true);
 
-    const tempId = `msg_nemo_${Date.now()}`;
-    const initialAssistantMsg: Message = {
-      id: tempId,
-      role: "assistant",
-      content: "",
-      timestamp: new Date(),
-      model: "nvidia/llama-nemotron-rerank-1b-v2",
-      is_streaming: true,
-      reasoning_steps: [
-        "1. Activated NVIDIA Nemotron Reranker (nvidia/llama-nemotron-rerank-1b-v2)",
-        "2. Intercepted Colang 2.0 Guardrails and domain boundary policies",
-        "3. Fusing dense & sparse retrieval candidates via RRF (k=60)",
-        "4. Generating high-precision re-evaluated campus response"
-      ],
-    };
+    let assistantMsgId = targetMessageId;
+    if (!assistantMsgId) {
+      const lastAsst = [...messages].reverse().find((m) => m.role === "assistant");
+      assistantMsgId = lastAsst ? lastAsst.id : `msg_nemo_${Date.now()}`;
+    }
 
-    setMessages((prev) => [...prev, initialAssistantMsg]);
+    setMessages((prev) => {
+      const exists = prev.some((m) => m.id === assistantMsgId);
+      if (exists) {
+        return prev.map((m) =>
+          m.id === assistantMsgId
+            ? {
+                ...m,
+                content: "",
+                is_streaming: true,
+                model: "nvidia/llama-nemotron-rerank-1b-v2",
+                reasoning_steps: [
+                  "1. Activated NVIDIA Nemotron Reranker (nvidia/llama-nemotron-rerank-1b-v2)",
+                  "2. Intercepted Colang 2.0 Guardrails & domain boundary policies",
+                  "3. Fusing dense & sparse retrieval candidates via RRF (k=60)",
+                  "4. Generating high-precision re-evaluated campus response"
+                ],
+              }
+            : m
+        );
+      } else {
+        return [
+          ...prev,
+          {
+            id: assistantMsgId!,
+            role: "assistant",
+            content: "",
+            timestamp: new Date(),
+            model: "nvidia/llama-nemotron-rerank-1b-v2",
+            is_streaming: true,
+            reasoning_steps: [
+              "1. Activated NVIDIA Nemotron Reranker (nvidia/llama-nemotron-rerank-1b-v2)",
+              "2. Intercepted Colang 2.0 Guardrails & domain boundary policies",
+              "3. Fusing dense & sparse retrieval candidates via RRF (k=60)",
+              "4. Generating high-precision re-evaluated campus response"
+            ],
+          },
+        ];
+      }
+    });
 
     try {
       const res = await fetch(`${API_BASE}/feedback/regenerate-nemo`, {
@@ -513,7 +541,8 @@ export function useChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query_text: queryText,
-          session_id: sessionId
+          session_id: sessionId,
+          message_id: assistantMsgId,
         }),
       });
 
@@ -521,13 +550,13 @@ export function useChat() {
 
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === tempId
+          msg.id === assistantMsgId
             ? {
                 ...msg,
                 content: data.response || "No reranked response received.",
                 is_streaming: false,
                 sources: data.sources || [],
-                model: "nvidia/llama-nemotron-rerank-1b-v2"
+                model: "nvidia/llama-nemotron-rerank-1b-v2",
               }
             : msg
         )
@@ -536,11 +565,11 @@ export function useChat() {
       console.error("Error in NeMo regeneration:", err);
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === tempId
+          msg.id === assistantMsgId
             ? {
                 ...msg,
                 content: "Failed to regenerate with NVIDIA Nemotron. Please try again.",
-                is_streaming: false
+                is_streaming: false,
               }
             : msg
         )

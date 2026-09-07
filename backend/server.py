@@ -2307,16 +2307,19 @@ def record_security_offense(user_id: str, user_ip: str, attack_type: str, user_q
         
     return action_taken
 
+# Toggle rate limiting on user requests (Set to False temporarily per user request; set env ENABLE_RATE_LIMITING=true to re-enable)
+ENABLE_RATE_LIMITING = os.getenv("ENABLE_RATE_LIMITING", "false").lower() == "true"
+
 def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: str) -> Tuple[bool, Optional[str]]:
     """
     Evaluates:
-    1. Active DB Bans (5m, 1h, 24h, Permanent).
+    1. Active DB Bans (5m, 1h, 24h, Permanent for Security Attacks).
     2. Prompt Injection & Severe Cyber Security Attacks.
-    3. Rate Limits (Max 5 req/min, Max 20 req/day).
+    3. Rate Limits (Max 5 req/min, Max 20 req/day) - disabled temporarily when ENABLE_RATE_LIMITING is False.
     """
     now_utc = datetime.now(timezone.utc)
     
-    # 1. Check existing DB ban status
+    # 1. Check existing DB ban status for security attacks
     try:
         with DBContext() as conn:
             if conn:
@@ -2324,17 +2327,20 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
                     cur.execute("SELECT offense_count, banned_until, is_permanently_banned, reason FROM user_security_bans WHERE user_identifier = %s OR user_ip = %s;", (user_id, user_ip))
                     row = cur.fetchone()
                     if row:
-                        if row.get("is_permanently_banned"):
-                            return False, "🚫 Security Guardrail Alert: Access permanently revoked due to repeated security attacks against MSAJCEA services."
-                        
-                        banned_until = row.get("banned_until")
-                        if banned_until:
-                            if isinstance(banned_until, datetime):
-                                if banned_until.tzinfo is None:
-                                    banned_until = banned_until.replace(tzinfo=timezone.utc)
-                                if banned_until > now_utc:
-                                    mins_left = max(1, int((banned_until - now_utc).total_seconds() / 60))
-                                    return False, f"⚠️ Security Guardrail Alert: Request flood/attack violation detected. Access suspended for {mins_left} more minute(s)."
+                        reason = str(row.get("reason") or "")
+                        is_rate_limit_reason = any(term in reason.lower() for term in ["exceeded 5 requests", "exceeded 20 requests", "rate limit attack", "daily quota flood"])
+                        if not is_rate_limit_reason:
+                            if row.get("is_permanently_banned"):
+                                return False, "🚫 Security Guardrail Alert: Access permanently revoked due to repeated security attacks against MSAJCEA services."
+                            
+                            banned_until = row.get("banned_until")
+                            if banned_until:
+                                if isinstance(banned_until, datetime):
+                                    if banned_until.tzinfo is None:
+                                        banned_until = banned_until.replace(tzinfo=timezone.utc)
+                                    if banned_until > now_utc:
+                                        mins_left = max(1, int((banned_until - now_utc).total_seconds() / 60))
+                                        return False, f"⚠️ Security Guardrail Alert: Attack pattern violation detected. Access suspended for {mins_left} more minute(s)."
     except Exception as e:
         print(f"[WARN] Ban check error: {e}")
 
@@ -2352,6 +2358,9 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
             return False, f"⚠️ Security Guardrail Alert: Attack pattern detected ('{pattern}'). {action}."
 
     # 3. Check Rate Limits (5 questions / min, 20 questions / day)
+    if not ENABLE_RATE_LIMITING:
+        return True, None
+
     try:
         with DBContext() as conn:
             if conn:
@@ -2361,6 +2370,8 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
                     
                     cur_min_count = 0
                     cur_day_count = 0
+                    m_ts = None
+                    d_ts = None
                     
                     if row:
                         m_ts = row.get("minute_timestamp")
@@ -2371,20 +2382,26 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
                                 m_ts = m_ts.replace(tzinfo=timezone.utc)
                             if (now_utc - m_ts).total_seconds() < 60:
                                 cur_min_count = row.get("minute_count") or 0
+                            else:
+                                m_ts = None
                         
                         if d_ts:
                             if isinstance(d_ts, datetime) and d_ts.tzinfo is None:
                                 d_ts = d_ts.replace(tzinfo=timezone.utc)
                             if (now_utc - d_ts).total_seconds() < 86400:
                                 cur_day_count = row.get("day_count") or 0
+                            else:
+                                d_ts = None
 
                     if cur_min_count >= 5:
-                        action = record_security_offense(user_id, user_ip, "Rate Limit Attack (5 req/min)", user_query, "Exceeded 5 requests per minute limit")
-                        return False, f"⚠️ Rate Limit Exceeded: Maximum 5 queries per minute allowed. {action}."
+                        sec_left = max(1, int(60 - (now_utc - m_ts).total_seconds())) if m_ts else 60
+                        return False, f"⚠️ Rate Limit Exceeded: Maximum 5 queries per minute allowed. Please wait {sec_left} second(s) before trying again. (Resets in {sec_left}s)"
 
                     if cur_day_count >= 20:
-                        action = record_security_offense(user_id, user_ip, "Daily Quota Flood (20 req/day)", user_query, "Exceeded 20 requests per day limit")
-                        return False, f"⚠️ Daily Quota Exceeded: Maximum 20 queries per day allowed for guest accounts. {action}."
+                        sec_left = max(1, int(86400 - (now_utc - d_ts).total_seconds())) if d_ts else 86400
+                        hours_left = sec_left // 3600
+                        mins_left = (sec_left % 3600) // 60
+                        return False, f"⚠️ Daily Quota Exceeded: Maximum 20 queries per day allowed for guest accounts. Resets in {hours_left}h {mins_left}m. (Resets in {sec_left}s)"
 
                     # Update counters
                     cur.execute("""
@@ -2711,48 +2728,35 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 )
             context_str = "\n".join(context_blocks)
 
-            # Universal, principles-based System Prompt
+            # Universal, Mobile-Optimized & Highly Structured System Prompt
             if query_class == "greeting" and not matched_entities:
                 system_prompt = (
                     "You are Lorin AI, the official campus ambassador and admission guide for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) (Anna University, AICTE approved, NAAC A+, TNEA code 1301).\n"
-                    "Greet the user warmly and explain how you can help them explore courses, scholarships, campus facilities, and admissions.\n\n"
-                    "FORMATTING & TONE GUIDELINES:\n"
-                    "- STRICT EMOJI BAN: DO NOT USE ANY EMOJIS in your response. Zero emojis across text, titles, or lists.\n"
-                    "- ALWAYS format email addresses as active markdown links: `[email](mailto:email)`.\n"
-                    "- ALWAYS format phone numbers as active markdown links: `[number](tel:+91...)`.\n"
-                    "- Keep answer structure clean, modern, well-formatted, and easy to read."
+                    "Greet the student warmly and conversationally, explaining how you can help them explore engineering & architecture courses, admissions, campus facilities, and placements.\n\n"
+                    "FORMATTING & RESPONSE GUIDELINES:\n"
+                    "1. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text.\n"
+                    "2. ALWAYS format email addresses as active markdown links: `[email](mailto:email)`.\n"
+                    "3. ALWAYS format phone numbers as active markdown links: `[number](tel:+91...)`.\n"
+                    "4. Keep response structure clean, friendly, modern, and easy to read on mobile screens."
                 )
             else:
                 system_prompt = (
                     "You are Lorin AI, the official campus guide, admission assistant, and student ambassador for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA).\n"
                     "Affiliation: Anna University | Approval: AICTE | Accreditation: NAAC A+ Grade | TNEA Code: 1301 | Location: SIPCOT IT Park, Egattur, Navalur, OMR, Chennai 603103.\n\n"
-                    "UNIVERSAL OPERATIONAL RULES:\n"
-                    "1. STRICT FACTUAL GROUNDING: Answer strictly based ONLY on the provided verified campus records and knowledge base entities. Never invent or extrapolate details not present in context.\n"
-                    "2. STRICT EMOJI BAN: DO NOT USE ANY EMOJIS in your responses. Zero emojis across titles, headings, bullet points, callouts, or text.\n"
-                    "3. NO FAQ FORMAT: NEVER format responses as FAQ (such as 'Q: ... A: ...') inside the response body, as follow-up questions are rendered as interactive UI buttons separately.\n"
-                    "4. STRUCTURED CONTENT FORMATTING:\n"
-                    "   Select and apply the appropriate structured text formats based on the information requested:\n"
-                    "   - HEADINGS (### Topic Name): Use clear section headers to organize multi-part answers.\n"
-                    "   - PARAGRAPHS: Use concise, direct, factual sentences for short explanations.\n"
-                    "   - KEY-VALUE PAIRS (**Field:** Value): Use for single facts or metadata (e.g. **Location:** Block A, **Office Hours:** 9:00 AM – 4:00 PM).\n"
-                    "   - BULLET LISTS (* item): Use for listing multiple items, facilities, courses, or options.\n"
-                    "   - NUMBERED LISTS (1. Step 1): Use for sequential procedures, application steps, or chronological instructions.\n"
-                    "   - CHECKLISTS (- [ ] Requirement): Use for eligibility criteria, document checklists, or prerequisites.\n"
-                    "   - CALLOUT BOXES: Use blockquotes for notes, warnings, or tips without emojis:\n"
-                    "     > **Note:** Important administrative information\n"
-                    "     > **Warning:** Critical deadline or restriction\n"
-                    "     > **Tip:** Useful suggestion\n"
-                    "   - MARKDOWN TABLES (| Header 1 | Header 2 |): Use compact 2-3 column Markdown Tables ONLY for structured data comparisons, fee breakdowns, bus route schedules, or cutoff scores.\n"
-                    "   - TIMELINES & STEPS: Use clean arrows (→) to indicate progress (e.g. 10 Sep → Application Submission).\n"
-                    "5. PRIVACY & ROUTING: Never disclose personal phone numbers of drivers or staff. Provide official admission contacts ONLY when asked for contact info or official help.\n"
-                    "6. MEDIA & INTERACTIVE WIDGETS:\n"
-                    "   - Format image URLs in context as markdown images: `![Description](image_url)`.\n"
-                    "   - When asked for campus location, address, or map, append a new line with: ```map-location```\n"
-                    "   - When asked for directions or how to reach the college, append a new line with: ```map-route```\n"
-                    "7. UNIVERSAL FORMATTING & LINKING:\n"
-                    "   - Format email addresses as active markdown links: `[email](mailto:email)`.\n"
-                    "   - Format phone numbers as active markdown links: `[number](tel:+91...)`.\n"
-                    "   - ALWAYS output clean native UTF-8 directional arrows directly (→, ↔, ←). NEVER output LaTeX math notation or LaTeX arrows."
+                    "CORE ANSWER RULES & STRICT RELEVANCE:\n"
+                    "1. STRICT LASER FOCUS & RELEVANCE: Answer ONLY what the user explicitly asked. NEVER include unrequested staff members, unrelated people, or extraneous topics. For example, if asked 'who is the principal', answer ONLY about Principal Dr. K.S. Srinivasan. DO NOT bring up other staff, admissions directors, or unrequested people unless directly asked.\n"
+                    "2. ADAPTIVE DEPTH & BRIEF ANALYSIS: When asked direct simple questions ('who is X', 'where is Y'), give a direct, focused answer. When asked for more, brief, extra, or detailed info ('tell me more', 'explain briefly', 'details about X', 'more info'), analyze thoroughly and provide a rich, comprehensive breakdown of THAT target entity using high information density with minimal token overhead.\n"
+                    "3. RICH STRUCTURED MARKDOWN (OPTIMIZED FOR MOBILE & DESKTOP):\n"
+                    "   Structure your text response using rich, modern markdown formats that look crisp on mobile viewports:\n"
+                    "   - HEADINGS (### Topic Name): Clear headers for distinct sections.\n"
+                    "   - KEY-VALUE PAIRS (**Field:** Value): Direct factual highlights (e.g. **Designation:** Principal, **Specialization:** ECE).\n"
+                    "   - BULLET LISTS (- Item): Clean bullet lists for multiple items, qualifications, or features.\n"
+                    "   - NUMBERED LISTS (1. Step 1): For procedures or step-by-step guidance.\n"
+                    "   - CALLOUT BOXES (> **Note:** ...): For important notes or callouts.\n"
+                    "   - MARKDOWN TABLES (| Header 1 | Header 2 |): Compact 2-column tables for structured data comparisons or fee breakdowns.\n"
+                    "4. STRICT FACTUAL GROUNDING: Answer strictly based ONLY on verified MSAJCEA campus records and knowledge base entities. Never invent or extrapolate details.\n"
+                    "5. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text.\n"
+                    "6. UNIVERSAL LINKING: Format emails as `[email](mailto:email)` and phone numbers as `[number](tel:+91...)`. Use native directional arrows (→) without LaTeX math notation."
                 )
 
             # Multi-turn history (scaled by query class) - Fetch latest HISTORY_LIMIT messages in chronological order, excluding user_msg_id
@@ -3623,27 +3627,19 @@ async def regenerate_with_nemo(req: NeMoRegenerateRequest):
                     if row:
                         original_bot_answer = row["content"]
 
-    # 7. LLM-as-a-Judge Prompt: Evaluate reason for dislike & synthesize dataset ground-truth answer
-    judge_prompt = f"""You are Lorin AI's Quality & Ground-Truth LLM Judge. A user disliked a previous response.
-Analyze the user query, original bot answer (if any), and official MSAJCEA dataset records below.
+    # 7. Ground-Truth NeMo Re-Evaluation LLM Prompt
+    judge_prompt = f"""You are Lorin AI, the official student ambassador for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA).
+The user requested a re-evaluation of their question against official campus records.
 
-[USER QUERY]:
+[USER QUESTION]:
 {query}
-
-[ORIGINAL BOT ANSWER]:
-{original_bot_answer or 'Previous generated response'}
 
 [OFFICIAL MSAJCEA GROUND-TRUTH RECORDS]:
 {context_str}
 
-Tasks:
-1. Provide a 1-2 sentence DIAGNOSIS explaining why the original answer was flawed (e.g., Hallucination, Unrelated details, Missing information, or Factual mismatch with official campus records).
-2. Generate a 100% VERIFIED GROUND-TRUTH RE-EVALUATED ANSWER based STRICTLY on official MSAJCEA facts. Use markdown with clear headings, bullet points, and accurate department/facility details.
-
-Output your response in the following format:
-DIAGNOSIS: <1-2 sentence explanation of why original was disliked/flawed>
-RE_EVALUATED_ANSWER:
-<Your corrected, accurate answer here>"""
+Instruction:
+Generate a 100% accurate, high-precision, helpful response directly answering the user's question based strictly on official MSAJCEA facts.
+Do NOT include any meta-talk, diagnosis headings, or comments on previous responses. Output ONLY the clear, complete answer for the user."""
 
     llm_url = f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions"
     llm_headers = {
@@ -3653,7 +3649,7 @@ RE_EVALUATED_ANSWER:
     llm_payload = {
         "model": "zai/glm-5.3-flash",
         "messages": [
-            {"role": "system", "content": "You are Lorin AI Ground-Truth Judge. Diagnose dislike causes and deliver accurate campus answers."},
+            {"role": "system", "content": "You are Lorin AI. Answer campus inquiries accurately and directly based on verified records."},
             {"role": "user", "content": judge_prompt}
         ],
         "temperature": 0.2,
@@ -3669,15 +3665,12 @@ RE_EVALUATED_ANSWER:
             llm_payload["model"] = m
             resp = await http_client.post(llm_url, headers=llm_headers, json=llm_payload, timeout=25.0)
             if resp.status_code == 200:
-                raw_text = resp.json()["choices"][0]["message"]["content"]
-                if "RE_EVALUATED_ANSWER:" in raw_text:
-                    parts = raw_text.split("RE_EVALUATED_ANSWER:", 1)
-                    diag_part = parts[0].replace("DIAGNOSIS:", "").strip()
-                    if diag_part:
-                        diagnosis = diag_part
-                    reevaluated_answer = parts[1].strip()
-                else:
-                    reevaluated_answer = raw_text.strip()
+                raw_text = resp.json()["choices"][0]["message"]["content"].strip()
+                # Clean up any leftover diagnostic prefix lines if generated
+                clean_lines = [line for line in raw_text.split("\n") if not line.upper().startswith("DIAGNOSIS:") and not line.upper().startswith("RE_EVALUATED_ANSWER:")]
+                reevaluated_answer = "\n".join(clean_lines).strip()
+                if not reevaluated_answer:
+                    reevaluated_answer = raw_text
                 break
         except Exception as e:
             print(f"[WARN] NeMo Re-Evaluation LLM error with model {m}: {e}")

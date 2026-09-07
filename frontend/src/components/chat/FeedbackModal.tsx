@@ -17,7 +17,7 @@ interface FeedbackModalProps {
     category: string;
     user_comment: string;
   }) => Promise<void>;
-  onRegenerateWithNeMo?: () => void;
+  onRegenerateWithNeMo?: (queryText?: string, targetMessageId?: string) => void;
 }
 
 export default function FeedbackModal({
@@ -53,7 +53,7 @@ export default function FeedbackModal({
       });
       setSubmitted(true);
       if (rating < 0 && onRegenerateWithNeMo) {
-        onRegenerateWithNeMo();
+        onRegenerateWithNeMo(queryText, messageId);
       }
       setTimeout(() => {
         setSubmitted(false);

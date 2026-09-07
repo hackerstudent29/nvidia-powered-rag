@@ -21,7 +21,7 @@ interface MessageItemProps {
   isLatestMessage?: boolean;
   onSendPrompt?: (prompt: string) => void;
   onRegenerate?: () => void;
-  onRegenerateWithNeMo?: (queryText: string) => void;
+  onRegenerateWithNeMo?: (queryText: string, targetMessageId?: string) => void;
   onSubmitFeedback?: (data: {
     message_id: string;
     session_id: string;
@@ -791,39 +791,39 @@ const MessageItem = React.memo(function MessageItem({
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              p: ({ children }) => <p className="mb-3 text-ink/90 font-normal">{processHighlightedChildren(children)}</p>,
-              ul: ({ children }) => <ul className="list-disc pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-5 mb-3.5 space-y-1.5 text-ink/90">{children}</ol>,
+              p: ({ children }) => <p className="mb-2.5 text-xs sm:text-sm text-ink/90 font-normal leading-relaxed">{processHighlightedChildren(children)}</p>,
+              ul: ({ children }) => <ul className="list-disc pl-4 sm:pl-5 mb-3 space-y-1 text-xs sm:text-sm text-ink/90">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-4 sm:pl-5 mb-3 space-y-1 text-xs sm:text-sm text-ink/90">{children}</ol>,
               li: ({ children }) => <li className="mb-1">{processHighlightedChildren(children)}</li>,
-              h1: ({ children }) => <h1 className="font-heading font-bold tracking-tight mt-5 mb-2.5 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
-              h2: ({ children }) => <h2 className="font-heading font-bold tracking-tight mt-4 mb-2 pb-1.5 border-b border-line/40 dark:border-white/[0.05] text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
-              h3: ({ children }) => <h3 className="font-heading font-bold mt-3.5 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
-              h4: ({ children }) => <h4 className="font-heading font-semibold mt-3 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
-              hr: () => <hr className="my-4 border-line/50 dark:border-white/[0.05]" />,
-              blockquote: ({ children }) => <blockquote className="font-heading border-l-4 border-[#2E6B5E] dark:border-[#4ade80] bg-[#2E6B5E]/5 dark:bg-[#4ade80]/8 rounded-r-xl p-3.5 my-3.5 text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
+              h1: ({ children }) => <h1 className="font-heading font-bold tracking-tight text-base sm:text-lg mt-4 mb-2 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
+              h2: ({ children }) => <h2 className="font-heading font-bold tracking-tight text-sm sm:text-base mt-3.5 mb-2 pb-1 border-b border-line/40 dark:border-white/[0.06] text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
+              h3: ({ children }) => <h3 className="font-heading font-bold text-xs sm:text-sm mt-3 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
+              h4: ({ children }) => <h4 className="font-heading font-semibold text-xs sm:text-xs mt-2.5 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
+              hr: () => <hr className="my-3.5 border-line/50 dark:border-white/[0.06]" />,
+              blockquote: ({ children }) => <blockquote className="font-heading border-l-3 sm:border-l-4 border-[#2E6B5E] dark:border-[#10b981] bg-[#2E6B5E]/5 dark:bg-[#10b981]/10 rounded-r-xl p-2.5 sm:p-3.5 my-3 text-xs sm:text-sm text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
               strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-4 rounded-2xl bg-surface/50 dark:bg-surface/30 box-border backdrop-blur-sm transition-all duration-200 border-none">
-                  <table className="w-full max-w-full border-collapse text-left border-none table-auto">{children}</table>
+                <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-3 rounded-xl sm:rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 p-1 box-border backdrop-blur-sm transition-all duration-200">
+                  <table className="w-full max-w-full border-collapse text-left text-xs sm:text-sm border-none table-auto">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#4ade80]/15 dark:via-[#4ade80]/8 dark:to-transparent text-[#2E6B5E] dark:text-[#4ade80] font-heading border-none">{children}</thead>
+                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#10b981]/20 dark:via-[#10b981]/10 dark:to-transparent text-[#2E6B5E] dark:text-[#10b981] font-heading border-none">{children}</thead>
               ),
               tbody: ({ children }) => (
                 <tbody className="text-ink font-medium border-none">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#34D399]/10 transition-colors duration-150 border-none">{children}</tr>
+                <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#10b981]/10 transition-colors duration-150 border-none">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-3.5 py-2.5 uppercase tracking-wider font-extrabold text-[#2E6B5E] dark:text-[#34D399] border-none whitespace-normal break-words align-top">
+                <th className="px-2.5 sm:px-3.5 py-2 uppercase tracking-wider font-extrabold text-[10px] sm:text-xs text-[#2E6B5E] dark:text-[#34D399] border-none whitespace-normal break-words align-top">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-3.5 py-2.5 text-ink align-top leading-relaxed border-none whitespace-normal break-words">
+                <td className="px-2.5 sm:px-3.5 py-2 text-ink align-top leading-relaxed text-xs sm:text-sm border-none whitespace-normal break-words">
                   {processHighlightedChildren(children)}
                 </td>
               ),
@@ -1257,7 +1257,7 @@ const MessageItem = React.memo(function MessageItem({
             </div>
             <button
               type="button"
-              onClick={() => onRegenerateWithNeMo(userQuery || message.content)}
+              onClick={() => onRegenerateWithNeMo(userQuery || message.content, message.id)}
               className="shrink-0 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] shadow-sm transition-all cursor-pointer"
             >
               Re-evaluate with NeMo

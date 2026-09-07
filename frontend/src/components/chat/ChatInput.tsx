@@ -1236,7 +1236,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     transition={{ duration: 0.15, ease: "easeOut" }}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 rounded-xl bg-white/98 dark:bg-[#12141a]/98 backdrop-blur-xl p-2.5 shadow-xl border border-black/[0.08] dark:border-white/[0.1] z-50 cursor-default text-ink dark:text-white"
+                    className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 rounded-2xl bg-white/80 dark:bg-[#12141c]/80 backdrop-blur-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-black/10 dark:border-white/15 z-50 cursor-default text-ink dark:text-white"
                   >
                     {/* Compact Header */}
                     <div className="px-1 pb-1.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-2 flex items-center justify-between">

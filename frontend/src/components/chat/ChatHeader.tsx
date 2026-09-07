@@ -165,18 +165,20 @@ export default function ChatHeader({
             </motion.div>
           </Tooltip>
 
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h1 className="text-xs sm:text-sm font-heading font-bold text-ink dark:text-[#f4f3ee] tracking-tight whitespace-nowrap">
-                Lorin AI
-              </h1>
-              <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/30 px-2 py-0.5 text-[9.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] dark:border dark:border-[#2E6B5E]/40 whitespace-nowrap">
-                MSAJCEA
+          <div className="flex flex-col justify-center min-w-0 leading-none">
+            {/* Top Row: MSAJCE */}
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#2E6B5E] dark:text-[#10b981] leading-none">
+                MSAJCE
               </span>
-              <span className="hidden md:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-2 py-0.5 text-[9.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40">
+              <span className="hidden md:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.2 text-[8.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40 leading-none">
                 TNEA 1301
               </span>
             </div>
+            {/* Bottom Row: Lorin AI */}
+            <h1 className="text-xs sm:text-sm font-heading font-extrabold text-ink dark:text-[#f4f3ee] tracking-tight whitespace-nowrap leading-tight mt-0.5">
+              Lorin AI
+            </h1>
           </div>
         </div>
 

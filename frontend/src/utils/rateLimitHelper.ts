@@ -25,6 +25,11 @@ export function detectRateLimitFromText(text: string): RateLimitInfo | null {
   if (!text) return null;
   const lower = text.toLowerCase();
   
+  // Extract exact remaining seconds from server response if provided e.g. "(Resets in 14s)" or "wait 14 second(s)"
+  const secondsMatch = text.match(/\(Resets in (\d+)s\)/i) || 
+                       text.match(/(?:try again in|wait)\s*(\d+)\s*second/i);
+  const parsedSeconds = secondsMatch ? parseInt(secondsMatch[1], 10) : null;
+
   // 1. Daily limit (20 req/day)
   if (
     lower.includes("20 queries per day") || 
@@ -34,12 +39,15 @@ export function detectRateLimitFromText(text: string): RateLimitInfo | null {
     lower.includes("20/20")
   ) {
     const dailyReset = getDailyResetTime();
+    const until = parsedSeconds !== null ? Date.now() + parsedSeconds * 1000 : dailyReset.untilTimestamp;
+    const date = new Date(until);
+    const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
     return {
       isLimited: true,
       type: "daily",
       message: "Daily Quota Reached (20/20 Questions Exhausted)",
-      resetTimeString: dailyReset.resetTimeString,
-      untilTimestamp: dailyReset.untilTimestamp
+      resetTimeString: parsedSeconds !== null ? `Available again at ${timeStr}` : dailyReset.resetTimeString,
+      untilTimestamp: until
     };
   }
   
@@ -50,7 +58,8 @@ export function detectRateLimitFromText(text: string): RateLimitInfo | null {
     lower.includes("maximum 5 queries") ||
     lower.includes("rate limit exceeded")
   ) {
-    const until = Date.now() + 60 * 1000;
+    const secsLeft = parsedSeconds !== null ? parsedSeconds : 60;
+    const until = Date.now() + secsLeft * 1000;
     const date = new Date(until);
     const timeStr = date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
     return {
