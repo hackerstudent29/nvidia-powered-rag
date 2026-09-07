@@ -2465,6 +2465,80 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
     return True, None
 
 # ---------------------------------------------------------
+# Deepgram / EdgeTTS Text-to-Speech (TTS) Endpoint
+# ---------------------------------------------------------
+class TTSRequest(BaseModel):
+    text: str = Field(..., description="Text payload to synthesize")
+    voice: Optional[str] = Field("aura-bruce-en", description="TTS voice model (Aura or Flux)")
+    speed: Optional[float] = Field(1.0, description="Playback speed modifier")
+    rate: Optional[float] = Field(1.0, description="Rate modifier")
+    expressivity: Optional[int] = Field(0, description="Expressivity control (-2 to 2)")
+
+@app.post("/api/tts")
+async def tts_endpoint(req: TTSRequest):
+    text = req.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="TTS text cannot be empty")
+    
+    deepgram_key = os.getenv("DEEPGRAM_API_KEY")
+    selected_voice = req.voice or "aura-bruce-en"
+    
+    # Domain-specific pronunciation pre-processing for natural speech
+    speech_text = text
+    speech_text = re.sub(r'\bMSAJCEA\b', 'M S A J C E A', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bMSAJCE\b', 'M S A J C E', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bSiruseri\b', 'Seeru-seri', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bEgattur\b', 'Eh-gat-toor', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bNavalur\b', 'Nah-vah-loor', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bTNEA\b', 'T N E A', speech_text, flags=re.IGNORECASE)
+    speech_text = re.sub(r'\bCGPA\b', 'C G P A', speech_text, flags=re.IGNORECASE)
+    
+    # Deepgram API endpoint selection based on voice model family (Aura-2 vs Flux)
+    if deepgram_key:
+        try:
+            is_flux = selected_voice.startswith("flux-")
+            if is_flux:
+                # Deepgram Flux v2 endpoint
+                dg_url = f"https://api.deepgram.com/v2/speak?model={selected_voice}&encoding=mp3"
+                if req.expressivity is not None:
+                    dg_url += f"&expressivity={req.expressivity}"
+            else:
+                # Deepgram Aura-2 v1 endpoint
+                dg_url = f"https://api.deepgram.com/v1/speak?model={selected_voice}&encoding=mp3"
+            
+            headers = {
+                "Authorization": f"Token {deepgram_key}",
+                "Content-Type": "application/json"
+            }
+            payload = {"text": speech_text}
+            
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(dg_url, headers=headers, json=payload)
+                if resp.status_code == 200 and resp.content:
+                    b64_audio = base64.b64encode(resp.content).decode("utf-8")
+                    return {"audio_base64": f"data:audio/mp3;base64,{b64_audio}", "provider": "deepgram", "voice": selected_voice}
+                else:
+                    print(f"[WARN] Deepgram TTS API returned {resp.status_code}: {resp.text[:200]}")
+        except Exception as dg_err:
+            print(f"[WARN] Deepgram TTS failed: {dg_err}")
+
+    # Fallback to EdgeTTS if available
+    if edge_tts:
+        try:
+            communicate = edge_tts.Communicate(speech_text, "en-US-ChristopherNeural")
+            audio_bytes = bytearray()
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    audio_bytes.extend(chunk["data"])
+            if audio_bytes:
+                b64_audio = base64.b64encode(bytes(audio_bytes)).decode("utf-8")
+                return {"audio_base64": f"data:audio/mp3;base64,{b64_audio}", "provider": "edge_tts"}
+        except Exception as edge_err:
+            print(f"[WARN] EdgeTTS fallback failed: {edge_err}")
+
+    raise HTTPException(status_code=500, detail="TTS service unavailable")
+
+# ---------------------------------------------------------
 # SSE Streaming Chat Endpoint
 # ---------------------------------------------------------
 class ChatRequest(BaseModel):
@@ -2809,7 +2883,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "   - Use bullet points (`- `) ONLY for true lists (e.g. courses, eligibility criteria, facilities).\n"
                     "   - Use compact 2-column tables ONLY for multi-attribute comparisons or fee structures.\n"
                     "   - Format emails as `[email](mailto:email)` and phone numbers as `[number](tel:+91...)`.\n"
-                    "6. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text."
+                    "6. SPEECH OUTPUT & NATURAL PROSODY RULES:\n"
+                    "   - Write for the EAR as well as the screen. Use natural, conversational sentence structures.\n"
+                    "   - Use punctuation intentionally to create natural pauses (commas for short pauses, periods for complete thoughts, ellipses '...' sparingly for thoughtful transitions).\n"
+                    "   - Combine facts into natural, flowing prose rather than breaking every sentence into separate bullet points.\n"
+                    "7. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text."
                 )
 
             # Multi-turn history (scaled by query class) - Fetch latest HISTORY_LIMIT messages in chronological order, excluding user_msg_id
