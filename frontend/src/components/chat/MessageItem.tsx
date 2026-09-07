@@ -438,9 +438,10 @@ const MessageItem = React.memo(function MessageItem({
 
   const timeStr = formatTimestampWithSeconds(message.timestamp);
 
+  const currentTTSWordIdxRef = useRef<number>(0);
   const activeVoiceRef = useRef<string>(localStorage.getItem("lorin_tts_voice") || "flux-alexis-en");
 
-  // Sync voice settings (speed, tone/expressivity) live across all message toolbars & Voice Controls modal
+  // Sync voice settings live across all message toolbars & Voice Controls modal
   useEffect(() => {
     const syncVoiceSettings = () => {
       const savedSpeed = localStorage.getItem("lorin_tts_speed");
@@ -465,7 +466,8 @@ const MessageItem = React.memo(function MessageItem({
 
       if (isPlayingAudio && (voiceChanged || exprChanged)) {
         activeVoiceRef.current = savedVoice;
-        handleTTS(savedVoice);
+        const resumeFromIdx = currentTTSWordIdxRef.current;
+        handleTTS(savedVoice, resumeFromIdx);
       } else {
         activeVoiceRef.current = savedVoice;
       }
@@ -532,6 +534,7 @@ const MessageItem = React.memo(function MessageItem({
     setIsPlayingAudio(false);
     setIsLoadingAudio(false);
     setActiveWordIdx(-1);
+    currentTTSWordIdxRef.current = 0;
     audioManager.unregister(message.id);
   };
 
@@ -552,24 +555,30 @@ const MessageItem = React.memo(function MessageItem({
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const handleTTS = async (overrideVoice?: string) => {
-    if (isPlayingAudio && !overrideVoice) {
+  const handleTTS = async (overrideVoice?: string, startWordOffset: number = 0) => {
+    if (isPlayingAudio && overrideVoice === undefined && startWordOffset === 0) {
       stopAudio();
       return;
     }
 
-    // Stop all audio across any other message components immediately!
-    window.dispatchEvent(new CustomEvent("stop-all-audio"));
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
+    const isMidSpeechSwitch = startWordOffset > 0 && isPlayingAudio;
+
+    if (!isMidSpeechSwitch) {
+      // Stop all audio across any other message components immediately!
+      window.dispatchEvent(new CustomEvent("stop-all-audio"));
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    } else {
+      // Smoothly pause current audio without resetting word index or stopping playback UI state
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
     }
-
-    // Pre-create Audio element during user click gesture to preserve browser autoplay permissions
-    const audio = new Audio();
-    audioRef.current = audio;
-
-    // Enforce global single-audio playback across all messages!
-    audioManager.registerAudio(message.id, stopAudio);
 
     const cleanText = prepareCleanTTSText(message.content);
     if (!cleanText) return;
@@ -577,6 +586,22 @@ const MessageItem = React.memo(function MessageItem({
     const displayWords = extractDisplayWords(message.content);
     const ttsWords = cleanText.split(/\s+/).filter(Boolean);
     ttsToDisplayMapRef.current = buildTTSToDisplayMapping(displayWords, ttsWords);
+
+    if (startWordOffset >= ttsWords.length - 1) {
+      stopAudio();
+      return;
+    }
+
+    const segmentTTSWords = startWordOffset > 0 ? ttsWords.slice(startWordOffset) : ttsWords;
+    const textToSynthesize = segmentTTSWords.join(" ");
+    if (!textToSynthesize) return;
+
+    // Pre-create Audio element during user click gesture to preserve browser autoplay permissions
+    const audio = new Audio();
+    audioRef.current = audio;
+
+    // Enforce global single-audio playback across all messages!
+    audioManager.registerAudio(message.id, stopAudio);
 
     setIsLoadingAudio(true);
 
@@ -595,7 +620,7 @@ const MessageItem = React.memo(function MessageItem({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: cleanText,
+          text: textToSynthesize,
           voice: selectedVoice,
           speed: ttsSpeed,
           rate: ttsSpeed,
@@ -611,27 +636,28 @@ const MessageItem = React.memo(function MessageItem({
       const data = await res.json();
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");
 
-      const totalTTSWords = ttsWords.length;
       let wordStartTimes: number[] = [];
 
       const updateHighlightLoop = () => {
         if (audioRef.current && !audioRef.current.paused) {
           const duration = audioRef.current.duration;
-          if (duration && duration > 0 && totalTTSWords > 0) {
+          if (duration && duration > 0 && segmentTTSWords.length > 0) {
             if (wordStartTimes.length === 0) {
-              wordStartTimes = computeTTSWordStartTimes(ttsWords, duration);
+              wordStartTimes = computeTTSWordStartTimes(segmentTTSWords, duration);
             }
 
             const currTime = audioRef.current.currentTime;
-            let currentTTSWordIdx = 0;
+            let segmentWordIdx = 0;
             for (let i = 0; i < wordStartTimes.length; i++) {
               if (currTime >= wordStartTimes[i]) {
-                currentTTSWordIdx = i;
+                segmentWordIdx = i;
               } else {
                 break;
               }
             }
 
+            const currentTTSWordIdx = startWordOffset + segmentWordIdx;
+            currentTTSWordIdxRef.current = currentTTSWordIdx;
             const activeDisplayIdx = ttsToDisplayMapRef.current[currentTTSWordIdx] ?? currentTTSWordIdx;
             setActiveWordIdx(activeDisplayIdx);
           }
