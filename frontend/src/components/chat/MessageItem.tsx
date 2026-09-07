@@ -545,6 +545,10 @@ const MessageItem = React.memo(function MessageItem({
       window.speechSynthesis.cancel();
     }
 
+    // Pre-create Audio element during user click gesture to preserve browser autoplay permissions
+    const audio = new Audio();
+    audioRef.current = audio;
+
     // Enforce global single-audio playback across all messages!
     audioManager.registerAudio(message.id, stopAudio);
 
@@ -580,17 +584,13 @@ const MessageItem = React.memo(function MessageItem({
         }),
       });
 
-      if (!res.ok) throw new Error(`TTS API HTTP Error: ${res.status}`);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`TTS API Error (${res.status}): ${errText}`);
+      }
+
       const data = await res.json();
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");
-
-      const audio = new Audio(data.audio_base64);
-      // Deepgram backend synthesizes audio with speed applied; do not double-accelerate
-      audio.playbackRate = 1.0;
-
-      stopAudio();
-
-      audioRef.current = audio;
 
       const totalTTSWords = ttsWords.length;
       let wordStartTimes: number[] = [];
@@ -632,15 +632,18 @@ const MessageItem = React.memo(function MessageItem({
       };
 
       audio.onerror = (e) => {
-        console.error("[TTS Audio Playback Error]", e);
+        console.error("[Deepgram Audio Playback Error]", e);
         stopAudio();
       };
 
+      audio.src = data.audio_base64;
+      audio.playbackRate = 1.0;
       await audio.play();
+
       setIsLoadingAudio(false);
       setIsPlayingAudio(true);
     } catch (err) {
-      console.warn("[TTS Fallback to WebSpeech]", err);
+      console.error("[Deepgram TTS Endpoint Error]", err);
       setIsLoadingAudio(false);
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
