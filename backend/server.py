@@ -122,6 +122,55 @@ def auto_select_model(query: str) -> str:
         
     return "zai/glm-5.3-flash"
 
+def structure_markdown_for_mobile(text: str) -> str:
+    """
+    Post-processes markdown text to ensure key-value pairs and feature items are cleanly
+    formatted line-by-line for mobile viewports without horizontal smashing.
+    """
+    if not text:
+        return ""
+
+    lines = text.split('\n')
+    processed_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Skip table rows or lines inside code blocks/horizontal rules
+        if stripped.startswith('|') or stripped.startswith('```') or re.match(r'^[\-\*\=_]{3,}$', stripped):
+            processed_lines.append(line)
+            continue
+
+        # 1. Break consecutive inline bold key-value pairs (e.g. "**Name:** ... **Designation:** ...") into separate bullet lines
+        line = re.sub(
+            r'([^\n])\s*(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*)\s*',
+            r'\1\n- \2 ',
+            line
+        )
+
+        # 2. Break consecutive inline feature headers (e.g. "🎓 **Explore Courses** ... 💰 **Scholarships** ...") into separate bullet lines
+        line = re.sub(
+            r'([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*',
+            r'\1\n- \2 ',
+            line
+        )
+
+        # 3. If line starts with **Key:** and isn't a bullet/list item yet, add bullet prefix
+        sub_lines = line.split('\n')
+        for sub in sub_lines:
+            sub_stripped = sub.strip()
+            if re.match(r'^\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*', sub_stripped):
+                if not sub_stripped.startswith(('- ', '* ', '+ ', '> ', '1.', '2.', '3.')):
+                    sub = f"- {sub_stripped}"
+            processed_lines.append(sub)
+
+    text = '\n'.join(processed_lines)
+
+    # Clean up any accidental double bullets like "- - **" or "- - 🎓"
+    text = re.sub(r'-\s*-\s*(?=\*\*|[🎓💰🏫📝✨🔥📌⚡💡•])', r'- ', text)
+
+    return text
+
 # Accurate Model & Embedding Pricing ($ per 1K tokens)
 # GLM-5.3 Flash: Input $0.07/1M ($0.00007/1k), Output $0.24/1M ($0.00024/1k), Cache $0.01/1M ($0.00001/1k)
 # Gemini 2.5 Flash Lite: Input $0.10/1M ($0.00010/1k), Output $0.40/1M ($0.00040/1k), Cache $0.01/1M ($0.00001/1k)
@@ -2734,10 +2783,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "You are Lorin AI, the official campus ambassador and admission guide for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) (Anna University, AICTE approved, NAAC A+, TNEA code 1301).\n"
                     "Greet the student warmly and conversationally, explaining how you can help them explore engineering & architecture courses, admissions, campus facilities, and placements.\n\n"
                     "FORMATTING & RESPONSE GUIDELINES:\n"
-                    "1. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text.\n"
-                    "2. ALWAYS format email addresses as active markdown links: `[email](mailto:email)`.\n"
-                    "3. ALWAYS format phone numbers as active markdown links: `[number](tel:+91...)`.\n"
-                    "4. Keep response structure clean, friendly, modern, and easy to read on mobile screens."
+                    "1. STRICT LINE-BY-LINE MOBILE STRUCTURE: Every single item or feature (Explore Courses, Scholarships, Campus Facilities, Admissions) MUST be formatted as a bullet point (`- **Category:** ...`) on its OWN separate line with a line break. NEVER place multiple categories or features on the same line.\n"
+                    "2. STRICT EMOJI BAN: Zero emojis across titles, headings, bullet points, callouts, or text.\n"
+                    "3. ALWAYS format email addresses as active markdown links: `[email](mailto:email)`.\n"
+                    "4. ALWAYS format phone numbers as active markdown links: `[number](tel:+91...)`.\n"
+                    "5. Keep response structure clean, friendly, modern, line-wise, and easy to read on mobile screens."
                 )
             else:
                 system_prompt = (
@@ -2746,11 +2796,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "CORE ANSWER RULES & STRICT RELEVANCE:\n"
                     "1. STRICT LASER FOCUS & RELEVANCE: Answer ONLY what the user explicitly asked. NEVER include unrequested staff members, unrelated people, or extraneous topics. For example, if asked 'who is the principal', answer ONLY about Principal Dr. K.S. Srinivasan. DO NOT bring up other staff, admissions directors, or unrequested people unless directly asked.\n"
                     "2. ADAPTIVE DEPTH & BRIEF ANALYSIS: When asked direct simple questions ('who is X', 'where is Y'), give a direct, focused answer. When asked for more, brief, extra, or detailed info ('tell me more', 'explain briefly', 'details about X', 'more info'), analyze thoroughly and provide a rich, comprehensive breakdown of THAT target entity using high information density with minimal token overhead.\n"
-                    "3. RICH STRUCTURED MARKDOWN (OPTIMIZED FOR MOBILE & DESKTOP):\n"
-                    "   Structure your text response using rich, modern markdown formats that look crisp on mobile viewports:\n"
+                    "3. RICH STRUCTURED MARKDOWN (STRICT LINE-BY-LINE FOR MOBILE & DESKTOP):\n"
+                    "   Structure your text response using rich, modern markdown formats that look crisp and line-wise on mobile viewports:\n"
                     "   - HEADINGS (### Topic Name): Clear headers for distinct sections.\n"
-                    "   - KEY-VALUE PAIRS (**Field:** Value): Direct factual highlights (e.g. **Designation:** Principal, **Specialization:** ECE).\n"
-                    "   - BULLET LISTS (- Item): Clean bullet lists for multiple items, qualifications, or features.\n"
+                    "   - KEY-VALUE PAIRS (- **Field:** Value): Direct factual highlights. EVERY key-value pair MUST be on its OWN SEPARATE LINE as a bullet point (e.g. `- **Name:** Dr. Srinivasan\\n- **Designation:** Principal`). NEVER combine multiple key-value pairs on a single paragraph line.\n"
+                    "   - BULLET LISTS (- Item): Every item or feature MUST be on its own separate line beginning with a bullet marker (`- `).\n"
                     "   - NUMBERED LISTS (1. Step 1): For procedures or step-by-step guidance.\n"
                     "   - CALLOUT BOXES (> **Note:** ...): For important notes or callouts.\n"
                     "   - MARKDOWN TABLES (| Header 1 | Header 2 |): Compact 2-column tables for structured data comparisons or fee breakdowns.\n"
@@ -3016,6 +3066,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             })
 
             # 10. Persist Assistant Response in Neon PostgreSQL asynchronously
+            structured_answer = structure_markdown_for_mobile(full_answer)
             try:
                 with DBContext() as conn:
                     if conn:
@@ -3036,7 +3087,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             """, (
                                 asst_msg_id,
                                 session_id,
-                                full_answer,
+                                structured_answer,
                                 model_id,
                                 total_latency_ms,
                                 json.dumps(sources_payload),
@@ -3048,8 +3099,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 print(f"[WARN] Message persistence error: {e}")
 
             # 11. Save to Cache for future hits (Tier 1 Hash + Tier 2 Semantic)
-            if len(full_answer) > 50:
-                save_to_cache(user_query, full_answer, sources_payload, reasoning_steps, total_latency_ms, query_vector)
+            if len(structured_answer) > 50:
+                save_to_cache(user_query, structured_answer, sources_payload, reasoning_steps, total_latency_ms, query_vector)
 
             yield json.dumps({"type": "done"})
 

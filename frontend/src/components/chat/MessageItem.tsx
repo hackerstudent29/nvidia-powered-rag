@@ -99,6 +99,43 @@ function sanitizeMarkdownContent(content: string): string {
   // 4. Remove duplicate emojis right before [link]
   text = text.replace(/(?:✉️|📧|✉|📞|📱)\s*(\[[^\]]+\]\((?:mailto|tel):[^\)]+\))/g, "$1");
 
+  // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Line-wise key-value and feature formatting
+  const lines = text.split("\n");
+  const processedLines: string[] = [];
+
+  for (let line of lines) {
+    const stripped = line.trim();
+
+    // Skip table rows, code blocks, or horizontal divider lines
+    if (stripped.startsWith("|") || stripped.startsWith("```") || /^[\-\*\=_]{3,}$/.test(stripped)) {
+      processedLines.push(line);
+      continue;
+    }
+
+    // A. Break consecutive inline bold key-value pairs (e.g. "**Name:** ... **Designation:** ...") into separate bullet lines
+    line = line.replace(/([^\n])\s*(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*)\s*/g, "$1\n- $2 ");
+
+    // B. Break consecutive inline feature headers (e.g. "🎓 **Explore Courses** ... 💰 **Scholarships** ...") into separate bullet lines
+    line = line.replace(/([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n- $2 ");
+
+    // C. Ensure standalone bold key-value lines have a bullet marker if not already a list item
+    const subLines = line.split("\n");
+    for (let sub of subLines) {
+      const subStripped = sub.trim();
+      if (/^\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*/.test(subStripped)) {
+        if (!/^(?:[\-\*\+\>]|1\.|2\.|3\.)/.test(subStripped)) {
+          sub = `- ${subStripped}`;
+        }
+      }
+      processedLines.push(sub);
+    }
+  }
+
+  text = processedLines.join("\n");
+
+  // Clean up any accidental double bullets like "- - **" or "- - 🎓"
+  text = text.replace(/-\s*-\s*(?=\*\*|[🎓💰🏫📝✨🔥📌⚡💡•])/g, "- ");
+
   return text;
 }
 
