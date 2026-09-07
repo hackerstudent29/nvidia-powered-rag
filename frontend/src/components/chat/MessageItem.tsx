@@ -456,15 +456,7 @@ const MessageItem = React.memo(function MessageItem({
     return () => window.removeEventListener("lorin_voice_settings_changed", syncVoiceSettings);
   }, [isPlayingAudio, ttsSpeed, ttsExpressivity]);
 
-  // Mobile & Desktop Auto-scroll active highlighted word into view smoothly
-  useEffect(() => {
-    if (isPlayingAudio && activeWordIdx >= 0 && messageRef.current) {
-      const activeMark = messageRef.current.querySelector("mark");
-      if (activeMark) {
-        activeMark.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-      }
-    }
-  }, [isPlayingAudio, activeWordIdx]);
+
 
   // Global click-outside listener: close sources & stats dropdowns when clicking outside or on empty space
   useEffect(() => {
