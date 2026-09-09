@@ -10,6 +10,7 @@ export default function App() {
       <Routes>
         {/* Public Chatbot */}
         <Route path="/" element={<ChatView />} />
+        <Route path="/settings" element={<ChatView initialSettingsOpen={true} />} />
         
         {/* Admin Login */}
         <Route path="/admin/login" element={<AdminLogin />} />

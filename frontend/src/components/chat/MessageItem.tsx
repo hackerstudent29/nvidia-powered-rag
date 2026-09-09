@@ -989,52 +989,7 @@ const MessageItem = React.memo(function MessageItem({
   // Reset document word counter before every render pass
   wordCounterRef.current = 0;
 
-  const processHighlightedChildren = (node: React.ReactNode): React.ReactNode => {
-    if (node === null || node === undefined || typeof node === "boolean") {
-      return node;
-    }
-
-    if (typeof node === "string" || typeof node === "number") {
-      const textStr = String(node);
-      if (!textStr) return node;
-      const tokens = textStr.split(/(\s+)/);
-      return tokens.map((token, i) => {
-        if (!token || /^\s+$/.test(token)) return token;
-
-        const isWord = isWordToken(token);
-        const currentWordIdx = isWord ? wordCounterRef.current++ : -1;
-        const isMatch = isPlayingAudio && activeWordIdx >= 0 && isWord && currentWordIdx === activeWordIdx;
-
-        if (isMatch) {
-          return (
-            <mark
-              key={i}
-              className="bg-emerald-500/20 dark:bg-emerald-400/25 text-[#2E6B5E] dark:text-[#34D399] font-bold px-1 py-0.5 rounded-md transition-colors duration-100 backdrop-blur-[1px] select-text"
-            >
-              {token}
-            </mark>
-          );
-        }
-        return token;
-      });
-    }
-
-    if (React.isValidElement(node)) {
-      const children = (node.props as any)?.children;
-      if (children !== undefined && children !== null) {
-        const processed = Array.isArray(children)
-          ? React.Children.map(children, (child) => processHighlightedChildren(child))
-          : processHighlightedChildren(children);
-        return React.cloneElement(node, {}, processed);
-      }
-    }
-
-    if (Array.isArray(node)) {
-      return React.Children.map(node, (child) => processHighlightedChildren(child));
-    }
-
-    return node;
-  };
+  const processHighlightedChildren = (node: React.ReactNode): React.ReactNode => node;
 
   return (
     <div ref={messageRef} className="flex flex-col mt-3 mb-7 sm:mt-4 sm:mb-9 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">

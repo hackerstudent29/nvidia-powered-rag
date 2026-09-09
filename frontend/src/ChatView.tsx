@@ -7,15 +7,17 @@ import MessageItem from "./components/chat/MessageItem";
 import ChatInput from "./components/chat/ChatInput";
 import SessionDrawer from "./components/chat/SessionDrawer";
 import StatsModal from "./components/chat/StatsModal";
+import SettingsModal from "./components/chat/SettingsModal";
 import { Tooltip } from "./components/Tooltip";
 import { AmbientBackground } from "./components/chat/AmbientBackground";
 
-export default function App() {
+export default function App({ initialSettingsOpen = false }: { initialSettingsOpen?: boolean }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(initialSettingsOpen);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [chatInput, setChatInput] = useState("");
 
@@ -153,6 +155,7 @@ export default function App() {
         onSelectModel={setSelectedModel}
         onNewChat={startNewChat}
         onOpenHistory={handleOpenHistory}
+        onOpenSettings={() => setIsSettingsOpen(true)}
         isStreaming={isStreaming}
       />
 
@@ -161,7 +164,7 @@ export default function App() {
         onScroll={handleScroll}
         className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 pt-16 sm:pt-20 pb-28 sm:pb-32 gpu-accelerated"
       >
-        <div className="mx-auto max-w-4xl w-full min-h-full flex flex-col justify-start">
+        <div className={`mx-auto max-w-5xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
           {messages.length === 0 ? (
             <HeroGreeting
               onSelectPrompt={(prompt) => {
@@ -230,6 +233,8 @@ export default function App() {
         rateLimitInfo={rateLimitInfo}
         onClearRateLimit={() => setRateLimitInfo(null)}
         isMobile={isMobile}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        selectedModel={selectedModel}
       />
 
       {/* Side drawer on desktop, bottom sheet on mobile */}
@@ -250,6 +255,12 @@ export default function App() {
         onClose={() => setIsStatsOpen(false)}
         stats={stats}
         loading={loadingStats}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        isMobile={isMobile}
       />
     </div>
   );

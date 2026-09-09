@@ -28,7 +28,14 @@ export function useChat() {
   });
   const [sessions, setSessions] = useState<Session[]>([]);
   const [models, setModels] = useState<ModelOption[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("zai/glm-5.3-flash");
+  const [selectedModel, setSelectedModel] = useState<string>(() => {
+    return localStorage.getItem("lorin_selected_model") || "zai/glm-5.3-flash";
+  });
+
+  const handleSelectModel = (modelId: string) => {
+    setSelectedModel(modelId);
+    localStorage.setItem("lorin_selected_model", modelId);
+  };
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(() => {
@@ -62,11 +69,15 @@ export function useChat() {
 
   // Persist current active messages locally for instant zero-latency page reloads
   useEffect(() => {
-    if (messages.length > 0 && !isStreaming) {
-      try {
-        localStorage.setItem("lorin_cached_messages", JSON.stringify(messages));
-      } catch (err) {
-        // quota limit fallback
+    if (!isStreaming) {
+      if (messages.length > 0) {
+        try {
+          localStorage.setItem("lorin_cached_messages", JSON.stringify(messages));
+        } catch (err) {
+          // quota limit fallback
+        }
+      } else {
+        localStorage.removeItem("lorin_cached_messages");
       }
     }
   }, [messages, isStreaming]);
@@ -78,8 +89,14 @@ export function useChat() {
       .then((data) => {
         if (Array.isArray(data)) {
           setModels(data);
-          const defaultMod = data.find((m: any) => m.is_default);
-          if (defaultMod) setSelectedModel(defaultMod.id);
+          const savedModel = localStorage.getItem("lorin_selected_model");
+          if (!savedModel) {
+            const defaultMod = data.find((m: any) => m.is_default);
+            if (defaultMod) {
+              setSelectedModel(defaultMod.id);
+              localStorage.setItem("lorin_selected_model", defaultMod.id);
+            }
+          }
         }
       })
       .catch((err) => console.error("Error fetching models:", err));
@@ -92,19 +109,31 @@ export function useChat() {
         headers: { "X-User-ID": userId }
       });
       if (res.ok) {
-        const history = await res.json();
-        if (Array.isArray(history) && history.length > 0) {
-          const formatted: Message[] = history.map((h: any) => ({
-            id: h.id || `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        const data = await res.json();
+        const rawHistory = Array.isArray(data) ? data : (data.messages || []);
+        if (Array.isArray(rawHistory) && rawHistory.length > 0) {
+          const dedupedHistory: any[] = [];
+          for (const item of rawHistory) {
+            if (item.role === "user" && dedupedHistory.length > 0) {
+              const last = dedupedHistory[dedupedHistory.length - 1];
+              if (last.role === "user" && String(last.content).trim() === String(item.content).trim()) {
+                continue;
+              }
+            }
+            dedupedHistory.push(item);
+          }
+          const formatted: Message[] = dedupedHistory.map((h: any) => ({
+            id: h.id || h.message_id || `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             role: h.role,
             content: h.content,
             timestamp: h.created_at || new Date(),
-            model: h.model,
+            model: h.model || h.model_used,
             latency_ms: h.latency_ms,
-            sources: h.sources || [],
+            sources: h.sources || h.citations || [],
             reasoning_steps: h.reasoning_steps || [],
-            token_metrics: h.token_metrics,
+            token_metrics: h.token_metrics || h.token_usage,
             resource_attachments: h.resource_attachments,
+            suggestions: h.suggestions || [],
           }));
           setMessages(formatted);
           localStorage.setItem("lorin_cached_messages", JSON.stringify(formatted));
@@ -152,7 +181,6 @@ export function useChat() {
         if (targetSession && targetSession.id) {
           setSessionId(targetSession.id);
           localStorage.setItem("lorin_session_id", targetSession.id);
-          await loadSessionMessages(targetSession.id);
         }
       }
     };
@@ -194,11 +222,13 @@ export function useChat() {
   // New Chat
   const startNewChat = () => {
     audioManager.stopAll();
+    window.dispatchEvent(new CustomEvent("stop-all-audio"));
     if (isStreaming) {
       stopStreaming();
     }
     const newId = `sess_${Date.now()}`;
     setSessionId(newId);
+    localStorage.setItem("lorin_session_id", newId);
     setMessages([]);
     localStorage.removeItem("lorin_cached_messages");
     fetchSessions();
@@ -278,7 +308,6 @@ export function useChat() {
   // Send message with SSE streaming and retry on temporary failures
   const sendMessage = async (text: string, effort?: string) => {
     if (!text.trim() || isStreaming) return;
-    audioManager.stopAll();
 
     const cleanText = text.trim().toLowerCase();
     if (cleanText === "/admin" || cleanText === "/ admin" || cleanText === "admin/") {
@@ -801,7 +830,7 @@ export function useChat() {
     sessions,
     models,
     selectedModel,
-    setSelectedModel,
+    setSelectedModel: handleSelectModel,
     stats,
     loadingStats,
     rateLimitInfo,

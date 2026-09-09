@@ -8,9 +8,9 @@ import {
   Type,
   Sun,
   Moon,
-  ShieldCheck,
   Plus,
-  GraduationCap
+  GraduationCap,
+  Settings
 } from "lucide-react";
 
 interface ChatHeaderProps {
@@ -19,6 +19,7 @@ interface ChatHeaderProps {
   onSelectModel: (modelId: string) => void;
   onNewChat: () => void;
   onOpenHistory: () => void;
+  onOpenSettings?: () => void;
   isStreaming: boolean;
 }
 
@@ -28,6 +29,7 @@ export default function ChatHeader({
   onSelectModel: _onSelectModel,
   onNewChat,
   onOpenHistory,
+  onOpenSettings,
   isStreaming: _isStreaming,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
@@ -122,6 +124,19 @@ export default function ChatHeader({
       action: () => {
         onOpenHistory();
         setActivePill("history");
+      },
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: Settings,
+      action: () => {
+        if (onOpenSettings) {
+          onOpenSettings();
+        } else {
+          navigate("/settings");
+        }
+        setActivePill("settings");
       },
     },
     {

@@ -149,6 +149,8 @@ interface ChatInputProps {
   rateLimitInfo?: RateLimitInfo | null;
   onClearRateLimit?: () => void;
   isMobile?: boolean;
+  onOpenSettings?: () => void;
+  selectedModel?: string;
 }
 
 const MODELS_LIST = [
@@ -203,6 +205,7 @@ const AURA_VOICES: VoiceOption[] = [
   { id: "flux-priya-en", name: "Priya", gender: "Feminine", accent: "Indian", description: "Confident, empathetic & professional Indian", gradient: "from-violet-400 via-purple-600 to-indigo-600" },
   { id: "flux-sharon-en", name: "Sharon", gender: "Feminine", accent: "Australian", description: "Calm, relaxed & confident Australian", gradient: "from-cyan-400 via-teal-500 to-emerald-700" },
   { id: "flux-bruce-en", name: "Bruce", gender: "Masculine", accent: "American", description: "Friendly, natural & believable Male", gradient: "from-blue-500 via-indigo-600 to-slate-800" },
+  { id: "flux-marcelo-en", name: "Marcelo", gender: "Masculine", accent: "American", description: "Energetic placement preparation guide", gradient: "from-rose-500 via-pink-500 to-amber-400" },
   { id: "flux-colin-en", name: "Colin", gender: "Masculine", accent: "British", description: "Warm, friendly & trustworthy British", gradient: "from-sky-400 via-blue-600 to-indigo-700" },
   { id: "flux-naveen-en", name: "Naveen", gender: "Masculine", accent: "Indian", description: "Professional, knowledgeable & calm Indian", gradient: "from-emerald-500 via-teal-600 to-cyan-700" },
   { id: "flux-kit-en", name: "Kit", gender: "Masculine", accent: "British", description: "Friendly, energetic & thoughtful British", gradient: "from-purple-600 via-indigo-600 to-slate-900" },
@@ -221,12 +224,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   rateLimitInfo,
   onClearRateLimit,
   isMobile = false,
+  onOpenSettings,
+  selectedModel: selectedModelProp,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [isSmoothResize, setIsSmoothResize] = useState(false);
   const [text, setText] = useState(inputValue || "");
   const [effortIndex, setEffortIndex] = useState(1); // Default "Medium"
   const [selectedModel, setSelectedModel] = useState("Auto (Router)");
+
+  const displayModelName = selectedModelProp
+    ? selectedModelProp === "auto" || selectedModelProp === "Auto (Router)"
+      ? "Auto (Router)"
+      : selectedModelProp.includes("minimax")
+      ? "Minimax"
+      : selectedModelProp.includes("gemini")
+      ? "Gemini"
+      : selectedModelProp.includes("glm") || selectedModelProp.includes("zai")
+      ? "ZAI"
+      : selectedModelProp
+    : selectedModel;
   const [isModelSelectOpen, setIsModelSelectOpen] = useState(false);
   const [showLockedToast, setShowLockedToast] = useState(false);
 
@@ -234,6 +251,22 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const saved = localStorage.getItem("lorin_tts_voice");
     return (saved && AURA_VOICES.some((v) => v.id === saved)) ? saved : "flux-brooke-en";
   });
+
+  useEffect(() => {
+    const syncVoice = () => {
+      const saved = localStorage.getItem("lorin_tts_voice");
+      if (saved) {
+        setSelectedVoice(saved);
+      }
+    };
+    syncVoice();
+    window.addEventListener("lorin_voice_settings_changed", syncVoice);
+    window.addEventListener("storage", syncVoice);
+    return () => {
+      window.removeEventListener("lorin_voice_settings_changed", syncVoice);
+      window.removeEventListener("storage", syncVoice);
+    };
+  }, []);
   const [expressivity, setExpressivity] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_expressivity");
     return saved !== null ? parseInt(saved, 10) : 2;
@@ -639,21 +672,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       const baseText = textRef.current;
       baseTextRef.current = baseText;
 
-      // 2. Connect to STT Proxy WebSocket Endpoint on Backend
-      let wsProxyUrl: string;
-      const envUrl = import.meta.env.VITE_API_URL;
-      if (envUrl) {
-        const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
-        const host = envUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
-        wsProxyUrl = `${wsProto}://${host}/ws/stt`;
-      } else if (window.location.hostname.includes("vercel.app")) {
-        wsProxyUrl = "wss://nvidia-powered-rag-production.up.railway.app/ws/stt";
-      } else {
-        const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
-        wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
-      }
+      const preferredSttEngine = localStorage.getItem("lorin_stt_engine") || "auto";
 
       const startWebSpeechFallback = () => {
+        if (recognitionRef.current) return;
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognition) {
           console.warn("[STT Engine] WebSpeech API not supported in this browser.");
@@ -687,65 +709,97 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             }
           };
 
+          recognition.onend = () => {
+            if (isRecordingRef.current && recognitionRef.current) {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.warn("[STT Engine] WebSpeech restart error:", e);
+              }
+            }
+          };
+
           recognition.onerror = (e: any) => {
-            console.warn("[STT Engine] WebSpeech fallback error:", e.error);
+            console.warn("[STT Engine] WebSpeech error:", e.error);
+            if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+              alert("Microphone access denied. Please grant microphone permissions in browser settings.");
+              stopRecording();
+            } else if (e.error === "no-speech" && isRecordingRef.current) {
+              // Ignore silence timeout error and let onend restart it
+            }
           };
 
           recognition.start();
-          console.log("[STT Engine] WebSpeech fallback engine active.");
+          console.log("[STT Engine] WebSpeech engine active.");
         } catch (e) {
-          console.error("[STT Engine] Failed starting WebSpeech fallback:", e);
+          console.error("[STT Engine] Failed starting WebSpeech:", e);
         }
       };
 
-      let hasOpened = false;
-      try {
-        const ws = new WebSocket(wsProxyUrl);
-        wsRef.current = ws;
+      if (preferredSttEngine === "webspeech") {
+        startWebSpeechFallback();
+      } else {
+        // Connect to STT Proxy WebSocket Endpoint on Backend
+        let wsProxyUrl: string;
+        const envUrl = import.meta.env.VITE_API_URL;
+        if (envUrl && envUrl.startsWith("http")) {
+          const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
+          const host = envUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+          wsProxyUrl = `${wsProto}://${host}/ws/stt`;
+        } else if (window.location.hostname.includes("vercel.app")) {
+          wsProxyUrl = "wss://nvidia-powered-rag-production.up.railway.app/ws/stt";
+        } else {
+          const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
+          wsProxyUrl = `${wsProto}//${window.location.host}/ws/stt`;
+        }
 
-        ws.onopen = () => {
-          hasOpened = true;
-          console.log("[STT Engine] Connected to backend STT proxy.");
-        };
+        let hasOpened = false;
+        try {
+          const ws = new WebSocket(wsProxyUrl);
+          wsRef.current = ws;
 
-        ws.onmessage = (event) => {
-          try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === "engine_info") {
-              console.log(`[STT Engine] Active provider: ${msg.provider}`);
-            } else if (msg.type === "transcript") {
-              const transcript = msg.transcript ? msg.transcript.trim() : "";
-              if (transcript) {
-                const currentBase = baseTextRef.current;
-                const combined = (currentBase ? currentBase.trim() + " " : "") + transcript;
-                handleValueChange(combined);
-                
-                if (msg.is_final) {
-                  baseTextRef.current = combined;
+          ws.onopen = () => {
+            hasOpened = true;
+            console.log("[STT Engine] Connected to backend STT proxy.");
+          };
+
+          ws.onmessage = (event) => {
+            try {
+              const msg = JSON.parse(event.data);
+              if (msg.type === "engine_info") {
+                console.log(`[STT Engine] Active provider: ${msg.provider}`);
+              } else if (msg.type === "transcript") {
+                const transcript = msg.transcript ? msg.transcript.trim() : "";
+                if (transcript) {
+                  const currentBase = baseTextRef.current;
+                  const combined = (currentBase ? currentBase.trim() + " " : "") + transcript;
+                  handleValueChange(combined);
+                  
+                  if (msg.is_final) {
+                    baseTextRef.current = combined;
+                  }
                 }
               }
+            } catch (e) {
+              console.error("[STT Engine] Message parsing error:", e);
             }
-          } catch (e) {
-            console.error("[STT Engine] Message parsing error:", e);
-          }
-        };
+          };
 
-        ws.onerror = (err) => {
-          console.warn("[STT Engine] Proxy WS connection failed:", err);
-          if (!hasOpened) {
+          ws.onerror = (err) => {
+            console.warn("[STT Engine] Proxy WS connection failed, switching to WebSpeech fallback:", err);
             startWebSpeechFallback();
-          }
-        };
+          };
 
-        ws.onclose = () => {
-          if (!hasOpened && isRecordingRef.current) {
-            console.warn("[STT Engine] Proxy WS closed before open, activating WebSpeech fallback.");
-            startWebSpeechFallback();
-          }
-        };
-      } catch (proxyErr) {
-        console.warn("[STT Engine] Proxy WS instantiation error, activating WebSpeech fallback:", proxyErr);
-        startWebSpeechFallback();
+          ws.onclose = () => {
+            if (isRecordingRef.current && !recognitionRef.current) {
+              console.warn("[STT Engine] Proxy WS closed, falling back to WebSpeech.");
+              startWebSpeechFallback();
+            }
+          };
+        } catch (proxyErr) {
+          console.warn("[STT Engine] Proxy WS instantiation error, activating WebSpeech fallback:", proxyErr);
+          startWebSpeechFallback();
+        }
       }
 
 
@@ -1058,133 +1112,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <span className="truncate">Ask anything about MSAJCEA...</span>
             </button>
 
-            {/* Bottom Actions Bar (Model Dropdown & Effort Selector) */}
+            {/* Bottom Actions Bar (Effort Selector) */}
             <div
               className={cn(
                 "absolute bottom-2 left-3 right-12 z-[10] flex items-center gap-1.5 transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
                 expanded && !isRecording ? "opacity-100 blur-0 translate-y-0 pointer-events-auto" : "opacity-0 blur-sm translate-y-2 pointer-events-none"
               )}
             >
-              {/* Model Select Button & Popover */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsModelSelectOpen((prev) => !prev);
-                  }}
-                  className={cn(
-                    "group flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all duration-200 outline-none cursor-pointer border",
-                    isModelSelectOpen
-                      ? "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] border-[#2E6B5E]/40"
-                      : "bg-[#E1EED7]/70 dark:bg-[#2E6B5E]/20 text-[#2E6B5E] dark:text-[#10b981] border-[#2E6B5E]/20 dark:border-[#10b981]/30 hover:bg-[#E1EED7]"
-                  )}
-                >
-                  <ModelIcon model={selectedModel} />
-                  <span className="hidden sm:inline">
-                    <MorphingText text={selectedModel} />
-                  </span>
-                  <span className="sm:hidden text-[11px] font-medium">Auto</span>
-                  <LockIcon />
-                </button>
-
-                {/* Model Popover */}
-                <div
-                  style={{ transformOrigin: "bottom left" }}
-                  onMouseLeave={() => {
-                    setHoverStyle((prev) => ({
-                      ...prev,
-                      opacity: 0,
-                      transform: prev.transform.replace("scale(1)", "scale(0.95)"),
-                      transition: "opacity 0.2s ease-in, transform 0.2s ease-out",
-                    }));
-                  }}
-                  className={cn(
-                    "absolute bottom-full left-0 mb-2.5 z-50 w-72 sm:w-80 rounded-2xl border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#12141c]/95 p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl flex flex-col gap-2 transition-all duration-300 cursor-default",
-                    isModelSelectOpen
-                      ? "opacity-100 scale-100 translate-y-0 pointer-events-auto ease-[cubic-bezier(0.34,1.56,0.64,1)]"
-                      : "opacity-0 scale-95 translate-y-3 pointer-events-none ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
-                  )}
-                >
-                  <div className="px-2.5 py-1.5 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-ink-3 dark:text-[#b1ada1]">
-                      Model Auto-Router
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-[#10b981] text-[9.5px] font-mono font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-                      AUTO ACTIVE
-                    </span>
-                  </div>
-
-                  {showLockedToast && (
-                    <div className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[11px] font-medium leading-tight animate-in fade-in flex items-center gap-1.5">
-                      <LockIcon />
-                      <span>Auto-routing automatically selects model based on query type.</span>
-                    </div>
-                  )}
-
-                  <div className="relative flex flex-col gap-1.5">
-                    {/* Hover highlight background slider */}
-                    <div style={hoverStyle} className="absolute left-0 right-0 top-0 h-[48px] -z-10 rounded-xl bg-black/[0.05] dark:bg-white/[0.08] pointer-events-none" />
-                    
-                    {MODELS_LIST.map((mItem, idx) => {
-                      const isAuto = mItem.id === "auto";
-                      return (
-                        <button
-                          key={mItem.id}
-                          type="button"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onMouseEnter={() => {
-                            setHoverStyle((prev) => ({
-                              opacity: 1,
-                              transform: `translateY(${idx * 54}px) scale(1)`,
-                              transition: prev.opacity === 0 ? "opacity 0.15s ease-out" : "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.15s ease",
-                            }));
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleModelClick();
-                          }}
-                          className={cn(
-                            "group relative flex h-[48px] w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xs font-medium transition-all duration-200 outline-none cursor-pointer border border-transparent",
-                            isAuto
-                              ? "text-ink dark:text-[#f4f3ee] opacity-100 font-semibold"
-                              : "text-ink-2/70 dark:text-[#b1ada1]/70 opacity-60 hover:opacity-90"
-                          )}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                            <ModelIcon model={mItem.name} className={cn(!isAuto && "grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all")} />
-                            <div className="flex flex-col min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-semibold text-xs leading-tight truncate">{mItem.name}</span>
-                                {!isAuto && (
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/[0.06] dark:bg-white/[0.08] text-ink-3 dark:text-zinc-400 font-normal">
-                                    Auto-routed
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">{mItem.description}</span>
-                            </div>
-                          </div>
-
-                          {isAuto ? (
-                            <span className="flex size-4 items-center justify-center rounded-full bg-[#10b981]/20 text-[#10b981] shrink-0">
-                              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="2 6 5 9 10 3" />
-                              </svg>
-                            </span>
-                          ) : (
-                            <span className="text-ink-3/40 dark:text-zinc-600 group-hover:text-amber-500 transition-colors shrink-0">
-                              <LockIcon />
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
 
               {/* Effort Selector Button */}
               <Tooltip content="Adjust reasoning token budget (Low, Medium, Max Effort)">
@@ -1249,17 +1183,23 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <Tooltip content="Select Speech Voice & AI STT Model">
                   <button
                     type="button"
-                    onClick={() => setIsVoiceMenuOpen(!isVoiceMenuOpen)}
+                    onClick={() => {
+                      if (onOpenSettings) {
+                        onOpenSettings();
+                      } else {
+                        setIsVoiceMenuOpen(!isVoiceMenuOpen);
+                      }
+                    }}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
                   >
                     <Mic className="size-3.5 text-[#10b981]" />
                     <span>
-                      {AURA_VOICES.find(v => v.id === selectedVoice)?.name || "Alexis"}
+                      {AURA_VOICES.find(v => v.id === selectedVoice)?.name || "Brooke"}
                     </span>
                   </button>
                 </Tooltip>
 
-                {isVoiceMenuOpen && (
+                {!onOpenSettings && isVoiceMenuOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: 6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}

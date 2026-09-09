@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { Session } from "../../types/chat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "../Tooltip";
+import { audioManager } from "../../utils/audioManager";
 
 interface SessionDrawerProps {
   isOpen: boolean;
@@ -31,6 +32,13 @@ export default function SessionDrawer({
   const sheetRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const touchDeltaY = useRef<number>(0);
+
+  // Stop playing audio immediately when drawer is closed
+  useEffect(() => {
+    if (!isOpen) {
+      audioManager.stopAll();
+    }
+  }, [isOpen]);
 
   // Cache pre-formatted date strings for high-performance rendering
   const formattedSessions = useMemo(() => {
