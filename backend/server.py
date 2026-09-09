@@ -1541,25 +1541,100 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
         "sources": [
             {"chunk_id": "card_contact_01", "title": "Official MSAJCEA Campus Contact & Location Information", "source_file": "msajcea_contact.md", "category": "contact", "page_url": "https://msajce.edu.in/contact.php", "score": 1.0, "snippet": "SIPCOT IT Park, Egattur, Navalur, OMR, Chennai 603103, 044-27476300."}
         ]
+    },
+    "scholarships": {
+        "keywords": [
+            "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?",
+            "What scholarship schemes, government fee waivers, 7.5% school student quota benefits, and merit assistance are available at MSAJCEA?",
+            "scholarships",
+            "scholarship guide",
+            "7.5% quota scholarship",
+            "merit scholarship",
+            "government aid",
+            "fee waiver"
+        ],
+        "response": """# 💰 Scholarships, Fee Waivers & Financial Assistance at MSAJCE
+
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCE)** is committed to ensuring education is accessible to all deserving students through management merit scholarships, government aid schemes, and 7.5% state reservation fee waivers.
+
+---
+
+### 🌟 Management & Merit Scholarships
+- **High Academic Cut-off Waiver**: Full or partial tuition fee waivers for top scorers in Class 12 / TNEA counselling.
+- **Economic Assistance**: Special consideration for economically underprivileged students backed by verified income certificates.
+- **Special Consideration**: Additional fee reductions for women candidates and early merit applicants.
+
+---
+
+### 🏛️ Government Schemes & Financial Aid
+| Scheme Name | Governing Agency | Coverage & Details |
+|---|---|---|
+| **TN 7.5% Government School Quota** | Govt. of Tamil Nadu | Full tuition & hostel fee waiver for eligible TN Govt school students. |
+| **AICTE Pragati Scheme** | AICTE | ₹50,000 / year for eligible girl students pursuing engineering. |
+| **AICTE Saksham Scheme** | AICTE | ₹50,000 / year for specially-abled engineering students. |
+| **Post-Matric Scholarship (SC/ST/SCC)** | TN Govt | Full tuition fee reimbursement for SC/ST/Converted Christian candidates. |
+| **BC / MBC / DNC Scholarship** | TN Govt | Financial assistance for backward class students admitted via TNEA. |
+| **Merit-cum-Means Minority Aid** | Ministry of Minority Affairs | Up to ₹20,000 / year for eligible minority community students (Muslim, Christian, Jain, etc.). |
+
+---
+
+### 📝 How to Apply for Scholarships
+1. Submit your **Income Certificate**, **Community Certificate**, and **12th Mark Sheet** to the College Administration Office during admission.
+2. The Scholarship Committee verifies eligibility and routes applications to state portals or trust authorities.
+3. Reach out to the Administration Desk for guidance on deadline dates and documentation requirements.""",
+        "sources": [
+            {"chunk_id": "card_scholarships_01", "title": "Official MSAJCE Scholarships & Financial Assistance Record", "source_file": "msajce_scholarships.md", "category": "scholarships", "page_url": "https://msajce.edu.in/scholarships.php", "score": 1.0, "snippet": "Management merit waivers, TN 7.5% quota fee waiver, AICTE Pragati, Post-Matric SC/ST."}
+        ]
     }
 }
 
 def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     """
-    Returns prebuilt summary cards ONLY when the user explicitly clicks a top-level prebuilt chip.
-    All natural language questions (e.g. 'which bus passes through guindy', 'buses to velachery')
-    pass through to Hybrid RAG for dynamic LLM synthesis from official campus records.
+    Returns prebuilt summary cards when the user explicitly clicks a top-level prebuilt chip or asks a standard card query.
     """
     if not query or len(query.strip()) < 3:
         return None
     q_clean = query.strip().lower()
 
-    # Exact chip keywords matching only
+    # 1. Exact or keyword matching
     for card_key, card_data in PREBUILT_CARD_ANSWERS.items():
         for kw in card_data["keywords"]:
             kw_clean = kw.strip().lower()
-            if kw_clean and (q_clean == kw_clean or q_clean == f"show {kw_clean}" or q_clean == f"view {kw_clean}"):
+            if kw_clean and (
+                q_clean == kw_clean or 
+                q_clean == f"show {kw_clean}" or 
+                q_clean == f"view {kw_clean}" or
+                q_clean.startswith(kw_clean) or
+                kw_clean in q_clean
+            ):
                 return card_data
+
+    # 2. Topic keyword fallback matching
+    if "scholarship" in q_clean or "merit scheme" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("scholarships")
+    elif "admission" in q_clean and ("criteria" in q_clean or "tnea" in q_clean or "pathways" in q_clean):
+        return PREBUILT_CARD_ANSWERS.get("admission")
+    elif "boys hostel" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("hostel_boys")
+    elif "girls hostel" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("hostel_girls")
+    elif "bus route" in q_clean or "bus routes" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("bus_routes")
+    elif "canteen" in q_clean or "mess menu" in q_clean or "dining hall" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("canteen")
+    elif "central library" in q_clean or "library facilities" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("library")
+    elif "lab facilities" in q_clean or "engineering lab" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("labs")
+    elif "campus life" in q_clean or "sports facilities" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("campus_life")
+    elif "contact info" in q_clean or "contact information" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("contact")
+    elif "courses offered" in q_clean or "12 ug" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("courses")
+    elif "placements" in q_clean and ("top recruiters" in q_clean or "highest salary" in q_clean):
+        return PREBUILT_CARD_ANSWERS.get("placements")
+
     return None
 
 def sanitize_response_text(text: str) -> str:
@@ -2697,6 +2772,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
         ttft_recorded = False
         ttft_ms = 0
         sources_payload = []
+        rag_start = time.time()
 
         try:
             # 1. Send initial handshake and session metadata
