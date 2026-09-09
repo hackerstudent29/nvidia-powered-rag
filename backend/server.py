@@ -4353,18 +4353,8 @@ async def generate_tts(body: TTSRequest):
         raise HTTPException(status_code=400, detail="Empty text provided for TTS")
 
     desired_voice = (body.voice or "flux-brooke-en").strip().lower()
-
-    # Dynamic Speed Pacing: Adjust speed dynamically based on message position & length if not manually overridden
-    if body.speed or body.rate:
-        speed_param = round(min(1.5, max(0.8, float(body.speed or body.rate))), 2)
-    else:
-        text_len = len(raw_text)
-        if text_len < 120:
-            speed_param = 1.08  # Warm, conversational intro/greeting pace
-        elif text_len < 400:
-            speed_param = 1.18  # Energetic, lively human speaking pace
-        else:
-            speed_param = 1.25  # Rapid, expressive pace for detailed lists/reports
+    desired_rate = body.speed or body.rate or 1.15
+    speed_param = round(min(1.5, max(0.8, float(desired_rate))), 2)
 
     audio_cache_key = hashlib.md5(f"{raw_text}_{desired_voice}_{speed_param}".encode('utf-8')).hexdigest()
     if audio_cache_key in TTS_AUDIO_CACHE:
@@ -4415,6 +4405,7 @@ async def generate_tts(body: TTSRequest):
                 audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(dg_resp.content).decode('utf-8')}"
                 response_payload = {
                     "audio_base64": audio_b64,
+                    "spoken_text": text,
                     "engine": "deepgram_flux_v2",
                     "model": target_model,
                     "voice": desired_voice,
@@ -4441,6 +4432,7 @@ async def generate_tts(body: TTSRequest):
                 audio_b64 = f"data:audio/mp3;base64,{base64.b64encode(bytes(mp3_bytes)).decode('utf-8')}"
                 return JSONResponse({
                     "audio_base64": audio_b64,
+                    "spoken_text": text,
                     "engine": "edge_tts_fallback",
                     "voice": "en-IN-NeerjaNeural"
                 })
@@ -4683,10 +4675,6 @@ class AdminLoginRequest(BaseModel):
 
 class AdminLoginResponse(BaseModel):
     token: str
-
-class TTSRequest(BaseModel):
-    text: str
-    voice: Optional[str] = "en-IN-NeerjaNeural"
 
 
 def authenticate_admin_request(request: Request):

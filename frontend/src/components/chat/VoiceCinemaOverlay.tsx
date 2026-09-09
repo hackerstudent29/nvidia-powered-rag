@@ -71,14 +71,40 @@ export default function VoiceCinemaOverlay() {
 
   // High-frequency animation loop to sync audio currentTime & calculate active word index
   useEffect(() => {
-    if (!payload || !payload.audioRef.current) return;
+    if (!payload) return;
+
+    if (!payload.audioRef.current) {
+      // If WebSpeech fallback is active, simulate progress based on word count and average speaking rate
+      const totalWords = payload.displayWords.length;
+      const estimatedSecs = Math.max(2, totalWords / 2.8);
+      setDuration(estimatedSecs);
+      const startTime = Date.now();
+      const loop = () => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        setCurrentTime(elapsed);
+        const progress = Math.min(1, elapsed / estimatedSecs);
+        const targetIndex = Math.min(totalWords - 1, Math.floor(progress * totalWords));
+        setActiveWordIdx(targetIndex);
+        if (elapsed < estimatedSecs) {
+          animRef.current = requestAnimationFrame(loop);
+        }
+      };
+      animRef.current = requestAnimationFrame(loop);
+      return () => {
+        if (animRef.current !== null) {
+          cancelAnimationFrame(animRef.current);
+          animRef.current = null;
+        }
+      };
+    }
 
     const audioEl = payload.audioRef.current;
 
     const loop = () => {
       if (audioEl) {
         const cur = audioEl.currentTime || 0;
-        const dur = audioEl.duration || 0;
+        const rawDur = audioEl.duration;
+        const dur = (rawDur && isFinite(rawDur) && rawDur > 0) ? rawDur : 0;
         setCurrentTime(cur);
         setDuration(dur);
         setIsPlaying(!audioEl.paused);
@@ -126,27 +152,36 @@ export default function VoiceCinemaOverlay() {
   };
 
   const togglePlayPause = () => {
-    if (!payload?.audioRef.current) return;
-    const audioEl = payload.audioRef.current;
-    if (audioEl.paused) {
-      audioEl.play().catch(() => {});
-      setIsPlaying(true);
-    } else {
-      audioEl.pause();
-      setIsPlaying(false);
+    if (payload?.audioRef.current) {
+      const audioEl = payload.audioRef.current;
+      if (audioEl.paused) {
+        audioEl.play().catch(() => {});
+        setIsPlaying(true);
+      } else {
+        audioEl.pause();
+        setIsPlaying(false);
+      }
+    } else if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
+      } else {
+        window.speechSynthesis.pause();
+        setIsPlaying(false);
+      }
     }
   };
 
   if (!payload) return null;
 
   const formatTime = (secs: number) => {
-    if (isNaN(secs) || secs <= 0) return "00:00";
+    if (!secs || isNaN(secs) || !isFinite(secs) || secs <= 0) return "00:00";
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
   return (
     <AnimatePresence>

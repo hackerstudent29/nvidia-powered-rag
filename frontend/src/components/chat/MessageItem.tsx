@@ -200,8 +200,8 @@ function prepareCleanTTSText(markdown: string): string {
 
   // 6. Expand acronyms & comprehensive phonetic pronunciations for all bus stops, area names, leadership & recruiters
   const phoneticReplacements: [RegExp, string][] = [
-    [/\bMSAJCEA\b/gi, "M S A J C E A"],
-    [/\bMSAJCE\b/gi, "M S A J C E"],
+    [/\bMSAJCEA\b/gi, "MSAJCE"],
+    [/\bMSAJCE\b/gi, "MSAJCE"],
     [/\bSrinivasan\b/gi, "Sree-ni-vaa-san"],
     [/\bMohamed Sathak\b/gi, "Moh-hah-med Sah-thak"],
     [/\bSanthosh Nathan\b/gi, "San-thosh Naa-than"],
@@ -693,11 +693,22 @@ const MessageItem = React.memo(function MessageItem({
 
   const stopAudio = () => {
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.removeAttribute("src");
+        audioRef.current.load();
+      } catch (e) {
+        // ignore
+      }
+      audioRef.current = null;
     }
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {
+        // ignore
+      }
     }
     if (animFrameRef.current !== null) {
       cancelAnimationFrame(animFrameRef.current);
@@ -727,23 +738,83 @@ const MessageItem = React.memo(function MessageItem({
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const playWebSpeechFallback = (spokenText: string, words: string[]) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !audioManager.isPlaying(message.id)) {
+      stopAudio();
+      return;
+    }
+
+    // Force cancel existing speech
+    window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.removeAttribute("src");
+        audioRef.current.load();
+      } catch (e) {}
+      audioRef.current = null;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.rate = ttsSpeed;
+    utterance.pitch = 1.0;
+    utterance.lang = "en-US";
+
+    const availableVoices = window.speechSynthesis.getVoices();
+    const fixedVoice = availableVoices.find(v => v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("Google") || v.name.includes("Zira") || v.name.includes("Samantha"))) || availableVoices.find(v => v.lang.startsWith("en"));
+    if (fixedVoice) {
+      utterance.voice = fixedVoice;
+    }
+
+    utterance.onboundary = (e) => {
+      if (e.name === "word") {
+        const textBefore = spokenText.substring(0, e.charIndex);
+        const ttsWIdx = textBefore.trim().split(/\s+/).filter(Boolean).length;
+        const mappedDisplayIdx = ttsToDisplayMapRef.current[ttsWIdx] ?? ttsWIdx;
+        setActiveWordIdx(mappedDisplayIdx);
+      }
+    };
+    utterance.onend = () => {
+      stopAudio();
+    };
+    utterance.onerror = () => {
+      stopAudio();
+    };
+    utterance.onstart = () => {
+      setIsPlayingAudio(true);
+      setIsLoadingAudio(false);
+      window.dispatchEvent(
+        new CustomEvent("start-voice-teleprompter", {
+          detail: {
+            messageId: message.id,
+            fullText: spokenText,
+            displayWords: words,
+            audioRef: { current: null },
+            stopAudio: stopAudio,
+            voiceName: fixedVoice?.name || "System Voice",
+          },
+        })
+      );
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   const handleTTS = async (overrideVoice?: string, startWordOffset: number = 0) => {
-    if (isPlayingAudio && overrideVoice === undefined && startWordOffset === 0) {
+    // If currently playing or loading, clicking stops audio immediately
+    if ((isPlayingAudio || isLoadingAudio) && overrideVoice === undefined && startWordOffset === 0) {
       stopAudio();
       return;
     }
 
     const isMidSpeechSwitch = startWordOffset > 0 && isPlayingAudio;
 
-    // 1. Immediately register with global audioManager and stop all other audio playback
+    // 1. Immediately kill all running audio globally to enforce strict single-voice playback
     window.dispatchEvent(new CustomEvent("stop-all-audio"));
+    audioManager.stopAll();
     audioManager.registerAudio(message.id, stopAudio);
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
 
     if (isMidSpeechSwitch) {
-      // Smoothly pause current audio without resetting word index or stopping playback UI state
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -768,12 +839,6 @@ const MessageItem = React.memo(function MessageItem({
     const segmentTTSWords = startWordOffset > 0 ? ttsWords.slice(startWordOffset) : ttsWords;
     const textToSynthesize = segmentTTSWords.join(" ");
     if (!textToSynthesize) return;
-
-    // Pre-create & synchronously pre-unlock Audio element during user click gesture to preserve browser autoplay permissions
-    const audio = new Audio();
-    audio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
-    audio.play().catch(() => {});
-    audioRef.current = audio;
 
     setIsLoadingAudio(true);
 
@@ -808,20 +873,28 @@ const MessageItem = React.memo(function MessageItem({
       const data = await res.json();
       if (!data.audio_base64) throw new Error("No audio payload returned from TTS service");
 
-      // Verify that this message is STILL the active message selected by the user before playing
+      // Verify this message is STILL the active message selected by the user before playing
       if (!audioManager.isPlaying(message.id)) {
         setIsLoadingAudio(false);
         return;
       }
+
+      const spokenText = data.spoken_text || cleanText;
+      const spokenWords = spokenText.split(/\s+/).filter(Boolean);
+
+      // Create a fresh HTML5 Audio element instance
+      const audio = new Audio(data.audio_base64);
+      audioRef.current = audio;
+      audioManager.setAudioElement(audio);
 
       let wordStartTimes: number[] = [];
 
       const updateHighlightLoop = () => {
         if (audioRef.current && !audioRef.current.paused) {
           const duration = audioRef.current.duration;
-          if (duration && duration > 0 && segmentTTSWords.length > 0) {
+          if (duration && duration > 0 && spokenWords.length > 0) {
             if (wordStartTimes.length === 0) {
-              wordStartTimes = computeTTSWordStartTimes(segmentTTSWords, duration);
+              wordStartTimes = computeTTSWordStartTimes(spokenWords, duration);
             }
 
             const currTime = audioRef.current.currentTime;
@@ -844,18 +917,22 @@ const MessageItem = React.memo(function MessageItem({
       };
 
       audio.onplay = () => {
+        // Strict single-voice guarantee: cancel WebSpeech immediately if active
+        if (typeof window !== "undefined" && "speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
         setIsPlayingAudio(true);
         setIsLoadingAudio(false);
         if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
 
-        // Trigger Full Black Teleprompter Cinema Overlay
+        // Trigger Full Black Teleprompter Cinema Overlay with the converted spoken words!
         window.dispatchEvent(
           new CustomEvent("start-voice-teleprompter", {
             detail: {
               messageId: message.id,
-              fullText: cleanText,
-              displayWords: displayWords,
+              fullText: spokenText,
+              displayWords: spokenWords,
               audioRef: audioRef,
               stopAudio: stopAudio,
               voiceName: selectedVoice,
@@ -873,46 +950,27 @@ const MessageItem = React.memo(function MessageItem({
         stopAudio();
       };
 
-      audio.src = data.audio_base64;
       audio.playbackRate = 1.0;
       await audio.play();
 
       setIsLoadingAudio(false);
       setIsPlayingAudio(true);
     } catch (err) {
-      console.error("[Deepgram TTS Endpoint Error]", err);
+      console.warn("[Deepgram TTS failed, falling back to WebSpeech safely]", err);
       setIsLoadingAudio(false);
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = ttsSpeed;
-        utterance.pitch = 1.0; // Locked pitch to prevent unnatural tone shifts
-        utterance.lang = "en-US";
-        
-        // Lock explicit consistent voice across WebSpeech playback
-        const availableVoices = window.speechSynthesis.getVoices();
-        const fixedVoice = availableVoices.find(v => v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("Google") || v.name.includes("Zira") || v.name.includes("Samantha"))) || availableVoices.find(v => v.lang.startsWith("en"));
-        if (fixedVoice) {
-          utterance.voice = fixedVoice;
-        }
 
-        utterance.onboundary = (e) => {
-          if (e.name === "word") {
-            const textBefore = cleanText.substring(0, e.charIndex);
-            const ttsWIdx = textBefore.trim().split(/\s+/).filter(Boolean).length;
-            const mappedDisplayIdx = ttsToDisplayMapRef.current[ttsWIdx] ?? ttsWIdx;
-            setActiveWordIdx(mappedDisplayIdx);
-          }
-        };
-        utterance.onend = () => {
-          stopAudio();
-        };
-        utterance.onerror = () => {
-          stopAudio();
-        };
-        window.speechSynthesis.speak(utterance);
-        setIsPlayingAudio(true);
+      // Explicitly tear down any audio element before WebSpeech starts
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause();
+          audioRef.current.removeAttribute("src");
+          audioRef.current.load();
+        } catch (e) {}
+        audioRef.current = null;
+        audioManager.setAudioElement(null);
       }
+
+      playWebSpeechFallback(cleanText, displayWords);
     }
   };
 
