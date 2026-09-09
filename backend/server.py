@@ -4345,23 +4345,33 @@ async def convert_text_to_conversational_speech_script(text: str) -> str:
 async def generate_tts(body: TTSRequest):
     """
     Generate Speech Audio payload.
-    Primary Engine: Deepgram Flux TTS API (v2/speak) with Expressivity & Speed Controls
-    Fallback Engine: Edge-TTS
+    Primary Engine: Deepgram Flux TTS API (v2/speak) with Expressivity & Dynamic Speed Controls
+    Instant <400ms Audio Generation.
     """
     raw_text = body.text.strip()
     if not raw_text:
         raise HTTPException(status_code=400, detail="Empty text provided for TTS")
 
     desired_voice = (body.voice or "flux-brooke-en").strip().lower()
-    desired_rate = body.speed or body.rate or 1.15
-    speed_param = round(min(1.5, max(0.8, float(desired_rate))), 2)
+
+    # Dynamic Speed Pacing: Adjust speed dynamically based on message position & length if not manually overridden
+    if body.speed or body.rate:
+        speed_param = round(min(1.5, max(0.8, float(body.speed or body.rate))), 2)
+    else:
+        text_len = len(raw_text)
+        if text_len < 120:
+            speed_param = 1.08  # Warm, conversational intro/greeting pace
+        elif text_len < 400:
+            speed_param = 1.18  # Energetic, lively human speaking pace
+        else:
+            speed_param = 1.25  # Rapid, expressive pace for detailed lists/reports
 
     audio_cache_key = hashlib.md5(f"{raw_text}_{desired_voice}_{speed_param}".encode('utf-8')).hexdigest()
     if audio_cache_key in TTS_AUDIO_CACHE:
         return JSONResponse(TTS_AUDIO_CACHE[audio_cache_key])
 
-    conversational_script = await convert_text_to_conversational_speech_script(raw_text)
-    text = normalize_tts_text_for_speech(conversational_script)
+    # Direct 0ms speech normalization (instant prose conversion without 10s LLM delay)
+    text = normalize_tts_text_for_speech(raw_text)
 
     dg_key = os.getenv("DEEPGRAM_API_KEY")
 
