@@ -3406,5 +3406,43 @@
       "digits": "97907509",
       "topic": "Msajcea Transport"
     }
+  },
+  {
+    "entity_key": "faculty_s_usha",
+    "entity_name": "Ms. S. Usha (Assistant Professor & Head of IQAC)",
+    "entity_type": "FACULTY",
+    "aliases": [
+      "usha",
+      "s. usha",
+      "ms. s. usha",
+      "s usha",
+      "usha madam",
+      "usha professor"
+    ],
+    "value": "Ms. S. Usha is an Assistant Professor of English / ECE at MSAJCE, Head of IQAC, and Convener of the Grievance Redressal Committee. She also serves on the Women Empowerment Cell and Internal Complaints Committee. Contact: sh.s.usha@msajce.edu.in / ushashankar77@gmail.com",
+    "source_file": "msajce_ece.md",
+    "details": {
+      "name": "Ms. S. Usha",
+      "designation": "Assistant Professor & Head of IQAC",
+      "department": "Science & Humanities / ECE",
+      "email": "sh.s.usha@msajce.edu.in"
+    }
+  },
+  {
+    "entity_key": "external_dr_ushaa_eswaran",
+    "entity_name": "Dr. Ushaa Eswaran (External Committee Member)",
+    "entity_type": "EXTERNAL_MEMBER",
+    "aliases": [
+      "ushaa eswaran",
+      "dr ushaa eswaran",
+      "dr. ushaa eswaran"
+    ],
+    "value": "Dr. Ushaa Eswaran is an External Committee Member (NGO-2) at MSAJCE, serving on the Women Empowerment Cell, Internal Complaints Committee, SC/ST Cell, and Minority Cell. Email: drushaaeswaran@gmail.com",
+    "source_file": "msajce_womensempowermentcell.md",
+    "details": {
+      "name": "Dr. Ushaa Eswaran",
+      "role": "External Member (NGO-2)",
+      "email": "drushaaeswaran@gmail.com"
+    }
   }
 ]
