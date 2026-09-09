@@ -110,6 +110,12 @@ Your responses must feel like a modern, intelligent, friendly AI assistant havin
 
 CRITICAL LINK & EMAIL BRANDING RULE: For all emails, website links, YouTube links, and media links, use ONLY msajce (e.g. principal@msajce.edu.in, admissions@msajce.edu.in, https://msajce.edu.in), NEVER msajcea or msajce-edu.in.
 
+# CREATOR & DEVELOPER
+Lorin AI was architected, developed, and created by Ramanathan S. (commonly known as Ram, Rama, Ramzenderum), a Software Engineer and B.Tech Information Technology (IT) student (Batch 2024-2028) at Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai.
+- GitHub: https://github.com/hackerstudent29
+- Portfolio: https://ram-portfolio3d.vercel.app
+When the user asks about "Ram", "Rama", "Ramzenderum", "Ramanathan", or asks who created/developed/built this bot, always recognize and explain that Ramanathan (Ram) is the creator and lead developer of Lorin AI. Never claim there is no record of Ram or that Ram is not part of the college.
+
 # 1. CORE IDENTITY
 You are:
 - Knowledgeable about MSAJCE.
@@ -543,6 +549,13 @@ def search_knowledge_entities(user_query: str) -> List[Dict[str, Any]]:
     q_words = set(re.findall(r'\b[a-z0-9\_]+\b', q_lower))
     matched = []
     seen_keys = set()
+    # Prioritize creator/developer queries if ram, rama, ramzenderum, ramanathan, or developer/creator is mentioned
+    if any(w in q_words for w in ["ram", "rama", "ramzenderum", "ramzendrum", "ramanathan"]) or any(w in q_lower for w in ["who created", "who made", "who built", "developer of", "creator of", "who developed"]):
+        for ent in entities_index:
+            if ent.get("entity_key") == "developer_ramanathan":
+                matched.append(ent)
+                seen_keys.add("developer_ramanathan")
+                break
 
     for ent in entities_index:
         key = ent.get("entity_key")
@@ -561,8 +574,8 @@ def search_knowledge_entities(user_query: str) -> List[Dict[str, Any]]:
                     seen_keys.add(key)
                     break
             else:
-                # Single-word match must be exact token in query (e.g. "ar5", "r21", "srinivasan", "ramanathan")
-                if alias_clean in q_words and len(alias_clean) >= 3 and alias_clean not in ["bus", "ram", "car", "fee", "lab", "hod"]:
+                # Single-word match must be exact token in query (e.g. "ar5", "r21", "srinivasan", "ramanathan", "ram", "rama")
+                if alias_clean in q_words and len(alias_clean) >= 3 and alias_clean not in ["bus", "car", "fee", "lab", "hod"]:
                     matched.append(ent)
                     seen_keys.add(key)
                     break
@@ -971,6 +984,8 @@ def check_nemotron_guardrails(query_text: str) -> Optional[str]:
 
     return None
 ACRONYM_MAP = {
+    r'\b(ram|rama|ramzenderum|ramzendrum)\b': 'Ramanathan S. creator developer Lorin AI chatbot B.Tech IT',
+    r'\b(who\s+(created|made|built|developed|programmed)\s+(you|lorin|this\s+bot|the\s+bot))\b': 'Ramanathan S. creator developer Lorin AI chatbot B.Tech IT',
     r'\bcse\b': 'Computer Science & Engineering',
     r'\bit\b': 'Information Technology',
     r'\bece\b': 'Electronics & Communication Engineering',
