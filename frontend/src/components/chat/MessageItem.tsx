@@ -783,18 +783,6 @@ const MessageItem = React.memo(function MessageItem({
     utterance.onstart = () => {
       setIsPlayingAudio(true);
       setIsLoadingAudio(false);
-      window.dispatchEvent(
-        new CustomEvent("start-voice-teleprompter", {
-          detail: {
-            messageId: message.id,
-            fullText: spokenText,
-            displayWords: words,
-            audioRef: { current: null },
-            stopAudio: stopAudio,
-            voiceName: fixedVoice?.name || "System Voice",
-          },
-        })
-      );
     };
 
     window.speechSynthesis.speak(utterance);
@@ -925,20 +913,6 @@ const MessageItem = React.memo(function MessageItem({
         setIsLoadingAudio(false);
         if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
-
-        // Trigger Full Black Teleprompter Cinema Overlay with the converted spoken words!
-        window.dispatchEvent(
-          new CustomEvent("start-voice-teleprompter", {
-            detail: {
-              messageId: message.id,
-              fullText: spokenText,
-              displayWords: spokenWords,
-              audioRef: audioRef,
-              stopAudio: stopAudio,
-              voiceName: selectedVoice,
-            },
-          })
-        );
       };
 
       audio.onended = () => {
