@@ -8,6 +8,7 @@ import ChatInput from "./components/chat/ChatInput";
 import SessionDrawer from "./components/chat/SessionDrawer";
 import StatsModal from "./components/chat/StatsModal";
 import SettingsModal from "./components/chat/SettingsModal";
+import VoiceCinemaOverlay from "./components/chat/VoiceCinemaOverlay";
 import { Tooltip } from "./components/Tooltip";
 import { AmbientBackground } from "./components/chat/AmbientBackground";
 
@@ -262,6 +263,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         onClose={() => setIsSettingsOpen(false)}
         isMobile={isMobile}
       />
+
+      <VoiceCinemaOverlay />
     </div>
   );
 }

@@ -848,6 +848,20 @@ const MessageItem = React.memo(function MessageItem({
         setIsLoadingAudio(false);
         if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = requestAnimationFrame(updateHighlightLoop);
+
+        // Trigger Full Black Teleprompter Cinema Overlay
+        window.dispatchEvent(
+          new CustomEvent("start-voice-teleprompter", {
+            detail: {
+              messageId: message.id,
+              fullText: cleanText,
+              displayWords: displayWords,
+              audioRef: audioRef,
+              stopAudio: stopAudio,
+              voiceName: selectedVoice,
+            },
+          })
+        );
       };
 
       audio.onended = () => {
