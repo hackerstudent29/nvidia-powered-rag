@@ -4096,9 +4096,8 @@ def normalize_tts_text_for_speech(markdown_text: str) -> str:
         if domain_match:
             dom = domain_match.group(1).lower()
             if 'msajce' in dom:
-                return 'M S A J C E dot E D U dot I N'
-            parts = dom.split('.')
-            return ' dot '.join(' '.join(p.upper() if len(p) <= 3 else p for p in parts))
+                return 'msajce dot edu dot in'
+            return dom.replace('.', ' dot ')
         return "the official website"
     
     text = re.sub(r'https?://[^\s\)]+', _url_replacer, text)
@@ -4108,20 +4107,16 @@ def normalize_tts_text_for_speech(markdown_text: str) -> str:
     # 3. Emails & Phone Numbers
     def _email_replacer(match):
         user, domain = match.group(1), match.group(2)
-        domain_parts = domain.split('.')
-        spoken_domain = " dot ".join([" ".join(list(p.upper())) if len(p) <= 4 else p for p in domain_parts])
+        spoken_domain = domain.replace('.', ' dot ')
         return f"{user} at {spoken_domain}"
     text = re.sub(r'\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b', _email_replacer, text)
 
     def _phone_replacer(match):
         digits = re.sub(r'\D', '', match.group(0))
         if len(digits) == 10:
-            return f"zero {digits[0]}, {digits[1:5]}, {digits[5:]}"
+            return f"{digits[:5]} {digits[5:]}"
         elif len(digits) == 12 and digits.startswith('91'):
-            return f"plus 9 1, {digits[2:7]}, {digits[7:]}"
-        elif len(digits) >= 8:
-            chunks = [digits[i:i+3] for i in range(0, len(digits), 3)]
-            return ", ".join(" ".join(list(c)) for c in chunks)
+            return f"plus 91 {digits[2:7]} {digits[7:]}"
         return match.group(0)
     text = re.sub(r'(\+91[\s\-]?)?(\(?0\d{2,4}\)?[\s\-]?)?\d{6,8}\b', _phone_replacer, text)
 
@@ -4299,14 +4294,14 @@ async def convert_text_to_conversational_speech_script(text: str) -> str:
         return clean
 
     system_instruction = (
-        "You are an expert expressive AI voice script narrator for an educational institution. "
-        "Convert the provided message into a lively, warm, rapid, and expressive conversational monologue suitable for direct reading by Deepgram neural TTS.\n"
-        "STRICT INSTRUCTIONS:\n"
-        "1. Remove all markdown syntax (headers, asterisks, bullet dashes, table pipes, URLs, emails).\n"
-        "2. Transform lists, tables, and structured data into fluid, enthusiastic spoken sentences spoken naturally.\n"
-        "3. Preserve all proper names (such as student names, Ramanathan, Mohamed Sathak) intact without spelling them out letter-by-letter or hyphenating them.\n"
-        "4. Keep the pace energetic, fluent, fast, and clear — do NOT use ellipses (...) or unnatural hesitations.\n"
-        "5. Output ONLY the plain spoken text without any meta labels, intro greetings like 'Sure', or quotes."
+        "You are Lorin, a friendly senior student assistant at Mohamed Sathak A.J. College of Engineering (MSAJCE). "
+        "Convert the provided written response into a 100% natural, warm, conversational human speaking script as if talking directly to a student in person.\n"
+        "RULES FOR NATURAL SPEAKING MONOLOGUE:\n"
+        "1. Remove all written markdown syntax, headers, table pipes, URLs, emails, bullet dashes, and citations.\n"
+        "2. Rewrite tables and bullet lists into fluid, enthusiastic spoken sentences.\n"
+        "3. Keep proper names (Ramanathan, Mohamed Sathak, MSAJCE, faculty names) natural and continuous without hyphenation or spelling out letters.\n"
+        "4. Maintain a lively, energetic human cadence. Do NOT use ellipses (...) or mechanical pauses.\n"
+        "5. Output ONLY the plain spoken narrative text ready for direct voice reading."
     )
 
     try:
@@ -4318,8 +4313,8 @@ async def convert_text_to_conversational_speech_script(text: str) -> str:
                     {"role": "system", "content": system_instruction},
                     {"role": "user", "content": clean}
                 ],
-                "temperature": 0.2,
-                "max_tokens": 400
+                "temperature": 0.3,
+                "max_tokens": 500
             }
             res = await http_client.post(
                 f"{VERCEL_AI_GATEWAY_URL}/chat/completions",
@@ -4328,7 +4323,7 @@ async def convert_text_to_conversational_speech_script(text: str) -> str:
                     "Content-Type": "application/json"
                 },
                 json=payload,
-                timeout=2.0
+                timeout=6.0
             )
             if res.status_code == 200:
                 data = res.json()
