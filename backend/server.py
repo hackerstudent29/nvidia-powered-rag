@@ -1675,25 +1675,39 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'<think>[\s\S]*?</think>', '', text, flags=re.IGNORECASE)
 
     # 1. Preamble & Scratchpad Removal:
-    # If text contains internal meta-reasoning, prompt instructions, or thinking preamble:
-    scratchpad_markers = [
-        "let's produce answer", "let's produce", "we should be careful", "not needed.",
-        "safer to say", "table: facility", "could name typical", "also mention",
-        "we can also mention", "we only know there are", "in context.", "we need to",
-        "we have verified", "we must use", "potential headings", "we should provide",
-        "use verified records", "no fees data", "provide bullet points", "ensure direct answer",
-        "so start with", "follow rules", "tell me abt", "now user question:", "list: basketball",
-        "student clubs: 5"
+    preamble_triggers = [
+        r"Analyze User Input:",
+        r"Identify Key Differences",
+        r"Structure the Response:",
+        r"Check constraints:",
+        r"Everything looks good\.\s*I'?ll output",
+        r"Let'?s draft:",
+        r"Important:\s*I must not mention",
+        r"Here'?s a thinking process:",
+        r"We need (?:to )?synthesize",
+        r"Now user question:",
+        r"We have verified MSAJCEA",
+        r"We must use Markdown Tables",
+        r"Potential structure:",
+        r"I need to synthesize",
+        r"Follow specific formatting rules:",
+        r"Start directly with final structured answer",
+        r"let's produce answer",
+        r"let's produce",
+        r"we should be careful"
     ]
-    lowered = text[:3000].lower()
-    if any(m in lowered for m in scratchpad_markers):
-        # First check for explicit transition markers like "Let's produce answer." or "Let's produce."
-        trans_match = re.search(r'(?:Let\'s produce answer\.?|Let\'s produce\.?|Proceed|Here is the response:?)\s*\n*', text, re.IGNORECASE)
-        if trans_match:
-            idx = trans_match.end()
-            text = text[idx:].strip()
+    
+    preamble_pattern = r'(?:' + r'|'.join(preamble_triggers) + r')'
+    if re.search(preamble_pattern, text[:3000], re.IGNORECASE):
+        # Splitting on common transition markers to cleanly isolate the final structured answer
+        splits = re.split(
+            r'(?:Everything looks good\.\s*I\'ll output[^\n]*\n*|Let\'s draft:?\s*\n*|Let\'s produce answer\.?\s*\n*|Proceed\s*\n*)',
+            text,
+            flags=re.IGNORECASE
+        )
+        if len(splits) > 1 and len(splits[-1].strip()) > 50:
+            text = splits[-1].strip()
         else:
-            # Look for start of real answer markdown headers/titles:
             start_match = re.search(
                 r'('
                 r'Admission to Mohamed Sathak|Admission to MSAJCE|Admission to Mohamed|'
@@ -1702,7 +1716,9 @@ def sanitize_response_text(text: str) -> str:
                 r'To apply for admission|Candidates seeking admission|The admission process|'
                 r'Mohamed Sathak A\.J\. College of Engineering|'
                 r'\*\*[A-Z][A-Za-z0-9\s&–—\-\.:,]+\*\*|'
-                r'###\s+[A-Z]|##\s+[A-Z]|#\s+[A-Z]'
+                r'###\s+[A-Z]|##\s+[A-Z]|#\s+[A-Z]|'
+                r'Core Curriculum Focus|Computer Science and Engineering|'
+                r'[A-Z][a-zA-Z0-9\s]+\s*\:\s*[A-Z]'
                 r')',
                 text
             )
@@ -1710,10 +1726,14 @@ def sanitize_response_text(text: str) -> str:
                 text = text[start_match.start():].strip()
 
     # Clean off any residual prefix leakage
-    text = re.sub(r'^(?:Let\'s produce answer\.?|Let\'s produce\.?|Proceed)\s*', '', text, flags=re.IGNORECASE).strip()
+    text = re.sub(r'^(?:Let\'s produce answer\.?|Let\'s produce\.?|Proceed|Let\'s draft:?)\s*', '', text, flags=re.IGNORECASE).strip()
 
     # Strip prompt restatements & instruction planning headers
     leakage_patterns = [
+        r"^Analyze User Input:[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
+        r"^Identify Key Differences[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
+        r"^Structure the Response:[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
+        r"^Check constraints:[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
         r"^Here'?s a thinking process:[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
         r"^We need (?:to )?synthesize[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
         r"^Now user question:[\s\S]*?(?=\n#{1,4}|\n\*\*|\n[A-Z0-9]|$)",
