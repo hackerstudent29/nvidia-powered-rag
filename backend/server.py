@@ -1750,6 +1750,10 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'msajcea\.edu\.in', 'msajce.edu.in', text, flags=re.IGNORECASE)
     text = re.sub(r'msajcea\.ac\.in', 'msajce.edu.in', text, flags=re.IGNORECASE)
     text = re.sub(r'@msajcea\.in', '@msajce.edu.in', text, flags=re.IGNORECASE)
+
+    # Preserve markdown tables as valid GFM table blocks without destroying individual rows
+    text = re.sub(r'\n{3,}', '\n\n', text)
+
     return text.strip()
 
 def rewrite_query(query: str) -> str:
@@ -3377,7 +3381,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
                 m_clean = (m_name or "").lower()
-                if "gemini" in m_clean or "google" in m_clean or "auto" in m_clean or "vercel" in m_clean or not m_clean:
+                vercel_backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or VERCEL_AI_GATEWAY_KEY
+                if "backup" in m_clean:
+                    return (
+                        "https://ai-gateway.vercel.sh/v1/chat/completions",
+                        {"Authorization": f"Bearer {vercel_backup_key}", "Content-Type": "application/json"},
+                        "google/gemini-2.5-flash-lite"
+                    )
+                elif "gemini" in m_clean or "google" in m_clean or "auto" in m_clean or "vercel" in m_clean or not m_clean:
                     return (
                         "https://ai-gateway.vercel.sh/v1/chat/completions",
                         {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
@@ -3408,7 +3419,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "google/gemini-2.5-flash-lite"
                     )
 
-            candidate_models = ["google/gemini-2.5-flash-lite"]
+            candidate_models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash-lite-backup"]
             for candidate in [model_id, "mistralai/mistral-nemotron", "nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-3-super-120b-a12b"]:
                 if candidate and candidate not in candidate_models:
                     candidate_models.append(candidate)

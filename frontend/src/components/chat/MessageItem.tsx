@@ -77,14 +77,9 @@ function sanitizeMarkdownContent(content: string): string {
 
   // 0. Strip any raw document/section metadata headers leaked from context chunks or fallback headers
   text = text.replace(/Here is the verified information from official MSAJCEA campus records:\s*/gi, "");
-  text = text.replace(/###\s*Document:[^\n]*/gi, "");
-  text = text.replace(/###\s*Section:[^\n]*/gi, "");
-  text = text.replace(/^(?:#{1,4}\s*)?Document:.*?\n?/gim, "");
-  text = text.replace(/^(?:#{1,4}\s*)?Section:.*?\n?/gim, "");
-  text = text.replace(/^(?:#{1,4}\s*)?Version:.*?\n?/gim, "");
-  text = text.replace(/Document:\s*.*?(?:\||\n|$)/gi, "");
-  text = text.replace(/Section:\s*.*?(?:\||\n|$)/gi, "");
-  text = text.replace(/Version:\s*.*?(?:\||\n|$)/gi, "");
+  text = text.replace(/^(?:#{1,4}\s*)?Document:.*$/gim, "");
+  text = text.replace(/^(?:#{1,4}\s*)?Section:.*$/gim, "");
+  text = text.replace(/^(?:#{1,4}\s*)?Version:.*$/gim, "");
 
   // 1. Remove code backticks wrapping markdown links e.g. `[text](url)` -> [text](url)
   text = text.replace(/`(\[[^\]]+\]\([^\)]+\))`?/g, "$1");
