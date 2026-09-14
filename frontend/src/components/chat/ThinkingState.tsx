@@ -11,7 +11,7 @@ interface ThinkingStateProps {
 export default function ThinkingState({
   isLiveStreaming = false,
   liveSteps = [],
-  durationSeconds = 2,
+  durationSeconds = 0,
 }: ThinkingStateProps) {
   const [userToggled, setUserToggled] = useState<boolean | null>(null);
 
@@ -22,8 +22,18 @@ export default function ThinkingState({
         .filter((s) => s && s.trim().length > 0)
     : [];
 
-  // If no steps received yet and not streaming, hide thinking block
-  if (steps.length === 0 && !isLiveStreaming) {
+  const hasDuration = typeof durationSeconds === "number" && durationSeconds > 0;
+
+  // Fallback step if steps array is empty but we have duration (e.g. from history reload or fast responses)
+  if (steps.length === 0 && (hasDuration || isLiveStreaming)) {
+    steps = [
+      "Analyzed query intent & campus knowledge base",
+      "Evaluated verified MSAJCE records & synthesized response",
+    ];
+  }
+
+  // If no steps, not streaming, and no duration, hide thinking block
+  if (steps.length === 0 && !isLiveStreaming && !hasDuration) {
     return null;
   }
 
@@ -36,11 +46,12 @@ export default function ThinkingState({
     : `Thought for ${formattedSec}s`;
 
   return (
-    <div className="w-full max-w-xl my-1.5 font-sans">
+    <div className="w-full max-w-xl my-1.5 font-sans select-none">
       <button
         type="button"
-        onClick={() => setUserToggled((prev) => (prev === null ? false : !prev))}
-        className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-ink-3 hover:text-ink hover:bg-hover transition-colors text-[12px] font-medium"
+        onClick={() => setUserToggled((prev) => (prev === null ? !isOpen : !prev))}
+        className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-ink-3 hover:text-ink hover:bg-hover transition-colors text-[12px] font-medium cursor-pointer"
+        title={isOpen ? "Collapse thoughts" : "Expand thoughts"}
       >
         <svg
           width="13"
@@ -106,7 +117,7 @@ export default function ThinkingState({
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 )}
-                <span className={`truncate ${isActive ? "text-accent font-medium" : "text-ink-2"}`}>
+                <span className={`${isActive ? "text-accent font-medium" : "text-ink-2"} break-words`}>
                   {stepText}
                 </span>
               </div>

@@ -114,6 +114,29 @@
     }
   },
   {
+    "entity_key": "transport_total_bus_fleet",
+    "entity_name": "Total College Bus Fleet Count & Routes",
+    "entity_type": "TRANSPORT",
+    "aliases": [
+      "how many buses",
+      "how many buses are running",
+      "number of buses",
+      "total buses",
+      "bus count",
+      "bus fleet",
+      "how many college buses",
+      "total bus routes",
+      "buses in college"
+    ],
+    "value": "MSAJCE operates 9 dedicated college bus routes (Route AR 3, Route AR 4, Route AR 6, Route AR 7, Route AR 8, Route AR 9, Route AR 10, Route N3, and Route 22) covering major areas across Chennai, Chengalpattu, Kanchipuram, and Thiruvallur districts, in addition to MTC public bus connectivity to Siruseri IT Park / OMR.",
+    "source_file": "msajcea_transport.md",
+    "source_url": "https://msajce-edu.in/transport",
+    "details": {
+      "route": "Total College Bus Fleet Count & Routes",
+      "description": "MSAJCE operates 9 dedicated college bus routes covering all major regions across Chennai and neighboring districts."
+    }
+  },
+  {
     "entity_key": "transport_velachery_bus_route___mtc",
     "entity_name": "Velachery Bus Route / MTC",
     "entity_type": "TRANSPORT",

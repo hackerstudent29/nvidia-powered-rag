@@ -24,6 +24,10 @@ schema_sql = """
 -- 1. Chat Sessions
 CREATE TABLE IF NOT EXISTS chat_sessions (
     session_id VARCHAR(64) PRIMARY KEY,
+    user_id VARCHAR(64),
+    user_name VARCHAR(255),
+    user_age INT,
+    user_purpose VARCHAR(255),
     user_ip VARCHAR(45),
     user_agent TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

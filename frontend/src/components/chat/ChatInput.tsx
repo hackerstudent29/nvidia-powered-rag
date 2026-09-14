@@ -154,10 +154,11 @@ interface ChatInputProps {
 }
 
 const MODELS_LIST = [
-  { id: "auto", name: "Auto (Router)", description: "Auto-routes between Minimax, Gemini & ZAI" },
-  { id: "minimax", name: "Minimax (MiniMax-M3)", description: "Auto-selected for reasoning" },
-  { id: "gemini", name: "Gemini (Gemini 2.5 Flash)", description: "Auto-selected for speed" },
-  { id: "zai", name: "ZAI (GLM-5.3 Flash)", description: "Auto-selected for general queries" },
+  { id: "auto", name: "Auto (Router)", description: "Auto-routes between GLM, Qwen, Gemini & Muse" },
+  { id: "zai/glm-5.3-flash", name: "GLM-5.3 Flash", description: "Deep reasoning & multi-turn campus assistant" },
+  { id: "alibaba/qwen3.7-flash", name: "Qwen 3.7 Flash", description: "Balanced high-speed reasoning & factual answers" },
+  { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", description: "Ultra-fast response for instant factoid queries" },
+  { id: "meta/muse-spark-1.2-contributor", name: "Meta Muse Spark 1.2", description: "Creative campus advice & student guidance" },
 ];
 
 const EFFORTS = ["Low", "Medium", "Max Effort"];
@@ -236,12 +237,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const displayModelName = selectedModelProp
     ? selectedModelProp === "auto" || selectedModelProp === "Auto (Router)"
       ? "Auto (Router)"
-      : selectedModelProp.includes("minimax")
-      ? "Minimax"
-      : selectedModelProp.includes("gemini")
-      ? "Gemini"
       : selectedModelProp.includes("glm") || selectedModelProp.includes("zai")
-      ? "ZAI"
+      ? "GLM-5.3 Flash"
+      : selectedModelProp.includes("qwen")
+      ? "Qwen 3.7 Flash"
+      : selectedModelProp.includes("gemini")
+      ? "Gemini 2.5 Flash"
+      : selectedModelProp.includes("muse")
+      ? "Muse Spark 1.2"
       : selectedModelProp
     : selectedModel;
   const [isModelSelectOpen, setIsModelSelectOpen] = useState(false);
@@ -273,7 +276,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   });
   const [ttsSpeed, setTtsSpeed] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_speed");
-    return saved !== null ? parseFloat(saved) : 1.0;
+    return saved !== null ? parseFloat(saved) : 1.15;
   });
 
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);

@@ -29,7 +29,7 @@ export function useChat() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [models, setModels] = useState<ModelOption[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>(() => {
-    return localStorage.getItem("lorin_selected_model") || "zai/glm-5.3-flash";
+    return localStorage.getItem("lorin_selected_model") || "auto";
   });
 
   const handleSelectModel = (modelId: string) => {
@@ -138,7 +138,14 @@ export function useChat() {
           setMessages(formatted);
           localStorage.setItem("lorin_cached_messages", JSON.stringify(formatted));
           return true;
+        } else {
+          setMessages([]);
+          localStorage.removeItem("lorin_cached_messages");
+          return false;
         }
+      } else {
+        setMessages([]);
+        localStorage.removeItem("lorin_cached_messages");
       }
     } catch (err) {
       console.error("Error loading session history:", err);
@@ -171,7 +178,7 @@ export function useChat() {
       const storedId = localStorage.getItem("lorin_session_id");
 
       // Execute session list fetch and active history fetch IN PARALLEL!
-      const [pastSessions] = await Promise.all([
+      const [pastSessions, loaded] = await Promise.all([
         fetchSessions(),
         storedId ? loadSessionMessages(storedId) : Promise.resolve(false)
       ]);
@@ -182,6 +189,9 @@ export function useChat() {
           setSessionId(targetSession.id);
           localStorage.setItem("lorin_session_id", targetSession.id);
         }
+      } else if (!pastSessions || pastSessions.length === 0) {
+        setMessages([]);
+        localStorage.removeItem("lorin_cached_messages");
       }
     };
 
@@ -340,6 +350,12 @@ export function useChat() {
     abortControllerRef.current = abortController;
 
     try {
+      let userProfile: any = null;
+      try {
+        const savedProf = localStorage.getItem("lorin_user_profile");
+        if (savedProf) userProfile = JSON.parse(savedProf);
+      } catch (e) {}
+
       const response = await fetch(`${API_BASE}/chat/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -347,6 +363,9 @@ export function useChat() {
           message: text,
           session_id: sessionId,
           user_id: userId,
+          user_name: userProfile?.name || undefined,
+          user_age: userProfile?.age ? Number(userProfile.age) : undefined,
+          user_purpose: userProfile?.purpose || undefined,
           model: selectedModel,
           effort: effort || "Medium",
         }),
@@ -371,7 +390,7 @@ export function useChat() {
 
       let buffer = "";
       let lastFlushTime = 0;
-      let pendingFlushTimeout: any = null;
+      let rafId: number | null = null;
 
       const flushState = () => {
         setMessages((prev) =>
@@ -394,20 +413,31 @@ export function useChat() {
       };
 
       const requestFlush = (force = false) => {
-        const now = Date.now();
-        if (force || now - lastFlushTime >= 30) {
-          if (pendingFlushTimeout) {
-            clearTimeout(pendingFlushTimeout);
-            pendingFlushTimeout = null;
+        if (force) {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+          lastFlushTime = performance.now();
+          flushState();
+          return;
+        }
+
+        const now = performance.now();
+        // Update at monitor refresh rate (>=16ms), or batch on next animation frame (0-16ms)
+        if (now - lastFlushTime >= 16) {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
           }
           lastFlushTime = now;
           flushState();
-        } else if (!pendingFlushTimeout) {
-          pendingFlushTimeout = setTimeout(() => {
-            pendingFlushTimeout = null;
-            lastFlushTime = Date.now();
+        } else if (rafId === null) {
+          rafId = requestAnimationFrame(() => {
+            rafId = null;
+            lastFlushTime = performance.now();
             flushState();
-          }, 30);
+          });
         }
       };
 
@@ -439,7 +469,7 @@ export function useChat() {
               accumulatedAttachments = data.attachments || [];
               requestFlush(true);
             } else if (data.type === "reasoning") {
-              if (data.step && data.step.trim().length > 3) {
+              if (data.step && data.step.trim().length > 0) {
                 const cleanStep = data.step.trim();
                 if (!accumulatedReasoning.includes(cleanStep)) {
                   accumulatedReasoning.push(cleanStep);
@@ -582,12 +612,12 @@ export function useChat() {
 
       let buffer = "";
       let lastFlushTime = 0;
-      let pendingFlushTimeout: any = null;
+      let rafId: number | null = null;
 
       const flushState = () => {
         setMessages((prev) =>
           prev.map((msg) => {
-            if (msg.id !== targetAsst!.id) return msg;
+            if (msg.id !== (targetMessageId || targetAsst!.id)) return msg;
             return {
               ...msg,
               content: accumulatedContent,
@@ -605,20 +635,30 @@ export function useChat() {
       };
 
       const requestFlush = (force = false) => {
-        const now = Date.now();
-        if (force || now - lastFlushTime >= 30) {
-          if (pendingFlushTimeout) {
-            clearTimeout(pendingFlushTimeout);
-            pendingFlushTimeout = null;
+        if (force) {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+          lastFlushTime = performance.now();
+          flushState();
+          return;
+        }
+
+        const now = performance.now();
+        if (now - lastFlushTime >= 16) {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
           }
           lastFlushTime = now;
           flushState();
-        } else if (!pendingFlushTimeout) {
-          pendingFlushTimeout = setTimeout(() => {
-            pendingFlushTimeout = null;
-            lastFlushTime = Date.now();
+        } else if (rafId === null) {
+          rafId = requestAnimationFrame(() => {
+            rafId = null;
+            lastFlushTime = performance.now();
             flushState();
-          }, 30);
+          });
         }
       };
 
@@ -650,7 +690,7 @@ export function useChat() {
               accumulatedAttachments = data.attachments || [];
               requestFlush(true);
             } else if (data.type === "reasoning") {
-              if (data.step && data.step.trim().length > 3) {
+              if (data.step && data.step.trim().length > 0) {
                 const cleanStep = data.step.trim();
                 if (!accumulatedReasoning.includes(cleanStep)) {
                   accumulatedReasoning.push(cleanStep);

@@ -128,13 +128,13 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                               <User className="w-4 h-4" />
                             </div>
                             <div className="flex flex-col gap-0.5">
-                              <span className={`font-mono text-xs font-bold ${
+                              <span className={`font-sans text-xs font-bold ${
                                 isDark ? 'text-[#f4f3ee]' : 'text-[#1C1917]'
                               }`}>
-                                ID: {userId}
+                                {item.user_name ? `${item.user_name}${item.user_age ? ` (${item.user_age} yrs)` : ''}` : `ID: ${userId}`}
                               </span>
                               <span className={`text-[11px] font-mono ${isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}`}>
-                                IP: {item.user_ip || '127.0.0.1'}
+                                IP: {item.user_ip || '127.0.0.1'} {item.user_purpose ? `• Purpose: ${item.user_purpose}` : ''}
                               </span>
                             </div>
                           </div>

@@ -75,10 +75,16 @@ function sanitizeMarkdownContent(content: string): string {
   if (!content) return "";
   let text = content;
 
-  // 0. Strip any raw document/section metadata headers leaked from context chunks
-  text = text.replace(/^(?:#{1,4}\s*)?Document:\s*.*?(?:\||\n)/gim, "");
-  text = text.replace(/^(?:#{1,4}\s*)?Section:\s*\d+[\.\d]*.*?\n/gim, "");
-  text = text.replace(/^(?:#{1,4}\s*)?Version:\s*20\d\d-\d\d.*?\n/gim, "");
+  // 0. Strip any raw document/section metadata headers leaked from context chunks or fallback headers
+  text = text.replace(/Here is the verified information from official MSAJCEA campus records:\s*/gi, "");
+  text = text.replace(/###\s*Document:[^\n]*/gi, "");
+  text = text.replace(/###\s*Section:[^\n]*/gi, "");
+  text = text.replace(/^(?:#{1,4}\s*)?Document:.*?\n?/gim, "");
+  text = text.replace(/^(?:#{1,4}\s*)?Section:.*?\n?/gim, "");
+  text = text.replace(/^(?:#{1,4}\s*)?Version:.*?\n?/gim, "");
+  text = text.replace(/Document:\s*.*?(?:\||\n|$)/gi, "");
+  text = text.replace(/Section:\s*.*?(?:\||\n|$)/gi, "");
+  text = text.replace(/Version:\s*.*?(?:\||\n|$)/gi, "");
 
   // 1. Remove code backticks wrapping markdown links e.g. `[text](url)` -> [text](url)
   text = text.replace(/`(\[[^\]]+\]\([^\)]+\))`?/g, "$1");
@@ -198,130 +204,237 @@ function prepareCleanTTSText(markdown: string): string {
   text = text.replace(/\b(\+?\d{2,4})[\s\-]+(\d{3,5})[\s\-]+(\d{3,5})\b/g, "$1, $2, $3");
   text = text.replace(/\b(\+?\d{2,4})[\s\-]+(\d{6,8})\b/g, "$1, $2");
 
-  // 6. Expand acronyms & comprehensive phonetic pronunciations for all bus stops, area names, leadership & recruiters
+  // 6. Comprehensive Clock Times, Ranges & Durations Enunciation
+  const TIME_ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  const TIME_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+  const numToWords = (n: number): string => {
+    if (n >= 0 && n < 20) return TIME_ONES[n];
+    if (n >= 20 && n < 100) {
+      const t = Math.floor(n / 10);
+      const u = n % 10;
+      return u > 0 ? `${TIME_TENS[t]} ${TIME_ONES[u]}` : TIME_TENS[t];
+    }
+    return String(n);
+  };
+
+  const minToWords = (m: number): string => {
+    if (m === 0) return "";
+    if (m < 10) return `oh ${TIME_ONES[m]}`;
+    return numToWords(m);
+  };
+
+  const hourToWords = (h: number): string => {
+    let h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return TIME_ONES[h12];
+  };
+
+  // Duration ranges: 10-15 minutes, 1-2 hours
+  text = text.replace(/\b(\d{1,2})\s*[-–—]\s*(\d{1,2})\s*(minutes?|mins?|hours?|hrs?|seconds?|secs?)\b/gi, (_, n1, n2, unit) => {
+    const u = unit.toLowerCase().startsWith("min") ? "minutes" : unit.toLowerCase().startsWith("hr") || unit.toLowerCase().startsWith("hour") ? "hours" : "seconds";
+    return `${numToWords(parseInt(n1, 10))} to ${numToWords(parseInt(n2, 10))} ${u}`;
+  });
+
+  // Time range separators: 8:00 - 8:30 or 8:00 AM - 9:30 AM
+  text = text.replace(/(\b\d{1,2}[:.]\d{2}\s*(?:AM|PM|am|pm)?)\s*[-–—]\s*(\d{1,2}[:.]\d{2}\s*(?:AM|PM|am|pm)?\b)/g, "$1 to $2");
+  text = text.replace(/(\b\d{1,2}\s*(?:AM|PM|am|pm))\s*[-–—]\s*(\d{1,2}[:.]\d{2}\s*(?:AM|PM|am|pm)?\b)/g, "$1 to $2");
+
+  // Clock times with AM/PM (e.g. 8:00 AM, 8.00am, 3:12 PM, 12:45 pm)
+  text = text.replace(/\b(\d{1,2})[:.](\d{2})\s*(AM|PM|am|pm)\b/gi, (_, hStr, mStr, ampmStr) => {
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const ampm = ampmStr.toUpperCase();
+    const hSpoken = hourToWords(h);
+    if (m === 0) return `${hSpoken} ${ampm}`;
+    return `${hSpoken} ${minToWords(m)} ${ampm}`;
+  });
+
+  // Standalone hours with AM/PM (e.g. 8 AM, 8am, 9 PM)
+  text = text.replace(/\b(\d{1,2})\s*(AM|PM|am|pm)\b/gi, (_, hStr, ampmStr) => {
+    const h = parseInt(hStr, 10);
+    return `${hourToWords(h)} ${ampmStr.toUpperCase()}`;
+  });
+
+  // Plain clock times HH:MM without AM/PM (e.g. 8:00, 3:12, 14:30)
+  text = text.replace(/(?<!\d\.)\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\.\d)/g, (_, hStr, mStr) => {
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    if (h > 23 || m > 59) return `${hStr}:${mStr}`;
+    if (h >= 13) {
+      const h12 = h - 12;
+      return m === 0 ? `${TIME_ONES[h12]} o'clock PM` : `${TIME_ONES[h12]} ${minToWords(m)} PM`;
+    } else if (h === 12) {
+      return m === 0 ? "twelve o'clock" : `twelve ${minToWords(m)}`;
+    } else if (h === 0) {
+      return m === 0 ? "twelve midnight" : `twelve ${minToWords(m)} AM`;
+    } else {
+      return m === 0 ? `${TIME_ONES[h]} o'clock` : `${TIME_ONES[h]} ${minToWords(m)}`;
+    }
+  });
+
+  // Plain dot time in context: "at 8.30", "by 9.00"
+  text = text.replace(/\b(at|by|from|until|till|around|before|after)\s+([01]?\d|2[0-3])\.([0-5]\d)\b/gi, (_, prefix, hStr, mStr) => {
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const timeSpoken = m === 0 ? `${TIME_ONES[h % 12 || 12]} o'clock` : `${TIME_ONES[h % 12 || 12]} ${minToWords(m)}`;
+    return `${prefix} ${timeSpoken}`;
+  });
+
+  // 7. Clean, fast, natural location and institutional pronunciations (NO multi-hyphens)
   const phoneticReplacements: [RegExp, string][] = [
-    [/\bMSAJCEA\b/gi, "MSAJCE"],
-    [/\bMSAJCE\b/gi, "MSAJCE"],
-    [/\bSrinivasan\b/gi, "Sree-ni-vaa-san"],
-    [/\bMohamed Sathak\b/gi, "Moh-hah-med Sah-thak"],
-    [/\bSanthosh Nathan\b/gi, "San-thosh Naa-than"],
-    [/\bAbdul Gafoor\b/gi, "Abdul Gah-foor"],
-    [/\bVamsi Naga Mohan\b/gi, "Vam-see Nah-gah Moh-han"],
-    [/\bSethuraman\b/gi, "Se-thoo-rah-man"],
-    [/\bRamanathan\b/gi, "Rah-mah-naa-than"],
-    [/\bWeslin\b/gi, "Wes-lin"],
-    [/\bJaffar\b/gi, "Jaf-far"],
-    [/\bRavindran\b/gi, "Rah-vin-dran"],
-    [/\bSiruseri\b/gi, "Seeru-seri"],
-    [/\bEgattur\b/gi, "Eh-gat-toor"],
-    [/\bNavalur\b/gi, "Nah-vah-loor"],
-    [/\bKelambakkam\b/gi, "Ke-lam-bah-kam"],
-    [/\bSholinganallur\b/gi, "Sho-lin-gah-nal-loor"],
-    [/\bSemmancheri\b/gi, "Sem-man-che-ree"],
-    [/\bPadur\b/gi, "Pah-door"],
-    [/\bThalambur\b/gi, "Tha-lam-boor"],
-    [/\bVaniyanchavadi\b/gi, "Vah-nee-yan-chah-vah-dee"],
-    [/\bKazhipattur\b/gi, "Kah-zhi-pat-toor"],
-    [/\bThiruporur\b/gi, "Thi-roo-po-roor"],
-    [/\bThirukazhukundram\b/gi, "Thi-roo-kah-zhoo-kun-dram"],
-    [/\bVelachery\b/gi, "Ve-lah-che-ree"],
-    [/\bThiruvanmiyur\b/gi, "Thi-roo-van-mee-yoor"],
-    [/\bNeelankarai\b/gi, "Nee-lan-kah-rye"],
-    [/\bThoraipakkam\b/gi, "Tho-rye-pah-kam"],
-    [/\bMedavakkam\b/gi, "Me-dah-vah-kam"],
-    [/\bPallikaranai\b/gi, "Pal-li-kah-rah-nye"],
-    [/\bPerumbakkam\b/gi, "Pe-rum-bah-kam"],
-    [/\bMadipakkam\b/gi, "Mah-di-pah-kam"],
-    [/\bKilkattalai\b/gi, "Keel-kat-tah-lai"],
-    [/\bKeelkattalai\b/gi, "Keel-kat-tah-lai"],
-    [/\bTambaram\b/gi, "Tam-bah-ram"],
-    [/\bChrompet\b/gi, "Chrome-pet"],
-    [/\bPallavaram\b/gi, "Pal-lah-vah-ram"],
-    [/\bMeenambakkam\b/gi, "Mee-nam-bah-kam"],
-    [/\bGuindy\b/gi, "Gin-dee"],
-    [/\bEkkattuthangal\b/gi, "Eh-kat-too-than-gal"],
-    [/\bKathipara\b/gi, "Kah-thi-pah-rah"],
-    [/\bRoyapettah\b/gi, "Roy-ah-pet-tah"],
-    [/\bMylapore\b/gi, "My-lah-pore"],
-    [/\bMandaveli\b/gi, "Man-dah-veh-lee"],
-    [/\bTriplicane\b/gi, "Trip-li-cane"],
-    [/\bPerambur\b/gi, "Per-am-boor"],
-    [/\bMoolakadai\b/gi, "Moo-lah-kah-dye"],
-    [/\bPeriyamet\b/gi, "Pe-ri-yah-met"],
-    [/\bTeynampet\b/gi, "Tay-nam-pet"],
-    [/\bKotturpuram\b/gi, "Kot-toor-pu-ram"],
-    [/\bNesapakkam\b/gi, "Ne-sah-pah-kam"],
-    [/\bThirumangalam\b/gi, "Thi-roo-man-gah-lam"],
-    [/\bKoyambedu\b/gi, "Ko-yam-bay-doo"],
-    [/\bAdyar\b/gi, "Ah-dyar"],
-    [/\bPorur\b/gi, "Po-roor"],
-    [/\bPoonamallee\b/gi, "Poo-nah-mal-lee"],
-    [/\bValasaravakkam\b/gi, "Vah-lah-sah-rah-vah-kam"],
-    [/\bRamapuram\b/gi, "Rah-mah-pu-ram"],
-    [/\bKundrathur\b/gi, "Kun-drah-thoor"],
-    [/\bSelaiyur\b/gi, "Se-lai-yoor"],
-    [/\bPerungalathur\b/gi, "Pe-run-gah-lah-thoor"],
-    [/\bUrapakkam\b/gi, "Oo-rah-pah-kam"],
-    [/\bGuduvanchery\b/gi, "Goo-doo-van-che-ree"],
-    [/\bMaraimalai Nagar\b/gi, "Mah-rye-mah-lye Nah-gar"],
-    [/\bKilambakkam\b/gi, "Kee-lam-bah-kam"],
-    [/\bUthiramerur\b/gi, "Oo-thi-rah-me-roor"],
-    [/\bParanur\b/gi, "Pah-rah-noor"],
-    [/\bVandalur\b/gi, "Van-dah-loor"],
-    [/\bChunambedu\b/gi, "Choo-nam-bay-doo"],
-    [/\bKadapakkam\b/gi, "Kah-dah-pah-kam"],
-    [/\bKalpakkam\b/gi, "Kal-pah-kam"],
-    [/\bPaiyanur\b/gi, "Pie-yah-noor"],
-    [/\bManjambakkam\b/gi, "Man-jam-bah-kam"],
-    [/\bRetteri\b/gi, "Ret-te-ree"],
-    [/\bAdambakkam\b/gi, "Ah-dam-bah-kam"],
-    [/\bAadampakkam\b/gi, "Ah-dam-bah-kam"],
-    [/\bEnnore\b/gi, "En-noor"],
-    [/\bPammal\b/gi, "Pam-mal"],
-    [/\bKovoor\b/gi, "Koh-voor"],
-    [/\bNemilichery\b/gi, "Ne-mi-li-che-ree"],
-    [/\bPadi\b/gi, "Pah-dee"],
-    [/\bChoolaimedu\b/gi, "Choo-lai-may-doo"],
-    [/\bOtteri\b/gi, "Ot-te-ree"],
-    [/\bChinthamani\b/gi, "Chin-tha-mah-nee"],
-    [/\bArumbakkam\b/gi, "Ah-rum-bah-kam"],
-    [/\bNungambakkam\b/gi, "Nun-gam-bah-kam"],
-    [/\bKodambakkam\b/gi, "Koh-dam-bah-kam"],
-    [/\bSaidapet\b/gi, "Sai-dah-pet"],
-    [/\bVadapalani\b/gi, "Vah-dah-pah-lah-nee"],
-    [/\bAshok Nagar\b/gi, "Ah-shok Nah-gar"],
-    [/\bKattupakkam\b/gi, "Kat-too-pah-kam"],
-    [/\bKumananchavadi\b/gi, "Koo-mah-nan-chah-vah-dee"],
-    [/\bAnakaputhur\b/gi, "Ah-nah-kah-poo-thoor"],
-    [/\bKandigai\b/gi, "Kan-di-gai"],
-    [/\bMambakkam\b/gi, "Mam-bah-kam"],
-    [/\bPuthupakkam\b/gi, "Poo-thoo-pah-kam"],
-    [/\bThaiyur\b/gi, "Thai-yoor"],
-    [/\bKalavakkam\b/gi, "Kah-lah-vah-kam"],
-    [/\bAlathur\b/gi, "Ah-lah-thoor"],
-    [/\bPalavakkam\b/gi, "Pah-lah-vah-kam"],
-    [/\bAkkarai\b/gi, "Ak-kah-rye"],
-    [/\bEchankadu\b/gi, "Eh-chan-kah-doo"],
-    [/\bTNEA\b/gi, "T N E A"],
-    [/\bCGPA\b/gi, "C G P A"],
-    [/\bB\.Tech\b/gi, "B Tech"],
-    [/\bM\.Tech\b/gi, "M Tech"],
-    [/\bPh\.D\b/gi, "Ph D"],
-    [/\bECE\b/gi, "E C E"],
-    [/\bCSE\b/gi, "C S E"],
-    [/\bEEE\b/gi, "E E E"],
-    [/\bAI&DS\b/gi, "A I and D S"],
-    [/\bAIDS\b/gi, "A I and D S"],
-    [/\bLPA\b/gi, "Lakhs per annum"],
-    [/\bInfosys\b/gi, "Info-sys"],
-    [/\bCognizant\b/gi, "Cog-ni-zant"],
-    [/\bCapgemini\b/gi, "Cap-gem-i-ni"],
-    [/\bAccenture\b/gi, "Ac-cen-ture"],
-    [/\bMindtree\b/gi, "Mind-tree"],
-    [/\bHexaware\b/gi, "Hex-a-ware"],
-    [/\bVirtusa\b/gi, "Vir-too-sah"],
-    [/\bZoho\b/gi, "Zoh-ho"],
-    [/\bHyundai\b/gi, "Hun-day"]
+    // Campus & Institutional names
+    [/\bMSAJCEA\b/gi, "Mohamed Sathak College"],
+    [/\bMSAJCE\b/gi, "Mohamed Sathak College"],
+    [/\bMohamed Sathak\b/gi, "Mohamed Sathak"],
+    [/\bSIPCOT\b/gi, "Sipcot"],
+    [/\bOMR\b/gi, "OMR"],
+    [/\bECR\b/gi, "ECR"],
+    [/\bNAAC\b/gi, "NAAC"],
+    [/\bAICTE\b/gi, "AICTE"],
+    [/\bTNEA\b/gi, "TNEA"],
+    [/\bNBA\b/gi, "NBA"],
+    [/\bNIRF\b/gi, "NIRF"],
+    [/\bIQAC\b/gi, "IQAC"],
+    [/\bIEEE\b/gi, "IEEE"],
+    [/\bISTE\b/gi, "ISTE"],
+    [/\bNPTEL\b/gi, "NPTEL"],
+
+    // Academic Departments & Degrees
+    [/\bAI&DS\b/gi, "AI and Data Science"],
+    [/\bAIDS\b/gi, "AI and Data Science"],
+    [/\bAIML\b|\bAI\/ML\b/gi, "AI and Machine Learning"],
+    [/\bCSE\b/gi, "Computer Science"],
+    [/\bECE\b/gi, "Electronics and Communication"],
+    [/\bEEE\b/gi, "Electrical and Electronics"],
+    [/\bIT\b/gi, "Information Technology"],
+    [/\bMECH\b/gi, "Mechanical"],
+    [/\bCIVIL\b/gi, "Civil"],
+    [/\bB\.Tech\b|\bBTech\b/gi, "B Tech"],
+    [/\bM\.Tech\b|\bMTech\b/gi, "M Tech"],
+    [/\bB\.E\b|\bBE\b/gi, "B E"],
+    [/\bM\.E\b|\bME\b/gi, "M E"],
+    [/\bM\.B\.A\b|\bMBA\b/gi, "MBA"],
+    [/\bPh\.D\b|\bPhD\b/gi, "PhD"],
+    [/\bUG\b/gi, "undergraduate"],
+    [/\bPG\b/gi, "postgraduate"],
+    [/\bCGPA\b/gi, "CGPA"],
+    [/\bGPA\b/gi, "GPA"],
+    [/\bLPA\b|\blpa\b/gi, "Lakhs per annum"],
+
+    // Chennai / OMR / Campus Bus Stop Locations (Smooth, unhyphenated, natural fast pronunciation)
+    [/\bSholinganallur\b/gi, "Sholingnallur"],
+    [/\bKilambakkam\b/gi, "Keelambakkam"],
+    [/\bSemmancheri\b/gi, "Semmancheri"],
+    [/\bSiruseri\b/gi, "Siruseri"],
+    [/\bNavalur\b/gi, "Navalur"],
+    [/\bEgattur\b/gi, "Egattur"],
+    [/\bKelambakkam\b/gi, "Kelambakkam"],
+    [/\bThiruvanmiyur\b/gi, "Thiruvanmiyur"],
+    [/\bThoraipakkam\b/gi, "Thoraipakkam"],
+    [/\bKarapakkam\b/gi, "Karapakkam"],
+    [/\bMedavakkam\b/gi, "Medavakkam"],
+    [/\bMadipakkam\b/gi, "Madipakkam"],
+    [/\bPerungudi\b/gi, "Perungudi"],
+    [/\bKandanchavadi\b/gi, "Kandanchavadi"],
+    [/\bKoyambedu\b/gi, "Koyambedu"],
+    [/\bTambaram\b/gi, "Tambaram"],
+    [/\bVelachery\b/gi, "Velachery"],
+    [/\bGuindy\b/gi, "Guindy"],
+    [/\bAdyar\b/gi, "Adyar"],
+    [/\bChrompet\b|\bChromepet\b/gi, "Chromepet"],
+    [/\bPallavaram\b/gi, "Pallavaram"],
+    [/\bPerumbakkam\b/gi, "Perumbakkam"],
+    [/\bPallikaranai\b/gi, "Pallikaranai"],
+    [/\bGuduvanchery\b/gi, "Guduvanchery"],
+    [/\bVandalur\b/gi, "Vandalur"],
+    [/\bPadur\b/gi, "Padur"],
+    [/\bMaraimalai Nagar\b/gi, "Maraimalai Nagar"],
+    [/\bThalambur\b/gi, "Thalambur"],
+    [/\bVaniyanchavadi\b/gi, "Vaniyanchavadi"],
+    [/\bKazhipattur\b/gi, "Kazhipattur"],
+    [/\bThiruporur\b/gi, "Thiruporur"],
+    [/\bThirukazhukundram\b/gi, "Thirukazhukundram"],
+    [/\bNeelankarai\b/gi, "Neelankarai"],
+    [/\bKilkattalai\b|\bKeelkattalai\b/gi, "Keelkattalai"],
+    [/\bMeenambakkam\b/gi, "Meenambakkam"],
+    [/\bEkkattuthangal\b/gi, "Ekkattuthangal"],
+    [/\bKathipara\b/gi, "Kathipara"],
+    [/\bRoyapettah\b/gi, "Royapettah"],
+    [/\bMylapore\b/gi, "Mylapore"],
+    [/\bMandaveli\b/gi, "Mandaveli"],
+    [/\bTriplicane\b/gi, "Triplicane"],
+    [/\bPerambur\b/gi, "Perambur"],
+    [/\bMoolakadai\b/gi, "Moolakadai"],
+    [/\bPeriyamet\b/gi, "Periyamet"],
+    [/\bTeynampet\b/gi, "Teynampet"],
+    [/\bKotturpuram\b/gi, "Kotturpuram"],
+    [/\bNesapakkam\b/gi, "Nesapakkam"],
+    [/\bThirumangalam\b/gi, "Thirumangalam"],
+    [/\bPorur\b/gi, "Porur"],
+    [/\bPoonamallee\b/gi, "Poonamallee"],
+    [/\bValasaravakkam\b/gi, "Valasaravakkam"],
+    [/\bRamapuram\b/gi, "Ramapuram"],
+    [/\bKundrathur\b/gi, "Kundrathur"],
+    [/\bSelaiyur\b/gi, "Selaiyur"],
+    [/\bPerungalathur\b/gi, "Perungalathur"],
+    [/\bUrapakkam\b/gi, "Urapakkam"],
+    [/\bUthiramerur\b/gi, "Uthiramerur"],
+    [/\bParanur\b/gi, "Paranur"],
+    [/\bChunambedu\b/gi, "Chunambedu"],
+    [/\bKadapakkam\b/gi, "Kadapakkam"],
+    [/\bKalpakkam\b/gi, "Kalpakkam"],
+    [/\bPaiyanur\b/gi, "Paiyanur"],
+    [/\bManjambakkam\b/gi, "Manjambakkam"],
+    [/\bRetteri\b/gi, "Retteri"],
+    [/\bAdambakkam\b|\bAadampakkam\b/gi, "Adambakkam"],
+    [/\bEnnore\b/gi, "Ennore"],
+    [/\bPammal\b/gi, "Pammal"],
+    [/\bKovoor\b/gi, "Kovoor"],
+    [/\bNemilichery\b/gi, "Nemilichery"],
+    [/\bPadi\b/gi, "Padi"],
+    [/\bChoolaimedu\b/gi, "Choolaimedu"],
+    [/\bOtteri\b/gi, "Otteri"],
+    [/\bChinthamani\b/gi, "Chinthamani"],
+    [/\bArumbakkam\b/gi, "Arumbakkam"],
+    [/\bNungambakkam\b/gi, "Nungambakkam"],
+    [/\bKodambakkam\b/gi, "Kodambakkam"],
+    [/\bSaidapet\b/gi, "Saidapet"],
+    [/\bVadapalani\b/gi, "Vadapalani"],
+    [/\bAshok Nagar\b/gi, "Ashok Nagar"],
+    [/\bKattupakkam\b/gi, "Kattupakkam"],
+    [/\bKumananchavadi\b/gi, "Kumananchavadi"],
+    [/\bAnakaputhur\b/gi, "Anakaputhur"],
+    [/\bKandigai\b/gi, "Kandigai"],
+    [/\bMambakkam\b/gi, "Mambakkam"],
+    [/\bPuthupakkam\b/gi, "Puthupakkam"],
+    [/\bThaiyur\b/gi, "Thaiyur"],
+    [/\bKalavakkam\b/gi, "Kalavakkam"],
+    [/\bAlathur\b/gi, "Alathur"],
+    [/\bPalavakkam\b/gi, "Palavakkam"],
+    [/\bAkkarai\b/gi, "Akkarai"],
+    [/\bEchankadu\b/gi, "Echankadu"],
+
+    // People & Recruiters
+    [/\bSrinivasan\b/gi, "Srinivasan"],
+    [/\bSanthosh Nathan\b/gi, "Santhosh Nathan"],
+    [/\bAbdul Gafoor\b/gi, "Abdul Gafoor"],
+    [/\bVamsi Naga Mohan\b/gi, "Vamsi Naga Mohan"],
+    [/\bSethuraman\b/gi, "Sethuraman"],
+    [/\bRamanathan\b/gi, "Ramanathan"],
+    [/\bWeslin\b/gi, "Weslin"],
+    [/\bJaffar\b/gi, "Jaffar"],
+    [/\bRavindran\b/gi, "Ravindran"],
+    [/\bInfosys\b/gi, "Infosys"],
+    [/\bCognizant\b/gi, "Cognizant"],
+    [/\bCapgemini\b/gi, "Capgemini"],
+    [/\bAccenture\b/gi, "Accenture"],
+    [/\bMindtree\b/gi, "Mindtree"],
+    [/\bHexaware\b/gi, "Hexaware"],
+    [/\bVirtusa\b/gi, "Virtusa"],
+    [/\bZoho\b/gi, "Zoho"],
+    [/\bHyundai\b/gi, "Hyundai"]
   ];
   for (const [pattern, repl] of phoneticReplacements) {
     text = text.replace(pattern, repl);
@@ -330,34 +443,46 @@ function prepareCleanTTSText(markdown: string): string {
   // 7. Line by line Markdown parsing
   const lines = text.split("\n");
   const processedLines: string[] = [];
+  let tableHeaders: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i].trim();
-    if (!line) continue;
+    if (!line) {
+      tableHeaders = [];
+      continue;
+    }
 
     if (/^\|?[\s\-:|]+\|?$/.test(line)) {
       continue;
     }
 
-    if (line.startsWith("|") && line.endsWith("|")) {
+    if (line.includes("|")) {
       const cells = line
         .split("|")
-        .map((c) => c.trim())
+        .map((c) => c.trim().replace(/[*_`]/g, ""))
         .filter((c) => c.length > 0);
 
       if (cells.length >= 2) {
-        const isHeader =
-          /attribute|key|label|feature|header/i.test(cells[0]) &&
-          /details|value|description|info/i.test(cells[1]);
-        if (!isHeader) {
-          const cleanKey = cells[0].replace(/[*_`]/g, "");
-          const cleanVal = cells[1].replace(/[*_`]/g, "");
-          processedLines.push(`${cleanKey} is ${cleanVal}.`);
+        if (tableHeaders.length === 0) {
+          // First row of a table is the column header row — remember headers, do not read as data
+          tableHeaders = cells;
+          continue;
         }
+
+        const primary = cells[0];
+        const details = cells.slice(1).map((val, idx) => {
+          const header = tableHeaders[idx + 1] ? `${tableHeaders[idx + 1]}: ` : "";
+          return `${header}${val}`;
+        }).join(", ");
+
+        processedLines.push(`${primary} — ${details}.`);
+        continue;
       } else if (cells.length === 1) {
-        processedLines.push(cells[0].replace(/[*_`]/g, ""));
+        processedLines.push(`${cells[0]}.`);
+        continue;
       }
-      continue;
+    } else {
+      tableHeaders = [];
     }
 
     // Remove heading markers (### )
@@ -590,7 +715,7 @@ const MessageItem = React.memo(function MessageItem({
   const [activeWordIdx, setActiveWordIdx] = useState<number>(-1);
   const [ttsSpeed, setTtsSpeed] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_speed");
-    return saved ? parseFloat(saved) : 1.0;
+    return saved ? parseFloat(saved) : 1.15;
   });
   const [ttsExpressivity, setTtsExpressivity] = useState<number>(() => {
     const saved = localStorage.getItem("lorin_tts_expressivity");
@@ -1040,10 +1165,8 @@ const MessageItem = React.memo(function MessageItem({
   return (
     <div ref={messageRef} className="flex flex-col mt-3 mb-7 sm:mt-4 sm:mb-9 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
       <div className="flex items-center gap-2 mb-2 shrink-0">
-        <div className="size-6 rounded-lg bg-gradient-to-tr from-[#D0CCE5] via-[#D0E7E1] to-[#E1EED7] dark:from-[#2E6B5E]/40 dark:to-[#10b981]/30 border border-white dark:border-emerald-500/30 shadow-hairline flex items-center justify-center text-[#2E6B5E] dark:text-[#34d399] shrink-0">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-          </svg>
+        <div className="size-6 rounded-full overflow-hidden border border-black/10 dark:border-white/20 shadow-sm shrink-0 bg-black flex items-center justify-center ring-1 ring-accent/20">
+          <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover" />
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-ink">Lorin AI</span>

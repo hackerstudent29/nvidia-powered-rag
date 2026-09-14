@@ -8,6 +8,7 @@ import ChatInput from "./components/chat/ChatInput";
 import SessionDrawer from "./components/chat/SessionDrawer";
 import StatsModal from "./components/chat/StatsModal";
 import SettingsModal from "./components/chat/SettingsModal";
+import UserOnboardingModal, { UserProfile } from "./components/chat/UserOnboardingModal";
 import { Tooltip } from "./components/Tooltip";
 import { AmbientBackground } from "./components/chat/AmbientBackground";
 
@@ -20,6 +21,23 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
   const [isSettingsOpen, setIsSettingsOpen] = useState(initialSettingsOpen);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [chatInput, setChatInput] = useState("");
+
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+    try {
+      const saved = localStorage.getItem("lorin_user_profile");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !userProfile);
+
+  const handleSaveProfile = (profile: UserProfile) => {
+    setUserProfile(profile);
+    localStorage.setItem("lorin_user_profile", JSON.stringify(profile));
+    setIsOnboardingOpen(false);
+  };
 
   // Single source of truth for mobile/touch layout state + keyboard offset
   const { isMobile, keyboardOffset } = useMobileLayout();
@@ -156,6 +174,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         onNewChat={startNewChat}
         onOpenHistory={handleOpenHistory}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenProfile={() => setIsOnboardingOpen(true)}
+        userProfile={userProfile}
         isStreaming={isStreaming}
       />
 
@@ -261,6 +281,13 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         isMobile={isMobile}
+      />
+
+      <UserOnboardingModal
+        isOpen={isOnboardingOpen}
+        onSaveProfile={handleSaveProfile}
+        onClose={() => setIsOnboardingOpen(false)}
+        initialProfile={userProfile}
       />
     </div>
   );

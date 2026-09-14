@@ -10,7 +10,8 @@ import {
   Moon,
   Plus,
   GraduationCap,
-  Settings
+  Settings,
+  User
 } from "lucide-react";
 
 interface ChatHeaderProps {
@@ -20,6 +21,8 @@ interface ChatHeaderProps {
   onNewChat: () => void;
   onOpenHistory: () => void;
   onOpenSettings?: () => void;
+  onOpenProfile?: () => void;
+  userProfile?: { name: string; age: number | string; purpose: string } | null;
   isStreaming: boolean;
 }
 
@@ -30,6 +33,8 @@ export default function ChatHeader({
   onNewChat,
   onOpenHistory,
   onOpenSettings,
+  onOpenProfile,
+  userProfile,
   isStreaming: _isStreaming,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
@@ -110,7 +115,7 @@ export default function ChatHeader({
   const headerPills = [
     {
       id: "new",
-      label: "New Chat",
+      label: "New",
       icon: Plus,
       action: () => {
         onNewChat();
@@ -118,8 +123,17 @@ export default function ChatHeader({
       },
     },
     {
+      id: "profile",
+      label: userProfile?.name ? userProfile.name.split(" ")[0] : "Profile",
+      icon: User,
+      action: () => {
+        if (onOpenProfile) onOpenProfile();
+        setActivePill("profile");
+      },
+    },
+    {
       id: "history",
-      label: "Chat History",
+      label: "Chats",
       icon: Clock,
       action: () => {
         onOpenHistory();
@@ -171,12 +185,12 @@ export default function ChatHeader({
         <div className="flex items-center gap-2.5 shrink-0">
           <Tooltip content="Start New Chat" position="bottom">
             <motion.div
-              whileHover={{ rotate: 12, scale: 1.08 }}
+              whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex size-9 items-center justify-center rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-md shadow-sm border border-white/60 dark:border-white/10 cursor-pointer shrink-0"
+              className="flex size-9 items-center justify-center rounded-full overflow-hidden shadow-sm border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black ring-1 ring-accent/30 p-0.5"
             >
-              <GraduationCap className="w-5 h-5 text-[#2E6B5E] dark:text-[#10b981]" />
+              <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
             </motion.div>
           </Tooltip>
 

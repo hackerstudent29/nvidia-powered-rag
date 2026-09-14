@@ -107,12 +107,26 @@ const FAQ_CARDS = [
   },
 ];
 
-export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGreetingProps) {
-  const handleCardClick = (q: string) => {
-    if (onPastePrompt) {
-      onPastePrompt(q);
-    } else {
-      onSelectPrompt(q);
+export default function HeroGreeting({
+  onSelectPrompt,
+  onPastePrompt,
+}: HeroGreetingProps) {
+  const userProfile = (() => {
+    try {
+      const saved = localStorage.getItem("lorin_user_profile");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const firstName = userProfile?.name ? userProfile.name.split(" ")[0] : "Future Engineer";
+
+  const handleCardClick = (promptText: string) => {
+    if (onSelectPrompt) {
+      onSelectPrompt(promptText);
+    } else if (onPastePrompt) {
+      onPastePrompt(promptText);
     }
   };
 
@@ -131,13 +145,24 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
           style={{ background: "radial-gradient(ellipse, #2E6B5E 0%, transparent 70%)" }}
         />
 
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative mb-3.5 flex items-center justify-center z-10"
+        >
+          <div className="size-16 sm:size-20 rounded-full overflow-hidden border-2 border-white/80 dark:border-white/20 shadow-xl bg-black p-0.5 ring-2 ring-accent/30">
+            <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
+          </div>
+        </motion.div>
+
         <motion.h1
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
           className="hero-title relative text-[1.45rem] min-[360px]:text-[1.65rem] sm:text-[2.8rem] lg:text-[3.4rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] z-10 whitespace-nowrap"
         >
-          Hello, Future Engineer.
+          Hello, {firstName}.
         </motion.h1>
 
         <motion.p
@@ -150,7 +175,7 @@ export default function HeroGreeting({ onSelectPrompt, onPastePrompt }: HeroGree
           <span className="font-bold text-ink dark:text-[#f4f3ee]">
             Mohamed Sathak A.J. College of Engineering and Architecture
           </span>{" "}
-          — admissions, placements, courses, hostels, and campus life.
+          — {userProfile?.purpose ? `personalized assistance for ${userProfile.purpose}` : "admissions, placements, courses, hostels, and campus life"}.
         </motion.p>
       </div>
 

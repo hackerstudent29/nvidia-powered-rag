@@ -17,7 +17,7 @@ Typical bot flow for "which bus stops near X" / "does route Y stop at X":
 This intentionally has zero third-party dependencies (stdlib only) so it
 drops into any bot backend.
 """
-import json, re, math
+import json, re, math, os
 from difflib import SequenceMatcher
 
 def _norm(s: str) -> str:
@@ -33,6 +33,20 @@ def _haversine_km(lat1, lng1, lat2, lng2):
 
 class RouteFinder:
     def __init__(self, stops_path="bus_stops_master.json", routes_path="bus_routes.json"):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        if not os.path.exists(stops_path):
+            alt_stops = os.path.join(base_dir, "data", os.path.basename(stops_path))
+            if os.path.exists(alt_stops):
+                stops_path = alt_stops
+            elif os.path.exists(os.path.join(base_dir, os.path.basename(stops_path))):
+                stops_path = os.path.join(base_dir, os.path.basename(stops_path))
+        if not os.path.exists(routes_path):
+            alt_routes = os.path.join(base_dir, "data", os.path.basename(routes_path))
+            if os.path.exists(alt_routes):
+                routes_path = alt_routes
+            elif os.path.exists(os.path.join(base_dir, os.path.basename(routes_path))):
+                routes_path = os.path.join(base_dir, os.path.basename(routes_path))
+
         with open(stops_path, encoding="utf-8") as f:
             self.stops = {s["stop_id"]: s for s in json.load(f)}
         with open(routes_path, encoding="utf-8") as f:
@@ -55,23 +69,61 @@ class RouteFinder:
             for i, st in enumerate(route["stops"]):
                 self._stop_to_routes.setdefault(st["stop_id"], []).append((route, i))
 
+    # ---------- route-based lookup ----------
+    def find_route(self, query: str):
+        """
+        Matches a route ID or route name from user query (e.g. 'AR8', 'AR 8', 'AR-8', 'bus 8', 'route 22', '570').
+        """
+        q_clean = _norm(query)
+        q_lower = query.lower()
+
+        # Regex for AR numbers, Route numbers, Bus numbers
+        m = re.search(r'\b(?:ar|route|bus)\s*[-_]?\s*(\d{1,3}[a-z]?)\b', q_lower)
+        if m:
+            cand_num = m.group(1).lower()
+            for r in self.routes:
+                rid_clean = _norm(r["route_id"])
+                if rid_clean == f"ar{cand_num}" or rid_clean == cand_num:
+                    return r
+
+        # Exact / substring checks for any route_id
+        for r in self.routes:
+            rid_clean = _norm(r["route_id"])
+            if rid_clean == q_clean or f"route{rid_clean}" in q_clean or f"bus{rid_clean}" in q_clean:
+                return r
+            if len(rid_clean) >= 3 and rid_clean in q_clean:
+                return r
+
+        return None
+
     # ---------- name-based lookup ----------
-    def find_stop(self, query: str, fuzzy_threshold: float = 0.65):
+    def find_stop(self, query: str, fuzzy_threshold: float = 0.80):
         """
         Returns (stop_dict, match_type) where match_type is
         'exact' | 'fuzzy' | None.
         """
         key = _norm(query)
+        non_transport_stopwords = {
+            "sports", "games", "gym", "gymnasium", "yoga", "football", "basketball", 
+            "cricket", "kabaddi", "volleyball", "table", "tennis", "chess", "carrom", 
+            "hostel", "canteen", "mess", "fees", "fee", "admission", "admissions", 
+            "cutoff", "cutoffs", "faculty", "placement", "placements", "syllabus", 
+            "library", "scholarship", "department", "degree", "course", "about", 
+            "that", "this", "tell", "tellme", "briefly", "more", "details", "info"
+        }
+        if key in non_transport_stopwords:
+            return None, None
+
         if key in self._alias_index:
             sid = self._alias_index[key]
             return self.stops[sid], "exact"
 
-        # Substring alias lookup fallback
+        # Substring alias lookup fallback: requires key >= 4 and alias_key >= 4
         for alias_key, sid in self._alias_index.items():
-            if len(key) >= 4 and (key in alias_key or alias_key in key):
+            if len(key) >= 4 and len(alias_key) >= 4 and (key == alias_key or key in alias_key):
                 return self.stops[sid], "exact"
 
-        # fuzzy fallback: best SequenceMatcher ratio across all names+aliases
+        # fuzzy fallback: best SequenceMatcher ratio across all names+aliases (requires threshold >= 0.80)
         best_sid, best_ratio = None, 0.0
         for sid, s in self.stops.items():
             labels = [s["name"]] + s.get("aliases", [])
