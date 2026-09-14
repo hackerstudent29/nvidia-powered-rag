@@ -345,7 +345,7 @@ export const AdminDashboard: React.FC = () => {
                 <span>{error}</span>
               </div>
               <button 
-                onClick={fetchDashboardData}
+                onClick={() => fetchDashboardData()}
                 className="px-3 py-1 rounded-xl bg-rose-500 text-white text-[11px] font-bold hover:bg-rose-600 transition-colors"
               >
                 Retry Fetch
