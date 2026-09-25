@@ -52,6 +52,11 @@ try:
 except ImportError:
     from backend.domain_router import domain_router, topic_shift_detector, crag_filter, CampusDomain, TopicRelation
 
+try:
+    from taxonomy import fast_classify_intent, CAMPUS_TAXONOMY
+except ImportError:
+    from backend.taxonomy import fast_classify_intent, CAMPUS_TAXONOMY
+
 
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
@@ -2810,24 +2815,23 @@ async def stream_cached_or_prebuilt(
 
 
 def categorize_user_query(query: str) -> str:
-    """Categorizes user query into academic/campus domains."""
+    """Categorizes user query into academic/campus domains using unified taxonomy."""
     if not query:
         return "general"
     q_lower = query.lower().strip()
-    if any(k in q_lower for k in ["bus", "route", "transport", "kilambakkam", "siruseri", "cmbt", "transit", "travel", "auto", "metro", "vandalur", "sholinganallur", "navalur"]):
-        return "transport"
-    if any(k in q_lower for k in ["admission", "cutoff", "tnea", "apply", "application", "quota", "seat", "eligibility", "join", "counseling", "lateral"]):
-        return "admission"
-    if any(k in q_lower for k in ["fee", "tuition", "cost", "scholarship", "payment", "bank", "dd"]):
-        return "fees"
-    if any(k in q_lower for k in ["placement", "salary", "company", "recruiter", "package", "job", "cisco", "interview", "training", "career", "hire"]):
-        return "placements"
-    if any(k in q_lower for k in ["hostel", "room", "mess", "food", "stay", "warden", "canteen"]):
-        return "hostel"
-    if any(k in q_lower for k in ["cse", "ece", "eee", "mech", "civil", "it", "department", "b.e", "m.e", "b.tech", "syllabus", "lab", "faculty", "hod", "professor"]):
-        return "department"
-    if any(k in q_lower for k in ["library", "sports", "gym", "wifi", "tech centre", "technology centre", "ar/vr", "bot lab", "robotics"]):
-        return "facilities"
+
+    # 1. Fast Intent Classification from Taxonomy (0ms)
+    fast_cat = fast_classify_intent(q_lower)
+    if fast_cat and fast_cat not in ("off_topic", "jailbreak"):
+        return fast_cat
+
+    # 2. Taxonomy Regex Pattern & Keywords Matching
+    for cat_key, cat_meta in CAMPUS_TAXONOMY.items():
+        if cat_key in ("off_topic", "jailbreak", "greetings"):
+            continue
+        if cat_meta.regex_pattern and re.search(cat_meta.regex_pattern, q_lower):
+            return cat_key
+
     return "general"
 
 def record_security_offense(user_id: str, user_ip: str, attack_type: str, user_query: str, reason: str) -> str:

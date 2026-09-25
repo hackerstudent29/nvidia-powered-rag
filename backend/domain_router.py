@@ -179,12 +179,23 @@ class DomainRouter:
             try:
                 jev_res = jev_evaluator.evaluate_query_sync(query, timeout=2.5)
                 cat_map = {
+                    "research": CampusDomain.RESEARCH,
                     "research_patents": CampusDomain.RESEARCH,
                     "transport": CampusDomain.TRANSPORT,
+                    "admissions": CampusDomain.ADMISSIONS,
                     "admissions_fees": CampusDomain.ADMISSIONS,
+                    "academics": CampusDomain.ACADEMICS,
                     "academics_depts": CampusDomain.ACADEMICS,
-                    "hostel_campus": CampusDomain.CAMPUS_LIFE,
-                    "developer": CampusDomain.PEOPLE
+                    "fees": CampusDomain.FEES,
+                    "placements": CampusDomain.ACADEMICS,
+                    "hostel": CampusDomain.CAMPUS_LIFE,
+                    "canteen": CampusDomain.CAMPUS_LIFE,
+                    "infrastructure": CampusDomain.ACADEMICS,
+                    "campus_life": CampusDomain.CAMPUS_LIFE,
+                    "governance": CampusDomain.PEOPLE,
+                    "alumni": CampusDomain.PEOPLE,
+                    "developer": CampusDomain.PEOPLE,
+                    "greetings": CampusDomain.GENERAL
                 }
                 if jev_res.category in cat_map:
                     return cat_map[jev_res.category]

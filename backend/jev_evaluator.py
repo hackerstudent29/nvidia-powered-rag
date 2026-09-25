@@ -29,6 +29,15 @@ AI_GATEWAY_API_KEY = os.getenv("AI_GATEWAY_API_KEY")
 AI_GATEWAY_API_KEY_BACKUP = os.getenv("AI_GATEWAY_API_KEY_BACKUP")
 JEV_MODEL_ID = "typesafe-ai/jev"
 
+try:
+    from taxonomy import get_jev_category_choices, is_conversational_greeting
+except ImportError:
+    try:
+        from backend.taxonomy import get_jev_category_choices, is_conversational_greeting
+    except ImportError:
+        get_jev_category_choices = None
+        is_conversational_greeting = lambda q: False
+
 @dataclass
 class JevEvaluationResult:
     is_safe: bool
@@ -78,6 +87,30 @@ class JevEvaluator:
                 needs_websearch=False
             )
 
+        # 0ms Instant Fast-Path for Conversational Greetings & Pleasantries
+        if is_conversational_greeting(user_query):
+            return JevEvaluationResult(
+                is_safe=True,
+                safe_probability=1.0,
+                is_campus_domain=True,
+                domain_probability=1.0,
+                category="greetings",
+                confidence=1.0,
+                needs_websearch=False
+            )
+
+        category_criteria = get_jev_category_choices() if get_jev_category_choices else {
+            "greetings": "Conversational greeting, polite hello/hi, asking who the bot is, capabilities.",
+            "admissions": "Admissions process, fee structure, eligibility criteria, TNEA cutoffs, seat quota.",
+            "transport": "College bus routes, pickup stops, departure timings, driver contacts, travel info.",
+            "hostel": "Hostel rooms, dining mess, food rules, anti-ragging, campus sports, gym, library.",
+            "academics": "Departments (CSE, IT, ECE, EEE, Mech, Civil, AI&DS, AI&ML, Cyber), syllabus, courses, faculty.",
+            "research": "Faculty research, patents, inventions, published papers, copyrights, journals, conferences, patent numbers.",
+            "placements": "Campus placements, recruiter companies, packages, interview training, career cell.",
+            "developer": "Inquiries about the developer Ramanathan S., portfolio, or creator of Lorin AI.",
+            "off_topic": "Clearly unrelated to MSAJCEA or college education."
+        }
+
         payload = {
             "model": JEV_MODEL_ID,
             "state": user_query[:1000],  # Cap query length for fast evaluation
@@ -92,25 +125,16 @@ class JevEvaluator:
                 },
                 "is_campus_domain": {
                     "type": "boolean",
-                    "instructions": "Does this query pertain to college education, admissions, academics, engineering departments, hostel, bus transport, placements, campus facilities, faculty, or faculty research and patents?",
+                    "instructions": "Does this query pertain to college education, admissions, academics, engineering departments, hostel, bus transport, placements, campus facilities, faculty, research, patents, or conversational pleasantries?",
                     "criteria": {
-                        "true": "Relevant to higher education, college life, courses, transport, hostel, admissions, fees, engineering subjects, or faculty research, patents, and publications.",
+                        "true": "Relevant to higher education, college life, courses, transport, hostel, admissions, fees, engineering subjects, faculty research, patents, or conversational greetings to the college assistant.",
                         "false": "Completely unrelated topic such as cooking recipes, video games, cryptocurrency, external gossip, or unrelated homework."
                     }
                 },
                 "category": {
                     "type": "choice",
                     "instructions": "Determine the most specific category for this college query.",
-                    "criteria": {
-                        "admissions_fees": "Admissions process, fee structure, eligibility criteria, TNEA cutoffs, seat quota.",
-                        "transport": "College bus routes, pickup stops, departure timings, driver contacts, travel info.",
-                        "hostel_campus": "Hostel rooms, dining mess, food rules, anti-ragging, campus sports, gym, library.",
-                        "academics_depts": "Departments (CSE, IT, ECE, EEE, Mech, Civil, AI&DS, AI&ML, Cyber), syllabus, courses, faculty.",
-                        "research_patents": "Faculty research, patents, inventions, published papers, copyrights, journals, conferences, patent numbers (e.g. 2020101867), project funding.",
-                        "placements": "Campus placements, recruiter companies, packages, interview training, career cell.",
-                        "developer": "Inquiries about the developer Ramanathan S., portfolio, or creator of Lorin AI.",
-                        "off_topic": "Clearly unrelated to MSAJCEA or college education."
-                    }
+                    "criteria": category_criteria
                 },
                 "needs_websearch": {
                     "type": "boolean",
