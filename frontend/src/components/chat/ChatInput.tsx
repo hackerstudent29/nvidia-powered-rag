@@ -666,7 +666,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setIsRecording(true);
 
     try {
-      // 1. Request microphone access
+      // 1. Request microphone access (ensuring mediaDevices exists in current context)
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.warn("[STT Engine] navigator.mediaDevices not supported or non-secure context, attempting WebSpeech fallback.");
+        startWebSpeechFallback();
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       });
@@ -853,8 +859,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       };
 
     } catch (err: any) {
-      console.error("[AssemblyAI STT] Start recording error:", err);
-      alert(`Speech-to-Text Error: ${err.message || "Failed to connect to AssemblyAI"}`);
+      console.error("[Deepgram STT] Start recording error:", err);
+      alert(`Speech-to-Text Error: ${err.message || "Failed to connect to Deepgram STT service"}`);
       stopRecording();
     }
   }, [handleValueChange, stopRecording]);

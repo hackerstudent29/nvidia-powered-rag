@@ -22,5 +22,6 @@ dist/
 .DS_Store
 Thumbs.db
 
-# Scratch
+# Scratch & IDE
 scratch/
+.vscode/

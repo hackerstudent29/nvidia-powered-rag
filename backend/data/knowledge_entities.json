@@ -3467,5 +3467,166 @@
       "role": "External Member (NGO-2)",
       "email": "drushaaeswaran@gmail.com"
     }
+  },
+  {
+    "entity_key": "patent_2020101867",
+    "entity_name": "Patent 2020101867 — Dr. E. Dhiravidachelvi",
+    "entity_type": "PATENT",
+    "aliases": [
+      "2020101867",
+      "patent 2020101867",
+      "patent no 2020101867",
+      "patent number 2020101867",
+      "whose patent numbe is this 2020101867",
+      "whose patent number is this 2020101867",
+      "whose patent is 2020101867",
+      "disaster management system iot"
+    ],
+    "value": "Patent No: 2020101867 was filed and published by Dr. E. Dhiravidachelvi (Faculty in Electronics & Communication Engineering / IT at MSAJCE). Title: 'Design and implementation of a disaster management system using IoT and cloud computing techniques for a connected building to save lives with early warnings'.",
+    "source_file": "msajce_research.md",
+    "source_url": "https://msajce.edu.in/research",
+    "details": {
+      "patent_number": "2020101867",
+      "inventor": "Dr. E. Dhiravidachelvi",
+      "title": "Design and implementation of a disaster management system using IoT and cloud computing techniques for a connected building to save lives with early warnings",
+      "status": "Filed & Published",
+      "department": "Electronics and Communication Engineering / IT",
+      "institution": "Mohamed Sathak A.J. College of Engineering (MSAJCE)"
+    }
+  },
+  {
+    "entity_key": "faculty_dr_e_dhiravidachelvi",
+    "entity_name": "Dr. E. Dhiravidachelvi (Faculty Member & Researcher, MSAJCE)",
+    "entity_type": "FACULTY",
+    "aliases": [
+      "dhiravidachelvi",
+      "dr dhiravidachelvi",
+      "dr. dhiravidachelvi",
+      "dr e dhiravidachelvi",
+      "dr. e. dhiravidachelvi",
+      "e dhiravidachelvi",
+      "e. dhiravidachelvi"
+    ],
+    "value": "Dr. E. Dhiravidachelvi is a prominent faculty member and researcher in ECE/IT at MSAJCE. She serves as Convener of the ICC (Internal Complaints Committee), SC-ST Cell, Minority Cell, and OBC Cell. She filed and published Patent No: 2020101867 on IoT-based disaster management and co-authored multiple books and patents.",
+    "source_file": "msajce_faculty_profiles.md",
+    "source_url": "https://msajce.edu.in/faculty",
+    "details": {
+      "name": "Dr. E. Dhiravidachelvi",
+      "designation": "Faculty Member",
+      "department": "Electronics and Communication Engineering / Information Technology",
+      "roles": "Convener — ICC, SC-ST Cell, Minority Cell, OBC Cell",
+      "patents": [
+        "2020101867",
+        "202041033273",
+        "202141014294 A",
+        "202141014294"
+      ],
+      "email": "ecehod@msajce.edu.in"
+    }
+  },
+  {
+    "entity_key": "patent_202041033273",
+    "entity_name": "Patent 202041033273 — Vehicular Edge Computing",
+    "entity_type": "PATENT",
+    "aliases": [
+      "202041033273",
+      "patent 202041033273",
+      "vehicular edge computing patent"
+    ],
+    "value": "Patent No: 202041033273 was jointly filed and published by Dr. E. Dhiravidachelvi, Mrs. E. Jayanthi, Mrs. I. Suganthi, Mr. J. Raja, and Mr. S. Naveenkumar for 'Vehicular Edge Computing Using A Smart Embedded System For Intelligent Transportation'.",
+    "source_file": "msajce_research.md",
+    "source_url": "https://msajce.edu.in/research",
+    "details": {
+      "patent_number": "202041033273",
+      "inventors": [
+        "Dr. E. Dhiravidachelvi",
+        "Mrs. E. Jayanthi",
+        "Mrs. I. Suganthi",
+        "Mr. J. Raja",
+        "Mr. S. Naveenkumar"
+      ],
+      "title": "Vehicular Edge Computing Using A Smart Embedded System For Intelligent Transportation",
+      "status": "Filed & Published"
+    }
+  },
+  {
+    "entity_key": "patent_202141021897",
+    "entity_name": "Patent 202141021897 A — Battery Swapping Smart Station",
+    "entity_type": "PATENT",
+    "aliases": [
+      "202141021897",
+      "202141021897 a",
+      "patent 202141021897",
+      "battery swapping patent"
+    ],
+    "value": "Patent No: 202141021897 A was filed and published by Mr. K. Vairaperumal for 'Battery Swapping Smart Station for Future E-Vehicle Transportation'.",
+    "source_file": "msajce_research.md",
+    "source_url": "https://msajce.edu.in/research",
+    "details": {
+      "patent_number": "202141021897 A",
+      "inventor": "Mr. K. Vairaperumal",
+      "title": "Battery Swapping Smart Station for Future E-Vehicle Transportation",
+      "status": "Filed & Published"
+    }
+  },
+  {
+    "entity_key": "patent_202141025111",
+    "entity_name": "Patent 202141025111 A — Vehicle Tire Control System",
+    "entity_type": "PATENT",
+    "aliases": [
+      "202141025111",
+      "202141025111 a",
+      "patent 202141025111"
+    ],
+    "value": "Patent No: 202141025111 A was filed and published by Mr. Chintala Venkatesh for 'A Vehicle Tire Control System at curved roads using intelligent interfaces and support vector machines'.",
+    "source_file": "msajce_research.md",
+    "source_url": "https://msajce.edu.in/research",
+    "details": {
+      "patent_number": "202141025111 A",
+      "inventor": "Mr. Chintala Venkatesh",
+      "title": "A Vehicle Tire Control System at curved roads using intelligent interfaces and support vector machines",
+      "status": "Filed & Published"
+    }
+  },
+  {
+    "entity_key": "patent_202141026200",
+    "entity_name": "Patent 202141026200 A — Smart Metering System",
+    "entity_type": "PATENT",
+    "aliases": [
+      "202141026200",
+      "202141026200 a",
+      "patent 202141026200"
+    ],
+    "value": "Patent No: 202141026200 A was filed and published by Mrs. D. Hema Sumitha for 'A Real time based IOT Enabled Smart Metering System'.",
+    "source_file": "msajce_research.md",
+    "source_url": "https://msajce.edu.in/research",
+    "details": {
+      "patent_number": "202141026200 A",
+      "inventor": "Mrs. D. Hema Sumitha",
+      "title": "A Real time based IOT Enabled Smart Metering System",
+      "status": "Filed & Published"
+    }
+  },
+  {
+    "entity_key": "patent_202141014294",
+    "entity_name": "Patent 202141014294 A — Electrical Measuring Instruments",
+    "entity_type": "PATENT",
+    "aliases": [
+      "202141014294",
+      "202141014294 a",
+      "patent 202141014294"
+    ],
+    "value": "Patent No: 202141014294 A was jointly filed and published by Mrs. G. Premalatha and Dr. E. Dhiravidachelvi for 'Fundamentals of Electrical Measuring Instruments' and 'Real time crowd analysis using static video surveillance'.",
+    "source_file": "msajce_research.md",
+    "source_url": "https://msajce.edu.in/research",
+    "details": {
+      "patent_number": "202141014294 A",
+      "inventors": [
+        "Mrs. G. Premalatha",
+        "Dr. E. Dhiravidachelvi"
+      ],
+      "title": "Fundamentals of Electrical Measuring Instruments",
+      "status": "Filed & Published"
+    }
   }
 ]
