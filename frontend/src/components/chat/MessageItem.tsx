@@ -10,9 +10,9 @@ import TokenCostBadge, { TokenCostPanel } from "./TokenCostBadge";
 import { audioManager } from "../../utils/audioManager";
 import { Tooltip } from "../Tooltip";
 
+import { cn } from "../../lib/utils";
+
 const API_BASE = "/api";
-
-
 
 interface MessageItemProps {
   message: Message;
@@ -61,6 +61,13 @@ const ACTION_ICONS = {
       <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
       <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
     </svg>
+  ),
+  audioWave: (
+    <div className="flex items-center gap-[2px] h-3.5 w-3.5 justify-center text-emerald-500">
+      <span className="w-[2px] h-3 bg-current rounded-full animate-pulse" />
+      <span className="w-[2px] h-2 bg-current rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
+      <span className="w-[2px] h-3.5 bg-current rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
+    </div>
   )
 };
 
@@ -754,6 +761,48 @@ function formatTimestampWithSeconds(ts?: string | Date): string {
   }
 }
 
+function CodeBlock({ language, code }: { language?: string; code: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  return (
+    <div className="my-3.5 w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-[#18181b] text-zinc-100 font-mono text-[13px] shadow-sm">
+      <div className="flex items-center justify-between px-3.5 py-1.5 bg-[#27272a] border-b border-white/[0.06] text-[11px] text-zinc-400 font-sans select-none">
+        <span className="uppercase tracking-wider font-semibold text-[10px] text-zinc-300">
+          {language || "code"}
+        </span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1 px-2 py-0.5 rounded text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer text-[11px]"
+        >
+          {copied ? (
+            <>
+              <span className="text-emerald-400 font-bold">✓</span>
+              <span className="text-emerald-400">Copied</span>
+            </>
+          ) : (
+            <>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span>Copy code</span>
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="p-3.5 overflow-x-auto custom-scrollbar text-[12.5px] leading-relaxed font-mono">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
 const MessageItem = React.memo(function MessageItem({
   message,
   userQuery,
@@ -1178,21 +1227,9 @@ const MessageItem = React.memo(function MessageItem({
 
   if (isUser) {
     return (
-      <div className="flex flex-col items-end mt-7 mb-4 sm:mt-8 sm:mb-5 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
-        {/* User Profile Header (You + Timestamp + Avatar) aligned to top right */}
-        <div className="flex items-center gap-2 mb-1.5 shrink-0 justify-end pr-1">
-          <span className="text-[11.5px] font-bold text-ink-2 dark:text-zinc-300">You</span>
-          {timeStr && <span className="text-[10px] font-mono text-ink-3/70">• {timeStr}</span>}
-          <div className="size-7 rounded-full bg-gradient-to-br from-[#D0CCE5] to-[#F2CFDF] dark:from-[#4C1D95]/50 dark:to-[#9D174D]/50 border border-white/80 dark:border-white/20 shadow-xs flex items-center justify-center text-[#4C1D95] dark:text-[#c4b5fd] shrink-0">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-        </div>
-        {/* User Chat Bubble placed directly BELOW the profile */}
-        <div className="max-w-2xl min-w-0 box-border">
-          <div className="bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-2xl rounded-tr-xs border border-[#2E6B5E]/20 dark:border-[#10b981]/30 font-sans text-sm font-medium leading-relaxed break-words shadow-sm overflow-hidden min-w-0">
+      <div className="flex flex-col items-end my-3 sm:my-4 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-200">
+        <div className="max-w-[85%] sm:max-w-[80%] min-w-0 box-border">
+          <div className="bg-black/[0.04] dark:bg-white/[0.08] text-ink dark:text-zinc-100 px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-black/[0.03] dark:border-white/[0.05]">
             {message.content}
           </div>
         </div>
@@ -1252,39 +1289,75 @@ const MessageItem = React.memo(function MessageItem({
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
-              p: ({ children }) => <p className="mb-2.5 text-xs sm:text-sm text-ink/90 font-normal leading-relaxed">{processHighlightedChildren(children)}</p>,
-              ul: ({ children }) => <ul className="list-disc pl-4 sm:pl-5 mb-3 space-y-1 text-xs sm:text-sm text-ink/90">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-4 sm:pl-5 mb-3 space-y-1 text-xs sm:text-sm text-ink/90">{children}</ol>,
-              li: ({ children }) => <li className="mb-1">{processHighlightedChildren(children)}</li>,
-              h1: ({ children }) => <h1 className="font-heading font-bold tracking-tight text-base sm:text-lg mt-4 mb-2 text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h1>,
-              h2: ({ children }) => <h2 className="font-heading font-bold tracking-tight text-sm sm:text-base mt-3.5 mb-2 pb-1 border-b border-line/40 dark:border-white/[0.06] text-ink flex items-center gap-2">{processHighlightedChildren(children)}</h2>,
-              h3: ({ children }) => <h3 className="font-heading font-bold text-xs sm:text-sm mt-3 mb-1.5 text-ink">{processHighlightedChildren(children)}</h3>,
-              h4: ({ children }) => <h4 className="font-heading font-semibold text-xs sm:text-xs mt-2.5 mb-1 text-ink-2">{processHighlightedChildren(children)}</h4>,
-              hr: () => <hr className="my-3.5 border-line/50 dark:border-white/[0.06]" />,
-              blockquote: ({ children }) => <blockquote className="font-heading border-l-3 sm:border-l-4 border-[#2E6B5E] dark:border-[#10b981] bg-[#2E6B5E]/5 dark:bg-[#10b981]/10 rounded-r-xl p-2.5 sm:p-3.5 my-3 text-xs sm:text-sm text-ink-2 italic shadow-hairline">{processHighlightedChildren(children)}</blockquote>,
-              strong: ({ children }) => <strong className="font-bold text-ink">{processHighlightedChildren(children)}</strong>,
+              p: ({ children }) => (
+                <p className="mb-3.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200 font-normal last:mb-0">
+                  {processHighlightedChildren(children)}
+                </p>
+              ),
+              ul: ({ children }) => (
+                <ul className="list-disc pl-5 my-3 space-y-1.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
+                  {children}
+                </ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="list-decimal pl-5 my-3 space-y-1.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
+                  {children}
+                </ol>
+              ),
+              li: ({ children }) => (
+                <li className="leading-7 pl-0.5">
+                  {processHighlightedChildren(children)}
+                </li>
+              ),
+              h1: ({ children }) => (
+                <h1 className="font-bold tracking-tight text-xl sm:text-2xl mt-6 mb-3 text-ink dark:text-white flex items-center gap-2">
+                  {processHighlightedChildren(children)}
+                </h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="font-bold tracking-tight text-lg sm:text-xl mt-5 mb-2.5 text-ink dark:text-white border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5 flex items-center gap-2">
+                  {processHighlightedChildren(children)}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="font-semibold text-base sm:text-lg mt-4 mb-2 text-ink dark:text-zinc-100">
+                  {processHighlightedChildren(children)}
+                </h3>
+              ),
+              h4: ({ children }) => (
+                <h4 className="font-semibold text-sm sm:text-base mt-3 mb-1.5 text-ink-2 dark:text-zinc-300">
+                  {processHighlightedChildren(children)}
+                </h4>
+              ),
+              hr: () => <hr className="my-5 border-black/[0.08] dark:border-white/[0.08]" />,
+              blockquote: ({ children }) => (
+                <blockquote className="border-l-3 border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15px] text-ink-2 dark:text-zinc-300 italic">
+                  {processHighlightedChildren(children)}
+                </blockquote>
+              ),
+              strong: ({ children }) => <strong className="font-semibold text-ink dark:text-white">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="group relative w-full max-w-full min-w-0 overflow-x-auto custom-scrollbar my-3 rounded-xl sm:rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 p-1.5 box-border backdrop-blur-sm transition-all duration-200">
-                  <table className="w-full min-w-[300px] border-collapse text-left text-xs sm:text-sm border-none table-auto">{children}</table>
+                <div className="w-full max-w-full overflow-x-auto custom-scrollbar my-4 rounded-xl border border-black/10 dark:border-white/10 shadow-xs">
+                  <table className="w-full min-w-[360px] border-collapse text-left text-[13.5px] sm:text-sm">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-gradient-to-r from-[#2E6B5E]/15 via-[#2E6B5E]/8 to-transparent dark:from-[#10b981]/20 dark:via-[#10b981]/10 dark:to-transparent text-[#2E6B5E] dark:text-[#10b981] font-heading border-none">{children}</thead>
+                <thead className="bg-black/[0.03] dark:bg-white/[0.05] border-b border-black/10 dark:border-white/10 text-ink dark:text-zinc-200 font-semibold">{children}</thead>
               ),
               tbody: ({ children }) => (
-                <tbody className="text-ink font-medium border-none">{children}</tbody>
+                <tbody className="text-ink dark:text-zinc-300 divide-y divide-black/[0.04] dark:divide-white/[0.04]">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-[#2E6B5E]/5 dark:hover:bg-[#10b981]/10 transition-colors duration-150 border-none border-b border-black/[0.04] dark:border-white/[0.04] last:border-none">{children}</tr>
+                <tr className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-3 py-2.5 uppercase tracking-wider font-extrabold text-[10px] sm:text-xs text-[#2E6B5E] dark:text-[#34D399] border-none align-top first:whitespace-nowrap first:min-w-[105px] sm:first:min-w-[130px] whitespace-normal break-words">
+                <th className="px-3.5 py-2.5 font-semibold text-[13px] text-ink dark:text-zinc-100">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-3 py-2.5 text-ink align-top leading-relaxed text-xs sm:text-sm border-none first:whitespace-nowrap first:font-bold first:text-ink first:min-w-[105px] sm:first:min-w-[130px] whitespace-normal break-words">
+                <td className="px-3.5 py-2.5 align-top leading-relaxed text-ink dark:text-zinc-300">
                   {processHighlightedChildren(children)}
                 </td>
               ),
@@ -1461,8 +1534,12 @@ const MessageItem = React.memo(function MessageItem({
                     </div>
                   );
                 }
+                const codeString = String(children).replace(/\n$/, "");
+                if (match || codeString.includes("\n")) {
+                  return <CodeBlock language={lang} code={codeString} />;
+                }
                 return (
-                  <code className="rounded bg-surface-2 dark:bg-zinc-800 px-1.5 py-0.5 font-mono text-[12.5px] text-accent" {...props}>
+                  <code className="rounded bg-black/[0.06] dark:bg-white/[0.08] px-1.5 py-0.5 font-mono text-[13px] text-emerald-700 dark:text-emerald-400 font-medium" {...props}>
                     {children}
                   </code>
                 );
@@ -1484,143 +1561,136 @@ const MessageItem = React.memo(function MessageItem({
           <ResourceCards attachments={message.resource_attachments} />
         )}
 
-        {/* Restructured Bottom Toolbar for AI Messages */}
+        {/* Unified Sleek Bottom Toolbar for AI Messages */}
         {!message.is_streaming && (
-          <div className="mt-2 flex flex-col gap-2 pt-2 border-t border-line/30 dark:border-white/[0.04]">
-            {/* Row 1: Action Buttons (Left) & Answer Completion Timestamp (Pushed to Right End) */}
-            <div className="flex items-center justify-between gap-2 w-full min-w-0">
-              <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
+          <div className="mt-2.5 pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-black/[0.04] dark:border-white/[0.04]">
+            {/* Left: Quick Actions (Copy, Regenerate, Thumbs, TTS Voice) */}
+            <div className="flex items-center gap-1">
+              <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
+                >
+                  {copied ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">✓</span> : ACTION_ICONS.copy}
+                </button>
+              </Tooltip>
+
+              {onRegenerate && (
+                <Tooltip content="Regenerate response" position="top">
                   <button
                     type="button"
-                    onClick={handleCopy}
-                    className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
+                    onClick={() => onRegenerate?.(message.id)}
+                    className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
                   >
-                    {copied ? <span className="text-[10px] font-bold text-green">✓</span> : ACTION_ICONS.copy}
+                    {ACTION_ICONS.retry}
                   </button>
-                </Tooltip>
-
-                {onRegenerate && (
-                  <Tooltip content="Regenerate response" position="top">
-                    <button
-                      type="button"
-                      onClick={() => onRegenerate?.(message.id)}
-                      className="flex items-center justify-center size-7 rounded-[6px] text-ink-3 transition-colors duration-100 hover:bg-hover-2 hover:text-ink-2 cursor-pointer"
-                    >
-                      {ACTION_ICONS.retry}
-                    </button>
-                  </Tooltip>
-                )}
-
-                <Tooltip content="Helpful response" position="top">
-                  <button
-                    type="button"
-                    onClick={() => handleThumbs(1)}
-                    className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
-                      isLiked ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-green"
-                    }`}
-                  >
-                    {ACTION_ICONS.up}
-                  </button>
-                </Tooltip>
-
-                <Tooltip content="Needs improvement" position="top">
-                  <button
-                    type="button"
-                    onClick={() => handleThumbs(-1)}
-                    className={`flex items-center justify-center size-7 rounded-[6px] transition-colors duration-100 cursor-pointer ${
-                      isDisliked ? "bg-red/20 text-red font-bold scale-105" : "text-ink-3 hover:bg-hover-2 hover:text-red"
-                    }`}
-                  >
-                    {ACTION_ICONS.down}
-                  </button>
-                </Tooltip>
-
-                <Tooltip content={isPlayingAudio ? "Stop HD Voice" : isLoadingAudio ? "Synthesizing HD Voice..." : "Read Aloud (HD Neural Voice)"} position="top">
-                  <button
-                    type="button"
-                    onClick={() => handleTTS()}
-                    disabled={isLoadingAudio}
-                    className={`flex size-7 items-center justify-center rounded-[6px] transition-colors duration-100 hover:bg-hover-2 cursor-pointer ${
-                      isPlayingAudio ? "text-accent bg-accent/15 animate-pulse" : isLoadingAudio ? "text-orange" : "text-ink-3 hover:text-ink-2"
-                    }`}
-                  >
-                    {isLoadingAudio ? (
-                      <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83" />
-                      </svg>
-                    ) : (
-                      ACTION_ICONS.tts
-                    )}
-                  </button>
-                </Tooltip>
-              </div>
-
-              {/* Answer Completion Timestamp pushed to Right End */}
-              {timeStr && (
-                <Tooltip content="Answer Completion Timestamp" position="top">
-                  <span className="text-[10.5px] font-mono font-medium text-ink-3/70 select-none shrink-0 ml-auto pl-2">
-                    {timeStr}
-                  </span>
                 </Tooltip>
               )}
+
+              <Tooltip content="Good response" position="top">
+                <button
+                  type="button"
+                  onClick={() => handleThumbs(1)}
+                  className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
+                    isLiked ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                  }`}
+                >
+                  {ACTION_ICONS.up}
+                </button>
+              </Tooltip>
+
+              <Tooltip content="Bad response" position="top">
+                <button
+                  type="button"
+                  onClick={() => handleThumbs(-1)}
+                  className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
+                    isDisliked ? "bg-red-500/15 text-red-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                  }`}
+                >
+                  {ACTION_ICONS.down}
+                </button>
+              </Tooltip>
+
+              <Tooltip content={isPlayingAudio ? "Stop Voice" : isLoadingAudio ? "Synthesizing Voice..." : "Read Aloud"} position="top">
+                <button
+                  type="button"
+                  onClick={() => handleTTS()}
+                  disabled={isLoadingAudio}
+                  className={`flex size-7 items-center justify-center rounded-md transition-colors duration-100 cursor-pointer ${
+                    isPlayingAudio ? "text-accent bg-accent/15" : isLoadingAudio ? "text-orange-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                  }`}
+                >
+                  {isLoadingAudio ? (
+                    <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83" />
+                    </svg>
+                  ) : isPlayingAudio ? (
+                    ACTION_ICONS.audioWave
+                  ) : (
+                    ACTION_ICONS.tts
+                  )}
+                </button>
+              </Tooltip>
             </div>
 
-            {/* Row 2: Model Badge (Left) & Sources Button (Pushed to Right End) */}
-            {(message.token_metrics || sources.length > 0) && (
-              <div className="flex items-center justify-between gap-2 w-full min-w-0 mt-0.5">
-                <div>
-                  {message.token_metrics && (
-                    <TokenCostBadge metrics={message.token_metrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
-                  )}
-                </div>
+            {/* Right: Model Meta, Sources Pill, and Timestamp */}
+            <div className="flex items-center gap-2 ml-auto">
+              {message.token_metrics && (
+                <TokenCostBadge metrics={message.token_metrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
+              )}
 
-                {sources.length > 0 && (
-                  <button
-                    type="button"
-                    aria-expanded={sourcesOpen}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSourcesOpen((current) => !current);
-                    }}
-                    className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline cursor-pointer shrink-0 ml-auto ${
-                      sourcesOpen
-                        ? "bg-hover text-ink shadow-xs font-semibold border-line-strong"
-                        : "bg-transparent hover:bg-hover text-ink-2 hover:text-ink"
-                    }`}
+              {sources.length > 0 && (
+                <button
+                  type="button"
+                  aria-expanded={sourcesOpen}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSourcesOpen((current) => !current);
+                  }}
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-all duration-150 border border-black/[0.08] dark:border-white/[0.08] cursor-pointer shrink-0 ${
+                    sourcesOpen
+                      ? "bg-black/[0.08] dark:bg-white/[0.12] text-ink font-semibold"
+                      : "bg-black/[0.02] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] text-ink-2 hover:text-ink"
+                  }`}
+                >
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-accent"
                   >
-                    <svg
-                      width="11"
-                      height="11"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-accent"
-                    >
-                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                    </svg>
-                    <span className="tabular-nums font-mono text-ink-2">
-                      {sources.length} {sources.length === 1 ? "source" : "sources"}
-                    </span>
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      className={`transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`}
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                  <span className="tabular-nums font-mono text-ink-2">
+                    {sources.length} {sources.length === 1 ? "source" : "sources"}
+                  </span>
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    className={`transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              )}
+
+              {timeStr && (
+                <span className="text-[10.5px] font-mono text-ink-3/70 select-none shrink-0">
+                  {timeStr}
+                </span>
+              )}
+            </div>
           </div>
         )}
 

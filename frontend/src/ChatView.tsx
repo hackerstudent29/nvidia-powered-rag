@@ -201,7 +201,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         onScroll={handleScroll}
         className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 pt-16 sm:pt-20 pb-28 sm:pb-32 gpu-accelerated"
       >
-        <div className={`mx-auto max-w-5xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
+        <div className={`mx-auto max-w-3xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
           {messages.length === 0 ? (
             <HeroGreeting
               onSelectPrompt={(prompt) => {
