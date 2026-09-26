@@ -135,15 +135,19 @@ export default function ChatHeader({
         setActivePill("new");
       },
     },
-    {
-      id: "profile",
-      label: userProfile?.name ? userProfile.name.split(" ")[0] : "Profile",
-      icon: User,
-      action: () => {
-        if (onOpenProfile) onOpenProfile();
-        setActivePill("profile");
-      },
-    },
+    ...(!userProfile?.name
+      ? [
+          {
+            id: "profile",
+            label: "Profile",
+            icon: User,
+            action: () => {
+              if (onOpenProfile) onOpenProfile();
+              setActivePill("profile");
+            },
+          },
+        ]
+      : []),
     {
       id: "history",
       label: "Chats",
@@ -328,22 +332,22 @@ export default function ChatHeader({
                   transition={{ type: "spring", stiffness: 380, damping: 28 }}
                   className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white/95 dark:bg-[#14151a]/95 border border-black/10 dark:border-white/10 shadow-2xl p-2.5 backdrop-blur-2xl divide-y divide-black/[0.06] dark:divide-white/[0.06]"
                 >
-                  {/* User Profile Header */}
-                  <div className="pb-2 px-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="size-7 rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] font-bold text-xs shrink-0">
-                        {userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "S"}
+                  {/* User Profile Prompt (Only shown if student has NOT yet provided name/details) */}
+                  {!userProfile?.name && onOpenProfile && (
+                    <div className="pb-2 px-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="size-7 rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] font-bold text-xs shrink-0">
+                          <User size={14} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-ink dark:text-[#f4f3ee] truncate">
+                            Student Profile
+                          </p>
+                          <p className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">
+                            Add name & details
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-ink dark:text-[#f4f3ee] truncate">
-                          {userProfile?.name || "Student Guest"}
-                        </p>
-                        <p className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">
-                          {userProfile?.purpose || "MSAJCEA Applicant"}
-                        </p>
-                      </div>
-                    </div>
-                    {onOpenProfile && (
                       <button
                         type="button"
                         onClick={() => {
@@ -352,10 +356,10 @@ export default function ChatHeader({
                         }}
                         className="text-[10.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] hover:underline cursor-pointer shrink-0 ml-1"
                       >
-                        Edit
+                        Set Up
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div className="py-1.5 flex flex-col gap-0.5">
