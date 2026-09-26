@@ -18,8 +18,6 @@ import {
 interface HeroGreetingProps {
   onSelectPrompt: (prompt: string) => void;
   onPastePrompt?: (prompt: string) => void;
-  isMinimal?: boolean;
-  isEmbed?: boolean;
 }
 
 const FAQ_CARDS = [
@@ -112,8 +110,6 @@ const FAQ_CARDS = [
 export default function HeroGreeting({
   onSelectPrompt,
   onPastePrompt,
-  isMinimal = false,
-  isEmbed = false,
 }: HeroGreetingProps) {
   const userProfile = (() => {
     try {
@@ -134,67 +130,15 @@ export default function HeroGreeting({
     }
   };
 
-  // If in minimal mode (mobile, tablet, or iframe embed), render sleek compact hero
-  if (isMinimal) {
-    const minimalCards = FAQ_CARDS.slice(0, 4);
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="flex flex-col items-center w-full max-w-lg mx-auto px-3 my-auto py-2"
-      >
-        <div className="flex flex-col items-center text-center mb-3.5 w-full">
-          <div className="size-11 sm:size-12 rounded-full overflow-hidden border border-white/80 dark:border-white/20 shadow-md bg-black p-0.5 mb-2 shrink-0">
-            <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
-          </div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-ink dark:text-[#f4f3ee]">
-            Hello, {firstName}.
-          </h1>
-          <p className="mt-1 text-xs text-ink-3 dark:text-[#b1ada1] max-w-xs leading-relaxed">
-            {isEmbed
-              ? "Ask any question about MSAJCEA admissions, courses, and campus."
-              : "What would you like to explore about MSAJCEA today?"}
-          </p>
-        </div>
-
-        {/* Compact 4-Card Grid */}
-        <div className="w-full grid grid-cols-2 gap-2 sm:gap-2.5">
-          {minimalCards.map((card) => (
-            <motion.button
-              key={card.id}
-              type="button"
-              whileTap={{ scale: 0.97 }}
-              onClick={() => handleCardClick(card.q)}
-              className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-2xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] transition-all text-left cursor-pointer"
-            >
-              <div className="size-7 rounded-lg bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 text-[#2E6B5E] dark:text-[#10b981] flex items-center justify-center shrink-0">
-                {card.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11.5px] font-bold text-ink dark:text-[#f4f3ee] truncate leading-tight">
-                  {card.title}
-                </p>
-                <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1] truncate mt-0.5 leading-none">
-                  {card.subtitle}
-                </p>
-              </div>
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-3 sm:px-6 my-auto py-2 sm:py-4"
+      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2.5 sm:px-6 my-auto py-2 sm:py-4"
     >
       {/* ── Hero headline ── */}
-      <div className="relative flex flex-col items-center text-center mb-6 sm:mb-8 w-full">
+      <div className="relative flex flex-col items-center text-center mb-4 sm:mb-8 w-full">
         {/* Ambient glow backing */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[130px] rounded-full blur-[90px] opacity-30 dark:opacity-20 pointer-events-none"
@@ -205,9 +149,9 @@ export default function HeroGreeting({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative mb-3.5 flex items-center justify-center z-10"
+          className="relative mb-2.5 sm:mb-3.5 flex items-center justify-center z-10"
         >
-          <div className="size-16 sm:size-20 rounded-full overflow-hidden border-2 border-white/80 dark:border-white/20 shadow-xl bg-black p-0.5 ring-2 ring-accent/30">
+          <div className="size-14 sm:size-20 rounded-full overflow-hidden border-2 border-white/80 dark:border-white/20 shadow-xl bg-black p-0.5 ring-2 ring-accent/30">
             <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
           </div>
         </motion.div>
@@ -216,7 +160,7 @@ export default function HeroGreeting({
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.05 }}
-          className="hero-title relative text-[1.45rem] min-[360px]:text-[1.65rem] sm:text-[2.8rem] lg:text-[3.4rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] z-10 whitespace-nowrap"
+          className="hero-title relative text-[1.35rem] min-[360px]:text-[1.55rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] z-10 whitespace-nowrap"
         >
           Hello, {firstName}.
         </motion.h1>
@@ -225,7 +169,7 @@ export default function HeroGreeting({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="relative z-10 mt-2.5 sm:mt-3.5 text-[13px] sm:text-[15px] text-ink-3 dark:text-[#b1ada1] max-w-[620px] leading-relaxed font-ui"
+          className="relative z-10 mt-2 sm:mt-3 text-[12px] sm:text-[15px] text-ink-3 dark:text-[#b1ada1] max-w-[620px] leading-relaxed font-ui px-2"
         >
           Explore&nbsp;
           <span className="font-bold text-ink dark:text-[#f4f3ee]">
@@ -235,33 +179,33 @@ export default function HeroGreeting({
         </motion.p>
       </div>
 
-      {/* ── 12-card Grid (Slightly Larger & Spaced Cards) ── */}
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* ── All 12 Cards Grid (Responsive 2-col on Mobile/Iframe, 3-col on Tablet, 4-col on Desktop) ── */}
+      <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
         {FAQ_CARDS.map((card, idx) => (
           <motion.button
             key={card.id}
             type="button"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.03 + idx * 0.01, duration: 0.18 }}
+            transition={{ delay: 0.02 + idx * 0.01, duration: 0.18 }}
             onClick={() => handleCardClick(card.q)}
-            className="group flex flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-3.5 sm:p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md transform-gpu hover:-translate-y-0.5 transition-all duration-150 ease-out cursor-pointer w-full active:scale-[0.98] min-h-[84px] sm:min-h-[104px]"
+            className="group flex flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-2.5 min-[420px]:p-3 sm:p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md transform-gpu hover:-translate-y-0.5 transition-all duration-150 ease-out cursor-pointer w-full active:scale-[0.98] min-h-[74px] sm:min-h-[100px]"
           >
-            <div className="flex items-center gap-2.5 sm:gap-3 w-full">
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
               {/* Icon Pill Container */}
-              <div className="size-8 sm:size-9 rounded-lg sm:rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-150 shadow-xs shrink-0">
+              <div className="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-150 shadow-xs shrink-0">
                 {card.icon}
               </div>
 
               {/* Title */}
-              <p className="text-[13px] sm:text-[14px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors duration-150">
+              <p className="text-[12px] sm:text-[14px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors duration-150">
                 {card.title}
               </p>
             </div>
 
             {/* Subtitle */}
-            <div className="mt-1.5 sm:mt-2 w-full">
-              <p className="text-[11px] sm:text-[12px] text-ink-3 dark:text-[#b1ada1] leading-tight line-clamp-1">
+            <div className="mt-1 sm:mt-2 w-full">
+              <p className="text-[10px] sm:text-[12px] text-ink-3 dark:text-[#b1ada1] leading-tight line-clamp-1">
                 {card.subtitle}
               </p>
             </div>

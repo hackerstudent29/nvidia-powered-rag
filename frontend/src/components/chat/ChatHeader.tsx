@@ -9,10 +9,11 @@ import {
   Sun,
   Moon,
   Plus,
-  GraduationCap,
   Settings,
   User,
-  ExternalLink
+  ExternalLink,
+  Menu,
+  X,
 } from "lucide-react";
 
 interface ChatHeaderProps {
@@ -26,9 +27,6 @@ interface ChatHeaderProps {
   userProfile?: { name: string; age: number | string; purpose: string } | null;
   isStreaming: boolean;
   isEmbed?: boolean;
-  isMobile?: boolean;
-  isTablet?: boolean;
-  isMinimal?: boolean;
 }
 
 export default function ChatHeader({
@@ -42,14 +40,12 @@ export default function ChatHeader({
   userProfile,
   isStreaming: _isStreaming,
   isEmbed = false,
-  isMobile = false,
-  isTablet = false,
-  isMinimal = false,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
-  const effectiveMinimal = isMinimal || isMobile || isTablet || isEmbed;
   const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
   const fontSizeMenuRef = useRef<HTMLDivElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const [activePill, setActivePill] = useState<string>("chat");
 
@@ -112,6 +108,13 @@ export default function ChatHeader({
       ) {
         setFontSizeMenuOpen(false);
       }
+      if (
+        mobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(target)
+      ) {
+        setMobileMenuOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleOutside);
     document.addEventListener("touchstart", handleOutside);
@@ -119,9 +122,9 @@ export default function ChatHeader({
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("touchstart", handleOutside);
     };
-  }, [fontSizeMenuOpen]);
+  }, [fontSizeMenuOpen, mobileMenuOpen]);
 
-  // Pill Header Items
+  // Pill Header Items (for Desktop View)
   const headerPills = [
     {
       id: "new",
@@ -196,101 +199,6 @@ export default function ChatHeader({
       : []),
   ];
 
-  // If minimal mode (mobile, tablet, or iframe embed), render clean, compact minimal header
-  if (effectiveMinimal) {
-    return (
-      <div className="fixed top-0 left-0 right-0 z-40 px-2 sm:px-3 pt-2 pb-1.5 pointer-events-none">
-        <motion.header
-          initial={{ y: -12, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className={`pointer-events-auto mx-auto h-11 sm:h-12 backdrop-blur-2xl backdrop-saturate-180 bg-white/85 dark:bg-[#14151a]/85 border border-black/10 dark:border-white/15 shadow-sm rounded-full flex items-center justify-between px-3 transition-all ${
-            isEmbed ? "max-w-full" : "max-w-xl"
-          }`}
-        >
-          {/* Minimal Brand */}
-          <div className="flex items-center gap-2 shrink-0">
-            <Tooltip content="Start New Chat" position="bottom">
-              <button
-                type="button"
-                onClick={onNewChat}
-                className="flex size-7 sm:size-8 items-center justify-center rounded-full overflow-hidden border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black p-0.5"
-              >
-                <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
-              </button>
-            </Tooltip>
-
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs sm:text-sm font-heading font-extrabold text-ink dark:text-[#f4f3ee] tracking-tight truncate">
-                Lorin AI
-              </span>
-              <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
-              <span className="text-[9px] font-mono font-bold uppercase text-[#2E6B5E] dark:text-[#10b981] px-1 py-0.2 rounded bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 shrink-0 hidden min-[380px]:inline-block">
-                MSAJCEA
-              </span>
-            </div>
-          </div>
-
-          {/* Minimal Right Actions */}
-          <div className="flex items-center gap-1 shrink-0">
-            {/* New Chat Button */}
-            <Tooltip content="Start New Chat" position="bottom">
-              <button
-                type="button"
-                onClick={onNewChat}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E]/20 text-xs font-semibold cursor-pointer transition-colors"
-              >
-                <Plus size={14} strokeWidth={2.4} />
-                <span className="text-[11px] font-bold">New</span>
-              </button>
-            </Tooltip>
-
-            {/* History Button */}
-            <Tooltip content="Chat History" position="bottom">
-              <button
-                type="button"
-                onClick={onOpenHistory}
-                className="flex size-8 items-center justify-center rounded-full text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
-                aria-label="Chat History"
-              >
-                <Clock size={16} strokeWidth={2} />
-              </button>
-            </Tooltip>
-
-            {/* Theme Toggle Button */}
-            <Tooltip content={isDark ? "Light Mode" : "Dark Mode"} position="bottom">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="flex size-8 items-center justify-center rounded-full text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
-                aria-label="Toggle Theme"
-              >
-                {isDark ? <Moon size={16} strokeWidth={2} /> : <Sun size={16} strokeWidth={2} />}
-              </button>
-            </Tooltip>
-
-            {/* Fullscreen Button if Embed */}
-            {isEmbed && (
-              <Tooltip content="Open Fullscreen" position="bottom">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
-                    window.open(fullUrl, "_blank");
-                  }}
-                  className="flex size-8 items-center justify-center rounded-full text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
-                  aria-label="Open Fullscreen"
-                >
-                  <ExternalLink size={15} strokeWidth={2} />
-                </button>
-              </Tooltip>
-            )}
-          </div>
-        </motion.header>
-      </div>
-    );
-  }
-
   return (
     <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-40 px-2 sm:px-4 pointer-events-none">
       <motion.header
@@ -318,7 +226,7 @@ export default function ChatHeader({
               <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#2E6B5E] dark:text-[#10b981] leading-none">
                 MSAJCE
               </span>
-              <span className="hidden md:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.2 text-[8.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40 leading-none">
+              <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.2 text-[8.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40 leading-none">
                 TNEA 1301
               </span>
             </div>
@@ -329,67 +237,232 @@ export default function ChatHeader({
           </div>
         </div>
 
-        {/* ── EXPANDABLE PILL TOP HEADER NAVBAR (SHADCN / FRAMER MOTION) ── */}
+        {/* ── HEADER NAVBAR RIGHT SIDE ── */}
         <div className="flex items-center gap-1.5 relative">
-          <motion.nav
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className="rounded-full flex items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/85 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
-          >
-            {headerPills.map((pill) => {
-              const Icon = pill.icon;
-              const isActive = activePill === pill.id;
+          {/* 1. PC View: Expandable Pill Navbar (Visible only on Desktop lg+, and hidden if embedded) */}
+          {!isEmbed && (
+            <motion.nav
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 26 }}
+              className="hidden lg:flex rounded-full items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/85 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+            >
+              {headerPills.map((pill) => {
+                const Icon = pill.icon;
+                const isActive = activePill === pill.id;
 
-              return (
-                <Tooltip key={pill.id} content={pill.label} position="bottom">
-                  <motion.button
-                    whileTap={{ scale: 0.94 }}
-                    whileHover={{ scale: 1.04 }}
-                    onClick={pill.action}
-                    type="button"
-                    className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[38px] cursor-pointer overflow-hidden ${
-                      isActive
-                        ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
-                        : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
-                    }`}
-                    aria-label={pill.label}
-                  >
-                    <Icon
-                      size={17}
-                      strokeWidth={isActive ? 2.3 : 1.8}
-                      className="shrink-0 transition-transform duration-200"
-                    />
-
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        width: isActive ? "62px" : "0px",
-                        opacity: isActive ? 1 : 0,
-                        marginLeft: isActive ? "5px" : "0px",
-                      }}
-                      transition={{
-                        width: { type: "spring", stiffness: 350, damping: 30 },
-                        opacity: { duration: 0.18 },
-                        marginLeft: { duration: 0.18 },
-                      }}
-                      className="overflow-hidden flex items-center whitespace-nowrap"
+                return (
+                  <Tooltip key={pill.id} content={pill.label} position="bottom">
+                    <motion.button
+                      whileTap={{ scale: 0.94 }}
+                      whileHover={{ scale: 1.04 }}
+                      onClick={pill.action}
+                      type="button"
+                      className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[38px] cursor-pointer overflow-hidden ${
+                        isActive
+                          ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
+                          : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
+                      }`}
+                      aria-label={pill.label}
                     >
-                      <span
-                        className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
-                          isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
-                        }`}
-                      >
-                        {pill.label}
-                      </span>
-                    </motion.div>
-                  </motion.button>
-                </Tooltip>
-              );
-            })}
-          </motion.nav>
+                      <Icon
+                        size={17}
+                        strokeWidth={isActive ? 2.3 : 1.8}
+                        className="shrink-0 transition-transform duration-200"
+                      />
 
-          {/* Accessibility Font Size Popover Modal */}
+                      <motion.div
+                        initial={false}
+                        animate={{
+                          width: isActive ? "62px" : "0px",
+                          opacity: isActive ? 1 : 0,
+                          marginLeft: isActive ? "5px" : "0px",
+                        }}
+                        transition={{
+                          width: { type: "spring", stiffness: 350, damping: 30 },
+                          opacity: { duration: 0.18 },
+                          marginLeft: { duration: 0.18 },
+                        }}
+                        className="overflow-hidden flex items-center whitespace-nowrap"
+                      >
+                        <span
+                          className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                            isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                          }`}
+                        >
+                          {pill.label}
+                        </span>
+                      </motion.div>
+                    </motion.button>
+                  </Tooltip>
+                );
+              })}
+            </motion.nav>
+          )}
+
+          {/* 2. Mobile, Tablet & Iframe: Minimal 3-Line Sandwich Button (☰) */}
+          <div className={isEmbed ? "flex relative" : "flex lg:hidden relative"} ref={mobileMenuRef}>
+            <Tooltip content={mobileMenuOpen ? "Close menu" : "Menu"} position="bottom">
+              <motion.button
+                whileTap={{ scale: 0.92 }}
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
+                type="button"
+                aria-label="Navigation Menu"
+                className="size-9 rounded-full flex items-center justify-center border border-black/10 dark:border-white/15 bg-[#E8E5DA]/90 dark:bg-[#07080a]/90 text-ink dark:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 shadow-sm transition-colors cursor-pointer"
+              >
+                {mobileMenuOpen ? (
+                  <X size={19} strokeWidth={2.4} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                ) : (
+                  <Menu size={19} strokeWidth={2.4} />
+                )}
+              </motion.button>
+            </Tooltip>
+
+            {/* Mobile / Tablet / Iframe Dropdown Panel */}
+            <AnimatePresence>
+              {mobileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: 8 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white/95 dark:bg-[#14151a]/95 border border-black/10 dark:border-white/10 shadow-2xl p-2.5 backdrop-blur-2xl divide-y divide-black/[0.06] dark:divide-white/[0.06]"
+                >
+                  {/* User Profile Header */}
+                  <div className="pb-2 px-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="size-7 rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] font-bold text-xs shrink-0">
+                        {userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : "S"}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-ink dark:text-[#f4f3ee] truncate">
+                          {userProfile?.name || "Student Guest"}
+                        </p>
+                        <p className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">
+                          {userProfile?.purpose || "MSAJCEA Applicant"}
+                        </p>
+                      </div>
+                    </div>
+                    {onOpenProfile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          onOpenProfile();
+                        }}
+                        className="text-[10.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] hover:underline cursor-pointer shrink-0 ml-1"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="py-1.5 flex flex-col gap-0.5">
+                    {/* New Chat */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onNewChat();
+                      }}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                    >
+                      <Plus size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                      <span>Start New Chat</span>
+                    </button>
+
+                    {/* Chat History */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenHistory();
+                      }}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                    >
+                      <Clock size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                      <span>Chat History</span>
+                    </button>
+
+                    {/* Settings */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (onOpenSettings) onOpenSettings();
+                        else navigate("/settings");
+                      }}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                    >
+                      <Settings size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                      <span>Settings & Voice</span>
+                    </button>
+
+                    {/* Open in Fullscreen (if iframe) */}
+                    {isEmbed && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+                          window.open(fullUrl, "_blank");
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#2E6B5E] dark:text-[#10b981] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
+                      >
+                        <ExternalLink size={16} />
+                        <span>Open Full Website</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Settings & Appearance */}
+                  <div className="pt-2 flex flex-col gap-1.5">
+                    {/* Theme Toggle */}
+                    <div className="flex items-center justify-between px-2 py-1">
+                      <span className="text-[11px] font-medium text-ink-3 dark:text-[#b1ada1] flex items-center gap-1.5">
+                        {isDark ? <Moon size={14} /> : <Sun size={14} />}
+                        Appearance
+                      </span>
+                      <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className="px-2 py-1 rounded-lg text-[10.5px] font-bold border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.06] dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
+                      >
+                        {isDark ? "Dark Mode" : "Light Mode"}
+                      </button>
+                    </div>
+
+                    {/* Font Size Selector */}
+                    <div className="flex items-center justify-between px-2 py-1">
+                      <span className="text-[11px] font-medium text-ink-3 dark:text-[#b1ada1] flex items-center gap-1.5">
+                        <Type size={14} />
+                        Text Size
+                      </span>
+                      <div className="flex items-center gap-1 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
+                        {(["normal", "large", "xlarge"] as const).map((sz) => (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => changeFontSize(sz)}
+                            className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold transition-all cursor-pointer ${
+                              fontSize === sz
+                                ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-xs"
+                                : "text-ink-3 dark:text-[#b1ada1] hover:text-ink dark:hover:text-[#f4f3ee]"
+                            }`}
+                          >
+                            {sz === "normal" ? "100%" : sz === "large" ? "115%" : "130%"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Desktop Accessibility Font Size Popover Modal */}
           <AnimatePresence>
             {fontSizeMenuOpen && (
               <motion.div
