@@ -2440,12 +2440,51 @@ def validate_citations(answer_text: str, retrieved_chunks: List[Dict[str, Any]])
     return validated
 
 # ---------------------------------------------------------
-# Caching Layer (Tier 1 Hash + Tier 2 Vector)
+# Caching Layer (Tier 0 RAM LRU + Tier 1 Postgres Hash + Tier 2 Vector)
 # ---------------------------------------------------------
+from collections import OrderedDict
+import threading
+
+class ThreadSafeMemoryCache:
+    """Tier 0 ultra-fast RAM LRU Cache (0.01ms lookup, thread-safe, 0 network overhead)."""
+    def __init__(self, capacity: int = 1000):
+        self.capacity = capacity
+        self.cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
+        self.lock = threading.Lock()
+
+    def get(self, key: str) -> Optional[Dict[str, Any]]:
+        with self.lock:
+            if key not in self.cache:
+                return None
+            self.cache.move_to_end(key)
+            return self.cache[key]
+
+    def set(self, key: str, value: Dict[str, Any]):
+        with self.lock:
+            if key in self.cache:
+                self.cache.move_to_end(key)
+            self.cache[key] = value
+            if len(self.cache) > self.capacity:
+                self.cache.popitem(last=False)
+
+    def delete(self, key: str):
+        with self.lock:
+            if key in self.cache:
+                del self.cache[key]
+
+TIER0_RAM_CACHE = ThreadSafeMemoryCache(capacity=1000)
+
 def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
-    """Tier 1: Check exact SHA-256 hash match in Neon DB query_cache."""
+    """Tier 0 RAM + Tier 1 Postgres SHA-256 exact match."""
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
+    
+    # 1. Check Tier 0 In-Memory Cache (<0.01ms)
+    ram_hit = TIER0_RAM_CACHE.get(query_hash)
+    if ram_hit:
+        return ram_hit
+
+    # 2. Check Tier 1 Neon DB query_cache
     try:
         with DBContext() as conn:
             if not conn:
@@ -2463,13 +2502,15 @@ def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
                     conn.commit()
                     raw_sources = row["source_chunks"]
                     sources = raw_sources if isinstance(raw_sources, list) else json.loads(raw_sources or "[]")
-                    return {
+                    cache_entry = {
                         "response": row["answer_text"],
                         "sources": sources,
                         "reasoning_steps": ["Retrieved verified precision answer from instant cache"],
                         "cached": True,
                         "hit_count": row["hit_count"] + 1
                     }
+                    TIER0_RAM_CACHE.set(query_hash, cache_entry)
+                    return cache_entry
     except Exception as e:
         print(f"[WARN] Cache read error: {e}")
     return None
@@ -2510,9 +2551,19 @@ def check_semantic_cache(query_vector: List[float], threshold: float = 0.95) -> 
     return None
 
 def save_to_cache(query: str, response: str, sources: List[Dict[str, Any]], reasoning: List[str], latency_ms: int, query_vector: Optional[List[float]] = None):
-    """Save synthesized response to query_cache (with embeddings if available)."""
+    """Save synthesized response to query_cache (Tier 0 RAM + Tier 1 Neon DB)."""
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
+    
+    # Update Tier 0 In-Memory Cache immediately
+    TIER0_RAM_CACHE.set(query_hash, {
+        "response": response,
+        "sources": sources,
+        "reasoning_steps": ["Retrieved verified precision answer from instant cache"],
+        "cached": True,
+        "hit_count": 1
+    })
+
     try:
         with DBContext() as conn:
             if not conn:
@@ -2545,11 +2596,12 @@ def save_to_cache(query: str, response: str, sources: List[Dict[str, Any]], reas
         print(f"[WARN] Cache write error: {e}")
 
 def delete_from_cache(query: str):
-    """Delete exact query match from query_cache table in Neon DB."""
+    """Delete exact query match from Tier 0 RAM and Tier 1 Neon DB."""
     if not query:
         return
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
+    TIER0_RAM_CACHE.delete(query_hash)
     try:
         with DBContext() as conn:
             if conn:
@@ -3618,13 +3670,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     f"User Question: {user_query}\n\n"
                     "INSTRUCTIONS FOR YOUR RESPONSE:\n"
                     "1. Synthesize a complete, well-structured, professional answer directly addressing the user's question.\n"
-                    "2. CRITICAL FORMATTING RULES:\n"
-                    "   - NEVER output raw document titles (e.g. 'Msajce About', 'Msajce Placement'), numbered section titles (e.g. '7. Higher Education Cell', '2. Why Join'), or entity codes (e.g. <!--ent_318-->).\n"
-                    "   - Group your response under clean, meaningful Markdown section headings (e.g. ### Strategic Location & Industry Proximity, ### Placement & Career Growth, ### Smart Learning & Technology Centers).\n"
-                    "   - Use Markdown Tables for multi-column comparisons or key highlights.\n"
-                    "   - Use bold bullet points for key details.\n"
+                    "2. CRITICAL SCOPE & GROUNDING RULES:\n"
+                    "   - STRICT TOPICAL FOCUS: Answer ONLY what the user asked. NEVER append irrelevant sections (e.g., do NOT discuss computer labs or campus buildings when answering about placement records; do NOT discuss hostels when answering about bus routes).\n"
+                    "   - Formulate clean, contextual Markdown headings tailored specifically to the user's topic (e.g., '### Placement Statistics & Top Recruiters', '### Bus Timings & Stop Schedule'). NEVER copy generic placeholder headings.\n"
+                    "   - NEVER output raw document titles (e.g. 'Msajce About'), raw numbered section headers, or internal entity codes (e.g. <!--ent_318-->).\n"
+                    "   - Use Markdown Tables for multi-column schedules, fees, or metrics.\n"
+                    "   - Use bold bullet points for key factual highlights.\n"
                     "3. Start directly with your final structured answer. Do NOT output internal thinking, planning steps, or repeat these instructions.\n"
-                    "4. STRICT FACTUAL ATTRIBUTION: Answer strictly based on the domain of the question. If the user asks about a patent, copyright, or research, attribute it ONLY to the faculty inventor/author named in the Patent or Research records. Do NOT associate patents or academic work with people mentioned in other domains (such as bus drivers or sports coaches) or prior chat history."
+                    "4. STRICT FACTUAL ATTRIBUTION: Ground all assertions strictly in the verified campus records provided above. If the user asks about a patent, copyright, or research, attribute it ONLY to the faculty inventor/author named in the Patent or Research records. Do NOT associate patents or academic work with people mentioned in other domains (such as bus drivers or sports coaches) or prior chat history."
                 )
                 messages.append({"role": "user", "content": user_prompt_with_context})
 
@@ -3771,7 +3824,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 if not buffer_flushed:
                                     initial_buffer.append(token_chunk)
                                     initial_buffer_chars += len(token_chunk)
-                                    if initial_buffer_chars >= 50 or "\n" in token_chunk:
+                                    if initial_buffer_chars >= 15 or "\n" in token_chunk or " " in token_chunk:
                                         buffered_text = "".join(initial_buffer)
                                         cleaned_initial = sanitize_response_text(buffered_text)
                                         if cleaned_initial:
@@ -3968,7 +4021,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             })
             yield json.dumps({"type": "done"})
 
-    return EventSourceResponse(event_generator(), media_type="text/event-stream")
+    return EventSourceResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 @app.post("/api/chat")
 async def chat_sync_endpoint(req: ChatRequest):

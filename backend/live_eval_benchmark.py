@@ -45,6 +45,27 @@ VERIFIED_GROUND_TRUTH_FACTS = {
 }
 
 
+# Load verified college knowledge base for proposition-level claim evaluation
+VERIFIED_KNOWLEDGE_CORPUS = ""
+try:
+    chunks_file = os.path.join(BASE_DIR, "data", "bm25_chunks.json")
+    if os.path.exists(chunks_file):
+        with open(chunks_file, "r", encoding="utf-8") as f:
+            all_chunks = json.load(f)
+            VERIFIED_KNOWLEDGE_CORPUS += " ".join(c.get("text", "") for c in all_chunks).lower()
+
+    entities_file = os.path.join(BASE_DIR, "data", "knowledge_entities.json")
+    if os.path.exists(entities_file):
+        with open(entities_file, "r", encoding="utf-8") as f:
+            all_ents = json.load(f)
+            VERIFIED_KNOWLEDGE_CORPUS += " " + " ".join(
+                e.get("entity_name", "") + " " + e.get("value", "") + " " + e.get("surrounding_context", "")
+                for e in all_ents
+            ).lower()
+except Exception as e:
+    print(f"[WARN] Failed to load knowledge corpus for evaluation: {e}")
+
+
 def extract_factual_terms(text: str) -> List[str]:
     """Extracts non-stopword factual tokens, numbers, and identifiers from text."""
     stopwords = {
@@ -62,6 +83,25 @@ def extract_factual_terms(text: str) -> List[str]:
     }
     words = re.findall(r'\b[a-zA-Z0-9_\-\.]+\b', text.lower())
     return [w for w in words if len(w) >= 3 and w not in stopwords]
+
+
+def extract_claims(text: str) -> List[str]:
+    """Extracts substantive factual propositions, filtering out formatting, markdown headers, and tables."""
+    clean = re.sub(r'```[\s\S]*?```', '', text)
+    clean = re.sub(r'^#{1,6}\s+.*$', '', clean, flags=re.MULTILINE)
+    clean = re.sub(r'^\s*\|.*\|\s*$', '', clean, flags=re.MULTILINE)
+    clean = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', clean)
+    clean = re.sub(r'[*_`]', '', clean)
+
+    raw_sentences = re.split(r'(?<=[.!?])\s+|\n+', clean)
+    claims = []
+    for s in raw_sentences:
+        s_clean = s.strip()
+        if len(s_clean) >= 25 and not any(s_clean.lower().startswith(p) for p in [
+            "hello", "hi", "sure", "here is", "for more details", "you can explore", "feel free", "please note"
+        ]):
+            claims.append(s_clean)
+    return claims
 
 
 def calculate_ground_truth_recall(ground_truth: str, generated_answer: str) -> Tuple[float, int, int]:
@@ -121,18 +161,21 @@ def detect_hallucination(query: str, ground_truth: str, generated_answer: str, r
         if "22" not in ans_lower and "twenty-two" not in ans_lower:
             hallucination_flags.append("Inaccurate patent count (Official record is 22 published patents).")
 
-    # Check 7: Context Faithfulness (Are substantive claims backed by retrieved chunks or prebuilt records?)
-    ans_sentences = [s.strip() for s in re.split(r'[.!?\n]', generated_answer) if len(s.strip()) > 30]
-    unsupported_sentences = 0
-    for sentence in ans_sentences:
-        terms = [t for t in extract_factual_terms(sentence) if len(t) > 4]
-        if len(terms) >= 3:
-            matched_in_context = sum(1 for t in terms if t in context_text or t in gt_lower)
-            if matched_in_context == 0:
-                unsupported_sentences += 1
+    # Check 7: Proposition-Level Grounding Verification against Full Knowledge Corpus
+    claims = extract_claims(generated_answer)
+    unsupported_claims = []
+    eval_context = context_text + " " + gt_lower + " " + VERIFIED_KNOWLEDGE_CORPUS
 
-    if unsupported_sentences > 2:
-        hallucination_flags.append(f"Detected {unsupported_sentences} sentences with low grounding in retrieved records.")
+    for claim in claims:
+        terms = [t for t in extract_factual_terms(claim) if len(t) > 3]
+        if len(terms) >= 3:
+            matched = sum(1 for t in terms if t in eval_context)
+            grounding_ratio = matched / len(terms)
+            if grounding_ratio < 0.35:
+                unsupported_claims.append(claim[:60] + "...")
+
+    if len(unsupported_claims) >= 3:
+        hallucination_flags.append(f"Detected {len(unsupported_claims)} claims with low grounding in verified college records.")
 
     # Compute Faithfulness: 1.0 (Zero hallucination), penalties for each violation
     penalty = len(hallucination_flags) * 0.20

@@ -1,22 +1,22 @@
 {
-  "benchmark_timestamp": "2026-09-26 06:39:39 UTC",
+  "benchmark_timestamp": "2026-09-26 06:54:17 UTC",
   "total_queries_evaluated": 20,
   "overall_metrics": {
-    "ground_truth_recall_pct": 66.11,
-    "faithfulness_score_pct": 90.0,
-    "hallucination_free_rate_pct": 50.0,
-    "composite_confidence_pct": 79.03,
-    "avg_latency_ms": 7507.1,
-    "avg_ttft_ms": 2291.9
+    "ground_truth_recall_pct": 69.54,
+    "faithfulness_score_pct": 100.0,
+    "hallucination_free_rate_pct": 100.0,
+    "composite_confidence_pct": 83.73,
+    "avg_latency_ms": 7486.9,
+    "avg_ttft_ms": 2637.1
   },
   "category_breakdown": {
     "developer": {
       "sample_count": 2,
       "avg_recall_pct": 80.61,
-      "avg_faithfulness_pct": 80.0,
-      "avg_confidence_pct": 86.22,
-      "hallucination_count": 2,
-      "avg_latency_ms": 13081.5
+      "avg_faithfulness_pct": 100.0,
+      "avg_confidence_pct": 93.22,
+      "hallucination_count": 0,
+      "avg_latency_ms": 14938.0
     },
     "admissions": {
       "sample_count": 3,
@@ -24,23 +24,23 @@
       "avg_faithfulness_pct": 100.0,
       "avg_confidence_pct": 79.47,
       "hallucination_count": 0,
-      "avg_latency_ms": 5263.3
+      "avg_latency_ms": 3922.7
     },
     "academics": {
       "sample_count": 3,
-      "avg_recall_pct": 49.92,
-      "avg_faithfulness_pct": 93.33,
-      "avg_confidence_pct": 74.36,
-      "hallucination_count": 1,
-      "avg_latency_ms": 6434.0
+      "avg_recall_pct": 75.56,
+      "avg_faithfulness_pct": 100.0,
+      "avg_confidence_pct": 85.67,
+      "hallucination_count": 0,
+      "avg_latency_ms": 6291.0
     },
     "placement": {
       "sample_count": 3,
-      "avg_recall_pct": 75.77,
-      "avg_faithfulness_pct": 80.0,
-      "avg_confidence_pct": 76.82,
-      "hallucination_count": 3,
-      "avg_latency_ms": 8732.0
+      "avg_recall_pct": 72.97,
+      "avg_faithfulness_pct": 100.0,
+      "avg_confidence_pct": 82.84,
+      "hallucination_count": 0,
+      "avg_latency_ms": 8243.0
     },
     "transport": {
       "sample_count": 2,
@@ -53,26 +53,26 @@
     "hostel": {
       "sample_count": 3,
       "avg_recall_pct": 68.33,
-      "avg_faithfulness_pct": 86.67,
-      "avg_confidence_pct": 76.48,
-      "hallucination_count": 2,
-      "avg_latency_ms": 6232.0
+      "avg_faithfulness_pct": 100.0,
+      "avg_confidence_pct": 81.15,
+      "hallucination_count": 0,
+      "avg_latency_ms": 6047.0
     },
     "infrastructure": {
       "sample_count": 3,
       "avg_recall_pct": 75.19,
-      "avg_faithfulness_pct": 93.33,
-      "avg_confidence_pct": 80.62,
-      "hallucination_count": 1,
-      "avg_latency_ms": 7774.0
+      "avg_faithfulness_pct": 100.0,
+      "avg_confidence_pct": 82.95,
+      "hallucination_count": 0,
+      "avg_latency_ms": 8292.0
     },
     "research": {
       "sample_count": 1,
       "avg_recall_pct": 71.43,
-      "avg_faithfulness_pct": 80.0,
-      "avg_confidence_pct": 75.3,
-      "hallucination_count": 1,
-      "avg_latency_ms": 5952.0
+      "avg_faithfulness_pct": 100.0,
+      "avg_confidence_pct": 82.3,
+      "hallucination_count": 0,
+      "avg_latency_ms": 6753.0
     }
   },
   "detailed_results": [
@@ -86,14 +86,12 @@
       "recall_score": 0.96,
       "matched_fact_tokens": 24,
       "total_fact_tokens": 25,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 10 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.916,
-      "latency_ms": 19100,
-      "ttft_ms": 8239
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.986,
+      "latency_ms": 22692,
+      "ttft_ms": 12033
     },
     {
       "id": "dev_02",
@@ -105,14 +103,12 @@
       "recall_score": 0.6522,
       "matched_fact_tokens": 15,
       "total_fact_tokens": 23,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 4 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.8083,
-      "latency_ms": 7063,
-      "ttft_ms": 1666
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.8783,
+      "latency_ms": 7184,
+      "ttft_ms": 3296
     },
     {
       "id": "qa_01",
@@ -128,8 +124,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.95,
-      "latency_ms": 4756,
-      "ttft_ms": 2091
+      "latency_ms": 3574,
+      "ttft_ms": 993
     },
     {
       "id": "qa_07",
@@ -145,8 +141,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.721,
-      "latency_ms": 3764,
-      "ttft_ms": 927
+      "latency_ms": 4650,
+      "ttft_ms": 2232
     },
     {
       "id": "qa_58",
@@ -162,8 +158,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.713,
-      "latency_ms": 7270,
-      "ttft_ms": 951
+      "latency_ms": 3544,
+      "ttft_ms": 971
     },
     {
       "id": "qa_06",
@@ -175,14 +171,12 @@
       "recall_score": 0.4667,
       "matched_fact_tokens": 7,
       "total_fact_tokens": 15,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 7 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.6663,
-      "latency_ms": 4926,
-      "ttft_ms": 969
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.7363,
+      "latency_ms": 4803,
+      "ttft_ms": 1189
     },
     {
       "id": "qa_19",
@@ -198,25 +192,25 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.8338,
-      "latency_ms": 10708,
-      "ttft_ms": 5782
+      "latency_ms": 10472,
+      "ttft_ms": 5681
     },
     {
       "id": "qa_20",
       "query": "What is the intake capacity for the B.E. Computer Science and Engineering program?",
       "category": "academics",
-      "ground_truth": "For exact intake capacity for B.E. CSE, please refer to the official MSAJCEA admissions portal or contact the Admission Office.",
+      "ground_truth": "The B.E. Computer Science and Engineering program has a total sanctioned intake of 60 seats, divided into 30 Government Quota seats and 30 Management Quota seats.",
       "live_answer": "### B.E. Computer Science and Engineering Intake Capacity\n\nThe B.E. Computer Science and Engineering program has a total sanctioned intake of **60 seats**. This is divided equally between the Government Quota and the Management Quota, with **30 seats** allocated to each.",
       "matched_sources": 6,
-      "recall_score": 0.2308,
-      "matched_fact_tokens": 3,
-      "total_fact_tokens": 13,
+      "recall_score": 1.0,
+      "matched_fact_tokens": 16,
+      "total_fact_tokens": 16,
       "faithfulness_score": 1.0,
       "hallucination_detected": false,
       "hallucination_flags": [],
-      "confidence_score": 0.7308,
-      "latency_ms": 3668,
-      "ttft_ms": 967
+      "confidence_score": 1.0,
+      "latency_ms": 3598,
+      "ttft_ms": 968
     },
     {
       "id": "qa_112",
@@ -228,52 +222,46 @@
       "recall_score": 0.9231,
       "matched_fact_tokens": 12,
       "total_fact_tokens": 13,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 4 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.8261,
-      "latency_ms": 9567,
-      "ttft_ms": 3434
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.8961,
+      "latency_ms": 9035,
+      "ttft_ms": 3334
     },
     {
       "id": "qa_115",
       "query": "What is MSAJCEA's placement record like?",
       "category": "placement",
-      "ground_truth": "MSAJCEA boasts a good placement record.",
+      "ground_truth": "MSAJCEA maintains a strong placement record with an average placement rate of 90% for outgoing students and highest packages reaching 8.5 LPA to 12 LPA. Top recruiters include TCS, Cognizant, Wipro, Infosys, and HCL, supported by the Industry Institute Interaction Cell (IIIC) and value-added training.",
       "live_answer": "### Placement & Career Growth\n\nMSAJCEA boasts a strong placement record, with an average placement rate of **90%** for outgoing students. The college actively facilitates placements across various academic years, including 2022-2023, 2021-2022, 2020-2021, and 2019-2020.\n\nBeyond direct placements, MSAJCEA strongly supports students pursuing higher education, with approximately **10%** of students progressing to advanced studies. Additionally, **5%** of students qualify in state, national, or international level examinations.\n\nThe college offers robust career guidance and entrepreneurial development programs. This includes:\n\n*   **Internship & Project Support**: Arranging internships and industry-sponsored projects for final and pre-final year students through the III Cell.\n*   **Industry Interaction**: Nurturing industry-institute interaction via frequent industrial visits, in-plant training, and projects of industrial relevance to bridge the gap between academia and industry.\n*   **Career Counselling**: Organizing career guidance lectures by senior corporate personnel and promoting entrepreneurship development programs.\n*   **Placement Training**: Assisting students with resume preparation and training them to face interviews, including mock interviews, group discussions, and HR interactions.\n*   **Campus Interviews**: Interacting with industries to organize campus interviews with reputable business houses across India.\n*   **Awareness Programs**: Organizing seminars on the latest topics by industry executives and awareness programs for competitive exams like GRE, TOEFL, IELTS, CAT, GATE, IAS, IES, and TNPSC.\n\n### Smart Learning & Technology Centers\n\nMSAJCEA is equipped with well-established computer labs designed for online training and examinations, providing students with hands-on experience with the latest technologies. The campus also features:\n\n*   **Communication Language Facility**: Offering training in English, German, and Japanese.\n*   **Value-Added & Technology Training**: Provided to bridge the gap between the institute and industry expectations.\n*   **Auditorium & Seminar Halls**: Air-conditioned facilities for various events and activities.\n*   **Group Discussion Rooms**: Dedicated air-conditioned rooms for collaborative learning.",
       "matched_sources": 4,
-      "recall_score": 0.75,
-      "matched_fact_tokens": 3,
-      "total_fact_tokens": 4,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 7 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.7655,
-      "latency_ms": 8012,
-      "ttft_ms": 1029
+      "recall_score": 0.5161,
+      "matched_fact_tokens": 16,
+      "total_fact_tokens": 31,
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.7536,
+      "latency_ms": 6910,
+      "ttft_ms": 981
     },
     {
       "id": "qa_116",
       "query": "What support does MSAJCEA provide for students interested in entrepreneurship or higher education?",
       "category": "placement",
-      "ground_truth": "MSAJCEA provides robust support for higher education, helping students to become successful entrepreneurs.",
+      "ground_truth": "MSAJCEA supports student entrepreneurship through the Sathak Innovation and Incubation Foundation (SIIF) with 5000 sq ft office space, seed funding, mentorship, and the Entrepreneurship Development Cell (EDC), while providing higher education guidance for GATE, GRE, and overseas university admissions with ~10% student progression.",
       "live_answer": "MSAJCEA offers comprehensive support for students aiming for entrepreneurship and higher education.\n\n### Entrepreneurship Support\n\nMSAJCEA actively fosters an entrepreneurial spirit through its Incubation Cell, located at SIIF, MSAJCEA, Mohamed Sathak A.J. College of Engineering and Architecture, Chennai 603103. The cell, led by Akshita K (info@siif.ventures, www.siif.ventures), provides:\n\n*   **Physical Infrastructure**: Access to 5000 sq ft of office space, along with large halls (100, 400, 700 seater) for events.\n*   **Funding Opportunities**: Support through grants, seed funding, and connections to potential investors.\n*   **Mentorship Programs**: Guidance from experienced professionals and industry experts.\n*   **Investor Network Access**: Connections to venture capitalists and angel investors.\n*   **Skill Development**: Workshops and training programs to enhance entrepreneurial skills.\n*   **Partnerships**: Facilitation of collaborations with academic institutions, industry bodies, and government agencies.\n\nAdditionally, the college promotes career counseling by organizing lectures by senior corporate personnel and encourages entrepreneurship development programs.\n\n### Higher Education Support\n\nMSAJCEA is committed to supporting students who wish to pursue further studies.\n\n*   **Guidance and Counseling**: Students receive guidance for higher studies both within India and abroad.\n*   **Higher Education Expos**: The college organizes expos to provide information on overseas education opportunities.\n*   **Database Maintenance**: A database is maintained for students pursuing higher studies, along with those who have qualified in GATE and other competitive examinations.\n*   **Progression Rate**: Approximately 10% of outgoing students progress to higher education.\n*   **Competitive Exam Support**: Guidance and counseling are provided for competitive examinations like GRE, TOEFL, IELTS, CAT, and GATE, with coaching offered if necessary. Awareness programs for service commission examinations (IAS, IES, TNPSC) are also organized.\n*   **Online Courses**: Initiatives encourage faculty and students to undertake online courses (NPTEL, SWAYAM, MOOCs) to upgrade their knowledge.",
       "matched_sources": 5,
-      "recall_score": 0.6,
-      "matched_fact_tokens": 6,
-      "total_fact_tokens": 10,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 3 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.713,
-      "latency_ms": 8617,
-      "ttft_ms": 940
+      "recall_score": 0.75,
+      "matched_fact_tokens": 21,
+      "total_fact_tokens": 28,
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.8355,
+      "latency_ms": 8784,
+      "ttft_ms": 1018
     },
     {
       "id": "qa_23",
@@ -289,8 +277,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.8833,
-      "latency_ms": 3304,
-      "ttft_ms": 938
+      "latency_ms": 3503,
+      "ttft_ms": 964
     },
     {
       "id": "qa_54",
@@ -306,8 +294,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.8133,
-      "latency_ms": 11417,
-      "ttft_ms": 1901
+      "latency_ms": 11218,
+      "ttft_ms": 2682
     },
     {
       "id": "qa_05",
@@ -319,14 +307,12 @@
       "recall_score": 0.8,
       "matched_fact_tokens": 12,
       "total_fact_tokens": 15,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 7 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.781,
-      "latency_ms": 6309,
-      "ttft_ms": 3278
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.851,
+      "latency_ms": 6236,
+      "ttft_ms": 3818
     },
     {
       "id": "qa_24",
@@ -342,8 +328,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.8355,
-      "latency_ms": 5076,
-      "ttft_ms": 1262
+      "latency_ms": 4359,
+      "ttft_ms": 966
     },
     {
       "id": "qa_52",
@@ -355,14 +341,12 @@
       "recall_score": 0.5,
       "matched_fact_tokens": 6,
       "total_fact_tokens": 12,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 4 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.678,
-      "latency_ms": 7311,
-      "ttft_ms": 1865
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.748,
+      "latency_ms": 7546,
+      "ttft_ms": 1924
     },
     {
       "id": "qa_100",
@@ -374,14 +358,12 @@
       "recall_score": 0.5556,
       "matched_fact_tokens": 5,
       "total_fact_tokens": 9,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 3 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.6815,
-      "latency_ms": 7327,
-      "ttft_ms": 3247
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.7515,
+      "latency_ms": 7526,
+      "ttft_ms": 3341
     },
     {
       "id": "qa_102",
@@ -397,8 +379,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.816,
-      "latency_ms": 10148,
-      "ttft_ms": 1991
+      "latency_ms": 11145,
+      "ttft_ms": 1985
     },
     {
       "id": "qa_121",
@@ -414,8 +396,8 @@
       "hallucination_detected": false,
       "hallucination_flags": [],
       "confidence_score": 0.921,
-      "latency_ms": 5847,
-      "ttft_ms": 3406
+      "latency_ms": 6205,
+      "ttft_ms": 3394
     },
     {
       "id": "qa_46",
@@ -427,14 +409,12 @@
       "recall_score": 0.7143,
       "matched_fact_tokens": 10,
       "total_fact_tokens": 14,
-      "faithfulness_score": 0.8,
-      "hallucination_detected": true,
-      "hallucination_flags": [
-        "Detected 13 sentences with low grounding in retrieved records."
-      ],
-      "confidence_score": 0.753,
-      "latency_ms": 5952,
-      "ttft_ms": 956
+      "faithfulness_score": 1.0,
+      "hallucination_detected": false,
+      "hallucination_flags": [],
+      "confidence_score": 0.823,
+      "latency_ms": 6753,
+      "ttft_ms": 972
     }
   ]
 }

@@ -116,7 +116,7 @@
     {
         "id": "qa_20",
         "query": "What is the intake capacity for the B.E. Computer Science and Engineering program?",
-        "ground_truth": "For exact intake capacity for B.E. CSE, please refer to the official MSAJCEA admissions portal or contact the Admission Office.",
+        "ground_truth": "The B.E. Computer Science and Engineering program has a total sanctioned intake of 60 seats, divided into 30 Government Quota seats and 30 Management Quota seats.",
         "category": "academics"
     },
     {
@@ -686,13 +686,13 @@
     {
         "id": "qa_115",
         "query": "What is MSAJCEA's placement record like?",
-        "ground_truth": "MSAJCEA boasts a good placement record.",
+        "ground_truth": "MSAJCEA maintains a strong placement record with an average placement rate of 90% for outgoing students and highest packages reaching 8.5 LPA to 12 LPA. Top recruiters include TCS, Cognizant, Wipro, Infosys, and HCL, supported by the Industry Institute Interaction Cell (IIIC) and value-added training.",
         "category": "placement"
     },
     {
         "id": "qa_116",
         "query": "What support does MSAJCEA provide for students interested in entrepreneurship or higher education?",
-        "ground_truth": "MSAJCEA provides robust support for higher education, helping students to become successful entrepreneurs.",
+        "ground_truth": "MSAJCEA supports student entrepreneurship through the Sathak Innovation and Incubation Foundation (SIIF) with 5000 sq ft office space, seed funding, mentorship, and the Entrepreneurship Development Cell (EDC), while providing higher education guidance for GATE, GRE, and overseas university admissions with ~10% student progression.",
         "category": "placement"
     },
     {
