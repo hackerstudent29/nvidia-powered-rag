@@ -292,33 +292,11 @@
     </div>
   `;
 
-  // Chat Window Modal
+  // Chat Window Modal (Clean 100% Chatbot Frontend Design)
   const windowEl = document.createElement("div");
   windowEl.className = "lorin-widget-window";
   windowEl.innerHTML = `
-    <div class="lorin-widget-header">
-      <div class="lorin-widget-header-title">
-        <img src="${AVATAR_URL}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="MSAJCE" onerror="this.style.display='none'" />
-        <div class="lorin-widget-header-text">
-          <h3>Lorin AI</h3>
-          <p><span class="dot"></span> MSAJCEA Official Intelligence</p>
-        </div>
-      </div>
-      <div class="lorin-widget-actions">
-        <button class="lorin-widget-btn" id="lorin-fullscreen-btn" title="View in Fullscreen">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-          </svg>
-        </button>
-        <button class="lorin-widget-btn" id="lorin-close-btn" title="Close Chat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    </div>
-    <div class="lorin-widget-iframe-container">
+    <div class="lorin-widget-iframe-container" style="height: 100%; border-radius: 24px; overflow: hidden;">
       <div class="lorin-widget-loader" id="lorin-loader">
         <div class="lorin-widget-spinner"></div>
         <span style="font-size: 12px; color: #666; font-family: -apple-system, sans-serif; font-weight: 500;">Connecting to Lorin AI...</span>
@@ -370,13 +348,22 @@
   }
 
   fab.addEventListener("click", toggleChat);
-  closeBtn.addEventListener("click", toggleChat);
+  if (closeBtn) closeBtn.addEventListener("click", toggleChat);
+
+  // Message listener from iframe (e.g. user clicked Close in chatbot menu)
+  window.addEventListener("message", (event) => {
+    if (event.data && event.data.type === "close-lorin-widget") {
+      if (isOpen) toggleChat();
+    }
+  });
 
   // Fullscreen Redirect Button
-  fullscreenBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    window.open(BOT_URL, "_blank");
-  });
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.open(BOT_URL, "_blank");
+    });
+  }
 
   // Close on Escape key
   window.addEventListener("keydown", (e) => {
