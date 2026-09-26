@@ -206,7 +206,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
             window.dispatchEvent(new CustomEvent("collapse-chat-input"));
           }
         }}
-        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pt-16 sm:pt-20 pb-4 sm:pb-6 gpu-accelerated"
+        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pt-16 sm:pt-20 pb-4 sm:pb-6"
       >
         <div className={`mx-auto max-w-4xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
           {messages.length === 0 ? (

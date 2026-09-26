@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -36,6 +37,15 @@ export default function FeedbackModal({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,13 +76,18 @@ export default function FeedbackModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md rounded-2xl bg-surface p-6 shadow-2xl border border-line">
+  const modalContent = (
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-150"
+    >
+      <div className="relative w-full max-w-md rounded-2xl bg-surface dark:bg-[#14151a] p-6 shadow-2xl border border-line dark:border-white/10 text-ink dark:text-[#f4f3ee]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-ink-3 hover:text-ink transition-colors"
+          className="absolute top-4 right-4 text-ink-3 hover:text-ink transition-colors cursor-pointer"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="18" y1="6" x2="6" y2="18" />
@@ -80,7 +95,7 @@ export default function FeedbackModal({
           </svg>
         </button>
 
-        <h3 className="text-base font-semibold text-ink flex items-center gap-2">
+        <h3 className="text-base font-semibold text-ink dark:text-[#f4f3ee] flex items-center gap-2">
           {rating > 0 ? (
             <span className="text-green flex items-center gap-1">👍 Positive Feedback</span>
           ) : (
@@ -88,7 +103,7 @@ export default function FeedbackModal({
           )}
         </h3>
 
-        <p className="text-xs text-ink-2 mt-1">
+        <p className="text-xs text-ink-2 dark:text-[#b1ada1] mt-1">
           Your feedback directly trains the precision retrieval layer in Neon PostgreSQL.
         </p>
 
@@ -99,7 +114,7 @@ export default function FeedbackModal({
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div>
-              <label className="block text-xs font-medium text-ink-2 mb-1.5">
+              <label className="block text-xs font-medium text-ink-2 dark:text-[#b1ada1] mb-1.5">
                 Feedback Category
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -121,10 +136,10 @@ export default function FeedbackModal({
                     key={opt.id}
                     type="button"
                     onClick={() => setCategory(opt.id)}
-                    className={`rounded-lg px-3 py-2 text-xs font-medium border text-left transition-all ${
+                    className={`rounded-lg px-3 py-2 text-xs font-medium border text-left transition-all cursor-pointer ${
                       category === opt.id
                         ? "border-accent bg-accent/10 text-accent font-semibold"
-                        : "border-line bg-inset hover:bg-hover text-ink-2"
+                        : "border-line dark:border-white/10 bg-inset dark:bg-zinc-800/40 hover:bg-hover text-ink-2 dark:text-[#b1ada1]"
                     }`}
                   >
                     {opt.label}
@@ -134,7 +149,7 @@ export default function FeedbackModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-ink-2 mb-1.5">
+              <label className="block text-xs font-medium text-ink-2 dark:text-[#b1ada1] mb-1.5">
                 Additional Comments (Optional)
               </label>
               <textarea
@@ -142,7 +157,7 @@ export default function FeedbackModal({
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="What was good or what should be corrected?"
                 rows={3}
-                className="w-full rounded-lg border border-line bg-inset p-2.5 text-xs text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+                className="w-full rounded-lg border border-line dark:border-white/10 bg-inset dark:bg-zinc-800/40 p-2.5 text-xs text-ink dark:text-[#f4f3ee] placeholder:text-ink-3 dark:placeholder:text-zinc-500 focus:border-accent focus:outline-none"
               />
             </div>
 
@@ -165,14 +180,14 @@ export default function FeedbackModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg px-3 py-1.5 text-xs text-ink-2 hover:bg-hover transition-colors"
+                className="rounded-lg px-3 py-1.5 text-xs text-ink-2 dark:text-[#b1ada1] hover:bg-hover transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white shadow-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white shadow-sm hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? "Saving..." : "Submit Feedback"}
               </button>
@@ -182,4 +197,9 @@ export default function FeedbackModal({
       </div>
     </div>
   );
+
+  if (typeof document !== "undefined") {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Message, SourceItem, TokenMetrics } from "../../types/chat";
@@ -1838,10 +1839,11 @@ const MessageItem = React.memo(function MessageItem({
       )}
 
       {/* Toast Notification Banner */}
-      {toastMsg && (
+      {toastMsg && typeof document !== "undefined" && createPortal(
         <div className="fixed bottom-24 right-4 sm:right-8 z-50 rounded-xl bg-zinc-900/90 text-white dark:bg-white/95 dark:text-zinc-950 px-4 py-2.5 text-xs font-bold shadow-2xl backdrop-blur-md border border-white/10 dark:border-black/10 animate-in fade-in slide-in-from-bottom-3 duration-200">
           {toastMsg}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
