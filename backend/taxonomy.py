@@ -43,7 +43,7 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
             "who are you", "what can you do", "help me", "help", "thanks",
             "thank you", "bye", "goodbye"
         ],
-        regex_pattern=r'^(?:hi|hello|hey|hola|namaste|vanakkam|good\s+(?:morning|afternoon|evening|day)|greetings|who\s+are\s+you|what\s+is\s+your\s+name|what\s+can\s+you\s+do|how\s+can\s+you\s+help|help\s*me|help|how\s+are\s+you|how\s+r\s+u|thank\s+you|thanks|thank\s+u|bye|goodbye|ok|okay)[\s!.,?]*$',
+        regex_pattern=r'^(?:hi|hello|hey|hola|namaste|vanakkam|good\s+(?:morning|afternoon|evening|day)|greetings)(?:\s+(?:there|bot|lorin|assistant|all))?[\s!.,?]*$|^(?:who\s+are\s+you|what\s+is\s+your\s+name|what\s+can\s+you\s+do|how\s+can\s+you\s+help|help\s*me|help|how\s+are\s+you|how\s+r\s+u|thank\s+you|thanks|thank\s+u|bye|goodbye|ok|okay)[\s!.,?]*$',
         target_domains=["general"]
     ),
 

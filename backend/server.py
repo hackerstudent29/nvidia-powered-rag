@@ -172,9 +172,9 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant for Mo
 13. Factual Grounding & Domain Knowledge: Use provided campus context for MSAJCE specific details. For general career, industry salary, tech skill, and education queries, draw upon comprehensive real-world industry benchmarks and student guidance.
 14. Patents, Research & Strict Attribution:
    - Patents, publications, book chapters, and copyrights belong ONLY to the specific academic professors, faculty members, or students explicitly named in the Research / Faculty records.
-   - NEVER attribute patents, inventions, or research papers to operational non-academic staff (e.g. bus drivers, conductors, mess staff, security guards). Bus drivers (such as Mr. Sathish K on Route AR 3) ONLY drive college buses; they have zero connection to patents or research.
-   - Exact Patent Grounding:
-     * Patent No: 2020101867 ("Design and implementation of a disaster management system using IoT and cloud computing techniques for a connected building to save lives with early warnings") was filed and published by Dr. E. Dhiravidachelvi (Faculty in ECE/IT), NEVER a bus driver.
+   - Never attribute patents, inventions, or research papers to operational personnel (transport drivers, mess workers, security staff). Academic works belong exclusively to researchers and professors named in official records.
+   - Verified Institutional Patent Grounding:
+     * Patent No: 2020101867 ("Design and implementation of a disaster management system using IoT and cloud computing techniques for a connected building to save lives with early warnings") was filed and published by Dr. E. Dhiravidachelvi (Faculty in ECE/IT).
      * Patent No: 202041033273 was filed by Dr. E. Dhiravidachelvi, Mrs. E. Jayanthi, Mrs. I. Suganthi, Mr. J. Raja, and Mr. S. Naveenkumar.
      * Patent No: 202141021897 A was filed by Mr. K. Vairaperumal.
    - Multi-Turn Context Isolation: When a user switches topic (e.g., from buses/transport to patents, courses, or admissions), completely disregard the prior topic entities. Never pull an entity from conversation history into an answer unless the current query directly asks about that specific entity.
@@ -3463,7 +3463,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             system_prompt = LORIN_SYSTEM_PROMPT
 
-            # Multi-turn history (scaled by query class) - Fetch latest HISTORY_LIMIT messages in chronological order, excluding user_msg_id
+            # Multi-turn history (Hierarchical Semantic State & Domain Gating)
             history_messages = []
             if HISTORY_LIMIT > 0:
                 try:
@@ -3481,15 +3481,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 """, (session_id, user_msg_id, HISTORY_LIMIT * 2))
                                 rows = cur.fetchall()
                                 
-                                # Pair user and assistant messages strictly so orphaned user messages are never sent into prompt context
+                                # Pair user and assistant messages strictly
                                 clean_history = []
                                 i = 0
                                 while i < len(rows):
                                     curr = rows[i]
                                     if curr.get("role") == "user":
                                         if i + 1 < len(rows) and rows[i + 1].get("role") == "assistant":
-                                            u_content = curr.get("content") or ""
-                                            a_content = rows[i + 1].get("content") or ""
+                                            u_content = (curr.get("content") or "").strip()
+                                            a_content = (rows[i + 1].get("content") or "").strip()
                                             clean_history.append({"role": "user", "content": u_content})
                                             clean_history.append({"role": "assistant", "content": a_content})
                                             i += 2
@@ -3498,32 +3498,45 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     else:
                                         i += 1
                                 
-                                # Dynamic Token Budgeting for History (Max ~1000 tokens / 4000 characters total)
-                                MAX_HISTORY_BUDGET_CHARS = 4000
-                                current_budget = 0
+                                # Hierarchical Semantic State Compression + Domain Isolation:
+                                # When domain shifts (e.g. from TRANSPORT to RESEARCH/ACADEMICS),
+                                # suppress operational details (bus stops, driver names, phone numbers) from past assistant turns.
+                                current_active_domain = domain_router.classify(user_query)
                                 budgeted_history = []
                                 
-                                # Process in pairs from the most recent (end of clean_history)
-                                pair_count = 0
-                                for j in range(len(clean_history)-2, -1, -2):
-                                    u_msg = clean_history[j]
-                                    a_msg = clean_history[j+1]
-                                    u_len = len(u_msg["content"])
-                                    a_len = len(a_msg["content"])
+                                for k in range(0, len(clean_history), 2):
+                                    u_pair = clean_history[k]
+                                    a_pair = clean_history[k+1]
+                                    u_text = u_pair["content"].strip()
+                                    a_text = a_pair["content"].strip()
+                                    turn_domain = domain_router.classify(u_text)
                                     
-                                    if current_budget + u_len + a_len <= MAX_HISTORY_BUDGET_CHARS:
-                                        budgeted_history.insert(0, a_msg)
-                                        budgeted_history.insert(0, u_msg)
-                                        current_budget += u_len + a_len
-                                        pair_count += 1
+                                    # Always keep user question clear and concise
+                                    budgeted_history.append({"role": "user", "content": u_text})
+                                    
+                                    # Cross-domain barrier check:
+                                    # If current query is academic/research/patents, and prior turn was transport/hostel:
+                                    is_cross_domain_risk = (
+                                        current_active_domain in [CampusDomain.RESEARCH, CampusDomain.ACADEMICS, CampusDomain.ADMISSIONS, CampusDomain.FEES]
+                                        and turn_domain in [CampusDomain.TRANSPORT, CampusDomain.CAMPUS_LIFE]
+                                    )
+                                    
+                                    if is_cross_domain_risk:
+                                        # Mask detailed operational entities to structurally prevent cross-turn hallucination
+                                        budgeted_history.append({
+                                            "role": "assistant",
+                                            "content": f"[Prior Discussion: Campus {turn_domain.value.capitalize()} Facilities]"
+                                        })
                                     else:
-                                        remaining = MAX_HISTORY_BUDGET_CHARS - current_budget - u_len
-                                        if remaining > 100:
-                                            a_content_trunc = a_msg["content"][:remaining] + "... [prior response summary]"
-                                            budgeted_history.insert(0, {"role": "assistant", "content": a_content_trunc})
-                                            budgeted_history.insert(0, u_msg)
-                                            pair_count += 1
-                                        break
+                                        # Compact semantic summary: Extract key topic / first 2 sentences instead of raw 2000-character tables
+                                        lines = [line.strip() for line in a_text.split('\n') if line.strip() and not line.strip().startswith('|') and not line.strip().startswith('#')]
+                                        summary_snippet = " ".join(lines[:2]) if lines else a_text[:180]
+                                        if len(summary_snippet) > 220:
+                                            summary_snippet = summary_snippet[:220].rsplit(' ', 1)[0] + "..."
+                                        budgeted_history.append({
+                                            "role": "assistant",
+                                            "content": summary_snippet if summary_snippet else "[Prior campus response summary]"
+                                        })
                                 
                                 history_messages = budgeted_history
                 except Exception as e:
@@ -3607,14 +3620,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             generation_start = time.time()
             collected_response = []
+            tokens_emitted_count = 0
+            model_used_final = model_id
 
             for candidate_idx, current_cand in enumerate(candidate_models):
                 target_url, target_headers, target_model_slug = get_model_endpoint_config(current_cand)
-                
                 effective_max_tokens = max(MAX_TOKENS, 4096)
                 cand_messages = list(messages)
 
-                print(f"\n[DEBUG] Candidate model: {target_model_slug} | Prompt length: {len(str(cand_messages))} chars", flush=True)
                 llm_payload = {
                     "model": target_model_slug,
                     "messages": cand_messages,
@@ -3631,10 +3644,17 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "done": False
                     })
 
-                candidate_timeout = httpx.Timeout(connect=5.0, read=45.0, write=5.0, pool=5.0)
+                # Generous timeout: 6s connect, 45s read; first token timeout 12s to prevent premature candidate aborts
+                candidate_timeout = httpx.Timeout(connect=6.0, read=45.0, write=6.0, pool=6.0)
                 cand_stream_start = time.time()
                 first_token_received = False
                 cand_chunks = []
+                
+                # Live streaming rolling preamble filter
+                in_think_block = False
+                initial_buffer = []
+                initial_buffer_chars = 0
+                buffer_flushed = False
 
                 try:
                     async with http_client.stream("POST", target_url, headers=target_headers, json=llm_payload, timeout=candidate_timeout) as response:
@@ -3644,8 +3664,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             continue
 
                         async for line in response.aiter_lines():
-                            if not first_token_received and (time.time() - cand_stream_start > 5.0):
-                                print(f"[WARN] Candidate '{current_cand}' took >5s for first token. Triggering failover...")
+                            if not first_token_received and (time.time() - cand_stream_start > 12.0):
+                                print(f"[WARN] Candidate '{current_cand}' took >12s for first token. Triggering failover...")
                                 break
 
                             if not line or not line.startswith("data: "):
@@ -3662,18 +3682,58 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 delta = chunk_json.get("choices", [{}])[0].get("delta", {})
                                 token_chunk = delta.get("content") or delta.get("reasoning_content") or delta.get("thought") or ""
 
-                                if token_chunk:
-                                    if not first_token_received:
-                                        first_token_received = True
+                                if not token_chunk:
+                                    continue
+
+                                if not first_token_received:
+                                    first_token_received = True
                                     if not ttft_recorded:
                                         ttft_recorded = True
                                         ttft_ms = int((time.time() - start_time) * 1000)
-                                    cand_chunks.append(token_chunk)
+
+                                cand_chunks.append(token_chunk)
+
+                                # Thinking block filter for models with internal scratchpads
+                                if "<think>" in token_chunk:
+                                    in_think_block = True
+                                    continue
+                                if "</think>" in token_chunk:
+                                    in_think_block = False
+                                    continue
+                                if in_think_block:
+                                    continue
+
+                                # Initial buffer to clean any starting reasoning preamble (e.g. "Analyze User Input:")
+                                if not buffer_flushed:
+                                    initial_buffer.append(token_chunk)
+                                    initial_buffer_chars += len(token_chunk)
+                                    if initial_buffer_chars >= 50 or "\n" in token_chunk:
+                                        buffered_text = "".join(initial_buffer)
+                                        cleaned_initial = sanitize_response_text(buffered_text)
+                                        if cleaned_initial:
+                                            yield json.dumps({"type": "token", "token": cleaned_initial})
+                                            tokens_emitted_count += 1
+                                        buffer_flushed = True
+                                        initial_buffer = []
+                                else:
+                                    # True real-time live pass-through token streaming!
+                                    yield json.dumps({"type": "token", "token": token_chunk})
+                                    tokens_emitted_count += 1
                             except Exception:
                                 continue
 
+                    # Flush any remaining buffer if stream ended quickly
+                    if not buffer_flushed and initial_buffer:
+                        buffered_text = "".join(initial_buffer)
+                        cleaned_initial = sanitize_response_text(buffered_text)
+                        if cleaned_initial:
+                            yield json.dumps({"type": "token", "token": cleaned_initial})
+                            tokens_emitted_count += 1
+                        buffer_flushed = True
+
                     if cand_chunks:
                         collected_response = cand_chunks
+                        model_used_final = current_cand
                         model_id = current_cand
                         break
                     else:
@@ -3684,7 +3744,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     continue
 
             # Absolute safeguard: if all LLM streams produced zero content tokens, synthesize full text from retrieved context
-            if not collected_response:
+            if not collected_response or tokens_emitted_count == 0:
                 if retrieved_chunks:
                     clean_notes = []
                     for c in retrieved_chunks[:5]:
@@ -3699,25 +3759,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "I apologize, but all upstream AI model gateways are momentarily unavailable. "
                         "Please try your question again in a few seconds or contact the MSAJCE office directly."
                     )
-                collected_response = [fallback_msg]
+                yield json.dumps({"type": "token", "token": fallback_msg})
+                full_answer = fallback_msg
+            else:
+                full_answer = "".join(collected_response)
 
-            # ---------------------------------------------------------
-            # Full Post-Synthesis Sanitization & Validation Before Delivery
-            # ---------------------------------------------------------
-            full_answer = "".join(collected_response)
             full_answer = sanitize_response_text(full_answer)
             full_answer = validate_citations(full_answer, retrieved_chunks)
             total_latency_ms = int((time.time() - start_time) * 1000)
             generation_latency_ms = int((time.time() - generation_start) * 1000) if "generation_start" in locals() else 0
-
-            # ---------------------------------------------------------
-            # High-Speed Smooth Simulated Streaming Delivery (Clean 60fps typing experience)
-            # ---------------------------------------------------------
-            CHUNK_SIZE = 16
-            for i in range(0, len(full_answer), CHUNK_SIZE):
-                sub_chunk = full_answer[i : i + CHUNK_SIZE]
-                yield json.dumps({"type": "token", "token": sub_chunk})
-                await asyncio.sleep(0.010)
 
             # 8. Yield Smart Follow-up Suggestions
             suggestions = generate_follow_up_suggestions(user_query, full_answer)

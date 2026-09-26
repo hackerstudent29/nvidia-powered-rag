@@ -220,6 +220,30 @@ class JevEvaluator:
                 needs_websearch=False
             )
 
+        # 0ms Instant Fast-Path for Conversational Greetings & Pleasantries
+        if is_conversational_greeting(user_query):
+            return JevEvaluationResult(
+                is_safe=True,
+                safe_probability=1.0,
+                is_campus_domain=True,
+                domain_probability=1.0,
+                category="greetings",
+                confidence=1.0,
+                needs_websearch=False
+            )
+
+        category_criteria = get_jev_category_choices() if get_jev_category_choices else {
+            "greetings": "Conversational greeting, polite hello/hi, asking who the bot is, capabilities.",
+            "admissions": "Admissions process, fee structure, eligibility criteria, TNEA cutoffs, seat quota.",
+            "transport": "College bus routes, pickup stops, departure timings, driver contacts, travel info.",
+            "hostel": "Hostel rooms, dining mess, food rules, anti-ragging, campus sports, gym, library.",
+            "academics": "Departments (CSE, IT, ECE, EEE, Mech, Civil, AI&DS, AI&ML, Cyber), syllabus, courses, faculty.",
+            "research": "Faculty research, patents, inventions, published papers, copyrights, journals, conferences, patent numbers.",
+            "placements": "Campus placements, recruiter companies, packages, interview training, career cell.",
+            "developer": "Inquiries about the developer Ramanathan S., portfolio, or creator of Lorin AI.",
+            "off_topic": "Clearly unrelated to MSAJCEA or college education."
+        }
+
         payload = {
             "model": JEV_MODEL_ID,
             "state": user_query[:1000],
@@ -242,21 +266,12 @@ class JevEvaluator:
                 },
                 "category": {
                     "type": "choice",
-                    "instructions": "Determine the primary domain category.",
-                    "criteria": {
-                        "admissions_fees": "Admissions, fees, eligibility, cutoffs.",
-                        "transport": "College bus routes, pickup stops, departure timings.",
-                        "hostel_campus": "Hostel rooms, food mess, rules, campus facilities.",
-                        "academics_depts": "Departments, courses, syllabus, faculty.",
-                        "research_patents": "Faculty research, patents, inventions, published papers, copyrights, journals, conferences, patent numbers (e.g. 2020101867), project funding.",
-                        "placements": "Campus placements, companies, packages.",
-                        "developer": "Developer Ramanathan S. or creator questions.",
-                        "off_topic": "Clearly off topic."
-                    }
+                    "instructions": "Determine the most specific category for this college query.",
+                    "criteria": category_criteria
                 },
                 "needs_websearch": {
                     "type": "boolean",
-                    "instructions": "Does this query require live external web search?",
+                    "instructions": "Does this query ask about live external current events or recent Anna University circulars requiring real-time web search?",
                     "criteria": {
                         "true": "Requires live web info (e.g. today's news, current circulars).",
                         "false": "Can be answered from internal college records."

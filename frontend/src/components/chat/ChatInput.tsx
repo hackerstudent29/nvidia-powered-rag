@@ -754,7 +754,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           const wsProto = envUrl.startsWith("https") ? "wss" : "ws";
           const host = envUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
           wsProxyUrl = `${wsProto}://${host}/ws/stt`;
-        } else if (window.location.hostname.includes("vercel.app")) {
+        } else if (window.location.hostname.includes("vercel.app") || window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
           wsProxyUrl = "wss://nvidia-powered-rag-production-5492.up.railway.app/ws/stt";
         } else {
           const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
