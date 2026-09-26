@@ -200,6 +200,12 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
       <main
         ref={scrollRef}
         onScroll={handleScroll}
+        onClick={(e) => {
+          const target = e.target as HTMLElement;
+          if (!target.closest("button, a, input, textarea, [role='button']")) {
+            window.dispatchEvent(new CustomEvent("collapse-chat-input"));
+          }
+        }}
         className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pt-16 sm:pt-20 pb-4 sm:pb-6 gpu-accelerated"
       >
         <div className={`mx-auto max-w-4xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>

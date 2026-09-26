@@ -399,10 +399,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [inputValue, text, expanded]);
 
-  // Expand helper
+  // Expand helper: synchronously focuses textarea so mobile virtual keyboard appears on first tap
   const expand = useCallback(() => {
     setIsSmoothResize(false);
     setExpanded(true);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
   }, []);
 
   const handleValueChange = useCallback((val: string) => {
@@ -440,33 +443,81 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return () => window.removeEventListener("keydown", handleGlobalTyping);
   }, [expand]);
 
-  // Global click-outside listener: close model & voice popovers immediately on outside click
-  // Global click-outside listener: when clicking empty space outside prompt box,
-  // blur active textarea (hides virtual keyboard on mobile) and collapse prompt box to compact size
+  // Unified outside interaction listener (pointerdown, touchstart, mousedown, click)
+  // When tapping/clicking empty space outside prompt box on mobile or desktop:
+  // blur active textarea (hides virtual keyboard) and collapse prompt box to compact size
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (internalContainerRef.current && !internalContainerRef.current.contains(e.target as Node)) {
-        setIsModelSelectOpen(false);
-        setIsVoiceMenuOpen(false);
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
+    const handleOutside = (e: Event) => {
+      const target = (e as MouseEvent | TouchEvent | PointerEvent).target as Node | null;
+      if (!target) return;
+
+      // If clicked inside the prompt input container, don't collapse
+      if (internalContainerRef.current && internalContainerRef.current.contains(target)) {
+        return;
+      }
+
+      setIsModelSelectOpen(false);
+      setIsVoiceMenuOpen(false);
+      setShowLockedToast(false);
+
+      // Only collapse prompt input if no text has been entered and not streaming/recording
+      if (text.trim() === "" && !isStreaming && !isRecording) {
+        setIsSmoothResize(false);
+        setExpanded(false);
         if (textareaRef.current) {
           textareaRef.current.blur();
         }
-        if (!isStreaming && !isRecording) {
-          setIsSmoothResize(false);
-          setExpanded(false);
+        if (document.activeElement instanceof HTMLElement && document.activeElement.tagName === "TEXTAREA") {
+          document.activeElement.blur();
         }
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
+
+    // Use capture phase to intercept outside interactions before other elements stop propagation
+    document.addEventListener("pointerdown", handleOutside, true);
+    document.addEventListener("touchstart", handleOutside, true);
+    document.addEventListener("mousedown", handleOutside, true);
+    document.addEventListener("click", handleOutside, true);
+
+    const handleWindowBlur = () => {
+      if (text.trim() === "" && !isStreaming && !isRecording) {
+        setIsSmoothResize(false);
+        setExpanded(false);
+        setIsModelSelectOpen(false);
+        setIsVoiceMenuOpen(false);
+        if (textareaRef.current) {
+          textareaRef.current.blur();
+        }
+      }
     };
-  }, [isStreaming, isRecording]);
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleOutside, true);
+      document.removeEventListener("touchstart", handleOutside, true);
+      document.removeEventListener("mousedown", handleOutside, true);
+      document.removeEventListener("click", handleOutside, true);
+      window.removeEventListener("blur", handleWindowBlur);
+    };
+  }, [text, isStreaming, isRecording]);
+
+  // Listen to collapse-chat-input event from main view
+  useEffect(() => {
+    const handleCollapse = () => {
+      if (text.trim() === "" && !isStreaming && !isRecording) {
+        setIsSmoothResize(false);
+        setExpanded(false);
+        setIsModelSelectOpen(false);
+        setIsVoiceMenuOpen(false);
+        setShowLockedToast(false);
+        if (textareaRef.current) {
+          textareaRef.current.blur();
+        }
+      }
+    };
+    window.addEventListener("collapse-chat-input", handleCollapse);
+    return () => window.removeEventListener("collapse-chat-input", handleCollapse);
+  }, [text, isStreaming, isRecording]);
 
   // Auto-expand if text typed or streaming
   useEffect(() => {
@@ -877,28 +928,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     setEffortIndex((prev) => (prev + 1) % EFFORTS.length);
   };
 
-  // Close prompt box & popovers on outside click
-  useEffect(() => {
-    if (!expanded && !isModelSelectOpen && !isVoiceMenuOpen) return;
-    const handleOutside = (e: MouseEvent | TouchEvent) => {
-      if (internalContainerRef.current && !internalContainerRef.current.contains(e.target as Node)) {
-        if (text.trim() === "") {
-          setIsSmoothResize(false);
-          setExpanded(false);
-        }
-        setIsModelSelectOpen(false);
-        setIsVoiceMenuOpen(false);
-        setShowLockedToast(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutside);
-    document.addEventListener("touchstart", handleOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      document.removeEventListener("touchstart", handleOutside);
-    };
-  }, [expanded, isModelSelectOpen, isVoiceMenuOpen, text]);
-
   const handleModelClick = () => {
     setIsModelSelectOpen(false);
     setShowLockedToast(true);
@@ -1047,6 +1076,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         >
           {/* Main Input Card */}
           <div
+            onClick={() => {
+              if (!expanded) {
+                expand();
+              }
+            }}
             onMouseDown={(e) => {
               const isTextarea = e.target === textareaRef.current;
               if (expanded && !isTextarea && !isRecording) {
@@ -1071,6 +1105,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               value={text}
               onChange={(e) => handleValueChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => {
+                if (!expanded) {
+                  setIsSmoothResize(false);
+                  setExpanded(true);
+                }
+              }}
+              onBlur={() => {
+                // If user dismissed mobile keyboard and input is empty, collapse back down
+                if (text.trim() === "" && !isRecording && !isStreaming) {
+                  setIsSmoothResize(false);
+                  setExpanded(false);
+                  setIsModelSelectOpen(false);
+                  setIsVoiceMenuOpen(false);
+                }
+              }}
               placeholder="Ask anything about MSAJCEA..."
               style={{
                 transition: isSmoothResize
@@ -1078,20 +1127,27 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
               className={cn(
-                "absolute top-0 inset-x-0 z-[1] w-full resize-none bg-transparent pl-4 pr-12 py-3 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-medium placeholder:text-ink-3/60 dark:placeholder:text-zinc-500 cursor-text",
-                expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-1 pointer-events-none",
+                "absolute top-0 inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 pr-12 py-3 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-medium placeholder:text-ink-3/60 dark:placeholder:text-zinc-500 cursor-text",
+                expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-100 scale-100 translate-y-0 cursor-pointer",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
               )}
             />
 
-            {/* Collapsed Placeholder Button */}
+            {/* Collapsed Placeholder Button (visual aid + click fallback) */}
             <button
               type="button"
-              onClick={expand}
+              onClick={(e) => {
+                e.preventDefault();
+                expand();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                expand();
+              }}
               style={{ transition: isSmoothResize ? "none" : "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
               className={cn(
-                "absolute left-0 right-28 top-0 z-[1] cursor-pointer pl-4 py-[14px] text-left text-sm font-medium leading-[17px] text-ink-3/80 dark:text-[#b1ada1]/80 outline-none flex items-center justify-between",
-                !expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-105 translate-y-1 pointer-events-none"
+                "absolute left-0 right-28 top-0 z-[1] cursor-pointer pl-4 py-[14px] text-left text-sm font-medium leading-[17px] text-ink-3/80 dark:text-[#b1ada1]/80 outline-none flex items-center justify-between pointer-events-none",
+                !expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-105 translate-y-1"
               )}
               aria-label="Open prompt input"
             >
