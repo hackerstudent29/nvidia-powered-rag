@@ -1338,26 +1338,26 @@ const MessageItem = React.memo(function MessageItem({
               strong: ({ children }) => <strong className="font-semibold text-ink dark:text-white">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="w-full max-w-full overflow-x-auto custom-scrollbar my-4 rounded-xl border border-black/10 dark:border-white/10 shadow-xs">
-                  <table className="w-full min-w-[360px] border-collapse text-left text-[13.5px] sm:text-sm">{children}</table>
+                <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-4 rounded-xl border border-black/10 dark:border-white/10 shadow-xs bg-white dark:bg-[#18181b]">
+                  <table className="w-full min-w-full border-collapse text-left text-[13px] sm:text-[13.5px]">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-black/[0.03] dark:bg-white/[0.05] border-b border-black/10 dark:border-white/10 text-ink dark:text-zinc-200 font-semibold">{children}</thead>
+                <thead className="bg-black/[0.035] dark:bg-white/[0.05] border-b border-black/10 dark:border-white/10 text-ink dark:text-zinc-200 select-none font-semibold">{children}</thead>
               ),
               tbody: ({ children }) => (
-                <tbody className="text-ink dark:text-zinc-300 divide-y divide-black/[0.04] dark:divide-white/[0.04]">{children}</tbody>
+                <tbody className="text-ink dark:text-zinc-300 divide-y divide-black/[0.06] dark:divide-white/[0.06]">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">{children}</tr>
+                <tr className="hover:bg-black/[0.025] dark:hover:bg-white/[0.03] transition-colors">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-3.5 py-2.5 font-semibold text-[13px] text-ink dark:text-zinc-100">
+                <th className="px-4 py-3 font-semibold text-[11.5px] uppercase tracking-wider text-ink-2 dark:text-zinc-300 whitespace-nowrap text-left select-none">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-3.5 py-2.5 align-top leading-relaxed text-ink dark:text-zinc-300">
+                <td className="px-4 py-3 align-middle leading-relaxed text-ink dark:text-zinc-300 text-[13px] sm:text-[13.5px]">
                   {processHighlightedChildren(children)}
                 </td>
               ),

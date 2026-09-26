@@ -515,40 +515,44 @@ textarea, input {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  margin: 0.85rem 0;
+  margin: 1rem 0;
   font-size: 13.5px;
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  font-family: inherit;
   border-radius: 12px;
   overflow: hidden;
-  border: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 .prose-clean th, .prose-clean td {
-  padding: 10px 14px;
-  border: none !important;
+  padding: 10px 16px;
   text-align: left;
-  white-space: normal !important;
-  word-break: break-word !important;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 .prose-clean th {
-  background-color: #E1EED7;
-  color: #1E293B;
+  background-color: rgba(0, 0, 0, 0.035);
+  color: #1f2937;
   font-weight: 700;
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-  font-size: 12.5px;
-  letter-spacing: 0.03em;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
 }
-.prose-clean tr:nth-child(even) { background-color: rgba(247, 246, 237, 0.6); }
+.prose-clean td {
+  color: #1f2937;
+  word-break: normal;
+}
+.prose-clean tbody tr:hover { background-color: rgba(0, 0, 0, 0.02); }
 
 /* Mobile table compaction */
 @media (max-width: 639px) {
-  .prose-clean table { font-size: 11.5px; }
+  .prose-clean table { font-size: 12px; }
   .prose-clean th, .prose-clean td {
-    padding: 6px 8px;
-    white-space: normal;
-    word-break: break-word;
+    padding: 8px 10px;
   }
-  .prose-clean pre { font-size: 11.5px; padding: 10px; }
+  .prose-clean th {
+    font-size: 10.5px;
+  }
 }
 
 .prose-clean blockquote {
@@ -616,22 +620,22 @@ textarea, input {
   border-bottom-color: rgba(244, 243, 238, 0.08);
 }
 
-/* Dark tables: warm ultra clean borderless surface */
+/* Dark tables: sleek, elegant borders with contrast */
 .dark .prose-clean table {
-  border: none !important;
-  background: #14151a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #18181b;
 }
 .dark .prose-clean th {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;   /* emerald green */
-  border: none !important;
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4e4e7;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .dark .prose-clean td {
-  border: none !important;
-  color: #f4f3ee;   /* warm white */
+  color: #d4d4d8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
-.dark .prose-clean tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02);
+.dark .prose-clean tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* Dark blockquote: warm lavender accent line */
