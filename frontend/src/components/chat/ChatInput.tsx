@@ -665,6 +665,71 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     isRecordingRef.current = true;
     setIsRecording(true);
 
+    const baseText = textRef.current;
+    baseTextRef.current = baseText;
+
+    const startWebSpeechFallback = () => {
+      if (recognitionRef.current) return;
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.warn("[STT Engine] WebSpeech API not supported in this browser.");
+        return;
+      }
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-IN";
+        recognition.maxAlternatives = 1;
+        recognitionRef.current = recognition;
+
+        recognition.onresult = (event: any) => {
+          let interim = "";
+          let finalStr = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalStr += event.results[i][0].transcript;
+            } else {
+              interim += event.results[i][0].transcript;
+            }
+          }
+          const textToUse = finalStr || interim;
+          if (textToUse.trim()) {
+            const combined = (baseTextRef.current ? baseTextRef.current.trim() + " " : "") + textToUse.trim();
+            handleValueChange(combined);
+            if (finalStr.trim()) {
+              baseTextRef.current = combined;
+            }
+          }
+        };
+
+        recognition.onend = () => {
+          if (isRecordingRef.current && recognitionRef.current) {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.warn("[STT Engine] WebSpeech restart error:", e);
+            }
+          }
+        };
+
+        recognition.onerror = (e: any) => {
+          console.warn("[STT Engine] WebSpeech error:", e.error);
+          if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+            alert("Microphone access denied. Please grant microphone permissions in browser settings.");
+            stopRecording();
+          } else if (e.error === "no-speech" && isRecordingRef.current) {
+            // Ignore silence timeout error and let onend restart it
+          }
+        };
+
+        recognition.start();
+        console.log("[STT Engine] WebSpeech engine active.");
+      } catch (e) {
+        console.error("[STT Engine] Failed starting WebSpeech:", e);
+      }
+    };
+
     try {
       // 1. Request microphone access (ensuring mediaDevices exists in current context)
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -678,73 +743,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       });
       streamRef.current = stream;
 
-      const baseText = textRef.current;
-      baseTextRef.current = baseText;
-
       const preferredSttEngine = localStorage.getItem("lorin_stt_engine") || "auto";
-
-      const startWebSpeechFallback = () => {
-        if (recognitionRef.current) return;
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-          console.warn("[STT Engine] WebSpeech API not supported in this browser.");
-          return;
-        }
-        try {
-          const recognition = new SpeechRecognition();
-          recognition.continuous = true;
-          recognition.interimResults = true;
-          recognition.lang = "en-IN";
-          recognition.maxAlternatives = 1;
-          recognitionRef.current = recognition;
-
-          recognition.onresult = (event: any) => {
-            let interim = "";
-            let finalStr = "";
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-              if (event.results[i].isFinal) {
-                finalStr += event.results[i][0].transcript;
-              } else {
-                interim += event.results[i][0].transcript;
-              }
-            }
-            const textToUse = finalStr || interim;
-            if (textToUse.trim()) {
-              const combined = (baseTextRef.current ? baseTextRef.current.trim() + " " : "") + textToUse.trim();
-              handleValueChange(combined);
-              if (finalStr.trim()) {
-                baseTextRef.current = combined;
-              }
-            }
-          };
-
-          recognition.onend = () => {
-            if (isRecordingRef.current && recognitionRef.current) {
-              try {
-                recognition.start();
-              } catch (e) {
-                console.warn("[STT Engine] WebSpeech restart error:", e);
-              }
-            }
-          };
-
-          recognition.onerror = (e: any) => {
-            console.warn("[STT Engine] WebSpeech error:", e.error);
-            if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-              alert("Microphone access denied. Please grant microphone permissions in browser settings.");
-              stopRecording();
-            } else if (e.error === "no-speech" && isRecordingRef.current) {
-              // Ignore silence timeout error and let onend restart it
-            }
-          };
-
-          recognition.start();
-          console.log("[STT Engine] WebSpeech engine active.");
-        } catch (e) {
-          console.error("[STT Engine] Failed starting WebSpeech:", e);
-        }
-      };
-
       if (preferredSttEngine === "webspeech") {
         startWebSpeechFallback();
       } else {
