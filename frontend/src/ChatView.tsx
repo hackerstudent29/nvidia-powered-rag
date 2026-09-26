@@ -31,7 +31,10 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
     }
   });
 
-  const isEmbed = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("embed") === "true";
+  const isEmbed = typeof window !== "undefined" && (
+    new URLSearchParams(window.location.search).get("embed") === "true" ||
+    window.self !== window.top
+  );
 
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !userProfile && !isEmbed);
 
@@ -42,7 +45,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
   };
 
   // Single source of truth for mobile/touch layout state + keyboard offset
-  const { isMobile, keyboardOffset } = useMobileLayout();
+  const { isMobile, isTablet, keyboardOffset } = useMobileLayout();
+  const isMinimal = isMobile || isTablet || isEmbed;
 
   const {
     messages,
@@ -180,16 +184,25 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         userProfile={userProfile}
         isStreaming={isStreaming}
         isEmbed={isEmbed}
+        isMobile={isMobile}
+        isTablet={isTablet}
+        isMinimal={isMinimal}
       />
 
       <main
         ref={scrollRef}
         onScroll={handleScroll}
-        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 pt-16 sm:pt-20 pb-28 sm:pb-32 gpu-accelerated"
+        className={`relative z-10 flex-1 overflow-y-auto overflow-x-hidden gpu-accelerated ${
+          isMinimal
+            ? "px-2.5 sm:px-4 pt-14 sm:pt-16 pb-20 sm:pb-24"
+            : "px-3 sm:px-5 pt-18 sm:pt-20 pb-28 sm:pb-32"
+        }`}
       >
-        <div className={`mx-auto max-w-5xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
+        <div className={`mx-auto ${isMinimal ? "max-w-3xl" : "max-w-5xl"} w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
           {messages.length === 0 ? (
             <HeroGreeting
+              isMinimal={isMinimal}
+              isEmbed={isEmbed}
               onSelectPrompt={(prompt) => {
                 sendMessage(prompt);
                 setChatInput("");
@@ -197,7 +210,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
               onPastePrompt={(prompt) => setChatInput(prompt)}
             />
           ) : (
-            <div className="flex flex-col space-y-6 sm:space-y-8 pt-4 pb-12 sm:pb-16">
+            <div className={`flex flex-col ${isMinimal ? "space-y-4 sm:space-y-6 pt-2 pb-8 sm:pb-12" : "space-y-6 sm:space-y-8 pt-4 pb-12 sm:pb-16"}`}>
               {messages.map((msg, idx) => {
                 const prevUserMsg = idx > 0 ? messages.slice(0, idx).reverse().find(m => m.role === 'user') : null;
                 const userQueryText = prevUserMsg ? prevUserMsg.content : "MSAJCEA Inquiry";
@@ -208,6 +221,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
                     userQuery={userQueryText}
                     sessionId={sessionId}
                     isLatestMessage={idx === messages.length - 1}
+                    isMinimal={isMinimal}
                     onSendPrompt={(prompt) => sendMessage(prompt)}
                     onRegenerate={(targetId) => regenerateLastMessage(targetId || msg.id)}
                     onRegenerateWithNeMo={regenerateWithNeMo}
@@ -226,7 +240,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
           <button
             type="button"
             onClick={() => scrollToBottom(false)}
-            className="fixed bottom-40 sm:bottom-36 left-1/2 -translate-x-1/2 z-40 flex size-9 sm:size-10 items-center justify-center rounded-full bg-surface/95 dark:bg-surface/90 backdrop-blur-md shadow-xl border border-line text-ink-2 hover:bg-hover hover:text-ink hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in-95 cursor-pointer"
+            className="fixed bottom-36 sm:bottom-32 left-1/2 -translate-x-1/2 z-40 flex size-9 sm:size-10 items-center justify-center rounded-full bg-surface/95 dark:bg-surface/90 backdrop-blur-md shadow-xl border border-line text-ink-2 hover:bg-hover hover:text-ink hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in-95 cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -256,6 +270,9 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         rateLimitInfo={rateLimitInfo}
         onClearRateLimit={() => setRateLimitInfo(null)}
         isMobile={isMobile}
+        isTablet={isTablet}
+        isEmbed={isEmbed}
+        isMinimal={isMinimal}
         onOpenSettings={() => setIsSettingsOpen(true)}
         selectedModel={selectedModel}
       />

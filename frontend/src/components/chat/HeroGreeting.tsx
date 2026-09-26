@@ -18,6 +18,8 @@ import {
 interface HeroGreetingProps {
   onSelectPrompt: (prompt: string) => void;
   onPastePrompt?: (prompt: string) => void;
+  isMinimal?: boolean;
+  isEmbed?: boolean;
 }
 
 const FAQ_CARDS = [
@@ -110,6 +112,8 @@ const FAQ_CARDS = [
 export default function HeroGreeting({
   onSelectPrompt,
   onPastePrompt,
+  isMinimal = false,
+  isEmbed = false,
 }: HeroGreetingProps) {
   const userProfile = (() => {
     try {
@@ -129,6 +133,58 @@ export default function HeroGreeting({
       onPastePrompt(promptText);
     }
   };
+
+  // If in minimal mode (mobile, tablet, or iframe embed), render sleek compact hero
+  if (isMinimal) {
+    const minimalCards = FAQ_CARDS.slice(0, 4);
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="flex flex-col items-center w-full max-w-lg mx-auto px-3 my-auto py-2"
+      >
+        <div className="flex flex-col items-center text-center mb-3.5 w-full">
+          <div className="size-11 sm:size-12 rounded-full overflow-hidden border border-white/80 dark:border-white/20 shadow-md bg-black p-0.5 mb-2 shrink-0">
+            <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
+          </div>
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-ink dark:text-[#f4f3ee]">
+            Hello, {firstName}.
+          </h1>
+          <p className="mt-1 text-xs text-ink-3 dark:text-[#b1ada1] max-w-xs leading-relaxed">
+            {isEmbed
+              ? "Ask any question about MSAJCEA admissions, courses, and campus."
+              : "What would you like to explore about MSAJCEA today?"}
+          </p>
+        </div>
+
+        {/* Compact 4-Card Grid */}
+        <div className="w-full grid grid-cols-2 gap-2 sm:gap-2.5">
+          {minimalCards.map((card) => (
+            <motion.button
+              key={card.id}
+              type="button"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => handleCardClick(card.q)}
+              className="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-2xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] transition-all text-left cursor-pointer"
+            >
+              <div className="size-7 rounded-lg bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 text-[#2E6B5E] dark:text-[#10b981] flex items-center justify-center shrink-0">
+                {card.icon}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11.5px] font-bold text-ink dark:text-[#f4f3ee] truncate leading-tight">
+                  {card.title}
+                </p>
+                <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1] truncate mt-0.5 leading-none">
+                  {card.subtitle}
+                </p>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

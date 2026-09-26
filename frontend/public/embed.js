@@ -256,14 +256,16 @@
     @keyframes lorin-spin {
       to { transform: rotate(360deg); }
     }
-    @media (max-width: 480px) {
+    @media (max-width: 640px) {
       .lorin-widget-window {
         bottom: 0;
         right: 0;
         width: 100vw;
         height: 100vh;
+        height: 100dvh;
         max-width: 100vw;
         max-height: 100vh;
+        max-height: 100dvh;
         border-radius: 0;
       }
       .lorin-widget-fab {

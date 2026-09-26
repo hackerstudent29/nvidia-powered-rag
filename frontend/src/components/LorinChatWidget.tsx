@@ -34,7 +34,7 @@ export const LorinChatWidget: React.FC<LorinChatWidgetProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 24 }}
             transition={{ type: "spring", stiffness: 320, damping: 26 }}
-            className="fixed bottom-24 right-6 w-[430px] max-w-[calc(100vw-32px)] h-[660px] max-h-[calc(100vh-120px)] bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 flex flex-col overflow-hidden origin-bottom-right"
+            className="fixed bottom-24 right-6 w-[430px] max-w-[calc(100vw-32px)] h-[660px] max-h-[calc(100vh-120px)] max-sm:bottom-0 max-sm:right-0 max-sm:w-full max-sm:max-w-full max-sm:h-full max-sm:max-h-full max-sm:rounded-none bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-black/10 dark:border-white/10 flex flex-col overflow-hidden origin-bottom-right"
           >
             {/* ── HEADER ── */}
             <div className="bg-[#9E2339] dark:bg-[#80182c] text-white px-4 py-3.5 flex items-center justify-between shadow-md select-none shrink-0 border-b border-white/10">

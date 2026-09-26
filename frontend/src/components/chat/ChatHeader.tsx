@@ -26,6 +26,9 @@ interface ChatHeaderProps {
   userProfile?: { name: string; age: number | string; purpose: string } | null;
   isStreaming: boolean;
   isEmbed?: boolean;
+  isMobile?: boolean;
+  isTablet?: boolean;
+  isMinimal?: boolean;
 }
 
 export default function ChatHeader({
@@ -39,8 +42,12 @@ export default function ChatHeader({
   userProfile,
   isStreaming: _isStreaming,
   isEmbed = false,
+  isMobile = false,
+  isTablet = false,
+  isMinimal = false,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
+  const effectiveMinimal = isMinimal || isMobile || isTablet || isEmbed;
   const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
   const fontSizeMenuRef = useRef<HTMLDivElement>(null);
 
@@ -188,6 +195,101 @@ export default function ChatHeader({
         ]
       : []),
   ];
+
+  // If minimal mode (mobile, tablet, or iframe embed), render clean, compact minimal header
+  if (effectiveMinimal) {
+    return (
+      <div className="fixed top-0 left-0 right-0 z-40 px-2 sm:px-3 pt-2 pb-1.5 pointer-events-none">
+        <motion.header
+          initial={{ y: -12, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className={`pointer-events-auto mx-auto h-11 sm:h-12 backdrop-blur-2xl backdrop-saturate-180 bg-white/85 dark:bg-[#14151a]/85 border border-black/10 dark:border-white/15 shadow-sm rounded-full flex items-center justify-between px-3 transition-all ${
+            isEmbed ? "max-w-full" : "max-w-xl"
+          }`}
+        >
+          {/* Minimal Brand */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Tooltip content="Start New Chat" position="bottom">
+              <button
+                type="button"
+                onClick={onNewChat}
+                className="flex size-7 sm:size-8 items-center justify-center rounded-full overflow-hidden border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black p-0.5"
+              >
+                <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
+              </button>
+            </Tooltip>
+
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs sm:text-sm font-heading font-extrabold text-ink dark:text-[#f4f3ee] tracking-tight truncate">
+                Lorin AI
+              </span>
+              <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
+              <span className="text-[9px] font-mono font-bold uppercase text-[#2E6B5E] dark:text-[#10b981] px-1 py-0.2 rounded bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 shrink-0 hidden min-[380px]:inline-block">
+                MSAJCEA
+              </span>
+            </div>
+          </div>
+
+          {/* Minimal Right Actions */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* New Chat Button */}
+            <Tooltip content="Start New Chat" position="bottom">
+              <button
+                type="button"
+                onClick={onNewChat}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#2E6B5E]/10 dark:bg-[#10b981]/15 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E]/20 text-xs font-semibold cursor-pointer transition-colors"
+              >
+                <Plus size={14} strokeWidth={2.4} />
+                <span className="text-[11px] font-bold">New</span>
+              </button>
+            </Tooltip>
+
+            {/* History Button */}
+            <Tooltip content="Chat History" position="bottom">
+              <button
+                type="button"
+                onClick={onOpenHistory}
+                className="flex size-8 items-center justify-center rounded-full text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
+                aria-label="Chat History"
+              >
+                <Clock size={16} strokeWidth={2} />
+              </button>
+            </Tooltip>
+
+            {/* Theme Toggle Button */}
+            <Tooltip content={isDark ? "Light Mode" : "Dark Mode"} position="bottom">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex size-8 items-center justify-center rounded-full text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
+                aria-label="Toggle Theme"
+              >
+                {isDark ? <Moon size={16} strokeWidth={2} /> : <Sun size={16} strokeWidth={2} />}
+              </button>
+            </Tooltip>
+
+            {/* Fullscreen Button if Embed */}
+            {isEmbed && (
+              <Tooltip content="Open Fullscreen" position="bottom">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+                    window.open(fullUrl, "_blank");
+                  }}
+                  className="flex size-8 items-center justify-center rounded-full text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer transition-colors"
+                  aria-label="Open Fullscreen"
+                >
+                  <ExternalLink size={15} strokeWidth={2} />
+                </button>
+              </Tooltip>
+            )}
+          </div>
+        </motion.header>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-40 px-2 sm:px-4 pointer-events-none">

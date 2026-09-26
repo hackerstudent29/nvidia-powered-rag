@@ -149,6 +149,9 @@ interface ChatInputProps {
   rateLimitInfo?: RateLimitInfo | null;
   onClearRateLimit?: () => void;
   isMobile?: boolean;
+  isTablet?: boolean;
+  isEmbed?: boolean;
+  isMinimal?: boolean;
   onOpenSettings?: () => void;
   selectedModel?: string;
 }
@@ -225,9 +228,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   rateLimitInfo,
   onClearRateLimit,
   isMobile = false,
+  isTablet = false,
+  isEmbed = false,
+  isMinimal = false,
   onOpenSettings,
   selectedModel: selectedModelProp,
 }) => {
+  const effectiveMinimal = isMinimal || isMobile || isTablet || isEmbed;
   const [expanded, setExpanded] = useState(false);
   const [isSmoothResize, setIsSmoothResize] = useState(false);
   const [text, setText] = useState(inputValue || "");
@@ -949,14 +956,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div
-      className="sticky bottom-0 z-20 pb-5 sm:pb-1 pt-1.5 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
+      className={`sticky bottom-0 z-20 pt-1.5 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full ${
+        isEmbed ? "pb-2" : effectiveMinimal ? "pb-3 sm:pb-2" : "pb-5 sm:pb-1"
+      }`}
       style={{
-        paddingBottom: (isMobile || isMobileViewport)
-          ? "max(28px, calc(28px + var(--keyboard-offset, 0px)))"
+        paddingBottom: isEmbed
+          ? "max(6px, calc(6px + var(--keyboard-offset, 0px)))"
+          : (isMobile || isMobileViewport)
+          ? "max(22px, calc(22px + var(--keyboard-offset, 0px)))"
           : "8px"
       }}
     >
-      <div className="mx-auto max-w-4xl w-full min-w-0 px-3 sm:px-6 box-border">
+      <div className={`mx-auto ${effectiveMinimal ? "max-w-2xl px-2 sm:px-4" : "max-w-4xl px-3 sm:px-6"} w-full min-w-0 box-border`}>
         {/* Rate Limit Alert Banner Tab */}
         <AnimatePresence>
           {rateLimitInfo && rateLimitInfo.isLimited && rateLimitInfo.untilTimestamp > Date.now() && secondsLeft > 0 && (
@@ -1012,10 +1023,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
         {/* Quick Chips Marquee */}
         {showChips && (
-          isMobile ? (
-            <div className="w-full overflow-x-auto pb-1.5 animate-in fade-in duration-200" style={{ scrollbarWidth: 'none' }}>
-              <div className="flex items-center gap-1.5 w-max pr-3">
-                {QUICK_CHIPS.map((chip) => (
+          effectiveMinimal ? (
+            <div className="w-full overflow-x-auto pb-1 animate-in fade-in duration-200" style={{ scrollbarWidth: 'none' }}>
+              <div className="flex items-center gap-1.5 w-max px-0.5">
+                {QUICK_CHIPS.slice(0, 5).map((chip) => (
                   <button
                     key={chip.label}
                     type="button"
@@ -1024,7 +1035,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       onSendMessage(chip.query, EFFORTS[effortIndex]);
                     }}
                     disabled={isStreaming || !!rateLimitInfo?.isLimited}
-                    className="rounded-full px-3 py-1 text-[11px] font-medium shrink-0 border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] text-ink dark:text-[#f4f3ee] hover:border-[#2E6B5E] dark:hover:border-[#10b981] active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                    className="rounded-full px-2.5 py-0.5 text-[10px] font-medium shrink-0 border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#14151a] text-ink dark:text-[#f4f3ee] hover:border-[#2E6B5E] dark:hover:border-[#10b981] active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                   >
                     {chip.label}
                   </button>
@@ -1061,7 +1072,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           onBlur={handleBlur}
           className="relative flex flex-col w-full mx-auto"
           style={{
-            maxWidth: 672,
+            maxWidth: effectiveMinimal ? (isEmbed ? "100%" : 580) : 672,
             transition: isSmoothResize
               ? "max-width 0.15s ease-out"
               : "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
@@ -1078,7 +1089,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             }}
             style={{
               borderRadius: 24,
-              height: expanded ? containerHeight : 48,
+              height: expanded ? containerHeight : (effectiveMinimal ? 44 : 48),
               transition: isSmoothResize ? SMOOTH_HEIGHT_TRANSITION : SPRING_TRANSITION,
               overflow: (expanded || isVoiceMenuOpen || isModelSelectOpen) ? "visible" : "hidden",
             }}
@@ -1550,8 +1561,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
         </div>
 
-        {/* 1-Sentence Rotating Disclaimer Banner */}
-        {!isMobile && (
+        {/* 1-Sentence Rotating Disclaimer Banner (Hidden on mobile, tablet, and embed) */}
+        {!effectiveMinimal && (
           <div className="mt-1.5 h-4 flex items-center justify-center overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.p
