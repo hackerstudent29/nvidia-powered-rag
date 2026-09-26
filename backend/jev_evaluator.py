@@ -107,7 +107,8 @@ class JevEvaluator:
             "academics": "Departments (CSE, IT, ECE, EEE, Mech, Civil, AI&DS, AI&ML, Cyber), syllabus, courses, faculty.",
             "research": "Faculty research, patents, inventions, published papers, copyrights, journals, conferences, patent numbers.",
             "placements": "Campus placements, recruiter companies, packages, interview training, career cell.",
-            "developer": "Inquiries about the developer Ramanathan S., portfolio, or creator of Lorin AI.",
+            "developer": "Inquiries about the developer Ramanathan S. (Ram, Rama, ramzenderum), portfolio, tech stack, or creator of Lorin AI.",
+            "general": "General campus guidance, student life, study advice, engineering disciplines, career tips, college info.",
             "off_topic": "Clearly unrelated to MSAJCEA or college education."
         }
 
@@ -125,9 +126,9 @@ class JevEvaluator:
                 },
                 "is_campus_domain": {
                     "type": "boolean",
-                    "instructions": "Does this query pertain to college education, admissions, academics, engineering departments, hostel, bus transport, placements, campus facilities, faculty, research, patents, or conversational pleasantries?",
+                    "instructions": "Does this query pertain to college education, admissions, academics, engineering departments, hostel, bus transport, placements, campus facilities, faculty, research, patents, creator/developer Ramanathan S. (Ram), or conversational pleasantries?",
                     "criteria": {
-                        "true": "Relevant to higher education, college life, courses, transport, hostel, admissions, fees, engineering subjects, faculty research, patents, or conversational greetings to the college assistant.",
+                        "true": "Relevant to higher education, college life, courses, transport, hostel, admissions, fees, engineering subjects, faculty research, patents, developer Ramanathan S. (Ram), or conversational greetings to the college assistant.",
                         "false": "Completely unrelated topic such as cooking recipes, video games, cryptocurrency, external gossip, or unrelated homework."
                     }
                 },
@@ -240,7 +241,8 @@ class JevEvaluator:
             "academics": "Departments (CSE, IT, ECE, EEE, Mech, Civil, AI&DS, AI&ML, Cyber), syllabus, courses, faculty.",
             "research": "Faculty research, patents, inventions, published papers, copyrights, journals, conferences, patent numbers.",
             "placements": "Campus placements, recruiter companies, packages, interview training, career cell.",
-            "developer": "Inquiries about the developer Ramanathan S., portfolio, or creator of Lorin AI.",
+            "developer": "Inquiries about the developer Ramanathan S. (Ram, Rama, ramzenderum), portfolio, tech stack, or creator of Lorin AI.",
+            "general": "General campus guidance, student life, study advice, engineering disciplines, career tips, college info.",
             "off_topic": "Clearly unrelated to MSAJCEA or college education."
         }
 
@@ -258,9 +260,9 @@ class JevEvaluator:
                 },
                 "is_campus_domain": {
                     "type": "boolean",
-                    "instructions": "Does this query pertain to college, admissions, academics, hostel, bus transport, campus facilities, or faculty research and patents?",
+                    "instructions": "Does this query pertain to college, admissions, academics, hostel, bus transport, campus facilities, creator/developer Ramanathan S. (Ram), or faculty research and patents?",
                     "criteria": {
-                        "true": "Relevant to college, courses, transport, hostel, admissions, engineering, or faculty research and patents.",
+                        "true": "Relevant to college, courses, transport, hostel, admissions, engineering, developer Ramanathan S. (Ram), or faculty research and patents.",
                         "false": "Completely unrelated topic (cooking, video games, crypto, foreign politics)."
                     }
                 },

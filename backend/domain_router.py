@@ -124,12 +124,12 @@ DOMAIN_DEFINITIONS: Dict[CampusDomain, Dict[str, Any]] = {
     },
     CampusDomain.PEOPLE: {
         "keywords": [
-            "principal", "director", "dr. k.s. srinivasan", "srinivasan", "ramanathan", "ram",
-            "creator", "developer", "who made", "who built", "who created", "hod", "faculty",
-            "prof", "professor", "dean"
+            "principal", "director", "dr. k.s. srinivasan", "srinivasan", "ramanathan", "ram", "rama",
+            "creator", "developer", "who made", "who built", "who created", "who is ram", "who is rama",
+            "who is ramanathan", "ramzenderum", "ramzendrum", "hod", "faculty", "prof", "professor", "dean"
         ],
         "regex": re.compile(
-            r'\b(principal|director|ramanathan|creator|developer|who\s+(?:made|built|created|developed)|hods?|professors?)\b',
+            r'\b(principal|director|ramanathan|creator|developer|who\s+(?:made|built|created|developed|programmed|coded)|who\s+is\s+(?:ram|rama|ramanathan|ramzenderum|ramzendrum)|\bram\b|\brama\b|ramzenderum|ramzendrum|hods?|professors?)\b',
             re.IGNORECASE
         ),
         "allowed_categories": {"faculty", "developer", "general"}
@@ -153,7 +153,7 @@ class DomainRouter:
             return CampusDomain.RESEARCH
 
         # 2. Check Developer / Principal personas
-        if any(w in q_lower for w in ["who made", "who created", "who built", "developer", "ramanathan", "ramzenderum"]):
+        if any(w in q_lower for w in ["who made", "who created", "who built", "who is ram", "who is rama", "who is ramanathan", "developer", "ramanathan", "ramzenderum", "ramzendrum"]) or re.search(r'\b(ram|rama)\b', q_lower):
             return CampusDomain.PEOPLE
         if "principal" in q_lower:
             return CampusDomain.PEOPLE

@@ -9,7 +9,7 @@ Domain Router, and RAG Filters) automatically adapt.
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Optional, Set, Any, Tuple
 
 
 @dataclass(frozen=True)
@@ -251,18 +251,35 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
     "developer": CategoryMetadata(
         key="developer",
         label="Developer & Creator",
-        description="Ramanathan S. (B.Tech IT), developer and creator of Lorin AI, technology stack, portfolio.",
+        description="Ramanathan S. (Ram / Rama / ramzenderum, B.Tech IT), developer and creator of Lorin AI, technology stack, portfolio, GitHub.",
         is_allowed=True,
-        jev_criteria="Inquiries about the developer Ramanathan S., portfolio, creator of Lorin AI, tech stack.",
+        jev_criteria="Inquiries about the developer Ramanathan S. (Ram, Rama, ramzenderum), creator of Lorin AI, portfolio, tech stack, architecture.",
         keywords=[
             "developer", "creator", "who made you", "who created you", "who built you",
-            "ramanathan", "ramanathan s", "ramzenderum", "ram", "lorin ai creator"
+            "who developed you", "who programmed you", "who is ram", "who is rama",
+            "who is ramanathan", "ramanathan", "ramanathan s", "ramzenderum", "ramzendrum",
+            "ram", "rama", "lorin ai creator", "developer portfolio", "github"
         ],
-        regex_pattern=r'\b(developer|creator|who\s+(?:made|built|created|developed)\s+(?:you|lorin)|ramanathan|ramzenderum)\b',
+        regex_pattern=r'\b(developer|creator|author|who\s+(?:made|built|created|developed|programmed|coded)\s+(?:you|lorin|this\s+bot|the\s+bot|this\s+ai|the\s+ai)|who\s+is\s+(?:ram|rama|ramanathan|ramzenderum|ramzendrum)|ramanathan|ramzenderum|ramzendrum|\bram\b|\brama\b)\b',
         target_domains=["developer", "general"]
     ),
 
-    # 15. Off-Topic Inquiries (Disallowed - Refused with College Boundary)
+    # 15. General Campus & Academic Guidance
+    "general": CategoryMetadata(
+        key="general",
+        label="General Campus & Academic Guidance",
+        description="General student questions, engineering guidance, academic advice, career skills, college hours, and campus inquiries.",
+        is_allowed=True,
+        jev_criteria="General campus guidance, student life, study advice, engineering disciplines, career tips, college info.",
+        keywords=[
+            "college", "campus", "guidance", "engineering", "study", "skills",
+            "student", "students", "timing", "timings", "working hours", "chennai"
+        ],
+        regex_pattern=r'\b(college|campus|student|students|guidance|engineering|degree|study|skills?)\b',
+        target_domains=["general"]
+    ),
+
+    # 16. Off-Topic Inquiries (Disallowed - Refused with College Boundary)
     "off_topic": CategoryMetadata(
         key="off_topic",
         label="Off-Topic Inquiry",
@@ -279,7 +296,7 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         refusal_message="I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA). I can only assist with college admissions, departments, academics, placements, fees, and campus facilities."
     ),
 
-    # 16. Security & Jailbreak Violations (Disallowed - Refused with Safety Policy)
+    # 17. Security & Jailbreak Violations (Disallowed - Refused with Safety Policy)
     "jailbreak": CategoryMetadata(
         key="jailbreak",
         label="Security Policy Violation",
@@ -299,20 +316,75 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
 # Precompile all regex patterns for 0ms execution
 for cat in CAMPUS_TAXONOMY.values():
     if cat.regex_pattern:
-        # Validated compiled patterns
         pass
+
+# Dynamic Knowledge Entities Integration: auto-load alias phrases and words
+import os
+import json
+
+def _load_knowledge_entity_aliases() -> Tuple[Set[str], List[str]]:
+    """Loads all alias terms and entity names from knowledge_entities.json dynamically."""
+    single_words = set()
+    multi_words = []
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        ke_path = os.path.join(base_dir, "data", "knowledge_entities.json")
+        if os.path.exists(ke_path):
+            with open(ke_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for ent in data:
+                for a in ent.get("aliases", []):
+                    a_clean = a.lower().strip()
+                    if not a_clean:
+                        continue
+                    if len(a_clean.split()) > 1:
+                        multi_words.append(a_clean)
+                    else:
+                        if len(a_clean) >= 3 and a_clean not in {"the", "and", "for", "with", "this", "that"}:
+                            single_words.add(a_clean)
+    except Exception:
+        pass
+    return single_words, multi_words
+
+ENTITY_SINGLE_WORDS, ENTITY_MULTI_WORDS = _load_knowledge_entity_aliases()
 
 # Comprehensive word-boundary domain whitelist for high-precision verification
 CAMPUS_DOMAIN_TERMS: Set[str] = {
-    'msajcea', 'msajce', 'college', 'admission', 'fee', 'tuition', 'hostel', 'bus', 'route',
-    'placement', 'cse', 'it', 'ece', 'eee', 'mech', 'civil', 'cyber', 'ai', 'ds',
-    'anna university', 'tnea', 'cutoff', 'scholarship', 'canteen', 'lab', 'principal',
-    'faculty', 'syllabus', 'curriculum', 'regulation', 'nba', 'naac', 'aicte', 'campus',
-    'siruseri', 'omr', 'chennai', 'exam', 'semester', 'grade', 'gpa', 'cgpa',
-    'patent', 'patents', 'research', 'copyright', 'publication', 'publications',
-    'paper', 'papers', 'journal', 'journals', 'inventor', 'author', 'supervisor',
-    'dhiravidachelvi', 'ramanathan', 'developer', 'creator', 'project', 'funding', 'tnscst', 'phd'
+    # Core College & Campus
+    'msajcea', 'msajce', 'college', 'colleges', 'campus', 'campuses', 'siruseri', 'omr', 'chennai',
+    'mohamed sathak', 'sathak', 'trust', 'office', 'admin', 'principal', 'srinivasan', 'head', 'dean',
+    # Creator & Developer
+    'ram', 'rama', 'ramanathan', 'ramzenderum', 'ramzendrum', 'developer', 'creator', 'author', 'architect',
+    # Admissions & Quotas
+    'admission', 'admissions', 'fee', 'fees', 'tuition', 'tnea', '1301', 'cutoff', 'cutoffs',
+    'counselling', 'counseling', 'quota', 'quotas', 'seat', 'seats', 'intake', 'allotment',
+    'first graduate', 'fg', 'scholarship', 'scholarships', 'waiver', 'concession', 'lateral entry',
+    'eligibility', 'documents', 'certificate', 'certificates', 'bonafide', 'merit',
+    # Academics, Degrees & Exams
+    'course', 'courses', 'department', 'departments', 'branch', 'branches', 'degree', 'degrees',
+    'btech', 'b.tech', 'be', 'b.e', 'me', 'm.e', 'ug', 'pg', 'curriculum', 'syllabus', 'syllabi',
+    'regulation', 'regulations', 'anna university', 'anna univ', 'semester', 'semesters',
+    'exam', 'exams', 'grade', 'grades', 'gpa', 'cgpa', 'marks', 'credits', 'arrear', 'arrears',
+    'lab', 'labs', 'laboratories', 'engineering', 'study', 'studies', 'subject', 'subjects',
+    # Engineering Disciplines & Tech
+    'cse', 'it', 'ece', 'eee', 'mech', 'civil', 'cyber', 'cyber security', 'ai', 'ds', 'aids', 'aiml',
+    'csbs', 'vlsi', 'act', 'software', 'hardware', 'coding', 'programming', 'python', 'java', 'web',
+    # Placements, Careers & Skills
+    'placement', 'placements', 'recruit', 'recruiter', 'recruiters', 'recruitment', 'salary',
+    'package', 'packages', 'lpa', 'hiring', 'interview', 'interviews', 'internship', 'internships',
+    'career', 'careers', 'job', 'jobs', 'skills', 'aptitude', 'tcs', 'infosys', 'wipro', 'cognizant', 'zoho',
+    # Campus Life, Hostels & Facilities
+    'hostel', 'hostels', 'room', 'rooms', 'warden', 'canteen', 'mess', 'food', 'dining',
+    'library', 'books', 'delnet', 'ieee', 'bus', 'buses', 'route', 'routes', 'transport', 'driver',
+    'pickup', 'stop', 'stops', 'commute', 'sports', 'cricket', 'football', 'basketball', 'volleyball',
+    'gym', 'gymnasium', 'fest', 'sathak fest', 'cultural', 'culturals', 'symposium', 'workshop',
+    'club', 'clubs', 'rotaract', 'nss', 'yrc', 'wifi', 'auditorium', 'timing', 'timings', 'rules',
+    # Research, Patents & Accreditations
+    'patent', 'patents', 'research', 'copyright', 'copyrights', 'publication', 'publications',
+    'paper', 'papers', 'journal', 'journals', 'inventor', 'inventors', 'supervisor', 'supervisors',
+    'phd', 'dhiravidachelvi', 'project', 'projects', 'funding', 'tnscst', 'nba', 'naac', 'aicte', 'accreditation'
 }
+CAMPUS_DOMAIN_TERMS.update(ENTITY_SINGLE_WORDS)
 
 DOMAIN_WORD_REGEX = re.compile(
     r'\b(?:' + '|'.join(re.escape(k) for k in sorted(CAMPUS_DOMAIN_TERMS, key=len, reverse=True)) + r')\b',
@@ -366,20 +438,29 @@ def is_jailbreak_attempt(query: str) -> bool:
 
 
 def is_campus_domain_term_present(query: str) -> bool:
-    """Checks whether query contains verified college domain vocabulary or identifiers."""
+    """Checks whether query contains verified college domain vocabulary, knowledge entities, or identifiers."""
     if not query:
         return False
+    q_lower = query.lower().strip()
+
+    # 1. Multi-word entity aliases match (e.g. "who is ram", "dr ks srinivasan", "central library")
+    for phrase in ENTITY_MULTI_WORDS:
+        if phrase in q_lower:
+            return True
+
+    # 2. Domain words or numeric identifier regex
     return bool(DOMAIN_WORD_REGEX.search(query)) or bool(IDENTIFIER_REGEX.search(query))
 
 
 def fast_classify_intent(query: str) -> Optional[str]:
     """
     0ms lexical classifier: Resolves high-confidence intents before calling LLM or JEV.
-    Returns category key if a unambiguous pattern matched, else None.
+    Returns category key if an unambiguous pattern matched, else None.
     """
     if not query:
         return None
     q_trim = query.strip()
+    q_lower = q_trim.lower()
 
     # 1. Greetings & Pleasantries
     if is_conversational_greeting(q_trim):
@@ -390,15 +471,16 @@ def fast_classify_intent(query: str) -> Optional[str]:
         return "jailbreak"
 
     # 3. High-priority exact patent / research identification
-    research_cat = CAMPUS_TAXONOMY["research"]
     if re.search(r'\b(patent|patents|patent\s*no|patent\s*number|inventors?)\b', q_trim, re.IGNORECASE) or (
         IDENTIFIER_REGEX.search(q_trim) and not re.search(r'\b(phone|mobile|call|tnea)\b', q_trim, re.IGNORECASE)
     ):
         return "research"
 
-    # 4. Developer / Principal Persona
-    if re.search(r'\b(who\s+(?:made|built|created|developed)\s+(?:you|lorin)|ramanathan|ramzenderum)\b', q_trim, re.IGNORECASE):
+    # 4. Developer / Creator Persona (Ram, Rama, Ramanathan)
+    if re.search(r'\b(who\s+(?:made|built|created|developed|programmed|coded)\s+(?:you|lorin|this\s+bot|the\s+bot|this\s+ai|the\s+ai)|who\s+is\s+(?:ram|rama|ramanathan|ramzenderum|ramzendrum)|ramanathan|ramzenderum|ramzendrum|\bram\b|\brama\b)\b', q_trim, re.IGNORECASE):
         return "developer"
+
+    # 5. Principal / Leadership
     if re.search(r'\b(principal|dr\.?\s*k\.?s\.?\s*srinivasan)\b', q_trim, re.IGNORECASE):
         return "governance"
 

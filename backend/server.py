@@ -569,6 +569,9 @@ def load_entities_index():
 
 def search_knowledge_entities(user_query: str) -> List[Dict[str, Any]]:
     """Performs precision phrase & word matching against the Knowledge Entities Index."""
+    global entities_index
+    if entities_index is None:
+        load_entities_index()
     if not entities_index or not user_query:
         return []
 
@@ -1084,6 +1087,60 @@ Feel free to ask any question or choose one of the topics above!""",
                 "page_url": "https://msajce-edu.in",
                 "score": 1.0,
                 "snippet": "Official campus assistant for admissions, academics, placements, bus routes, and hostel facilities."
+            }
+        ]
+    },
+    "developer": {
+        "keywords": [
+            "who is ram",
+            "who is rama",
+            "who is ramanathan",
+            "who created you",
+            "who made you",
+            "who built you",
+            "who developed you",
+            "who programmed you",
+            "who coded you",
+            "who made this bot",
+            "who created this bot",
+            "who built this bot",
+            "who made lorin",
+            "who created lorin",
+            "who built lorin",
+            "who is the developer",
+            "who is the creator",
+            "who is your developer",
+            "who is your creator",
+            "developer of lorin ai",
+            "creator of lorin ai",
+            "ram portfolio",
+            "ramanathan s",
+            "ramzenderum",
+            "ramzendrum"
+        ],
+        "response": """# 💻 Meet the Developer: Ramanathan S. (Ram)
+
+**Lorin AI** was architected and developed by **Ramanathan S. (Ram / Rama / ramzenderum)**, a Software Engineer and student of **B.Tech Information Technology (IT)** (Batch 2024–2028, CGPA 7.75) at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)**, Chennai.
+
+---
+
+### 🚀 Developer Profile & Highlights:
+- **Role**: Sole Architect & Lead AI Engineer of Lorin AI Campus Assistant
+- **Department**: B.Tech Information Technology (IT), MSAJCEA
+- **Core Stack**: NVIDIA NIM, Qdrant Vector Database, Hybrid RAG (BM25 + Semantic), FastAPI, React, TypeScript
+- **🌐 3D Portfolio**: [https://ram-portfolio3d.vercel.app](https://ram-portfolio3d.vercel.app)
+- **🐙 GitHub**: [https://github.com/hackerstudent29](https://github.com/hackerstudent29)
+
+Feel free to ask more about the system architecture or college technical facilities!""",
+        "sources": [
+            {
+                "chunk_id": "card_developer_01",
+                "title": "Ramanathan S. - Creator & Lead Developer of Lorin AI",
+                "source_file": "msajcea_developer_ramanathan.md",
+                "category": "developer",
+                "page_url": "https://ram-portfolio3d.vercel.app",
+                "score": 1.0,
+                "snippet": "Ramanathan S. is a B.Tech IT student at MSAJCEA, Chennai, and the creator/developer of the Lorin AI Campus Assistant."
             }
         ]
     },
@@ -1693,7 +1750,9 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
                 return card_data
 
     # 2. Topic keyword fallback matching
-    if "scholarship" in q_clean or "merit scheme" in q_clean:
+    if any(k in q_clean for k in ["who is ram", "who is rama", "who is ramanathan", "who created you", "who made you", "who built you", "who developed you", "who programmed you", "developer of lorin", "creator of lorin"]) or q_clean in ["who is ram", "who is rama", "ram portfolio"]:
+        return PREBUILT_CARD_ANSWERS.get("developer")
+    elif "scholarship" in q_clean or "merit scheme" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("scholarships")
     elif "admission" in q_clean and ("criteria" in q_clean or "tnea" in q_clean or "pathways" in q_clean):
         return PREBUILT_CARD_ANSWERS.get("admission")
@@ -3132,6 +3191,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             asyncio.create_task(asyncio.to_thread(_persist_user_turn))
 
             # 1.5 System One Guardrails Interception Check
+            if not is_allowed and expanded_query != user_query:
+                is_allowed_exp, _ = check_guardrails(expanded_query)
+                if is_allowed_exp:
+                    is_allowed = True
+
             if not is_allowed:
                 yield json.dumps({
                     "type": "reasoning",
