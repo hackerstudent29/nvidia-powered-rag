@@ -483,6 +483,7 @@ def compute_token_metrics(
         "model_name": pricing["name"],
         "provider": pricing["provider"],
         "prompt_tokens": prompt_tokens,
+        "query_tokens": query_tokens,
         "completion_tokens": completion_tokens,
         "embedding_tokens": embed_tokens,
         "total_tokens": total_tokens,

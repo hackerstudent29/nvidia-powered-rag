@@ -513,45 +513,58 @@ textarea, input {
 
 .prose-clean table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   margin: 1.25rem 0;
   font-size: 14px;
   background: transparent !important;
   border: none !important;
 }
 .prose-clean thead {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  background: transparent !important;
+  background: rgba(46, 107, 94, 0.08) !important;
+  border-bottom: 2px solid rgba(46, 107, 94, 0.22) !important;
 }
 .prose-clean th {
-  padding: 8px 24px 10px 0;
+  padding: 9px 18px;
   text-align: left;
-  vertical-align: bottom;
-  background: transparent !important;
-  color: var(--ink);
-  font-weight: 600;
-  font-size: 13.5px;
+  vertical-align: middle;
+  background: rgba(46, 107, 94, 0.08) !important;
+  color: #1e3a34;
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   border: none !important;
+  border-bottom: 2px solid rgba(46, 107, 94, 0.22) !important;
   white-space: nowrap;
   user-select: none;
+}
+.prose-clean th:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.prose-clean th:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 .prose-clean tbody {
   background: transparent !important;
 }
 .prose-clean tbody tr {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   background: transparent !important;
 }
 .prose-clean td {
-  padding: 12px 24px 12px 0;
+  padding: 12px 18px;
   text-align: left;
   vertical-align: top;
   color: var(--ink);
   background: transparent !important;
   border: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   line-height: 1.6;
 }
-.prose-clean tbody tr:hover { background-color: rgba(0, 0, 0, 0.02) !important; }
+.prose-clean tbody tr:hover { background-color: rgba(46, 107, 94, 0.03) !important; }
 
 /* Mobile table compaction */
 @media (max-width: 639px) {
@@ -630,19 +643,28 @@ textarea, input {
   border-bottom-color: rgba(244, 243, 238, 0.08);
 }
 
-/* Dark tables: transparent with subtle horizontal dividers */
+/* Dark tables: translucent emerald/green header with transparent body */
 .dark .prose-clean table {
   background: transparent !important;
   border: none !important;
 }
 .dark .prose-clean thead {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  background: transparent !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-bottom: 2px solid rgba(16, 185, 129, 0.25) !important;
 }
 .dark .prose-clean th {
-  background: transparent !important;
-  color: #f4f3ee;
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #34d399;
   border: none !important;
+  border-bottom: 2px solid rgba(16, 185, 129, 0.25) !important;
+}
+.dark .prose-clean th:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.dark .prose-clean th:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 .dark .prose-clean tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -652,9 +674,10 @@ textarea, input {
   color: #d4d4d8;
   background: transparent !important;
   border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .dark .prose-clean tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
+  background-color: rgba(16, 185, 129, 0.05) !important;
 }
 
 /* Dark blockquote: warm lavender accent line */

@@ -164,7 +164,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
   const handleScroll = () => {
     if (!scrollRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-    const isFarFromBottom = messages.length > 0 && (scrollHeight - scrollTop - clientHeight > 100);
+    // Only show scroll-to-bottom arrow when user scrolled far up (> 450px from bottom)
+    const isFarFromBottom = messages.length > 0 && (scrollHeight - scrollTop - clientHeight > 450);
     setShowScrollBottom((prev) => (prev !== isFarFromBottom ? isFarFromBottom : prev));
   };
 
