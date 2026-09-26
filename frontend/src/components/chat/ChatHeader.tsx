@@ -401,31 +401,18 @@ export default function ChatHeader({
 
                     {/* Open in Fullscreen (if iframe) */}
                     {isEmbed && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMobileMenuOpen(false);
-                            const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
-                            window.open(fullUrl, "_blank");
-                          }}
-                          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#2E6B5E] dark:text-[#10b981] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
-                        >
-                          <ExternalLink size={16} />
-                          <span>Open Full Website</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setMobileMenuOpen(false);
-                            window.parent.postMessage({ type: "close-lorin-widget" }, "*");
-                          }}
-                          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
-                        >
-                          <X size={16} />
-                          <span>Close Window</span>
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+                          window.open(fullUrl, "_blank");
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#2E6B5E] dark:text-[#10b981] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
+                      >
+                        <ExternalLink size={16} />
+                        <span>Open Full Website</span>
+                      </button>
                     )}
                   </div>
 
