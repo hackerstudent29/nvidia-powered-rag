@@ -228,7 +228,7 @@ export default function ChatHeader({
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 280, damping: 24 }}
-          className="pointer-events-auto max-w-4xl w-full mx-auto h-13 sm:h-15 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
         >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
@@ -237,9 +237,9 @@ export default function ChatHeader({
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex size-8.5 sm:size-9 items-center justify-center rounded-full overflow-hidden shadow-xs border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black ring-1 ring-accent/30 p-0.5"
+              className="flex w-9 h-9 size-9 max-w-[36px] max-h-[36px] items-center justify-center rounded-full overflow-hidden shadow-sm border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black ring-1 ring-accent/30 p-0.5"
             >
-              <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
+              <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full block pointer-events-none" />
             </motion.div>
           </Tooltip>
 
