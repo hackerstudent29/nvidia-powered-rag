@@ -205,30 +205,30 @@ export default function ChatHeader({
 
   return (
     <>
-      {/* Full-viewport Blur & Dimming Backdrop for Sandwich Menu & Popovers */}
+      {/* Clean Viewport Dismiss Backdrop for Sandwich Menu & Popovers */}
       <AnimatePresence>
         {(mobileMenuOpen || fontSizeMenuOpen) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
+            transition={{ duration: 0.15 }}
             onClick={() => {
               setMobileMenuOpen(false);
               setFontSizeMenuOpen(false);
             }}
-            className="fixed inset-0 bg-black/45 dark:bg-black/65 backdrop-blur-sm z-40 pointer-events-auto cursor-pointer"
+            className="fixed inset-0 bg-black/15 dark:bg-black/50 backdrop-blur-[2px] z-40 pointer-events-auto cursor-pointer"
             aria-hidden="true"
           />
         )}
       </AnimatePresence>
 
-      <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-50 px-3 sm:px-6 pointer-events-none">
+      <div className="fixed top-2 sm:top-2.5 left-0 right-0 z-50 px-2.5 sm:px-6 pointer-events-none">
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 280, damping: 24 }}
-          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-2xl backdrop-saturate-180 bg-white/45 dark:bg-[#14151a]/55 border border-white/70 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+          className="pointer-events-auto max-w-4xl w-full mx-auto h-13 sm:h-15 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
         >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
@@ -237,7 +237,7 @@ export default function ChatHeader({
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex size-9 items-center justify-center rounded-full overflow-hidden shadow-sm border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black ring-1 ring-accent/30 p-0.5"
+              className="flex size-8.5 sm:size-9 items-center justify-center rounded-full overflow-hidden shadow-xs border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black ring-1 ring-accent/30 p-0.5"
             >
               <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
             </motion.div>
@@ -268,7 +268,7 @@ export default function ChatHeader({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 26 }}
-              className="hidden lg:flex rounded-full items-center p-1 border border-black/[0.08] dark:border-white/[0.09] bg-[#E8E5DA]/85 dark:bg-[#07080a]/90 shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.08)] dark:shadow-[inset_0_2px_5px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+              className="hidden lg:flex rounded-full items-center p-1 border border-black/[0.06] dark:border-white/[0.08] bg-black/[0.03] dark:bg-white/[0.04] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.5)] backdrop-blur-xl"
             >
               {headerPills.map((pill) => {
                 const Icon = pill.icon;
@@ -330,13 +330,17 @@ export default function ChatHeader({
                 whileTap={{ scale: 0.92 }}
                 onClick={() => setMobileMenuOpen((prev) => !prev)}
                 type="button"
-                aria-label="Navigation Menu"
-                className="size-9 rounded-full flex items-center justify-center border border-black/10 dark:border-white/15 bg-[#E8E5DA]/90 dark:bg-[#07080a]/90 text-ink dark:text-[#f4f3ee] hover:bg-black/5 dark:hover:bg-white/10 shadow-sm transition-colors cursor-pointer"
+                aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
+                className={`size-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                  mobileMenuOpen
+                    ? "bg-[#2E6B5E]/15 text-[#2E6B5E] border border-[#2E6B5E]/30 dark:bg-[#10b981]/25 dark:text-[#10b981] dark:border-[#10b981]/40 shadow-xs"
+                    : "bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] border border-black/10 dark:border-white/15 hover:bg-black/[0.08] dark:hover:bg-white/[0.12] shadow-xs"
+                }`}
               >
                 {mobileMenuOpen ? (
-                  <X size={19} strokeWidth={2.4} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                  <X size={18} strokeWidth={2.4} />
                 ) : (
-                  <Menu size={19} strokeWidth={2.4} />
+                  <Menu size={18} strokeWidth={2.4} />
                 )}
               </motion.button>
             </Tooltip>
@@ -344,25 +348,13 @@ export default function ChatHeader({
             {/* Mobile / Tablet / Iframe Dropdown Panel */}
             <AnimatePresence>
               {mobileMenuOpen && (
-                <>
-                  {/* Backdrop Overlay with Blur */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="fixed inset-0 z-40 bg-black/35 backdrop-blur-xs"
-                    aria-hidden="true"
-                  />
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.92, y: 8 }}
-                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                    className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06]"
-                  >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94, y: 6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94, y: 6 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  className="absolute right-0 top-11 sm:top-12 z-50 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.7)] p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06] origin-top-right"
+                >
                   {/* User Profile Prompt (Only shown if student has NOT yet provided name/details) */}
                   {!userProfile?.name && onOpenProfile && (
                     <div className="pb-2 px-2 flex items-center justify-between">
@@ -493,7 +485,6 @@ export default function ChatHeader({
                     </div>
                   </div>
                 </motion.div>
-              </>
             )}
           </AnimatePresence>
           </div>
