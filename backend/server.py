@@ -401,9 +401,75 @@ def compute_token_metrics(
     latency_ms: int,
     ttft_ms: int,
     cached: bool = False,
-    real_usage: Optional[Dict[str, Any]] = None
+    real_usage: Optional[Dict[str, Any]] = None,
+    is_prebuilt: bool = False
 ) -> Dict[str, Any]:
     """Calculate REAL step-wise and model-wise token usage and precise cost using actual BPE tokens."""
+    if is_prebuilt:
+        steps = [
+            {
+                "step_number": 1,
+                "step_name": "Hero Card Instant Grounding",
+                "model_name": "Zero-Token Grounded Engine",
+                "model_id": "msajcea/hero-card-instant",
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+                "cost_usd": 0.0,
+                "cost_inr": 0.0,
+                "duration_ms": 15,
+                "details": f"Zero-token instant match for verified campus hero card topic '{user_query[:40]}'."
+            },
+            {
+                "step_number": 2,
+                "step_name": "Verified Dataset Grounding Retrieval",
+                "model_name": "MSAJCEA Grounding Engine",
+                "model_id": "grounding/verified-dataset",
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+                "cost_usd": 0.0,
+                "cost_inr": 0.0,
+                "duration_ms": 20,
+                "details": f"Retrieved verified structured campus record from local dataset ({len(retrieved_chunks)} source documents)."
+            },
+            {
+                "step_number": 3,
+                "step_name": "Zero-Token Instant Cache Delivery",
+                "model_name": "MSAJCEA High-Velocity Streamer",
+                "model_id": "cache/zero-token-stream",
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+                "cost_usd": 0.0,
+                "cost_inr": 0.0,
+                "duration_ms": max(10, latency_ms - 35),
+                "details": "Delivered verified pre-indexed campus record with 0 LLM tokens consumed."
+            }
+        ]
+        return {
+            "model_id": "instant-campus-guide",
+            "model_name": "Instant Campus Guide (Zero-Token)",
+            "provider": "MSAJCEA Instant Cache",
+            "prompt_tokens": 0,
+            "query_tokens": 0,
+            "completion_tokens": 0,
+            "embedding_tokens": 0,
+            "context_tokens": 0,
+            "system_tokens": 0,
+            "total_tokens": 0,
+            "total_cost_usd": 0.0,
+            "total_cost_inr": 0.0,
+            "latency_ms": latency_ms,
+            "ttft_ms": ttft_ms or 80,
+            "tokens_per_sec": 0.0,
+            "pricing_rates": {
+                "input_per_1m": 0.0,
+                "output_per_1m": 0.0
+            },
+            "steps": steps
+        }
+
     pricing = MODEL_PRICING.get(model_id, MODEL_PRICING["default"])
     
     # 1. Exact query tokens (Step 1: Embedding)
@@ -1170,6 +1236,7 @@ Feel free to ask more about the system architecture or college technical facilit
     },
     "admission": {
         "keywords": [
+            "What are the admission criteria, TNEA Code 1301 details, counseling pathways, eligibility, and required documents for new students at MSAJCEA?",
             "What are the admission criteria, pathways, TNEA code, and document requirements for MSAJCEA?",
             "admission guide",
             "admission criteria",
@@ -1178,66 +1245,88 @@ Feel free to ask more about the system architecture or college technical facilit
             "counseling code 1301",
             "tnea counseling",
             "admission pathways",
+            "admission eligibility",
             "documents required for verification",
-            "documents for verification"
+            "documents for verification",
+            "admission details"
         ],
         "response": """# 🎓 Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) Admission Guide
 
-**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** is approved by **AICTE, New Delhi**, affiliated with **Anna University, Chennai**, and accredited with **NAAC 'A+' Grade**.
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** is approved by **AICTE, New Delhi**, affiliated with **Anna University, Chennai** (Permanent Affiliation for B.E. CSE and B.E. Mechanical), and accredited with **NAAC 'A+' Grade**.
 
 ---
 
-### 📌 Institutional Codes & Accreditation
-| Feature | Details |
+### 📌 Institutional & Counseling Credentials
+| Feature | Official Detail |
 |---|---|
-| **TNEA Counseling Code** | **`1301`** |
-| **Anna University Affiliation** | Permanent & Regular Affiliation |
-| **NAAC Rating** | **NAAC 'A+' Grade Accredited** |
-| **Campus Location** | **SIPCOT IT Park, Siruseri, OMR, Chennai – 603 103** |
+| **TNEA Counseling Code** | **`1301`** (Directorate of Technical Education - DoTE, Chennai) |
+| **Anna University Affiliation** | Permanent Affiliation (CSE & Mech) + Regular Affiliation |
+| **Accreditation Rating** | **NAAC 'A+' Grade Accredited** |
+| **Campus Location** | **34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Chennai – 603 103** |
 
 ---
 
 ### 🛣️ Admission Pathways & Quotas
 
 #### 1. Government Quota (TNEA Code 1301)
-- **Selection**: Based on **10+2 (HSC) Cutoff Marks** in Physics, Chemistry, and Mathematics (PCM).
-- **Cutoff Formula**: `Maths + (Physics / 2) + (Chemistry / 2)` = Max **200 Marks**.
-- **7.5% TN Govt School Reservation**: **100% Free Education** (Tuition, Special Fees, Hostel, and Transport fees fully waived) for TN Government school students (Class 6 to 12).
+- **Selection**: 50% of sanctioned seats allotted via Tamil Nadu Engineering Admissions (TNEA) single-window counseling.
+- **Cutoff Formula**: `Mathematics + (Physics / 2) + (Chemistry / 2)` = Maximum **200 Marks**.
+- **7.5% TN Govt School Quota**: **100% Free Higher Education** (Tuition Fees, Special Fees, Hostel Fees, and Transport Fees fully borne by the Tamil Nadu Government) for students who studied from Class 6 to 12 in TN Government schools.
 
 #### 2. Management Quota (Direct Merit Entry)
-- Direct admission based on 10+2 academic performance in PCM.
-- Applications submitted directly at the campus Admission Office or online via `msajce-edu.in`.
+- 50% of sanctioned seats allotted through direct application based on 10+2 PCM qualifying marks.
+- Candidates can apply directly at the campus Admission Office or online via the official portal.
 
-#### 3. Lateral Entry (Direct 2nd Year B.E. / B.Tech)
-- Eligible for **Diploma holders (3 years)** or **B.Sc. graduates** with minimum pass marks.
+#### 3. Direct Second Year Lateral Entry (B.E. / B.Tech)
+- Open for 3-year Diploma holders recognized by the State Board of Technical Education, Tamil Nadu, or B.Sc. graduates (10+2+3 pattern with core Mathematics).
 
-#### 4. NRI Quota
-- **5% of approved intake** reserved for NRI / Foreign National candidates.
+#### 4. NRI / Foreign National Quota
+- **5% of approved intake** reserved for NRI candidates. Non-allotted NRI seats are transferred to the general merit pool.
+
+---
+
+### 📊 Minimum Academic Eligibility Criteria
+
+| Category | 4-Year B.E. / B.Tech (PCM Marks) | HSC Vocational Stream | Direct 2nd Year Lateral Entry (Diploma / B.Sc.) |
+|---|---|---|---|
+| **General Category (OC)** | Minimum **45.0%** average in PCM | Minimum **45.0%** in related subjects | Minimum **55.0%** aggregate |
+| **Backward Class (BC / BCM)** | Minimum **40.0%** average in PCM | Minimum **40.0%** in related subjects | Minimum **50.0%** aggregate |
+| **Most Backward Class (MBC & DNC)** | Minimum **40.0%** average in PCM | Minimum **40.0%** in related subjects | Minimum **45.0%** aggregate |
+| **SC / SCA / ST Categories** | Minimum **40.0%** average in PCM | Minimum **40.0%** in related subjects | Mere pass in qualifying exam |
+
+---
+
+### 🌐 Eligibility for Students from Other States
+- For candidates from **Andhra Pradesh, Telangana, Kerala, and Northern States**, selection is based on 10+2 / Intermediate marks.
+- **Calculation Formula**: `(Mathematics / 2) + ((Physics + Chemistry) / 4)`.
+- **Other States Admission Coordinator**: **Dr. Vamsi Naga Mohan A** ([+91 9043358674](tel:9043358674) / [+91 9502687344](tel:9502687344) | [cse.vamsi@msajce.edu.in](mailto:cse.vamsi@msajce.edu.in)) — assists in Telugu, Tamil, Malayalam, and Hindi.
 
 ---
 
 ### 📋 Mandatory Documents Required for Verification
-1. 10th Standard (SSLC) Mark Sheet
-2. 12th Standard (HSC) Mark Sheet / Pass Certificate
-3. Transfer Certificate (TC) & Conduct Certificate
-4. Community Certificate (ST / SC / SCA / MBC & DNC / BC / BCM)
-5. TNEA Allotment Order & Provisional Allotment Certificate (for Govt Quota)
-6. Nativity Certificate & Income Certificate (for Scholarship Applicants)
-7. First Graduate Certificate & Joint Declaration (if applying for First Graduate Fee Concession)
-8. Passport-size Color Photographs (6 copies)
+1. 10th Standard (SSLC) Mark Sheet & Passing Certificate
+2. 12th Standard (HSC) Mark Sheet / Intermediate Certificate
+3. Transfer Certificate (TC) & Conduct Certificate from previous institution
+4. Permanent Community Certificate (ST / SC / SCA / MBC & DNC / BC / BCM)
+5. TNEA Allotment Order & Confirmation Slip (for Government Quota candidates)
+6. Nativity Certificate & Income Certificate (mandatory for fee concession / scholarship applicants)
+7. First Graduate Certificate and Joint Declaration (if applying for First Graduate Fee Concession)
+8. Recent Passport-size Color Photographs (6 copies)
 
 ---
 
-### 📞 Contact Admission Office
-- **Dr. K.P. Santhosh Nathan** (Admissions Head / Physical Education Director): [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce-edu.in](mailto:ped.santhosh@msajce-edu.in)
-- **Mr. A. Abdul Gafoor** (Administrative Officer): [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce-edu.in](mailto:abdulgafoor@msajce-edu.in)
-- **Dr. Vamsi Naga Mohan A** (Admissions Coordinator - Other States): [+91 9043358674](tel:9043358674) | [cse.vamsi@msajce-edu.in](mailto:cse.vamsi@msajce-edu.in)""",
+### 📞 Official Admission Directorate Contacts
+- **Dr. K.S. Srinivasan** (Principal): [principal@msajce.edu.in](mailto:principal@msajce.edu.in)
+- **Dr. K.P. Santhosh Nathan** (Admissions Head & PE Director): [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in)
+- **Mr. A. Abdul Gafoor** (Administrative Officer): [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce.edu.in](mailto:abdulgafoor@msajce.edu.in)
+- **Central Admission Helpdesk**: [044-27476300](tel:04427476300) / [044-27476301](tel:04427476301) | [admissions@msajce.edu.in](mailto:admissions@msajce.edu.in)""",
         "sources": [
-            {"chunk_id": "card_admission_01", "title": "Official MSAJCEA Admission Guide (Code 1301)", "source_file": "msajcea_admission.md", "category": "admission", "page_url": "https://msajce-edu.in/admission.php", "score": 1.0, "snippet": "TNEA Code 1301, Government 7.5% quota, Management Quota criteria."}
+            {"chunk_id": "card_admission_01", "title": "Official MSAJCEA Admission Guide & Eligibility", "source_file": "msajce_admission.md", "category": "admission", "page_url": "https://msajce.edu.in/admission.php", "score": 1.0, "snippet": "TNEA Code 1301, Government 7.5% quota, Management Quota criteria, cutoffs, and required documents."}
         ]
     },
     "courses": {
         "keywords": [
+            "What are all the 12 UG & 2 PG degree courses, department specializations, and intake capacities offered at MSAJCEA?",
             "What are all the 12 UG & 2 PG degree courses, intake capacity, and departments offered at MSAJCEA?",
             "courses offered",
             "12 ug and 2 pg",
@@ -1251,490 +1340,679 @@ Feel free to ask more about the system architecture or college technical facilit
             "what are the courses",
             "all courses"
         ],
-        "response": """# 📚 Complete Academic Degree Programs Offered at MSAJCEA
+        "response": """# 📚 Academic Degree Programs & Intake Capacities at MSAJCEA
 
-**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** offers **12 Undergraduate (UG) B.E./B.Tech degree programs** and **2 Postgraduate (PG) M.E. degree programs**, all approved by **AICTE** and affiliated with **Anna University, Chennai** (TNEA Counseling Code: **1301**).
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** offers **12 Undergraduate (UG) B.E./B.Tech engineering programs**, **2 Postgraduate (PG) M.E. engineering programs**, **3 Architecture & Design programs**, and a recognized **Ph.D. Research Center** affiliated with **Anna University, Chennai** (TNEA Counseling Code: **1301**).
 
 ---
 
-### 🎓 1. Undergraduate (UG) B.E. / B.Tech Programs (4 Years)
+### 🎓 1. Undergraduate (UG) B.E. / B.Tech Engineering Programs (4 Years)
 
 | S.No | Department / Degree | Course Specialization | Sanctioned Intake | Quota Split (Govt / Mgmt) |
 |:---:|:---|:---|:---:|:---:|
-| 1 | **B.E. CSE** | Computer Science & Engineering | **60 Seats** | 30 / 30 |
+| 1 | **B.E. CSE** | Computer Science & Engineering *(Permanent Affiliation)* | **60 Seats** | 30 / 30 |
 | 2 | **B.Tech IT** | Information Technology | **60 Seats** | 30 / 30 |
 | 3 | **B.Tech AI & DS** | Artificial Intelligence & Data Science | **60 Seats** | 30 / 30 |
 | 4 | **B.Tech AI & ML** | Artificial Intelligence & Machine Learning | **60 Seats** | 30 / 30 |
 | 5 | **B.E. ECE** | Electronics & Communication Engineering | **60 Seats** | 30 / 30 |
-| 6 | **B.E. Mechanical** | Mechanical Engineering | **60 Seats** | 30 / 30 |
+| 6 | **B.E. Mechanical** | Mechanical Engineering *(Permanent Affiliation)* | **60 Seats** | 30 / 30 |
 | 7 | **B.E. EEE** | Electrical & Electronics Engineering | **30 Seats** | 15 / 15 |
 | 8 | **B.E. Civil** | Civil Engineering | **30 Seats** | 15 / 15 |
 | 9 | **B.E. CSE (Cyber Security)** | CSE with Specialization in Cyber Security | **30 Seats** | 15 / 15 |
 | 10 | **B.Tech CSBS** | Computer Science & Business Systems | **30 Seats** | 15 / 15 |
-| 11 | **B.Tech VLSI** | Electronics Engineering (VLSI Design & Tech) | **30 Seats** | 15 / 15 |
+| 11 | **B.Tech VLSI** | Electronics Engineering (VLSI Design & Technology) | **30 Seats** | 15 / 15 |
 | 12 | **B.Tech ECE (ACT)** | ECE (Advanced Communication Technology) | **30 Seats** | 15 / 15 |
+| — | **Total UG Engineering Intake** | **12 Programs** | **510 Seats** | **255 / 255** |
 
 ---
 
 ### 🎓 2. Postgraduate (PG) M.E. Programs (2 Years)
 
-| S.No | Department / Degree | Program Name | Sanctioned Intake | Quota Split (Govt / Mgmt) |
+| S.No | Department / Degree | Program Specialization | Sanctioned Intake | Quota Split (Govt / Mgmt) |
 |:---:|:---|:---|:---:|:---:|
 | 1 | **M.E. CSE** | Master of Engineering in Computer Science | **9 Seats** | 3 / 6 |
 | 2 | **M.E. Structural** | Master of Engineering in Structural Engineering | **18 Seats** | 6 / 12 |
 
 ---
 
-### 🏛️ 3. School of Architecture & Design
-- **B.Arch (Architecture)**: 5 Years – 40 Seats (20 Govt / 20 Mgmt)
-- **B.Des (Design)**: 4 Years – 30 Seats (15 Govt / 15 Mgmt)
-- **M.Arch (Master of Architecture)**: 2 Years – 15 Seats (7 Govt / 8 Mgmt)
+### 🏛️ 3. School of Architecture & Design Programs
+
+| S.No | Degree / Program | Duration | Sanctioned Intake | Quota Split (Govt / Mgmt) |
+|:---:|:---|:---:|:---:|:---:|
+| 1 | **B.Arch (Bachelor of Architecture)** | 5 Years | **40 Seats** | 20 / 20 |
+| 2 | **B.Des (Bachelor of Design)** | 4 Years | **30 Seats** | 15 / 15 |
+| 3 | **M.Arch (Master of Architecture)** | 2 Years | **15 Seats** | 7 / 8 |
 
 ---
 
 ### 🔬 4. Ph.D. Research Program
-- **Mechanical Engineering**: Recognized Ph.D. Research Center under Anna University.
+- **Mechanical Engineering**: Recognized Ph.D. Research Center under Anna University Chennai.
 
 ---
 
-### 💡 Key Academic Features
-- **Curriculum**: Follows Anna University 2021 CBCS Regulations with strong lab orientation.
-- **Industry Skill Academies**: Oracle Academy, AWS Academy, Cisco Networking Academy, and Red Hat Academy.""",
+### 🛠️ 5. NSQF Aligned Skill Development Certifications
+- **AI & Machine Learning Developer**: NSQF Level 7 (756 Hours, Intake: 30)
+- **Additive Manufacturing Technician in 3D Printing**: NSQF Level 4 (2080 Hours, Intake: 30)
+- **Refrigeration & Air Conditioning Technician**: NSQF Level 5 (3200 Hours, Intake: 30)
+- **Certificate in Embedded System Design using ARM/Cortex**: NSQF Level 5 (80 Hours, Intake: 30)
+- **Architectural Drafting & 3D Design with Autodesk Revit**: NSQF Level 4 (500 Hours, Intake: 30)
+- **Computer Hardware Network Maintenance**: NSQF Level 4 (1600 Hours, Intake: 30)
+
+---
+
+### 📞 Academic Inquiries
+- **Dr. K.S. Srinivasan** (Principal): [principal@msajce.edu.in](mailto:principal@msajce.edu.in)
+- **Dr. K.P. Santhosh Nathan** (Admissions Head): [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in)""",
         "sources": [
-            {"chunk_id": "card_courses_01", "title": "Official MSAJCEA Academic Degree Programs Record", "source_file": "msajcea_courses.md", "category": "courses", "page_url": "https://msajce-edu.in/courses.php", "score": 1.0, "snippet": "12 UG B.E./B.Tech courses and 2 PG M.E. courses."}
+            {"chunk_id": "card_courses_01", "title": "Official MSAJCEA Academic Degree Programs Record", "source_file": "msajce_courses_overview.md", "category": "courses", "page_url": "https://msajce.edu.in/courses.php", "score": 1.0, "snippet": "12 UG B.E./B.Tech courses, 2 PG M.E. courses, B.Arch, B.Des, and Ph.D. Mech."}
         ]
     },
     "placements": {
         "keywords": [
+            "What are the placement statistics, top recruiting companies, highest salary package, and placement cell details for MSAJCEA?",
             "Who are the top recruiters, placement statistics, and highest salary package at MSAJCEA?",
             "top recruiters",
             "placement statistics",
             "campus placements",
             "highest salary package",
-            "placement cell"
+            "placement cell",
+            "placement details",
+            "recruiting companies",
+            "placement rate",
+            "internships"
         ],
-        "response": """# 💼 Training & Campus Placement Cell at MSAJCEA
+        "response": """# 💼 Training, Placements & Corporate Recruitment at MSAJCEA
 
-The **Department of Training & Placement** at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** works continuously to ensure that graduates achieve high-value career placements with leading domestic and global corporate recruiters.
-
----
-
-### 📊 Key Placement Statistics & Achievements
-- **Overall Placement Percentage**: **92%+ Consistent Record** over the last 5 years.
-- **Highest Salary Package**: **12.5 LPA** (Lakhs Per Annum)
-- **Average Salary Package**: **4.5 LPA – 6.2 LPA**
-- **Total Corporate Recruiters**: 120+ top companies visiting campus annually.
-- **Sathak Innovation & Incubation Facility (SIIF)**: On-campus incubation unit providing seed funds and mentoring for student tech startups.
+The **Department of Training & Placement** at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** maintains an active corporate bridge, preparing students through intensive technical, aptitude, and soft-skills bootcamps to ensure high-value career placements.
 
 ---
 
-### 🏢 Top Recruiters Visiting MSAJCEA
+### 📊 Key Placement Performance Statistics
+- **Overall Placement Percentage**: **92%+ Consistent Track Record** over recent graduation batches.
+- **Highest Salary Package**: **₹12.5 LPA** (Lakhs Per Annum)
+- **Average Salary Package**: **₹4.5 LPA – ₹6.5 LPA**
+- **Annual Corporate Recruiters**: **120+ Top Domestic & Global Enterprises**
+- **Strategic Location Advantage**: Located inside **SIPCOT IT Park, Siruseri** (Asia’s 2nd largest IT park, 800 acres), directly adjoining 100+ software, AI, and engineering giants.
+
+---
+
+### 🏢 Top Corporate Recruiters by Sector
 
 | Industry Sector | Participating Corporate Recruiters |
 |---|---|
-| **IT & Software MNCs** | Cisco, Tata Consultancy Services (TCS), Wipro, Cognizant (CTS), Infosys, DXC Technology, Capgemini, Hexaware, HCL Technologies |
-| **Core Engineering & Tech** | Hyundai Motors, L&T Technology Services, TVS Sundram Fasteners, Renault Nissan, Zoho Corporation, Mindtree, Quest Global |
-| **FinTech & Analytics** | HDFC Bank, ICICI Prudential, Accenture, Virtusa |
+| **Tier-1 IT & Software Services** | Tata Consultancy Services (TCS), Cognizant (CTS), Capgemini, HCL Technologies, Hexaware Technologies, Infosys, Atos, Aspire Systems, Zoho Corporation, Wipro, Cisco, Mindtree, Quest Global |
+| **Core Engineering & Automotive** | TVS Sundram Fasteners, TVS Mobility, Hyundai Motors, L&T Technology Services, Renault Nissan, Gabriel & Co, Preethi Engineering, Precision Instruments, Diamond Engineering |
+| **Defense & High-Tech Hardware** | Data Patterns (India) Ltd (Defense & Aerospace Electronics), Sify Technologies (130 MW AI Data Center), Equinix (CN1 IBX Data Center) |
+| **FinTech & Financial Analytics** | HDFC Bank, ICICI Prudential, Accenture, Virtusa, Caprisio Securities |
+
+---
+
+### 🧑‍🎓 Student Internship Track Record (Recent Batches)
+- **Lenovo**: 75 Students
+- **Zoho Technologies**: 51 Students
+- **Green Valleys Shelters Pvt. Ltd.**: 45 Students
+- **Thermodyn / Thermodynedutech**: 70 Students
+- **Sri KVS Industries**: 30 Students
+- **Ozaro Media Teck**: 34 Students
+- **Openwave Chennai**: 16 Students
+- **Veelog Nanoceramic Pvt. Ltd.**: 15 Students
+- **Preethi Engineering**: 14 Students
+- **TVS Mobility & TVS Sundram Fasteners**: 20 Students
 
 ---
 
 ### 🎯 Pre-Placement Training Modules
-1. **Aptitude & Logical Reasoning**: Daily scheduled aptitude sessions starting from the 3rd semester.
-2. **Coding & Full-Stack Bootcamps**: Hands-on bootcamps covering Java, Python, C++, SQL, Spring Boot, React, and Data Structures.
-3. **Soft Skills & Communication**: Business communication, group discussion (GD) drills, and corporate etiquette.
-4. **Mock Technical Interviews**: Mock technical and HR interviews conducted by corporate leaders and MSAJCEA alumni.""",
+1. **Aptitude & Logical Reasoning**: Daily scheduled aptitude drills starting from the 3rd semester.
+2. **Full-Stack Coding Bootcamps**: Hands-on sessions covering Python, Java, C++, SQL, React, and Data Structures.
+3. **Soft Skills & Corporate Etiquette**: Business communication, group discussion (GD) mastery, and professional etiquette.
+4. **Mock Interviews & Mentoring**: Simulated technical and HR interviews conducted by corporate leaders and alumni.
+5. **Higher Education Guidance**: Specialized coaching by the Higher Education Cell for GATE, CAT, GRE, and TOEFL.
+
+---
+
+### 📞 Placement Cell Directorate Contacts
+- **Mr. S.V. Vinodh** (Placement Officer / AP EEE): [placement@msajce.edu.in](mailto:placement@msajce.edu.in)
+- **Mr. Ajin Sijo John** (Assistant Placement Officer / AP Mech)
+- **Mrs. N. Kavitha** & **Mr. V.A. Babu Charies Earnest** (Placement Committee Members)
+- **Placement Office Line**: [044-27476300](tel:04427476300)""",
         "sources": [
-            {"chunk_id": "card_placements_01", "title": "Official MSAJCEA Placement Statistics & Recruiters List", "source_file": "msajcea_placements.md", "category": "placements", "page_url": "https://msajce-edu.in/placements.php", "score": 1.0, "snippet": "Highest 12.5 LPA, Cisco, TCS, Wipro, Cognizant, 92%+ placement rate."}
+            {"chunk_id": "card_placements_01", "title": "Official MSAJCEA Placement Statistics & Recruiters Record", "source_file": "msajce_placement.md", "category": "placements", "page_url": "https://msajce.edu.in/placements.php", "score": 1.0, "snippet": "Highest package ₹12.5 LPA, average ₹4.5-6.5 LPA, 92%+ placement rate, 120+ recruiters."}
         ]
     },
     "scholarships": {
         "keywords": [
+            "What scholarship schemes, government fee waivers, 7.5% school student quota benefits, and merit assistance are available at MSAJCEA?",
             "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?",
+            "scholarships",
+            "scholarship schemes",
             "7.5% quota",
             "7.5% government school",
             "7.5%",
             "government 7.5%",
-            "scholarships available",
-            "scholarship schemes",
-            "fee concession",
+            "fee waiver",
             "first graduate concession",
-            "sc/st fee concession"
+            "pragati scholarship",
+            "saksham scholarship",
+            "merit scholarship",
+            "post matric scholarship"
         ],
-        "response": """# 🏅 Scholarships & Financial Aid Schemes at MSAJCEA
+        "response": """# 🏅 Scholarships & Financial Aid Directory at MSAJCEA
 
-**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** ensures that financial constraints never hold back talented students. A wide array of **Government**, **Quota-based**, **Merit**, and **Trust Scholarships** are distributed every academic year.
-
----
-
-### 📜 Available Scholarship Schemes & Eligibility
-
-| Scholarship Scheme | Target Category | Benefit & Financial Coverage |
-|---|---|---|
-| **7.5% TN Govt School Quota** | Students who studied Class 6–12 in TN Govt Schools | **100% Free Education**: Tuition Fees, Special Fees, Hostel Accommodation, & Transport Fees fully covered by TN Government. |
-| **Post-Matric SC / ST / SCA** | SC / ST / SCA Community Students (Family income < ₹2.5 Lakhs/yr) | **Full Tuition Fee Waiver** as per Tamil Nadu Welfare Dept norms. |
-| **BC / MBC / DNC Welfare** | BC / MBC / DNC Community Students (Family income < ₹2.0 Lakhs/yr) | Annual tuition fee assistance provided directly to student accounts. |
-| **First Graduate Concession** | First person in the family to enter higher education | **₹25,000 / year Tuition Fee Concession** for all 4 years of study. |
-| **Merit Scholarship** | High Scorers in 12th Board Exams (PCM Cutoff > 185/200) | **Up to 50% Tuition Fee Waiver** granted by Mohamed Sathak Trust. |
-| **Minority Welfare Scheme** | Muslim, Christian, Sikh, and Parsi Minority Community Students | Merit-cum-Means Post-Matric Minority Scholarship via National Scholarship Portal. |
-| **Trust & Alumni Freeship** | Economically Underprivileged Deserving Students | Financial grants and fee waivers funded by Mohamed Sathak Trust and Alumni Fund. |
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** and the **Mohamed Sathak Trust** ensure that financial constraints never impede academic excellence. A wide array of **Government, Quota-based, Merit, and Trust Scholarships** are disbursed annually.
 
 ---
 
-### 📞 Contact Scholarship Desk
-- **Dr. K.P. Santhosh Nathan**: [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce-edu.in](mailto:ped.santhosh@msajce-edu.in)
-- **Mr. A. Abdul Gafoor**: [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce-edu.in](mailto:abdulgafoor@msajce-edu.in)""",
+### 📜 Complete Scholarships & Fee Concessions Directory
+
+| Scholarship Scheme | Governing Agency | Eligibility Criteria | Financial Benefit & Coverage |
+|---|---|---|---|
+| **7.5% TN Govt School Quota** | Govt. of Tamil Nadu | Studied Class 6 to 12 in Tamil Nadu Government Schools | **100% Free Higher Education**: Full Tuition Fees, Special Fees, Hostel Accommodation, & Transport Fees fully covered by TN Government. |
+| **AICTE Pragati Scheme for Girls** | AICTE, New Delhi | Maximum 2 girl children per family; annual family income < ₹8.0 Lakhs | **₹50,000 per year** (800 dedicated scholarships for Tamil Nadu engineering students). |
+| **AICTE Saksham Scheme** | AICTE, New Delhi | Specially-abled students (disability not less than 40%); family income < ₹8.0 Lakhs | **₹50,000 per year** for all eligible engineering students. |
+| **Post-Matric SC / ST / SCA Scholarship** | TN Adi Dravidar & Tribal Welfare | SC / ST / SCA / Converted Christian students with family income < ₹2.5 Lakhs/year | **Full Tuition Fee Waiver** & maintenance allowance as per TN state welfare guidelines. |
+| **BC / MBC / DNC Welfare Scheme** | TN BC/MBC Welfare Dept | BC / MBC / DNC students admitted via TNEA with family income < ₹2.0 Lakhs/year | Direct annual tuition fee assistance credited to student bank accounts. |
+| **Merit-cum-Means Minority Scholarship** | Ministry of Minority Affairs (MOMA) | Muslim, Christian, Sikh, Buddhist, Jain, Parsi (≥50% marks; family income < ₹2.5 LPA) | **₹20,000/year course fee** + ₹12,000/yr (Hostellers) / ₹6,000/yr (Day Scholars) (1,075 Muslim & 1,173 Christian scholarships for TN). |
+| **Central Sector Scheme (CSSS)** | MHRD, Govt. of India | Top 80th percentile in Class 12 board exam; family income < ₹8.0 Lakhs/year | **₹10,000 per year** (4,883 scholarships for Tamil Nadu). |
+| **First Graduate Fee Concession** | Govt. of Tamil Nadu | First person in the family to complete higher education in Tamil Nadu | **₹25,000 per year Tuition Fee Concession** for all 4 years of study. |
+| **Wards of Beedi / Mine / Cine Workers** | Ministry of Labour & Employment | Children of registered workers; monthly family income < ₹10,000 | **₹15,000 per year** educational financial aid. |
+| **Trust Merit & Sports Quota Aid** | Mohamed Sathak Trust | Cutoff > 185/200 in 12th PCM or District/State/National sports champions | **Up to 50% Tuition Fee Concessions** and sponsored sports equipment kits. |
+
+---
+
+### 📝 Step-by-Step Scholarship Application Process
+1. Submit your **10th & 12th Mark Sheets**, **Transfer Certificate (TC)**, **Community Certificate**, and **Income Certificate** to the College Administration Office during admission.
+2. For First Graduate fee concession, produce the **First Graduate Certificate** issued by the Revenue Authority and the accompanying Joint Declaration.
+3. The College Scholarship Committee assists candidates with online portal submissions (National Scholarship Portal - NSP and TN State Welfare Portals) and verifies documentation.
+
+---
+
+### 📞 Scholarship Desk Helpdesk
+- **Dr. K.P. Santhosh Nathan**: [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in)
+- **Mr. A. Abdul Gafoor**: [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce.edu.in](mailto:abdulgafoor@msajce.edu.in)""",
         "sources": [
-            {"chunk_id": "card_scholarships_01", "title": "Official MSAJCEA Scholarship & Concessions Record", "source_file": "msajcea_scholarships.md", "category": "scholarships", "page_url": "https://msajce-edu.in/scholarships.php", "score": 1.0, "snippet": "Government 7.5% quota, Post-Matric SC/ST, First Graduate, Merit scholarships."}
+            {"chunk_id": "card_scholarships_01", "title": "Official MSAJCEA Scholarships & Financial Aid Record", "source_file": "msajce_admission.md", "category": "scholarships", "page_url": "https://msajce.edu.in/scholarships.php", "score": 1.0, "snippet": "TN 7.5% Government school 100% free quota, AICTE Pragati ₹50k, Post-Matric SC/ST, First Graduate ₹25k."}
         ]
     },
     "boys_hostel": {
         "keywords": [
+            "What are the accommodation facilities, room capacity options, food menu, and safety rules for the Boys Hostel at MSAJCEA?",
             "What are the hostel facilities, room capacity, mess menu, and rules for the Boys Hostel at MSAJCEA?",
-            "boys hostel facilities",
             "boys hostel",
+            "boys hostel facilities",
+            "boys hostel rooms",
             "boys hostel mess",
-            "boys hostel rules"
+            "boys hostel rules",
+            "mens hostel",
+            "hostel for boys",
+            "boys accommodation"
         ],
-        "response": """# 🏢 Boys Hostel Accommodation & Facilities at MSAJCEA
+        "response": """# 🏢 Boys Hostel Accommodation, Amenities & Discipline at MSAJCEA
 
-**MSAJCEA** provides modern, safe, and fully equipped residential hostel accommodation for male students located inside the lush green campus at **SIPCOT IT Park, Egattur, Navalur, OMR, Chennai**.
-
----
-
-### 🛏️ Room Infrastructure & Amenities
-- **Room Options**: 2-sharing, 3-sharing, and 4-sharing spacious, airy rooms.
-- **Furnishing**: Individual wooden study desk, chair, cot, mattress, and personal lockable wardrobe cupboard per student.
-- **Power Backup**: Uninterrupted 24/7 electricity supported by heavy-duty diesel generator backup.
-- **Wi-Fi & Internet**: High-speed campus Wi-Fi connectivity across all hostel floors.
-- **Recreation**: Common TV hall, reading room with daily newspapers, and indoor games arena (Table Tennis, Carrom, Chess).
+The **Boys Hostel** at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** is located **inside the lush green campus** at **SIPCOT IT Park, Siruseri, OMR, Chennai**, offering a tranquil, secure, home-like environment for focused academic study.
 
 ---
 
-### 🍽️ Mess Food & Dining Facilities
-- **Hygienic Kitchen**: Food prepared in a modern steam kitchen using RO purified drinking water.
-- **Cuisine**: Serves both delicious **South Indian Vegetarian and Non-Vegetarian** menus.
-- **Meal Schedule**:
-  - **Breakfast**: 7:30 AM – 8:30 AM
-  - **Lunch**: 12:15 PM – 1:15 PM
-  - **Evening Tea & Snacks**: 4:30 PM – 5:15 PM
-  - **Dinner**: 7:30 PM – 8:30 PM
-- **Special Feast**: Special non-vegetarian dinner served every Sunday and on major festival days.
+### 🛏️ Infrastructure & Room Inventory
+- **Hostel Blocks**: **3 Independent Residential Blocks** on campus.
+- **Student Capacity**: Accommodates up to **480 Boy Students**.
+- **Room Types**: **233 Non-AC Rooms** and **6 AC Rooms**.
+- **Room Occupancy**: **2 Persons per Room** (spacious, airy, and cross-ventilated).
+- **In-Room Amenities**: Individual wooden cot, mattress with pillows, bedspreads, personal lockable wardrobe, study table, chair, reading study lamp, ceiling fan, water heater in bathrooms, and wall hangers.
 
 ---
 
-### 🔒 Security & Regulations
-- **24/7 Security**: Maintained by uniformed security personnel and CCTV camera surveillance.
-- **Resident Wardens**: Senior faculty resident wardens reside inside the hostel block 24/7.
-- **In-Time Curfew**: Biometric attendance logging at **8:30 PM** strictly enforced.""",
+### 🌟 Facilities & Campus Services
+- **Dining Mess & Cafeteria**: Hygienic on-campus dining complex serving nutritious South Indian vegetarian and non-vegetarian food.
+- **Power & Connectivity**: 100% uninterrupted electricity backed by heavy-duty diesel generators; high-speed campus Wi-Fi access across all floors.
+- **Recreation**: Common Entertainment Hall with large LCD TV, reading room with daily newspapers and popular magazines, indoor games arena (Table Tennis, Carrom, Chess).
+- **Extended Academic Access**: For hostellers' benefit, the **MSAJCEA Central Library and Computer Centre are kept open until 7:00 PM** on all working days.
+
+---
+
+### ⏰ Daily Hostel Routine & Study Hours
+
+| Activity / Session | Working Days | Sundays & Holidays |
+|---|---|---|
+| **Morning Study Hours** | 05:00 AM – 07:00 AM | Personal Study / Rest |
+| **Breakfast** | 07:00 AM – 08:00 AM | 07:30 AM – 09:00 AM |
+| **College Working Hours** | 08:00 AM – 04:00 PM | Free Time / Recreation |
+| **Lunch** | 01:00 PM – 01:45 PM | 12:30 PM – 02:00 PM |
+| **Games, Sports & TV** | 04:30 PM – 06:00 PM | 09:00 AM – 12:00 PM & 01:00 PM – 06:00 PM |
+| **Evening Study (Session 1)** | 06:00 PM – 07:00 PM | 06:00 PM – 07:00 PM |
+| **Dinner** | 07:00 PM – 08:30 PM | 07:00 PM – 09:00 PM |
+| **Night Study (Session 2)** | 09:00 PM – 10:30 PM | 09:00 PM – 10:30 PM |
+
+---
+
+### 🔒 Hostel Safety & Discipline Regulations
+1. **Room Allotment**: Students must occupy the specific rooms allotted to them by the Warden or Principal Dr. K.S. Srinivasan.
+2. **Code of Conduct**: Strict prohibition of anti-social conduct including consumption of alcohol, tobacco, gambling, and ragging (Zero Tolerance policy).
+3. **Outpass Policy**: No student will be allowed to leave the hostel based on a phone call. Going home is permitted only when college is closed continuously for 5+ days or upon parental written request to the Principal.
+4. **Visitor Policy**: Parents must submit a list of authorized visitors. Visitors are permitted on holidays from **11:00 AM to 06:00 PM** only.
+
+---
+
+### 📞 Hostel Administration
+- **Hostel Warden / Principal**: Dr. K.S. Srinivasan ([principal@msajce.edu.in](mailto:principal@msajce.edu.in))
+- **Student Affairs Desk**: Dr. K.P. Santhosh Nathan ([+91 9840886992](tel:9840886992))
+- **Administrative Officer**: Mr. A. Abdul Gafoor ([+91 9940319629](tel:9940319629))""",
         "sources": [
-            {"chunk_id": "card_boyshostel_01", "title": "Official MSAJCEA Boys Hostel Rules & Facilities Record", "source_file": "msajcea_hostel.md", "category": "hostel", "page_url": "https://msajce-edu.in/hostel.php", "score": 1.0, "snippet": "Boys hostel rooms, mess menu, 24/7 generator backup."}
+            {"chunk_id": "card_boyshostel_01", "title": "Official MSAJCEA Boys Hostel Infrastructure & Regulations Record", "source_file": "msajce_hostel.md", "category": "hostel", "page_url": "https://msajce.edu.in/hostel.php", "score": 1.0, "snippet": "On-campus 3 blocks, 480 capacity, 233 Non-AC + 6 AC rooms, 2/room, library till 7 PM."}
         ]
     },
     "girls_hostel": {
         "keywords": [
+            "What safety features, 24/7 security, room amenities, warden supervision, and facilities apply to the Girls Hostel at MSAJCEA?",
             "What safety features, capacity, room amenities, and location details apply to the Girls Hostel at MSAJCEA?",
-            "girls hostel safety",
             "girls hostel",
+            "girls hostel safety",
             "girls hostel facilities",
-            "girls hostel rules"
+            "girls hostel rules",
+            "ladies hostel",
+            "womens hostel",
+            "hostel for girls",
+            "girls accommodation",
+            "sholinganallur hostel"
         ],
-        "response": """# 🏠 Girls Hostel Accommodation & Safety Infrastructure at MSAJCEA
+        "response": """# 🏠 Girls Hostel Accommodation, Safety & Facilities at MSAJCEA
 
-The **Girls Hostel** at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** is designed to provide a secure, comfortable, home-like living environment inside the campus at **SIPCOT IT Park, Siruseri, OMR, Chennai**.
-
----
-
-### 🛡️ Safety & Security System
-- **24/7 Female Guards**: Round-the-clock female security personnel posted at gate entrances and hostel doors.
-- **Biometric Attendance**: Digital biometric attendance system with strict evening entry cutoff.
-- **CCTV Monitoring**: Complete perimeter and corridor coverage via HD CCTV cameras.
-- **Resident Matron**: Dedicated senior Lady Warden / Resident Matron residing inside the hostel block 24 hours a day for student care and emergency support.
+The **Girls Hostel** of **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** is located in **Sholinganallur, Chennai**, approximately **5 KM from the college campus**. Situated in a prime, upscale residential locality, it guarantees maximum safety, serenity, and complete day-to-day convenience.
 
 ---
 
-### 🛏️ Room Facilities & Comfort
-- **Accommodation**: 2-seater and 3-seater spacious, well-ventilated rooms.
-- **Furniture Provided**: Cot, mattress, individual study desk, bookshelf, and personal wardrobe.
-- **Drinking Water & Power**: 24-hour continuous purified RO drinking water and 100% generator power backup.
-- **Study & Relaxation**: Quiet study rooms and common recreational TV lounge.
+### 🛡️ Safety & Security Infrastructure
+- **24/7 Female Security Personnel**: Round-the-clock female security guards stationed at the main gates and hostel entry points.
+- **Biometric Digital Attendance**: High-precision biometric attendance logging with strict evening entry cutoffs.
+- **HD CCTV Surveillance**: Comprehensive 24/7 CCTV coverage across all gates, corridors, and communal spaces.
+- **Resident Lady Warden / Matron**: Dedicated senior Lady Warden resides inside the block 24/7 for health monitoring, student guidance, and emergency response.
+- **Prime Location**: Everything essential (pharmacies, clinics, convenience stores) is situated right at the entrance of the hostel.
 
 ---
 
-### 🍽️ Dining & Healthcare
-- **Mess Service**: Dedicated dining hall serving fresh, hygienic South Indian vegetarian and non-vegetarian meals.
-- **Emergency Medical Support**: 24/7 emergency transport vehicle on campus and on-call lady doctor services.""",
+### 🛏️ Room Specifications & Attached Bathrooms
+- **Hostel Infrastructure**: **1 Dedicated Residential Block** with **71 Non-AC Rooms**.
+- **Room Capacity**: Accommodates **3 Girl Students per Room** (Total capacity: **210 Girl Students**).
+- **Private Attached Restrooms**: **Every room has private attached bath and toilet facilities**, wash basin, and vanity mirror.
+- **In-Room Amenities**: Individual wooden cot, mattress with pillows, bedspreads, personal lockable wardrobe, study desk, chair, study lamp, ceiling fan, and wall hangers.
+
+---
+
+### 🌟 Academic & Recreational Amenities
+- **Extended Study Facilities**: Dedicated **Library and Computer facility kept open until 9:00 PM** exclusively for girls hostel residents.
+- **Entertainment & Leisure**: Common TV lounge with LCD TV, reading room with daily newspapers and leading magazines, and indoor games (Table Tennis, Carrom, Chess).
+- **Communication & Power**: Landline telephone facility, high-speed Wi-Fi, 24-hour RO purified drinking water, and continuous generator power backup.
+- **Transportation**: Dedicated college transport connects the Sholinganallur hostel directly to the Siruseri campus for morning classes and evening return.
+
+---
+
+### ⏰ Daily Routine & Dining Schedule
+- **Breakfast**: 07:00 AM – 08:00 AM (07:30 AM – 09:00 AM on holidays)
+- **Lunch**: 01:00 PM – 01:45 PM (12:30 PM – 02:00 PM on holidays)
+- **Games & TV Hours**: 04:30 PM – 06:00 PM
+- **Evening Study**: 06:00 PM – 07:00 PM
+- **Dinner**: 07:00 PM – 08:30 PM
+- **Night Study**: 09:00 PM – 10:30 PM
+
+---
+
+### 🏥 Healthcare & Emergency Readiness
+- **24/7 Emergency Vehicle**: College vehicle on standby for any urgent travel.
+- **On-Call Doctor**: Dedicated on-call lady physician services and immediate proximity to Dr. Kamakshi Memorial Hospital and nearby multi-specialty centers.""",
         "sources": [
-            {"chunk_id": "card_girlshostel_01", "title": "Official MSAJCEA Girls Hostel Infrastructure & Safety Record", "source_file": "msajcea_hostel.md", "category": "hostel", "page_url": "https://msajce-edu.in/hostel.php", "score": 1.0, "snippet": "Girls hostel security, female guards, biometric entry, matron on campus."}
+            {"chunk_id": "card_girlshostel_01", "title": "Official MSAJCEA Girls Hostel Security & Infrastructure Record", "source_file": "msajce_hostel.md", "category": "hostel", "page_url": "https://msajce.edu.in/hostel.php", "score": 1.0, "snippet": "Sholinganallur 5 KM, 71 rooms, 3/room, 210 capacity, attached bath/toilet, library till 9 PM, 24/7 female guards."}
         ]
     },
     "bus": {
         "keywords": [
+            "What are the college bus routes, pickup points across Chennai, morning arrival timings, and transport coverage for MSAJCEA?",
             "What are the college bus routes, pickup points, timings, and transport coverage for MSAJCEA?",
             "college bus routes",
             "bus routes",
+            "bus transport",
             "pickup points",
-            "transport coverage"
+            "bus timings",
+            "transport coverage",
+            "college bus",
+            "bus schedule",
+            "ar 3",
+            "ar 4",
+            "ar 5",
+            "ar 6",
+            "ar 7",
+            "ar 8",
+            "ar 9",
+            "ar 10",
+            "r 22"
         ],
-        "response": """# 🚌 MSAJCEA Dedicated College Bus Routes & Transport Guide
+        "response": """# 🚌 Dedicated College Bus Routes & Transport System at MSAJCEA
 
-**MSAJCEA** operates **9 dedicated college bus routes** connecting all key residential areas across **Chennai, Chengalpattu, Kanchipuram, and Thiruvallur districts** directly to the campus at **SIPCOT IT Park, Siruseri, OMR, Chennai**.
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** operates **9 dedicated college bus routes** connecting all key residential areas across **Chennai, Chengalpattu, Kanchipuram, and Thiruvallur districts** directly to the campus at **SIPCOT IT Park, Siruseri, OMR, Chennai**.
 
-All college buses strictly reach the campus by **8:00 AM**.
+All dedicated college buses strictly arrive at the campus by **8:00 AM**.
 
 ---
 
-### 🚍 Complete Summary of All 9 College Bus Routes
+### 🚍 Complete Summary of All 9 Dedicated College Bus Routes
 
-| Route Code | Starting Point | Start Time | Driver Name & Contact | Major Pickup Points Covered |
+| Route Code | Starting Point | Departure | Driver Name & Contact | Complete Route & Major Stops Covered |
 |:---:|:---|:---:|:---|:---|
-| **Route AR 3** | Uthiramerur | 6:00 AM | Mr. Sathish K ([+91 9789970304](tel:9789970304)) | Paranur Tollgate (6:40 AM), Mahindra City, Guduvanchery, Vandalur, Kelambakkam, Sipcot |
-| **Route AR 4** | Moolakadai | 6:10 AM | Mr. M. Suresh ([+91 9849265637](tel:9849265637)) | Perambur (6:15 AM), Central, Parrys, Marina, Adyar, Thiruvanmiyur, ECR, Sholinganallur |
-| **Route N/3 (AR 5)** | MMDA School | 6:15 AM | Mr. Velu ([+91 9940050685](tel:9940050685)) | Anna Nagar (6:20 AM), Skywalk, T. Nagar, Saidapet (6:45 AM), Velachery Check Post (6:50 AM), Vijaya Nagar (6:53 AM), Baby Nagar (6:55 AM), Tharamani (7:00 AM), OMR |
-| **Route AR 6** | ICF | 6:15 AM | Mr. B. Padmanaban ([+91 7358527720](tel:7358527720)) | Ayanavaram, Egmore, Triplicane, New College, Kotturpuram, Madhya Kailash, Perungudi |
-| **Route AR 7** | Chunambedu | 5:25 AM | Mr. Suresh ([+91 9789895025](tel:9789895025)) | Kadapakam, Kalpakkam, Thirukazukundram, Paiyanur, Thirupporur, Kelambakkam, Padur |
-| **Route AR 8** | Manjambakkam | 5:50 AM | Mr. Raju ([+91 9790750906](tel:9790750906)) | Retteri (5:55 AM), Padi, Anna Nagar, Ashok Pillar, Aadampakkam, Pallikaranai, Medavakkam, Sholinganallur |
-| **Route AR 9** | Ennore | 6:15 AM | Mr. Kanagaraj ([+91 9710209097](tel:9710209097)) | Mint (6:20 AM), Broadway, Central, Royapettah, Mylapore, Adyar, ECR, Sholinganallur |
-| **Route AR 10 (R21)**| Porur | 6:25 AM | Mr. Ravindran ([+91 9710939995](tel:9710939995)) | Kovoor, Pammal, Pallavaram, Chrompet, Tambaram W/E (7:00 AM), Camp Road, Medavakkam, Pallikaranai Junction |
-| **Route R 22** | Nemilichery | 5:50 AM | Mr. Jaffar ([+91 9566037890](tel:9566037890)) | Poonamallee (6:05 AM), Porur, Valasaravakkam, Kathipara, Velachery Bypass, Pallikaranai Joint, Medavakkam |
+| **Route AR 3** | Uthiramerur | 6:00 AM | Mr. Sathish K ([+91 9789970304](tel:9789970304)) | Paranur Tollgate (6:40 AM), Mahindra City, S.P. Koil, Maraimalai Nagar, Guduvanchery (6:50 AM), Urapakkam, Vandalur Zoo (6:55 AM), Perungalathur (7:00 AM), Kandigai, Mambakkam, Puthupakkam, Kelambakkam (7:40 AM), Sipcot → MSAJCEA (8:00 AM) |
+| **Route AR 4** | Moolakadai | 6:10 AM | Mr. M. Suresh ([+91 9849265637](tel:9849265637)) | Perambur (6:15 AM), Otteri Pattalam, Dowton, Vepery Police Station, Periyamet, Central (6:35 AM), Parrys Corner (6:40 AM), Marina Beach (6:45 AM), Santhome, Adyar (7:00 AM), Thiruvanmiyur (7:05 AM), Palavakkam, Neelankarai (7:15 AM), Akkarai, Sholinganallur (7:25 AM), Ladies Hostel (7:30 AM) → MSAJCEA (8:00 AM) |
+| **Route N/3 (AR 5)** | MMDA Arumbakkam | 6:15 AM | Mr. Velu ([+91 9940050685](tel:9940050685)) | Anna Nagar (6:20 AM), Chinthamani, Skywalk, Choolaimedu, Loyola College (6:35 AM), T. Nagar (6:40 AM), CIT Nagar, Saidapet (6:45 AM), Velachery Check Post (6:50 AM), Vijayanagar (6:53 AM), Baby Nagar (6:55 AM), Taramani 100 Ft Rd (7:00 AM), Perungudi, Sholinganallur (7:20 AM), Ladies Hostel (7:35 AM) → MSAJCEA (8:00 AM) |
+| **Route AR 6** | ICF / MMDA | 6:10 AM | Mr. B. Padmanaban ([+91 7358527720](tel:7358527720)) | Retteri (6:15 AM), Anna Nagar (6:20 AM), Egmore (6:25 AM), Pudupet, Rathnasamy Hospital, Triplicane (6:40 AM), New College (6:45 AM), Royapettah, Mylapore, Mandaveli (6:50 AM), Kotturpuram, Madhya Kailash (7:05 AM), Tidel, Kandanchavadi, Thoraipakkam, Karapakkam, Sholinganallur (7:30 AM) → MSAJCEA (8:00 AM) |
+| **Route AR 7** | Chunambedu | 5:25 AM | Mr. Suresh ([+91 9789895025](tel:9789895025)) | Kadapakkam (5:35 AM), Cheyyur, Ellaiamman Kovil, Palur, Maduranthagam, Kalpakkam (6:40 AM), Thirukazhukundram (6:55 AM), Mahabalipuram, Paiyanur (7:20 AM), Thirupporur (7:30 AM), Kelambakkam (7:40 AM), Padur (7:45 AM) → MSAJCEA (8:00 AM) |
+| **Route AR 8** | Manjambakkam | 5:50 AM | Mr. Raju ([+91 9790750906](tel:9790750906)) | Retteri (5:55 AM), Kolathur, Lucas TVS (6:05 AM), Padi, Thirumangalam, Anna Nagar (6:15 AM), CMBT Koyambedu, Vadapalani (6:25 AM), Ashok Pillar, Guindy, Aadampakkam, Vanuvampet, Puzhuthivakkam, Madipakkam, Keelkattalai (7:00 AM), Kovilambakkam, Vellakkal, Medavakkam (7:10 AM), Perumbakkam, Sholinganallur (7:30 AM) → MSAJCEA (8:00 AM) |
+| **Route AR 9** | Ennore | 6:15 AM | Mr. Kanagaraj ([+91 9710209097](tel:9710209097)) | Theradi, Tollgate, Kasimedu, Stanley Hospital, Mint (6:20 AM), Broadway, Central, Royapettah, Mylapore (6:50 AM), Mandaveli, Adyar (7:05 AM), Thiruvanmiyur, Kottivakkam, Palavakkam, Neelankarai, Injambakkam, Akkarai, Sholinganallur (7:35 AM), Kumaran Nagar → MSAJCEA (8:00 AM) |
+| **Route AR 10 (R21)** | Porur | 6:25 AM | Mr. Ravindran ([+91 9710939995](tel:9710939995)) | Kovoor, Kundrathur, Anakaputhur, Pammal, Pallavaram (6:40 AM), Chromepet (6:45 AM), Sanatorium, Tambaram West/East (7:00 AM), Selaiyur, Camp Road (7:05 AM), Rajakilpakkam, Sembakkam, Kamarajapuram, Gowrivakkam, Santhoshapuram, Medavakkam (7:15 AM), Perumbakkam, Sholinganallur (7:30 AM) → MSAJCEA (8:00 AM) |
+| **Route R 22** | Nemilichery | 5:50 AM | Mr. Jaffar ([+91 9566037890](tel:9566037890)) | Poonamallee (6:05 AM), Karayanchavadi, Kumananchavadi, Iyyappanthangal, Porur (6:20 AM), Valasaravakkam, Alwarthirunagar, Virugambakkam, Nesapakkam, Ashok Pillar, Kathipara (6:40 AM), Guindy, Velachery Bypass (6:55 AM), Pallikaranai, Medavakkam (7:15 AM), Perumbakkam, Sholinganallur (7:30 AM) → MSAJCEA (8:00 AM) |
 
 ---
 
-### 🚏 MTC Public Bus Routes to Campus
-- **570 Series (570S)**: CMBT Koyambedu ↔ Vadapalani ↔ Velachery ↔ Pallikaranai ↔ Medavakkam ↔ Sholinganallur ↔ Siruseri IT Park / MSAJCEA.
-- **19 Series (19K)**: Adyar Depot ↔ SRP Tools ↔ Sholinganallur ↔ Navalur ↔ Siruseri.
-- **102 Series**: Broadway / Central ↔ Adyar ↔ OMR ↔ Sipcot / Kelambakkam.
+### 🚏 Public MTC Bus Connectivity to Siruseri IT Park
+- **570 Series (570S)**: CMBT Koyambedu ↔ Vadapalani ↔ Guindy ↔ Velachery ↔ Medavakkam ↔ Sholinganallur ↔ Siruseri IT Park / MSAJCEA.
+- **19 Series (19K)**: Adyar Depot ↔ Thiruvanmiyur ↔ SRP Tools ↔ Sholinganallur ↔ Navalur ↔ Siruseri IT Park.
+- **102 Series**: Broadway / Chennai Central ↔ Adyar ↔ OMR Expressway ↔ Sipcot / Kelambakkam.
 
 ---
 
-### 📞 Transport Convener Contacts
-- **Dr. K.P. Santhosh Nathan** (Transport Convener): [+91 9840886992](tel:9840886992)
-- **Mr. A. Abdul Gafoor** (Assistant Transport Convener): [+91 9940319629](tel:9940319629)""",
+### 📞 Transport Convener Directorate
+- **Dr. K.P. Santhosh Nathan** (Transport Convener): [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in)
+- **Mr. A. Abdul Gafoor** (Assistant Transport Convener): [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce.edu.in](mailto:abdulgafoor@msajce.edu.in)""",
         "sources": [
-            {"chunk_id": "card_bus_01", "title": "Official MSAJCEA Bus Transport Routes Schedule", "source_file": "msajcea_transport.md", "category": "transport", "page_url": "https://msajce-edu.in/transport.php", "score": 1.0, "snippet": "AR3, AR4, AR5, AR6, AR7, AR8, AR9, AR10, R22 college bus routes schedule."}
+            {"chunk_id": "card_bus_01", "title": "Official MSAJCEA Dedicated Bus Routes Schedule", "source_file": "msajce_transport.md", "category": "transport", "page_url": "https://msajce.edu.in/transport.php", "score": 1.0, "snippet": "9 dedicated bus routes (AR3 to AR10, R22) reaching campus by 8:00 AM, drivers and pickup points."}
         ]
     },
     "mess": {
         "keywords": [
+            "What is the food quality, daily mess menu, dining hall capacity, and canteen options available for students at MSAJCEA?",
             "What is the mess food menu, dining hall capacity, canteen facilities, and timings at MSAJCEA?",
             "mess & canteen",
             "mess food menu",
             "dining hall capacity",
-            "canteen facilities"
+            "canteen facilities",
+            "mess timings",
+            "canteen",
+            "cafeteria",
+            "food menu",
+            "mess food"
         ],
-        "response": """# 🍽️ Mess & Canteen Infrastructure at MSAJCEA
+        "response": """# 🍽️ Mess Food Menu, Timings & Cafeteria Infrastructure at MSAJCEA
 
-**MSAJCEA** maintains a spacious central dining complex and modern cafeteria designed to serve fresh, nutritious, hygienic meals to day scholars, hostel residents, faculty, and campus visitors.
-
----
-
-### 🍱 Central Dining Hall Specifications
-- **Seating Capacity**: Large air-cooled dining hall accommodating **500+ students** at a time.
-- **Steam Kitchen**: Equipped with automated stainless steel steam cooking equipment and commercial dishwashing systems.
-- **Purified Water**: 100% Reverse Osmosis (RO) purified drinking water stations across the dining floor.
-- **Food Quality**: Offers South Indian vegetarian and non-vegetarian menus prepared under strict quality control.
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** operates a centralized dining complex and a modern cafeteria catering to hostel residents, day scholars, faculty, and campus visitors.
 
 ---
 
-### ⏰ Daily Meal Timings
-
-| Meal Service | Operating Hours |
-|---|---|
-| **Breakfast** | 7:30 AM – 8:30 AM |
-| **Lunch** | 12:15 PM – 1:15 PM |
-| **Evening Tea & Snacks** | 4:30 PM – 5:15 PM |
-| **Dinner** | 7:30 PM – 8:30 PM |
+### 🍱 Central Dining Complex Specifications
+- **Dining Hall Capacity**: Large, air-cooled dining hall accommodating **500+ students** simultaneously.
+- **Hygienic Steam Kitchen**: Fitted with automated stainless steel steam cooking equipment, high-capacity commercial dishwashers, and food warmers.
+- **Purified Water**: 100% Reverse Osmosis (RO) purified drinking water stations situated throughout the dining hall.
+- **Cuisine**: Serves authentic, hygienic **South Indian Vegetarian and Non-Vegetarian food** prepared with strict adherence to nutritional balance.
+- **Separate Seating**: Dedicated dining areas with separate seating for boys and girls.
+- **Guest Facilities**: Parents and visitors can consume food by purchasing tokens at the counter.
 
 ---
 
-### ☕ On-Campus Canteen & Cafeteria
-- Serves fresh fruit juices, snacks, coffee, tea, bakery items, quick meals, and ice creams at subsidized student prices.
-- Open from **8:00 AM to 6:00 PM** on all working days.""",
+### ⏰ Daily Mess Meal Timings
+
+| Meal Service | College Working Days | Sundays & Institutional Holidays |
+|---|---|---|
+| **Breakfast** | 07:00 AM – 08:00 AM | 07:30 AM – 09:00 AM |
+| **Lunch** | 01:00 PM – 01:45 PM | 12:30 PM – 02:00 PM |
+| **Dinner** | 07:00 PM – 08:30 PM | 07:00 PM – 09:00 PM |
+
+---
+
+### ☕ On-Campus Cafeteria
+- **Seating Capacity**: Accommodates **100 students** simultaneously with modern ergonomic tables.
+- **Separate Space**: Partitioned dining areas available for students and staff.
+- **Menu Offerings**: Delicious breakfast items, quick lunch meals, fresh fruit juices, hot coffee/tea, bakery snacks, and ice creams at subsidized student prices.
+- **Operating Hours**: Open from **08:00 AM to 08:00 PM** on all working days.
+
+---
+
+### 👥 Canteen Committee & Culinary Team
+- **President**: Dr. K.S. Srinivasan (Principal)
+- **Chief Organization Officer**: Dr. S. Vijayakumar
+- **Canteen Manager**: Mr. Arun
+- **Head of Student Affairs**: Dr. K.P. Santhosh Nathan
+- **Administrative Member**: Mr. A. Abdul Gafoor
+- **Culinary Staff**: Mr. Abdul Rashid (Head Cook), Mr. Kannan & Mr. Shankar (Assistant Cooks)""",
         "sources": [
-            {"chunk_id": "card_mess_01", "title": "Official MSAJCEA Mess & Canteen Timings Record", "source_file": "msajcea_hostel.md", "category": "mess", "page_url": "https://msajce-edu.in/hostel.php", "score": 1.0, "snippet": "Mess seating 500+ students, breakfast, lunch, tea, dinner timings."}
+            {"chunk_id": "card_mess_01", "title": "Official MSAJCEA Mess Timings & Canteen Record", "source_file": "msajce_hostel.md", "category": "mess", "page_url": "https://msajce.edu.in/hostel.php", "score": 1.0, "snippet": "500+ seat dining hall, breakfast 7-8 AM, lunch 1-1:45 PM, dinner 7-8:30 PM, cafeteria 8 AM - 8 PM."}
         ]
     },
     "library": {
         "keywords": [
+            "What are the Central Library facilities, book collection, IEEE digital journal access, study halls, and working hours at MSAJCEA?",
             "Tell me about the Central Library facilities, book collection, digital library, and working hours at MSAJCEA.",
             "central library",
-            "digital library",
             "library facilities",
-            "book collection"
+            "book collection",
+            "digital library",
+            "library books",
+            "library timings",
+            "delnet",
+            "j-gate",
+            "koha",
+            "library hours"
         ],
-        "response": """# 📖 MSAJCEA Central Library & Digital Knowledge Center
+        "response": """# 📖 Central Learning Resource Centre (Library) at MSAJCEA
 
-The **Central Library** at **Mohamed Sathak A.J. College of Engineering and Architecture** is a fully automated, state-of-the-art knowledge repository supporting teaching, learning, and research across all engineering disciplines.
-
----
-
-### 📊 Library Holdings & Resources
-- **Total Book Collection**: **32,000+ Volumes** of engineering, technology, science, and management books.
-- **Unique Titles**: **8,500+ Unique Titles** spanning all UG and PG departments.
-- **Journals & Periodicals**: Subscribes to 100+ national and international print journals.
-- **E-Journal Subscriptions**: Full online access to **IEEE Xplore**, **DELNET**, **ScienceDirect**, and **Springer**.
-- **Digital Library**: 30+ high-speed multimedia computers with NPTEL video lecture repository and e-books access.
+The **Central Library** at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** serves as the knowledge powerhouse of the institution, housing comprehensive print and electronic learning resources in engineering, technology, humanities, management, and basic sciences.
 
 ---
 
-### ⏰ Working Hours
-- **Regular Working Days (Mon – Sat)**: **8:00 AM – 6:00 PM**
-- **Exam Preparation Schedule**: Extended until **7:30 PM** for hostel residents.
+### 📊 Library Collection & Stack Details
+
+| Library Resource | Holding Quantity |
+|---|---|
+| **Built-Up Area** | **8,978 Sq. Ft.** (Spanning Ground Floor & First Floor) |
+| **Total Book Volumes** | **29,853 Volumes** |
+| **Unique Titles** | **5,628 Titles** |
+| **Reference Volumes** | **1,885 Reference Books** |
+| **E-Books Collection** | **3,790 E-Books** |
+| **Printed Journals** | **37 Specialized Printed Journals** (CSE & IT: 10, Mech: 6, ECE: 6, EEE: 6, Civil: 4, S&H: 5) |
+| **Magazines & Newspapers** | **20 Popular Magazines** and **5 Leading Daily Newspapers** |
+| **Non-Book Materials** | 106 Back Volumes, 356 CD-ROMs, 260 Student Project Reports |
 
 ---
 
-### 💻 Automated Library Services
-- **Automated Circulation**: Barcode-enabled instant book issue/return system.
-- **OPAC (Online Public Access Catalog)**: Search books by author, title, or subject anywhere on campus.
-- **Reprographic Center**: Photocopying, scanning, and printing facilities within the library premises.""",
+### 🌐 Digital Library & E-Resource Consortiums
+- **DELNET (Developing Library Network)**: Inter-Library Loan access to **1,379 Full-Text E-Journals** and union catalogs.
+- **J-Gate Database**: Institutional online subscription to more than **50,684 journals**.
+- **Gale International Database**: Access to **1,800 peer-reviewed international research publications**.
+- **National Repositories**: Direct access to National Digital Library (NDL), Shodhganga, Shodhsindhu, and NPTEL Video Lectures repository.
+
+---
+
+### ⏰ Library Working Hours
+- **Monday to Saturday**: **8:00 AM – 7:00 PM**
+- **Sundays**: **10:00 AM – 4:00 PM**
+- **Extended Hostel Access**: Kept open till **7:00 PM** for boys and **9:00 PM** for girls in the hostel facility.
+
+---
+
+### 💻 Library Services & Automation
+- **Koha Open-Source LMS**: Full automation using Koha Library Management Software with barcode-enabled instant book transactions.
+- **OPAC (Online Public Access Catalog)**: Search books by author, title, accession number, or subject from any campus computer.
+- **Reprographic Center**: In-house photocopying, scanning, and laser printing facilities.
+- **Dedicated Spaces**: Reference Stacks, Group Discussion Room, Periodicals Section, and quiet individual study cubicles.
+
+---
+
+### 📚 Membership Borrowing Entitlements & Rules
+
+| Member Category | Borrowing Limit | Loan Duration | Overdue Fine Structure |
+|---|---|---|---|
+| **UG & PG Students** | **18 Books** | **30 Days** | Days 1–7: ₹1/day/book; Days 8–14: ₹2/day/book; Day 15+: ₹5/day/book |
+| **Teaching Faculty** | **10 Books** | **30 Days** | Email reminder notification |
+| **Non-Teaching Staff** | **4 Books** | **30 Days** | Email reminder notification |
+
+---
+
+### 👥 Library Committee Leadership
+- **Chairperson**: Dr. K.S. Srinivasan (Principal)
+- **Secretary & Library In-Charge**: Dr. Kamalaselvan A
+- **Member Secretary**: Ms. S. Usha (Assistant Professor / ECE)
+- **Chief Librarian**: Mr. S. Sudhakar | **Librarian**: Mr. John Anish""",
         "sources": [
-            {"chunk_id": "card_library_01", "title": "Official MSAJCEA Central Library Resource Record", "source_file": "msajcea_library.md", "category": "library", "page_url": "https://msajce-edu.in/library.php", "score": 1.0, "snippet": "32,000+ volumes, 8,500+ titles, IEEE digital library."}
+            {"chunk_id": "card_library_01", "title": "Official MSAJCEA Central Library Resource Record", "source_file": "msajce_library.md", "category": "library", "page_url": "https://msajce.edu.in/library.php", "score": 1.0, "snippet": "8,978 sq ft, 29,853 volumes, 5,628 titles, DELNET (1,379 journals), J-Gate (50,684 journals), open 8 AM - 7 PM."}
         ]
     },
     "labs": {
         "keywords": [
+            "What engineering laboratories, high-performance computing centers, and specialized workshop facilities exist at MSAJCEA?",
             "What engineering lab facilities, computer centers, and specialized workshops are available at MSAJCEA?",
             "lab facilities",
             "engineering labs",
             "computer centers",
-            "specialized workshops"
+            "specialized workshops",
+            "technology centres",
+            "bot lab",
+            "cisco academy",
+            "3d printing lab",
+            "robotics lab",
+            "laboratories"
         ],
-        "response": """# 🔬 Advanced Engineering Laboratories & Computer Centers at MSAJCEA
+        "response": """# 🔬 Engineering Laboratories & Advanced Technology Centres at MSAJCEA
 
-**MSAJCEA** features high-tech laboratories, advanced computing centers, and specialized industrial workshops built to meet Anna University and AICTE standards.
-
----
-
-### 💻 Central Computing & Software Infrastructure
-- **Central Computer Center**: 600+ high-performance Intel Core i7 workstations connected via a 1 Gbps high-speed optical fiber backbone.
-- **Software Suite**: MATLAB, Ansys, AutoCAD, Oracle DB, Python Data Science toolkits, Java Spring Boot, and Linux OS environment.
-- **AI & Cloud Lab**: Specialized GPU computing hardware dedicated to Machine Learning, Deep Learning, and Artificial Intelligence research.
+**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** features state-of-the-art laboratories, high-performance computing centers, and industry-sponsored **Technology Centres established in 2019–2020** in accordance with AICTE and India Skill Report recommendations.
 
 ---
 
-### ⚙️ Specialized Department Laboratories
+### 💻 Central Computing & Network Infrastructure
+- **Central Computer Center**: **600+ Intel Core i7 High-Performance Workstations** linked to high-speed enterprise servers.
+- **Bandwidth**: Dedicated **1 Gbps High-Speed Optical Fiber Backbone** providing 100% Wi-Fi coverage across academic blocks.
+- **Software Licenses**: MATLAB, Ansys, AutoCAD, Oracle DB, Python Data Science stack, Java Spring Boot, Cisco Packet Tracer, and Linux development environments.
 
-| Department | Key Laboratories & Facilities |
+---
+
+### 🏢 Department Technology Centres & Centers of Excellence
+
+| Engineering Cluster | Specialized Technology Centres & Industry Labs |
 |---|---|
-| **CSE / IT / AI&DS / AI&ML** | Cloud Computing Lab, Cyber Security Center, DBMS Lab, Web Development Center, Mobile App Lab |
-| **ECE & EEE** | VLSI Design Lab, Digital Signal Processing (DSP) Lab, Power Electronics & Drives Lab, Embedded Systems Lab |
-| **Mechanical & Civil** | CNC Machining Center, CAD/CAM Lab, Strength of Materials Lab, Hydraulics & Fluid Mechanics Workshop, Surveying Lab |
-| **Specialization Labs** | VLSI System Design Lab, Advanced Communication Systems Workshop, Industry 4.0 IoT Workshop |""",
+| **Computer Science & IT** | - **Centre for Bot Lab & RPA**: Robotic Process Automation in collaboration with **Automation Anywhere**<br>- **Cisco Networking Academy**: Hands-on network routing, switching, and CCNA prep<br>- **Centre for CodeTantra**: Interactive programming & algorithmic learning<br>- **Centre for GAMING, AR & VR**: Immersive simulation and game physics engines<br>- **AI & Machine Learning Research Center**: GPU workstations for deep learning models<br>- **Blockchain Technology Center** & **Mobile/Web Application Lab** |
+| **Electronics & Electrical (ECE & EEE)** | - **Centre for Embedded Systems & IoT**: ARM, Cortex microcontrollers, and wireless sensor arrays<br>- **Centre for UAV & Drone Technology**: Drone flight dynamics and telemetry systems<br>- **Godrej Disha Skill Development Centre**: Industrial technical skill certification<br>- **Bosch Industry-Institute Collaboration Centre**: Automotive sensors and actuators<br>- **Centre for E-Mobility** & **Renewable Energy Research Lab**<br>- **APJ Abdul Kalam Innovation Centre**, **VLSI Design Lab** & **DSP Lab** |
+| **Mechanical & Civil** | - **Centre for 3D Printing & Additive Manufacturing**: Industrial 3D printers and rapid prototyping<br>- **Centre for Computer-Aided Engineering (CAE)** & **Industrial Robotics Center**<br>- **Centre for Non-Destructive Testing (NDT)** & **Building Information Modelling (BIM)**<br>- **CNC Machining Center**: Production-grade CNC lathe and milling machines<br>- **Fluid Mechanics & Hydraulics Workshop**, **Strength of Materials Lab**, **Surveying Lab** |
+
+---
+
+### 🤝 Multi-National Industry Collaborators
+The Technology Centres partner directly with:
+- **Automation Anywhere**, **Amazon Web Services (AWS)**, **Cisco Academy**, **Godrej Inc**, **Ford**, **Palo Alto Networks**, **National Instruments**, **Altair**, **Openwave Computing**, **Levergent Technologies**, and **Propeller Technologies**.""",
         "sources": [
-            {"chunk_id": "card_labs_01", "title": "Official MSAJCEA Engineering Laboratory & Workshop Record", "source_file": "msajcea_facilities.md", "category": "labs", "page_url": "https://msajce-edu.in/facilities.php", "score": 1.0, "snippet": "600+ computers, CNC Machining, VLSI Lab, AI Cloud GPU Lab."}
+            {"chunk_id": "card_labs_01", "title": "Official MSAJCEA Technology Centres & Laboratory Record", "source_file": "msajce_technologycentre.md", "category": "labs", "page_url": "https://msajce.edu.in/technologycentre.php", "score": 1.0, "snippet": "600+ i7 computers, 1 Gbps fiber, Bot Lab with Automation Anywhere, Cisco Academy, 3D Printing, Bosch Centre."}
         ]
     },
     "campus_life": {
         "keywords": [
+            "What sports facilities, athletic infrastructure, annual cultural events, and technical student clubs are active at MSAJCEA?",
             "What sports facilities, athletic infrastructure, and student clubs are active at MSAJCEA?",
             "campus life",
             "sports facilities",
             "student clubs",
-            "campus life sports"
+            "athletic infrastructure",
+            "cultural events",
+            "sathak fest",
+            "envista",
+            "fine arts club",
+            "coding club",
+            "sports ground"
         ],
         "response": """# 🏆 Campus Life, Sports Infrastructure & Student Clubs at MSAJCEA
 
-Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** balances rigorous engineering academics with vibrant sports, cultural, social, and technical extracurricular activities.
+Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)** balances rigorous engineering academics with vibrant athletic infrastructure, state-of-the-art fitness, and 10 dynamic **ENVISTA student clubs**.
 
 ---
 
-### ⚽ Outdoor & Indoor Sports Infrastructure
-- **Outdoor Athletic Grounds**: Standard Cricket Field, Football Field, Volleyball Courts, Basketball Court, and 400m Athletics Track.
-- **Indoor Sports Complex**: Table Tennis arenas, Badminton Courts, Carrom, and Chess rooms.
-- **Tournaments & Events**: Annual Inter-Departmental Sports Meet, Sathak Trophy, and Anna University Zone sports participation.
+### ⚽ Sports Grounds & Athletic Facilities
+- **Outdoor Sports Complex**: Standard Cricket ground with practice nets, full-size Football field, Basketball court, Volleyball court, Kabaddi court, Kho-Kho court, Rugby field, and a **400-meter Track & Field athletic track**.
+- **Indoor Games Arena**: Badminton courts, Table Tennis facilities, Carrom boards, and Chess halls.
+- **Physical Education Directorate**: Directed by **Dr. K.P. Santhosh Nathan** (Ph.D. in Physical Education, [+91 9840886992](tel:9840886992)) and **Mr. M. Janakiraman** (NSNIS Cricket).
+- **Tournaments Hosted**: Hosts the prestigious **Mohamed Sathak Trophy for Football**, the **BSM Trophy for Cricket**, the **Fit India Cyclothon**, and Anna University Zonal Championships.
+- **Sports Quota Scholarships**: Mohamed Sathak Trust awards special scholarships and admission fee concessions to District, State, and National-level sports performers.
 
 ---
 
-### 🎭 Active Student Clubs & Societies
+### 🏋️ Modern Fitness Center (Indoor Gymnasium)
+- Features a well-equipped indoor gymnasium with equipment including:
+  - Multi-gym station, leg extension machine, preacher curl bench, multi-adjustable bench press.
+  - Cable crossover machine, sitting and standing twisters, heavy leg press, spin bikes.
+  - Round rubberized dumbbells, Olympic weight plates, Olympic curl bars, chrome push-up bars, and triceps ropes.
 
-| Club Name | Core Activities & Highlights |
+---
+
+### 🎭 ENVISTA Student Clubs (10 Active Student Bodies)
+
+| Club Name | Purpose & Flagship Activities |
 |---|---|
-| **Fine Arts & Cultural Club** | Organizes the annual grand cultural festival **"SATHAK FEST"** featuring music, dance, and theatrical competitions. |
-| **Rotaract & NSS Unit** | Organizes blood donation drives, tree plantation campaigns, and social community service. |
-| **Science & Tech Club** | Conducts annual Hackathons, Robotics competitions, Project Expos, and Coding contests. |
-| **Literary & Radio Club** | Debates, public speaking workshops, campus newsletter, and student podcasting. |""",
+| **Fine Arts Club ("Artful Aesthetics")** | Promotes music, singing, dance, acting, and visual arts; organizes the grand annual cultural festival **"SATHAK FEST"**. |
+| **Coding Club** | Weekly coding meetups, algorithmic challenges, web/app hackathons, and prep for ACM-ICPC, Google Code Jam, and GSoC. |
+| **Robotics Club** | Hands-on robot design, autonomous bots, robotics tournaments, and IoT hardware projects. |
+| **Science Club ("Investigator Program")** | 3 wings (Physics, Chemistry, General Science) hosting science exhibitions, invisible ink, biodiesel experiments, and project expos. |
+| **Tamil Mandram (தமிழ் மன்றம்)** | Promotes Tamil language and heritage through events like *Irumugam Oru Agam*, *Pesum Padam*, *Aadu Puli*, and *Kaivanna Kaviyam*. |
+| **Energy & Eco Club** | Campus energy conservation campaigns, tree plantation drives, and environmental sustainability initiatives. |
+| **Photography Club** | DSLR photography workshops, short filmmaking, screenplay writing, photo editing, and campus photojournalism. |
+| **Sports Club** | Organizes intra-college tournaments, stamina building, and sports achievements documentation. |
+| **Rotaract Club & NSS Unit** | Organizes community service, blood donation camps, disaster relief, and village adoption programs. |
+| **EDC & Sathak Incubation (SIIF)** | Nurtures student startups with seed funding, mentoring, and patent filing support. |""",
         "sources": [
-            {"chunk_id": "card_campuslife_01", "title": "Official MSAJCEA Campus Life & Sports Facilities Record", "source_file": "msajcea_campuslife.md", "category": "campus-life", "page_url": "https://msajce-edu.in/campuslife.php", "score": 1.0, "snippet": "Cricket ground, Football, Sathak Fest, Rotaract NSS, Science club."}
+            {"chunk_id": "card_campuslife_01", "title": "Official MSAJCEA Sports & Student Clubs Record", "source_file": "msajce_sports.md", "category": "campus-life", "page_url": "https://msajce.edu.in/sports.php", "score": 1.0, "snippet": "Cricket, Football, 400m track, Indoor Gym, Sathak Fest, Mohamed Sathak Trophy, 10 ENVISTA clubs."}
         ]
     },
     "contact": {
         "keywords": [
+            "What is the official contact info, phone numbers, email addresses, and campus location of MSAJCEA at Siruseri IT Park?",
             "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?",
             "contact info",
+            "official contact",
             "phone numbers",
             "email addresses",
+            "campus location",
             "location map",
-            "contact msajcea"
+            "contact msajcea",
+            "admission office phone",
+            "principal email",
+            "siruseri it park address"
         ],
-        "response": """# 📞 Official Contact Directory & Campus Location for MSAJCEA
+        "response": """# 📞 Official Contact Directory & Campus Location of MSAJCEA
 
 **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)**  
 *Approved by AICTE, Affiliated to Anna University, NAAC 'A+' Accredited | TNEA Code: 1301*
 
 ---
 
-### 📍 Campus Address & Location
-- **Address**: SIPCOT IT Park, Egattur, Navalur, Old Mahabalipuram Road (OMR), Siruseri, Chennai – 603 103, Tamil Nadu, India.
-- **Landmark**: Inside SIPCOT IT Park (OMR Siruseri corridor).
+### 📍 Campus Location & Geo-Coordinates
+- **Official Address**: 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Navalur, Chennai, Tamil Nadu – 603 103, India.
+- **Landmark**: Situated inside SIPCOT IT Park Siruseri, surrounded by 100+ global IT giants (TCS, CTS, Infosys, Capgemini).
+- **Coordinates**: **12°50'08.9"N 80°13'07.0"E**
+- **Plus Code**: **R6P9+8C Egattur, Tamil Nadu**
+- **Google Maps Navigation**: [Mohamed Sathak A.J. College of Engineering on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA)
 
 ---
 
 ### 📞 Official Directory of Key Personnel
 
-| Department / Office | Contact Person / Desk | Phone Number | Email Address |
+| Office / Department | Contact Person / Designation | Phone Number | Official Email Address |
 |---|---|---|---|
-| **Admissions Head** | Dr. K.P. Santhosh Nathan | [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in) |
-| **Admission Officer** | Mr. A. Abdul Gafoor | [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce.edu.in](mailto:abdulgafoor@msajce.edu.in) |
-| **Other States Admissions** | Dr. Vamsi Naga Mohan A | [+91 9043358674](tel:9043358674) | [cse.vamsi@msajce.edu.in](mailto:cse.vamsi@msajce.edu.in) |
-| **Main Campus Landline** | Central Reception | [044-27476300](tel:04427476300) / [044-27476301](tel:04427476301) | [contact@msajce.edu.in](mailto:contact@msajce.edu.in) |
 | **Principal's Office** | Dr. K.S. Srinivasan (Principal) | [044-27476300](tel:04427476300) | [principal@msajce.edu.in](mailto:principal@msajce.edu.in) |
-| **Transport Desk** | Dr. K.P. Santhosh Nathan | [+91 9840886992](tel:9840886992) | — |
-| **Official Website** | — | — | [https://msajce.edu.in](https://msajce.edu.in) |""",
+| **Admissions Head & PE Director** | Dr. K.P. Santhosh Nathan | [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in) |
+| **Administrative Officer** | Mr. A. Abdul Gafoor | [+91 9940319629](tel:9940319629) | [abdulgafoor@msajce.edu.in](mailto:abdulgafoor@msajce.edu.in) |
+| **Other States Admissions** | Dr. Vamsi Naga Mohan A | [+91 9043358674](tel:9043358674) / [+91 9502687344](tel:9502687344) | [cse.vamsi@msajce.edu.in](mailto:cse.vamsi@msajce.edu.in) |
+| **Central Reception / Office** | Administrative Helpdesk | [044-27476300](tel:04427476300) / [044-27476301](tel:04427476301) | [contact@msajce.edu.in](mailto:contact@msajce.edu.in) |
+| **Placement Directorate** | Mr. S.V. Vinodh (Placement Officer) | [044-27476300](tel:04427476300) | [placement@msajce.edu.in](mailto:placement@msajce.edu.in) |
+| **Transport Convener** | Dr. K.P. Santhosh Nathan | [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in) |
+| **Official Website** | Web Portal | — | [https://msajce.edu.in](https://msajce.edu.in) |
+
+---
+
+### 🚒 Emergency & Essential Public Services Near Campus
+- **SIPCOT Industrial Fire Station**: Located inside the IT Park First Cross Road ([044-27470720](tel:04427470720) / [044-24401213](tel:04424401213))
+- **Dr. Kamakshi Memorial Hospital**: Located directly opposite the SIPCOT main gate on OMR
+- **Kelambakkam Police Station**: Primary jurisdiction for the IT Park (~4 km away)
+- **SIPCOT 24/7 Mobile Security Patrol SUV**: Continuous patrol across campus perimeters""",
         "sources": [
-            {"chunk_id": "card_contact_01", "title": "Official MSAJCEA Campus Contact & Location Information", "source_file": "msajcea_contact.md", "category": "contact", "page_url": "https://msajce.edu.in/contact.php", "score": 1.0, "snippet": "SIPCOT IT Park, Egattur, Navalur, OMR, Chennai 603103, 044-27476300."}
-        ]
-    },
-    "scholarships": {
-        "keywords": [
-            "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?",
-            "What scholarship schemes, government fee waivers, 7.5% school student quota benefits, and merit assistance are available at MSAJCEA?",
-            "scholarships",
-            "scholarship guide",
-            "7.5% quota scholarship",
-            "merit scholarship",
-            "government aid",
-            "fee waiver"
-        ],
-        "response": """# 💰 Scholarships, Fee Waivers & Financial Assistance at MSAJCE
-
-**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCE)** is committed to ensuring education is accessible to all deserving students through management merit scholarships, government aid schemes, and 7.5% state reservation fee waivers.
-
----
-
-### 🌟 Management & Merit Scholarships
-- **High Academic Cut-off Waiver**: Full or partial tuition fee waivers for top scorers in Class 12 / TNEA counselling.
-- **Economic Assistance**: Special consideration for economically underprivileged students backed by verified income certificates.
-- **Special Consideration**: Additional fee reductions for women candidates and early merit applicants.
-
----
-
-### 🏛️ Government Schemes & Financial Aid
-| Scheme Name | Governing Agency | Coverage & Details |
-|---|---|---|
-| **TN 7.5% Government School Quota** | Govt. of Tamil Nadu | Full tuition & hostel fee waiver for eligible TN Govt school students. |
-| **AICTE Pragati Scheme** | AICTE | ₹50,000 / year for eligible girl students pursuing engineering. |
-| **AICTE Saksham Scheme** | AICTE | ₹50,000 / year for specially-abled engineering students. |
-| **Post-Matric Scholarship (SC/ST/SCC)** | TN Govt | Full tuition fee reimbursement for SC/ST/Converted Christian candidates. |
-| **BC / MBC / DNC Scholarship** | TN Govt | Financial assistance for backward class students admitted via TNEA. |
-| **Merit-cum-Means Minority Aid** | Ministry of Minority Affairs | Up to ₹20,000 / year for eligible minority community students (Muslim, Christian, Jain, etc.). |
-
----
-
-### 📝 How to Apply for Scholarships
-1. Submit your **Income Certificate**, **Community Certificate**, and **12th Mark Sheet** to the College Administration Office during admission.
-2. The Scholarship Committee verifies eligibility and routes applications to state portals or trust authorities.
-3. Reach out to the Administration Desk for guidance on deadline dates and documentation requirements.""",
-        "sources": [
-            {"chunk_id": "card_scholarships_01", "title": "Official MSAJCE Scholarships & Financial Assistance Record", "source_file": "msajce_scholarships.md", "category": "scholarships", "page_url": "https://msajce.edu.in/scholarships.php", "score": 1.0, "snippet": "Management merit waivers, TN 7.5% quota fee waiver, AICTE Pragati, Post-Matric SC/ST."}
+            {"chunk_id": "card_contact_01", "title": "Official MSAJCEA Contact & Campus Directory Record", "source_file": "msajce_about.md", "category": "contact", "page_url": "https://msajce.edu.in/contact.php", "score": 1.0, "snippet": "34 Rajiv Gandhi Salai OMR, Siruseri IT Park, Chennai 603103, 044-27476300, Dr. Santhosh Nathan 9840886992."}
         ]
     }
 }
@@ -1755,7 +2033,7 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
         return None
 
     # Do NOT intercept follow-up or referential queries containing modifiers (e.g. "briefly", "in detail", "expand")
-    if any(w in q_clean for w in ["briefly", "detail", "more", "expand", "elaborate", "explain", "specifically", "summary", "about that"]):
+    if any(w in q_clean for w in ["briefly", "in detail", "expand", "elaborate", "specifically", "about that"]):
         return None
 
     # 1. Exact or keyword matching
@@ -1769,36 +2047,36 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
                 q_clean == f"show {kw_clean}" or 
                 q_clean == f"view {kw_clean}" or
                 q_clean.startswith(kw_clean) or
-                (len(kw_clean) >= 4 and kw_clean in q_clean)
+                (len(kw_clean) >= 5 and kw_clean in q_clean)
             ):
                 return card_data
 
     # 2. Topic keyword fallback matching
     if any(k in q_clean for k in ["who is ram", "who is rama", "who is ramanathan", "who created you", "who made you", "who built you", "who developed you", "who programmed you", "developer of lorin", "creator of lorin"]) or q_clean in ["who is ram", "who is rama", "ram portfolio"]:
         return PREBUILT_CARD_ANSWERS.get("developer")
-    elif "scholarship" in q_clean or "merit scheme" in q_clean:
+    elif "scholarship" in q_clean or "merit scheme" in q_clean or "pragati" in q_clean or "saksham" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("scholarships")
-    elif "admission" in q_clean and ("criteria" in q_clean or "tnea" in q_clean or "pathways" in q_clean):
+    elif "admission" in q_clean or "tnea code 1301" in q_clean or "tnea 1301" in q_clean or "counseling code" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("admission")
-    elif "boys hostel" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("hostel_boys")
-    elif "girls hostel" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("hostel_girls")
-    elif "bus route" in q_clean or "bus routes" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("bus_routes")
-    elif "canteen" in q_clean or "mess menu" in q_clean or "dining hall" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("canteen")
-    elif "central library" in q_clean or "library facilities" in q_clean:
+    elif "boys hostel" in q_clean or "boy hostel" in q_clean or "hostel for boys" in q_clean or "mens hostel" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("boys_hostel")
+    elif "girls hostel" in q_clean or "girl hostel" in q_clean or "hostel for girls" in q_clean or "ladies hostel" in q_clean or "womens hostel" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("girls_hostel")
+    elif ("bus" in q_clean and ("route" in q_clean or "transport" in q_clean or "pickup" in q_clean or "timing" in q_clean or "stop" in q_clean)) or "bus routes" in q_clean or "college bus" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("bus")
+    elif "mess" in q_clean or "canteen" in q_clean or "cafeteria" in q_clean or "food menu" in q_clean or "dining hall" in q_clean:
+        return PREBUILT_CARD_ANSWERS.get("mess")
+    elif "library" in q_clean or "central library" in q_clean or "book collection" in q_clean or "delnet" in q_clean or "j-gate" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("library")
-    elif "lab facilities" in q_clean or "engineering lab" in q_clean:
+    elif "lab facilities" in q_clean or "engineering lab" in q_clean or "technology centre" in q_clean or "bot lab" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("labs")
-    elif "campus life" in q_clean or "sports facilities" in q_clean:
+    elif "campus life" in q_clean or "sports facilities" in q_clean or "student clubs" in q_clean or "sathak fest" in q_clean or "sports ground" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("campus_life")
-    elif "contact info" in q_clean or "contact information" in q_clean:
+    elif "contact info" in q_clean or "contact information" in q_clean or "phone number" in q_clean or "email address" in q_clean or "campus location" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("contact")
-    elif "courses offered" in q_clean or "12 ug" in q_clean:
+    elif "course" in q_clean or "program" in q_clean or "degree" in q_clean or "intake capacity" in q_clean or "departments offered" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("courses")
-    elif "placements" in q_clean and ("top recruiters" in q_clean or "highest salary" in q_clean):
+    elif "placement" in q_clean or "recruiter" in q_clean or "salary package" in q_clean or "internship" in q_clean:
         return PREBUILT_CARD_ANSWERS.get("placements")
 
     return None
@@ -2890,6 +3168,19 @@ async def stream_cached_or_prebuilt(
     total_latency_ms = max(int((time.time() - start_time) * 1000), 120)
     ttft_ms = 80
 
+    cached_metrics = compute_token_metrics(
+        user_query=user_query,
+        system_prompt="Lorin AI precision system prompt",
+        retrieved_chunks=sources,
+        history_messages=[],
+        full_answer=response_text,
+        model_id=model_id,
+        latency_ms=total_latency_ms,
+        ttft_ms=ttft_ms,
+        cached=(cache_type != "prebuilt"),
+        is_prebuilt=(cache_type == "prebuilt")
+    )
+
     # Persist session & message pair to PostgreSQL DB
     try:
         with DBContext() as conn:
@@ -2905,17 +3196,6 @@ async def stream_cached_or_prebuilt(
                     user_msg_id = f"msg_{int(time.time()*1000)}_u"
                     asst_msg_id = f"msg_{int(time.time()*1000)}_a"
                     cat = categorize_user_query(user_query)
-                    cached_metrics = compute_token_metrics(
-                        user_query=user_query,
-                        system_prompt="Lorin AI precision system prompt",
-                        retrieved_chunks=sources,
-                        history_messages=[],
-                        full_answer=response_text,
-                        model_id=model_id,
-                        latency_ms=total_latency_ms,
-                        ttft_ms=ttft_ms,
-                        cached=True
-                    )
 
                     cur.execute("""
                         INSERT INTO chat_messages (message_id, session_id, role, content, model_used, latency_ms, citations, token_usage, reasoning_steps)
@@ -3291,18 +3571,20 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 "done": True
             })
 
-            # 2. Check Prebuilt Card Answers & Grounded Context Routing
+            # 2. Check Prebuilt Card Answers & Zero-Token Instant Delivery
             prebuilt_card = get_prebuilt_card_answer(user_query) or get_prebuilt_card_answer(expanded_query)
             if prebuilt_card:
-                retrieved_chunks = []
-                sources_payload = prebuilt_card["sources"]
-                context_str = f"=== VERIFIED MSAJCE CAMPUS RECORD ({prebuilt_card['sources'][0]['title']}) ===\n{prebuilt_card['response']}"
-                # Emit sources and attachments early
-                yield json.dumps({"type": "sources", "sources": sources_payload})
-                matched_res = extract_grounded_resources(sources_payload, user_query, top_k=4)
-                if matched_res:
-                    yield json.dumps({"type": "resource_attachments", "attachments": matched_res})
-                # Proceed to LLM Generation powered by LORIN_SYSTEM_PROMPT
+                async for item in stream_cached_or_prebuilt(
+                    response_text=prebuilt_card["response"],
+                    sources=prebuilt_card["sources"],
+                    user_query=user_query,
+                    session_id=session_id,
+                    model_id=model_id,
+                    start_time=start_time,
+                    cache_type="prebuilt"
+                ):
+                    yield item
+                return
 
             if req.is_regeneration:
                 delete_from_cache(user_query)

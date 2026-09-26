@@ -835,7 +835,7 @@ const MessageItem = React.memo(function MessageItem({
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // Strictly real token metrics sent by the backend server (no fake or estimated data)
-  const realTokenMetrics = message.token_metrics && message.token_metrics.total_tokens > 0 ? message.token_metrics : undefined;
+  const realTokenMetrics = message.token_metrics !== undefined && message.token_metrics !== null ? message.token_metrics : undefined;
 
   const messageRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);

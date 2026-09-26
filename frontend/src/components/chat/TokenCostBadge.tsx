@@ -37,7 +37,7 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
 
   const tooltipText = totalTokens > 0
     ? `Question: ${questionTokens.toLocaleString()} tokens • Answer: ${answerTokens.toLocaleString()} tokens • Total: ${totalTokens.toLocaleString()} tokens (${formattedLatency})`
-    : `Latency: ${formattedLatency} • Click to view token breakdown`;
+    : `Instant Prebuilt Card • 0 tokens consumed (Free) • Cost: ₹0.000 (${formattedLatency})`;
 
   return (
     <Tooltip content={tooltipText} position="top">
@@ -74,7 +74,7 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
           </>
         )}
 
-        {totalTokens > 0 && (
+        {totalTokens > 0 ? (
           <>
             <span className="tabular-nums font-mono text-ink font-medium shrink-0 whitespace-nowrap">
               <span className="inline sm:hidden">
@@ -83,6 +83,13 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
               <span className="hidden sm:inline">
                 {totalTokens.toLocaleString()} tokens
               </span>
+            </span>
+            <span className="text-ink-3/60 shrink-0">•</span>
+          </>
+        ) : (
+          <>
+            <span className="tabular-nums font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0 whitespace-nowrap">
+              0 tokens (Free)
             </span>
             <span className="text-ink-3/60 shrink-0">•</span>
           </>
@@ -250,7 +257,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
                         </span>
                       </span>
                     ) : (
-                      <span className="text-ink-3 text-[10px]">0 (algorithmic)</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">0 tok (Free)</span>
                     )}
                   </div>
                   <div className="col-span-3 text-right font-mono text-ink dark:text-[#f4f3ee]">
