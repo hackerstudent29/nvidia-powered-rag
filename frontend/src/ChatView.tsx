@@ -41,6 +41,20 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
     setIsOnboardingOpen(false);
   };
 
+  // Automatic clean reset: purges stale user profile & cached messages so user starts fresh
+  useEffect(() => {
+    const RESET_VERSION = "lorin_clean_reset_fresh_v2";
+    if (localStorage.getItem(RESET_VERSION) !== "true") {
+      localStorage.removeItem("lorin_user_profile");
+      localStorage.removeItem("lorin_cached_messages");
+      localStorage.removeItem("lorin_rate_limit_info");
+      localStorage.removeItem("lorin_session_id");
+      localStorage.removeItem("lorin_sessions");
+      localStorage.setItem(RESET_VERSION, "true");
+      setUserProfile(null);
+    }
+  }, []);
+
   // Single source of truth for mobile/touch layout state + keyboard offset
   const { isMobile, keyboardOffset } = useMobileLayout();
 
