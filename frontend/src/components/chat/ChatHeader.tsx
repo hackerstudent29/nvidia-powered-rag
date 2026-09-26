@@ -204,13 +204,32 @@ export default function ChatHeader({
   ];
 
   return (
-    <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-40 px-2 sm:px-4 pointer-events-none">
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 280, damping: 24 }}
-        className="pointer-events-auto max-w-3xl lg:max-w-4xl mx-auto h-14 sm:h-16 backdrop-blur-2xl backdrop-saturate-180 bg-white/45 dark:bg-[#14151a]/55 border border-white/70 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
-      >
+    <>
+      {/* Full-viewport Blur & Dimming Backdrop for Sandwich Menu & Popovers */}
+      <AnimatePresence>
+        {(mobileMenuOpen || fontSizeMenuOpen) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setFontSizeMenuOpen(false);
+            }}
+            className="fixed inset-0 bg-black/45 dark:bg-black/65 backdrop-blur-sm z-40 pointer-events-auto cursor-pointer"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-50 px-2 sm:px-4 pointer-events-none">
+        <motion.header
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 280, damping: 24 }}
+          className="pointer-events-auto max-w-3xl lg:max-w-4xl mx-auto h-14 sm:h-16 backdrop-blur-2xl backdrop-saturate-180 bg-white/45 dark:bg-[#14151a]/55 border border-white/70 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+        >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
           <Tooltip content="Start New Chat" position="bottom">
@@ -305,7 +324,7 @@ export default function ChatHeader({
           )}
 
           {/* 2. Mobile, Tablet & Iframe: Minimal 3-Line Sandwich Button (☰) */}
-          <div className={isEmbed ? "flex relative" : "flex lg:hidden relative"} ref={mobileMenuRef}>
+          <div className={isEmbed ? "flex relative z-50" : "flex lg:hidden relative z-50"} ref={mobileMenuRef}>
             <Tooltip content={mobileMenuOpen ? "Close menu" : "Menu"} position="bottom">
               <motion.button
                 whileTap={{ scale: 0.92 }}
@@ -330,7 +349,7 @@ export default function ChatHeader({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.92, y: 8 }}
                   transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                  className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white/95 dark:bg-[#14151a]/95 border border-black/10 dark:border-white/10 shadow-2xl p-2.5 backdrop-blur-2xl divide-y divide-black/[0.06] dark:divide-white/[0.06]"
+                  className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06]"
                 >
                   {/* User Profile Prompt (Only shown if student has NOT yet provided name/details) */}
                   {!userProfile?.name && onOpenProfile && (
@@ -475,7 +494,7 @@ export default function ChatHeader({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: 6 }}
                 transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                className="absolute right-0 top-12 z-50 w-56 rounded-2xl bg-surface dark:bg-[#14151a] border border-line dark:border-white/[0.08] shadow-2xl p-2 backdrop-blur-2xl"
+                className="absolute right-0 top-12 z-50 w-56 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2"
               >
                 <div className="px-3 py-1.5 border-b border-line/60 dark:border-white/[0.06]">
                   <p className="text-[11px] font-bold text-ink dark:text-[#f4f3ee]">
@@ -546,6 +565,7 @@ export default function ChatHeader({
           </AnimatePresence>
         </div>
       </motion.header>
-    </div>
+      </div>
+    </>
   );
 }
