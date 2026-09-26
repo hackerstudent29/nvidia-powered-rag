@@ -513,45 +513,55 @@ textarea, input {
 
 .prose-clean table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin: 1rem 0;
-  font-size: 13.5px;
-  font-family: inherit;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 14px;
+  background: transparent !important;
+  border: none !important;
 }
-.prose-clean th, .prose-clean td {
-  padding: 10px 16px;
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.prose-clean thead {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  background: transparent !important;
 }
 .prose-clean th {
-  background-color: rgba(0, 0, 0, 0.035);
-  color: #1f2937;
-  font-weight: 700;
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  padding: 8px 24px 10px 0;
+  text-align: left;
+  vertical-align: bottom;
+  background: transparent !important;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 13.5px;
+  border: none !important;
   white-space: nowrap;
   user-select: none;
 }
-.prose-clean td {
-  color: #1f2937;
-  word-break: normal;
+.prose-clean tbody {
+  background: transparent !important;
 }
-.prose-clean tbody tr:hover { background-color: rgba(0, 0, 0, 0.02); }
+.prose-clean tbody tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent !important;
+}
+.prose-clean td {
+  padding: 12px 24px 12px 0;
+  text-align: left;
+  vertical-align: top;
+  color: var(--ink);
+  background: transparent !important;
+  border: none !important;
+  line-height: 1.6;
+}
+.prose-clean tbody tr:hover { background-color: rgba(0, 0, 0, 0.02) !important; }
 
 /* Mobile table compaction */
 @media (max-width: 639px) {
-  .prose-clean table { font-size: 12px; }
-  .prose-clean th, .prose-clean td {
-    padding: 8px 10px;
-  }
+  .prose-clean table { font-size: 12.5px; }
   .prose-clean th {
-    font-size: 10.5px;
+    padding: 6px 14px 8px 0;
+    font-size: 12px;
+  }
+  .prose-clean td {
+    padding: 10px 14px 10px 0;
   }
 }
 
@@ -620,22 +630,31 @@ textarea, input {
   border-bottom-color: rgba(244, 243, 238, 0.08);
 }
 
-/* Dark tables: sleek, elegant borders with contrast */
+/* Dark tables: transparent with subtle horizontal dividers */
 .dark .prose-clean table {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #18181b;
+  background: transparent !important;
+  border: none !important;
+}
+.dark .prose-clean thead {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent !important;
 }
 .dark .prose-clean th {
-  background: rgba(255, 255, 255, 0.05);
-  color: #e4e4e7;
+  background: transparent !important;
+  color: #f4f3ee;
+  border: none !important;
+}
+.dark .prose-clean tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent !important;
 }
 .dark .prose-clean td {
   color: #d4d4d8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: transparent !important;
+  border: none !important;
 }
 .dark .prose-clean tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.03) !important;
 }
 
 /* Dark blockquote: warm lavender accent line */

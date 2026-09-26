@@ -1258,7 +1258,7 @@ const MessageItem = React.memo(function MessageItem({
   const processHighlightedChildren = (node: React.ReactNode): React.ReactNode => node;
 
   return (
-    <div ref={messageRef} className="flex flex-col mt-3 mb-7 sm:mt-4 sm:mb-9 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
+    <div ref={messageRef} className="flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
       <div className="flex items-center gap-2 mb-2 shrink-0">
         <div className="size-6 rounded-full overflow-hidden border border-black/10 dark:border-white/20 shadow-sm shrink-0 bg-black flex items-center justify-center ring-1 ring-accent/20">
           <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover" />
@@ -1338,26 +1338,26 @@ const MessageItem = React.memo(function MessageItem({
               strong: ({ children }) => <strong className="font-semibold text-ink dark:text-white">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-4 rounded-xl border border-black/10 dark:border-white/10 shadow-xs bg-white dark:bg-[#18181b]">
-                  <table className="w-full min-w-full border-collapse text-left text-[13px] sm:text-[13.5px]">{children}</table>
+                <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-5 bg-transparent border-none">
+                  <table className="w-full min-w-full border-collapse text-left text-[14px] sm:text-[14.5px] leading-relaxed bg-transparent">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-black/[0.035] dark:bg-white/[0.05] border-b border-black/10 dark:border-white/10 text-ink dark:text-zinc-200 select-none font-semibold">{children}</thead>
+                <thead className="border-b border-black/15 dark:border-white/15 bg-transparent">{children}</thead>
               ),
               tbody: ({ children }) => (
-                <tbody className="text-ink dark:text-zinc-300 divide-y divide-black/[0.06] dark:divide-white/[0.06]">{children}</tbody>
+                <tbody className="divide-y divide-black/[0.08] dark:divide-white/[0.08] bg-transparent">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-black/[0.025] dark:hover:bg-white/[0.03] transition-colors">{children}</tr>
+                <tr className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors bg-transparent">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="px-4 py-3 font-semibold text-[11.5px] uppercase tracking-wider text-ink-2 dark:text-zinc-300 whitespace-nowrap text-left select-none">
+                <th className="pb-3 pt-1 pr-6 font-semibold text-[13.5px] sm:text-[14px] text-ink dark:text-[#f4f3ee] whitespace-nowrap text-left select-none bg-transparent border-none first:pl-0">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-4 py-3 align-middle leading-relaxed text-ink dark:text-zinc-300 text-[13px] sm:text-[13.5px]">
+                <td className="py-3.5 pr-6 align-top leading-relaxed text-[13.5px] sm:text-[14px] text-ink/90 dark:text-zinc-300 bg-transparent border-none first:pl-0">
                   {processHighlightedChildren(children)}
                 </td>
               ),
@@ -1777,7 +1777,7 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Contextual Follow-up Prompts */}
         {isLatestMessage && !message.is_streaming && message.suggestions && message.suggestions.length > 0 && (
-          <div className="mt-5 sm:pl-7 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="mt-3.5 sm:pl-7 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="text-[11.5px] font-semibold text-ink-3 dark:text-zinc-400 mb-2 pl-1">Follow-ups</div>
             <div className="flex flex-col gap-1.5">
               {message.suggestions.map((suggestion, i) => (

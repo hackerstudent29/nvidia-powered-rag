@@ -199,7 +199,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
       <main
         ref={scrollRef}
         onScroll={handleScroll}
-        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pt-16 sm:pt-20 pb-28 sm:pb-32 gpu-accelerated"
+        className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-6 pt-16 sm:pt-20 pb-4 sm:pb-6 gpu-accelerated"
       >
         <div className={`mx-auto max-w-4xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
           {messages.length === 0 ? (
@@ -211,7 +211,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
               onPastePrompt={(prompt) => setChatInput(prompt)}
             />
           ) : (
-            <div className="flex flex-col space-y-6 sm:space-y-8 pt-4 pb-12 sm:pb-16">
+            <div className="flex flex-col space-y-4 sm:space-y-6 pt-4 pb-2 sm:pb-3">
               {messages.map((msg, idx) => {
                 const prevUserMsg = idx > 0 ? messages.slice(0, idx).reverse().find(m => m.role === 'user') : null;
                 const userQueryText = prevUserMsg ? prevUserMsg.content : "MSAJCEA Inquiry";
