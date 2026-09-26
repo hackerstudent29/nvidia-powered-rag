@@ -3006,9 +3006,9 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
     q_lower = user_query.lower().strip()
     attack_keywords = [
         "ignore all previous instructions", "ignore previous instructions", "disregard previous directives",
-        "system prompt", "reveal system prompt", "print system prompt", "jailbreak", "override safety",
-        "dan mode", "unrestricted ai", "admin password", "database password", "drop table", "union select",
-        "bypass restrictions", "hack bot", "security override"
+        "reveal your system prompt", "reveal system prompt", "print system prompt", "leak system prompt", "show your system prompt",
+        "jailbreak", "override safety", "dan mode", "unrestricted ai", "admin password", "database password",
+        "drop table", "union select", "bypass restrictions", "hack bot", "security override"
     ]
     for pattern in attack_keywords:
         if pattern in q_lower:
