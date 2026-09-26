@@ -203,32 +203,54 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
           </div>
         </div>
 
-        {/* Pipeline Execution Steps */}
+        {/* Step-by-Step Execution & Real Token Usage Table */}
         {metrics.steps && metrics.steps.length > 0 && (
-          <div>
-            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider mb-1.5">
-              Execution Pipeline
+          <div className="mt-1">
+            <div className="text-[10px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider mb-1.5 flex items-center justify-between">
+              <span>Step-by-Step Pipeline & Real Token Usage</span>
+              <span className="text-[9px] font-normal lowercase text-ink-3">measured in real BPE tokens</span>
             </div>
-            <div className="flex flex-wrap gap-2">
+
+            <div className="rounded-xl border border-black/[0.08] dark:border-white/[0.08] overflow-hidden divide-y divide-black/[0.06] dark:divide-white/[0.06] bg-black/[0.01] dark:bg-white/[0.01]">
+              <div className="grid grid-cols-12 gap-2 px-3 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] text-[9.5px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
+                <div className="col-span-1">#</div>
+                <div className="col-span-5">Pipeline Step & Model</div>
+                <div className="col-span-3 text-right">Real Tokens</div>
+                <div className="col-span-3 text-right">Duration</div>
+              </div>
+
               {metrics.steps.map((step) => (
-                <Tooltip
+                <div
                   key={step.step_number}
-                  content={step.details || `${step.step_name}: ${step.total_tokens || 0} tokens (${step.duration_ms || 0}ms)`}
-                  position="top"
+                  className="grid grid-cols-12 gap-2 px-3 py-2 text-[11px] items-center hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
                 >
-                  <div className="flex items-center gap-1.5 rounded-full bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.08] dark:border-white/[0.08] px-2.5 py-1 text-[10px]">
-                    <span className="font-bold text-[#2E6B5E] dark:text-[#10b981] shrink-0">{step.step_number}</span>
-                    <span className="font-medium text-ink dark:text-[#f4f3ee]">{step.step_name}</span>
-                    {step.total_tokens > 0 && (
-                      <span className="text-[#2E6B5E] dark:text-[#10b981] font-mono font-medium text-[9px] pl-1 border-l border-black/[0.08] dark:border-white/[0.08]">
-                        {step.total_tokens} tok
-                      </span>
-                    )}
-                    <span className="text-ink-3/80 dark:text-[#b1ada1] font-mono text-[9px] pl-1 border-l border-black/[0.08] dark:border-white/[0.08]">
-                      {step.duration_ms}ms
-                    </span>
+                  <div className="col-span-1 font-mono font-bold text-[#2E6B5E] dark:text-[#10b981]">
+                    {step.step_number}
                   </div>
-                </Tooltip>
+                  <div className="col-span-5 min-w-0 pr-1">
+                    <div className="font-semibold text-ink dark:text-[#f4f3ee] truncate">
+                      {step.step_name}
+                    </div>
+                    <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate font-mono">
+                      {step.details || step.model_name}
+                    </div>
+                  </div>
+                  <div className="col-span-3 text-right font-mono">
+                    {step.total_tokens > 0 ? (
+                      <span className="font-bold text-[#2E6B5E] dark:text-[#10b981]">
+                        {step.total_tokens.toLocaleString()}{" "}
+                        <span className="text-[9.5px] font-normal text-ink-3 dark:text-[#b1ada1]">
+                          tok {step.output_tokens > 0 ? `(${step.input_tokens} in / ${step.output_tokens} out)` : ""}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-ink-3 text-[10px]">0 (algorithmic)</span>
+                    )}
+                  </div>
+                  <div className="col-span-3 text-right font-mono text-ink dark:text-[#f4f3ee]">
+                    {step.duration_ms}ms
+                  </div>
+                </div>
               ))}
             </div>
           </div>

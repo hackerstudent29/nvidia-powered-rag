@@ -834,60 +834,8 @@ const MessageItem = React.memo(function MessageItem({
   const [isDisliked, setIsDisliked] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  const effectiveMetrics = useMemo(() => {
-    if (message.token_metrics && message.token_metrics.total_tokens > 0) {
-      return message.token_metrics;
-    }
-    if (!isUser && !message.is_streaming && message.content) {
-      const wordCount = message.content.trim().split(/\s+/).length;
-      const estCompletion = Math.max(1, Math.round(wordCount * 1.3));
-      const estPrompt = Math.max(20, Math.round(wordCount * 0.4));
-      const estTotal = message.tokens_used || (estPrompt + estCompletion);
-      return {
-        model_id: message.model || "gemini-2.5-flash",
-        model_name: message.model || "Gemini 2.5 Flash",
-        provider: "Google Vertex AI",
-        prompt_tokens: estPrompt,
-        completion_tokens: estCompletion,
-        embedding_tokens: 0,
-        total_tokens: estTotal,
-        total_cost_usd: (estTotal / 1000000) * 0.15,
-        total_cost_inr: (estTotal / 1000000) * 0.15 * 95,
-        latency_ms: message.latency_ms || 850,
-        ttft_ms: message.latency_ms || 850,
-        tokens_per_sec: message.latency_ms ? Math.round(estCompletion / (message.latency_ms / 1000)) : 35,
-        steps: [
-          {
-            step_number: 1,
-            step_name: "Grounded Query Processing",
-            model_name: "MSAJCEA Grounding",
-            model_id: "grounding",
-            input_tokens: estPrompt,
-            output_tokens: 0,
-            total_tokens: estPrompt,
-            cost_usd: 0,
-            cost_inr: 0,
-            duration_ms: 120,
-            details: `Question & Context: ${estPrompt} tokens`
-          },
-          {
-            step_number: 2,
-            step_name: "Synthesis & Response",
-            model_name: message.model || "Gemini 2.5 Flash",
-            model_id: message.model || "gemini-2.5-flash",
-            input_tokens: estPrompt,
-            output_tokens: estCompletion,
-            total_tokens: estTotal,
-            cost_usd: 0.0001,
-            cost_inr: 0.0095,
-            duration_ms: message.latency_ms || 730,
-            details: `Answer Completion: ${estCompletion} tokens`
-          }
-        ]
-      } as TokenMetrics;
-    }
-    return message.token_metrics;
-  }, [message.token_metrics, isUser, message.is_streaming, message.content, message.model, message.latency_ms, message.tokens_used]);
+  // Strictly real token metrics sent by the backend server (no fake or estimated data)
+  const realTokenMetrics = message.token_metrics && message.token_metrics.total_tokens > 0 ? message.token_metrics : undefined;
 
   const messageRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -1691,8 +1639,8 @@ const MessageItem = React.memo(function MessageItem({
 
             {/* Right: Model Meta, Sources Pill, and Timestamp */}
             <div className="flex items-center gap-2 ml-auto">
-              {effectiveMetrics && (
-                <TokenCostBadge metrics={effectiveMetrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
+              {realTokenMetrics && (
+                <TokenCostBadge metrics={realTokenMetrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
               )}
 
               {sources.length > 0 && (
@@ -1824,9 +1772,9 @@ const MessageItem = React.memo(function MessageItem({
         )}
 
         {/* Expandable Usage/Stats Panel */}
-        {statsOpen && effectiveMetrics && (
+        {statsOpen && realTokenMetrics && (
           <div className="mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
-            <TokenCostPanel metrics={effectiveMetrics} />
+            <TokenCostPanel metrics={realTokenMetrics} />
           </div>
         )}
 

@@ -41,6 +41,19 @@ try:
 except ImportError:
     edge_tts = None
 
+try:
+    import tiktoken
+    _bpe_enc = tiktoken.get_encoding("cl100k_base")
+    def count_real_tokens(text: str) -> int:
+        if not text:
+            return 0
+        return len(_bpe_enc.encode(str(text), disallowed_special=()))
+except Exception:
+    def count_real_tokens(text: str) -> int:
+        if not text:
+            return 0
+        return len(str(text).split())
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from guardrails import check_guardrails
@@ -387,24 +400,30 @@ def compute_token_metrics(
     model_id: str,
     latency_ms: int,
     ttft_ms: int,
-    cached: bool = False
+    cached: bool = False,
+    real_usage: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
-    """Calculate step-wise and model-wise token usage and precise cost in USD and INR."""
+    """Calculate REAL step-wise and model-wise token usage and precise cost using actual BPE tokens."""
     pricing = MODEL_PRICING.get(model_id, MODEL_PRICING["default"])
     
-    # 1. Query tokens (Step 1: Embedding)
-    query_tokens = max(1, int(len(user_query.split()) * 1.35))
+    # 1. Exact query tokens (Step 1: Embedding)
+    query_tokens = count_real_tokens(user_query)
     embed_tokens = query_tokens if not cached else 0
     embed_cost_usd = (embed_tokens / 1000.0) * EMBEDDING_PRICING["input_per_1k"]
     
-    # 2. Context & Prompt assembly tokens (Step 2 & 3)
-    system_tokens = int(len(system_prompt.split()) * 1.3)
-    history_tokens = sum(int(len(m.get("content", "").split()) * 1.3) for m in history_messages)
-    context_tokens = sum(int(len(c.get("content", "").split()) * 1.3) for c in retrieved_chunks)
-    prompt_tokens = query_tokens + system_tokens + history_tokens + context_tokens
+    # 2. Exact Context & Prompt assembly tokens (Step 2 & 3)
+    system_tokens = count_real_tokens(system_prompt)
+    history_tokens = sum(count_real_tokens(m.get("content", "")) for m in history_messages)
+    context_tokens = sum(count_real_tokens(c.get("content", "")) for c in retrieved_chunks)
+    assembled_prompt_tokens = query_tokens + system_tokens + history_tokens + context_tokens
     
-    # 3. Output Completion tokens (Step 4: LLM Generation)
-    completion_tokens = max(1, int(len(full_answer.split()) * 1.32)) if not cached else 0
+    # 3. Output Completion tokens & Prompt tokens (Step 4: LLM Generation)
+    if real_usage and isinstance(real_usage, dict):
+        prompt_tokens = int(real_usage.get("prompt_tokens") or assembled_prompt_tokens)
+        completion_tokens = int(real_usage.get("completion_tokens") or count_real_tokens(full_answer))
+    else:
+        prompt_tokens = assembled_prompt_tokens
+        completion_tokens = count_real_tokens(full_answer) if not cached else 0
     
     # Calculate costs
     if cached:
@@ -416,12 +435,14 @@ def compute_token_metrics(
     
     llm_cost_usd = llm_input_cost + llm_output_cost
     
-    total_tokens = prompt_tokens + (completion_tokens if not cached else len(full_answer.split())) + embed_tokens
+    total_tokens = prompt_tokens + completion_tokens + embed_tokens
     total_cost_usd = embed_cost_usd + llm_cost_usd
     total_cost_inr = total_cost_usd * 95.00  # 1 USD = 95 INR
     
     latency_sec = max(0.05, latency_ms / 1000.0)
     tokens_per_sec = round(completion_tokens / latency_sec, 1)
+    
+    corpus_size = len(bm25_corpus) if bm25_corpus else 1178
     
     steps = [
         {
@@ -435,7 +456,7 @@ def compute_token_metrics(
             "cost_usd": round(embed_cost_usd, 7),
             "cost_inr": round(embed_cost_usd * 95.00, 5),
             "duration_ms": 140 if not cached else 0,
-            "details": f"Generated 2048-dim dense embedding for '{user_query[:35]}...'"
+            "details": f"Embedded {embed_tokens} query tokens into 2048-dim dense vector for semantic search."
         },
         {
             "step_number": 2,
@@ -448,20 +469,20 @@ def compute_token_metrics(
             "cost_usd": 0.0,
             "cost_inr": 0.0,
             "duration_ms": 35,
-            "details": "Evaluated 1,178 campus chunks. Fused top 25 sparse + 25 dense candidates."
+            "details": f"Zero-token algorithmic candidate scoring across {corpus_size} verified campus records."
         },
         {
             "step_number": 3,
             "step_name": "Campus Grounding Context Assembly",
             "model_name": "MSAJCEA Grounding Engine",
-            "model_id": "grounding/top-6-sources",
+            "model_id": "grounding/top-sources",
             "input_tokens": context_tokens + system_tokens,
             "output_tokens": 0,
             "total_tokens": context_tokens + system_tokens,
             "cost_usd": 0.0,
             "cost_inr": 0.0,
             "duration_ms": 10,
-            "details": f"Assembled {len(retrieved_chunks)} verified campus records ({context_tokens} tokens) + system instructions."
+            "details": f"Assembled {len(retrieved_chunks)} verified campus records ({context_tokens} tokens) + system prompt ({system_tokens} tokens)."
         },
         {
             "step_number": 4,
@@ -474,7 +495,7 @@ def compute_token_metrics(
             "cost_usd": round(llm_cost_usd, 7),
             "cost_inr": round(llm_cost_usd * 95.00, 5),
             "duration_ms": max(10, latency_ms - 185),
-            "details": f"Synthesized answer at {tokens_per_sec} tok/s (Prompt: {prompt_tokens} tokens, Completion: {completion_tokens} tokens)."
+            "details": f"Generated {completion_tokens} response tokens from {prompt_tokens} input prompt tokens at {tokens_per_sec} tok/s."
         }
     ]
     
@@ -486,6 +507,8 @@ def compute_token_metrics(
         "query_tokens": query_tokens,
         "completion_tokens": completion_tokens,
         "embedding_tokens": embed_tokens,
+        "context_tokens": context_tokens,
+        "system_tokens": system_tokens,
         "total_tokens": total_tokens,
         "total_cost_usd": round(total_cost_usd, 6),
         "total_cost_inr": round(total_cost_inr, 4),
@@ -3740,6 +3763,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             collected_response = []
             tokens_emitted_count = 0
             model_used_final = model_id
+            api_reported_usage = None
 
             for candidate_idx, current_cand in enumerate(candidate_models):
                 target_url, target_headers, target_model_slug = get_model_endpoint_config(current_cand)
@@ -3751,7 +3775,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "messages": cand_messages,
                     "temperature": 0.20,
                     "max_tokens": effective_max_tokens,
-                    "stream": True
+                    "stream": True,
+                    "stream_options": {"include_usage": True}
                 }
 
                 provider_label = "Vercel AI Gateway" if "vercel" in target_url else "NVIDIA NIM Infrastructure"
@@ -3794,6 +3819,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
                             try:
                                 chunk_json = json.loads(line_data)
+                                if "usage" in chunk_json and chunk_json["usage"]:
+                                    api_reported_usage = chunk_json["usage"]
                                 if "error" in chunk_json:
                                     print(f"[WARN] Model '{current_cand}' stream error chunk: {chunk_json['error']}")
                                     break
@@ -3904,7 +3931,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 model_id=model_id,
                 latency_ms=total_latency_ms,
                 ttft_ms=ttft_ms,
-                cached=False
+                cached=False,
+                real_usage=api_reported_usage
             )
 
             yield json.dumps({

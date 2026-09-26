@@ -39,6 +39,8 @@ export interface TokenMetrics {
   provider: string;
   prompt_tokens: number;
   query_tokens?: number;
+  context_tokens?: number;
+  system_tokens?: number;
   completion_tokens: number;
   embedding_tokens: number;
   total_tokens: number;
