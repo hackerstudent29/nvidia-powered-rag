@@ -223,12 +223,12 @@ export default function ChatHeader({
         )}
       </AnimatePresence>
 
-      <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-50 px-2 sm:px-4 pointer-events-none">
+      <div className="fixed top-2.5 sm:top-3 left-0 right-0 z-50 px-3 sm:px-6 pointer-events-none">
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 280, damping: 24 }}
-          className="pointer-events-auto max-w-3xl lg:max-w-4xl mx-auto h-14 sm:h-16 backdrop-blur-2xl backdrop-saturate-180 bg-white/45 dark:bg-[#14151a]/55 border border-white/70 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
+          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-2xl backdrop-saturate-180 bg-white/45 dark:bg-[#14151a]/55 border border-white/70 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
         >
         {/* ── Brand & Badges ── */}
         <div className="flex items-center gap-2.5 shrink-0">
