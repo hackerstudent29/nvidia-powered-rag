@@ -71,6 +71,69 @@ function formatAudioTime(sec: number): string {
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
 
+export function formatCleanDocumentName(rawSource?: { source_file?: string; title?: string } | string): string {
+  if (!rawSource) return "Campus Document";
+  const raw = typeof rawSource === "string" ? rawSource : (rawSource.source_file || rawSource.title || "Campus Document");
+  let clean = raw.split("/").pop()?.split("\\").pop() || raw;
+  // Remove file extension (.md, .pdf, .txt, .html, .php, etc.)
+  clean = clean.replace(/\.[a-zA-Z0-9]+$/gi, "");
+  // Strip leading msajce_ or msajce-
+  clean = clean.replace(/^msajce[_-]/i, "");
+  // Replace underscores and hyphens with spaces
+  clean = clean.replace(/[_-]+/g, " ").trim();
+
+  const lower = clean.toLowerCase();
+  const acronymMap: Record<string, string> = {
+    naac: "NAAC Accreditation",
+    iqac: "IQAC Records",
+    nirf: "NIRF Data",
+    aids: "AI & Data Science (AIDS)",
+    aiml: "AI & Machine Learning (AIML)",
+    cse: "Computer Science & Engineering (CSE)",
+    csbs: "Computer Science & Business Systems (CSBS)",
+    ece: "Electronics & Communication (ECE)",
+    eee: "Electrical & Electronics (EEE)",
+    mech: "Mechanical Engineering",
+    civil: "Civil Engineering",
+    it: "Information Technology (IT)",
+    ebsb: "Ek Bharat Shreshtha Bharat (EBSB)",
+    edc: "Entrepreneurship Development Cell (EDC)",
+    msajcepolicy: "College Institutional Policy",
+    womensempowermentcell: "Women Empowerment Cell",
+    grievanceredressalcommittee: "Grievance Redressal Committee",
+    academicadvisorycommittee: "Academic Advisory Committee",
+    internalcomplaintcommittee: "Internal Complaint Committee",
+    planningmonitoringboard: "Planning & Monitoring Board",
+    governingcouncil: "Governing Council",
+    minoritycell: "Minority Cell",
+    scstcell: "SC/ST Cell",
+    obccell: "OBC Cell",
+    antiragging: "Anti-Ragging Regulations",
+    technologycentre: "Technology Center",
+    clubssocieties: "Clubs & Societies",
+    socialservices: "Social Services & NSS",
+    facultyprofiles: "Faculty Profiles",
+    visionmission: "Vision & Mission",
+    ourhistory: "MSAJCEA History & Heritage",
+    placement: "Placements & Training",
+    admission: "Admissions Information",
+    hostel: "Hostel Facilities",
+    transport: "Transport & Bus Routes",
+    library: "Central Library",
+    research: "Research & Development",
+    sports: "Sports Facilities",
+  };
+
+  if (acronymMap[lower]) {
+    return acronymMap[lower];
+  }
+
+  return clean
+    .split(" ")
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
 function sanitizeMarkdownContent(content: string): string {
   if (!content) return "";
   let text = content;
@@ -1491,32 +1554,6 @@ const MessageItem = React.memo(function MessageItem({
                     )}
                   </button>
                 </Tooltip>
-
-                <Tooltip content={`Voice Speed: ${ttsSpeed}x (Click to cycle)`} position="top">
-                  <button
-                    type="button"
-                    onClick={cycleTtsSpeed}
-                    className={`flex items-center justify-center px-1.5 py-0.5 rounded-[6px] text-[10px] font-mono font-bold transition-all duration-150 cursor-pointer border ${
-                      ttsSpeed !== 1.0
-                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse shadow-sm"
-                        : "text-ink-3 hover:text-ink-2 bg-hover-2/50 border-transparent hover:border-line"
-                    }`}
-                  >
-                    {ttsSpeed}x
-                  </button>
-                </Tooltip>
-
-                <Tooltip content={`Voice Tone: ${ttsExpressivity === -2 ? "Robot" : ttsExpressivity === -1 ? "Calm" : ttsExpressivity === 1 ? "Animated" : ttsExpressivity === 2 ? "Expressive" : "Normal"} (Click to cycle)`} position="top">
-                  <button
-                    type="button"
-                    onClick={cycleTtsExpressivity}
-                    className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium transition-all cursor-pointer border border-black/[0.08] dark:border-white/[0.08] bg-transparent text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200 hover:border-black/20 dark:hover:border-white/20"
-                  >
-                    <span>
-                      {ttsExpressivity === -2 ? "Robot" : ttsExpressivity === -1 ? "Calm" : ttsExpressivity === 1 ? "Animated" : ttsExpressivity === 2 ? "Expressive" : "Normal"}
-                    </span>
-                  </button>
-                </Tooltip>
               </div>
 
               {/* Answer Completion Timestamp pushed to Right End */}
@@ -1607,9 +1644,7 @@ const MessageItem = React.memo(function MessageItem({
 
             <div className="flex flex-col gap-1">
               {sources.map((source, idx) => {
-                const fileName = source.source_file
-                  ? source.source_file.replace(/\.php$/i, '.md')
-                  : (source.title || "").replace(/\.php$/i, '.md');
+                const docName = formatCleanDocumentName(source);
                 return (
                   <div
                     key={source.chunk_id || idx}
@@ -1623,8 +1658,8 @@ const MessageItem = React.memo(function MessageItem({
                         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                         <polyline points="14 2 14 8 20 8" />
                       </svg>
-                      <span className="truncate font-mono text-[10.5px] font-medium text-ink dark:text-[#f4f3ee]">
-                        {fileName}
+                      <span className="truncate text-[11px] font-medium text-ink dark:text-[#f4f3ee]">
+                        {docName}
                       </span>
                     </div>
                     <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-[#10b981]/10 dark:bg-[#10b981]/15 text-[#10b981] dark:text-[#34d399] font-mono shrink-0 font-medium border border-[#10b981]/20">

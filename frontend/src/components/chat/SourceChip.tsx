@@ -21,9 +21,16 @@ interface SourceChipProps {
 export default function SourceChip({ source }: SourceChipProps) {
   const domain = source.domain || getDomainFromUrl(source.page_url);
   const href = source.page_url.startsWith("http") ? source.page_url : `https://${source.page_url}`;
+  const cleanTitle = (source.title || "")
+    .replace(/\.[a-zA-Z0-9]+$/gi, "")
+    .replace(/^msajce[_-]/i, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
+
+  const displayTitle = cleanTitle || source.title || "Campus Document";
 
   return (
-    <Tooltip content={`${source.title} (${domain})`} position="top">
+    <Tooltip content={`${displayTitle} (${domain})`} position="top">
       <a
         href={href}
         target="_blank"
@@ -42,7 +49,7 @@ export default function SourceChip({ source }: SourceChipProps) {
             (e.target as HTMLImageElement).src = DEFAULT_AVATAR;
           }}
         />
-        <span className="max-w-[120px] truncate">{source.title}</span>
+        <span className="max-w-[120px] truncate">{displayTitle}</span>
       </a>
     </Tooltip>
   );

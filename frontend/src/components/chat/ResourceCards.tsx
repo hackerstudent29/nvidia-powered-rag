@@ -7,20 +7,26 @@ interface ResourceCardsProps {
 }
 
 function getCleanTitle(title?: string, url?: string): string {
-  if (title && !["view resource", "view pdf", "pdf", "link", "download", "view"].includes(title.trim().toLowerCase())) {
-    return title;
-  }
-  if (!url) return "Campus Document";
-  try {
-    const filename = url.split("/").pop()?.split("?")[0] || "";
-    if (filename) {
-      const decoded = decodeURIComponent(filename);
-      if (decoded.length > 3) return decoded;
+  let name = title;
+  if (!name || ["view resource", "view pdf", "pdf", "link", "download", "view"].includes(name.trim().toLowerCase())) {
+    if (!url) return "Campus Document";
+    try {
+      const filename = url.split("/").pop()?.split("?")[0] || "";
+      if (filename) {
+        name = decodeURIComponent(filename);
+      }
+    } catch {
+      name = "Campus Document";
     }
-  } catch {
-    // fallback
   }
-  return "Verified Campus Document";
+  // Strip any file extensions (.md, .pdf, .txt, .html, etc.)
+  name = (name || "Campus Document").replace(/\.[a-zA-Z0-9]+$/gi, "");
+  // Remove msajce_ or msajce- prefix
+  name = name.replace(/^msajce[_-]/i, "");
+  // Replace underscores and hyphens with spaces
+  name = name.replace(/[_-]+/g, " ").trim();
+  // Capitalize title
+  return name.replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 function isImageUrl(url: string, type?: string): boolean {
@@ -35,35 +41,6 @@ function isVideoUrl(url: string, type?: string): boolean {
   return ["youtube.com", "youtu.be", "vimeo.com", ".mp4", ".webm", "topengineeringcolle", "msajce"].some((v) => clean.includes(v));
 }
 
-function getYouTubeEmbedUrl(url: string): string | null {
-  if (!url) return null;
-  const lower = url.toLowerCase();
-  if (!lower.includes("youtube.com") && !lower.includes("youtu.be")) return null;
-
-  // Clean iframe embed parameters (Hides clutter, logo overlays, related videos)
-  const cleanParams = "modestbranding=1&rel=0&iv_load_policy=3&controls=1&color=white&showinfo=0";
-
-  // 1. Direct Video ID match (11-character video ID e.g. aNVaQWh1Pp4)
-  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-  if (match && match[1]) {
-    return `https://www.youtube.com/embed/${match[1]}?${cleanParams}`;
-  }
-
-  // 2. Channel Handle Uploads List Embed (e.g. @msajce-topengineeringcolle4475)
-  const handleMatch = url.match(/@([a-zA-Z0-9_-]+)/);
-  if (handleMatch && handleMatch[1]) {
-    const handle = handleMatch[1];
-    return `https://www.youtube.com/embed?listType=user_uploads&list=${handle}&${cleanParams}`;
-  }
-
-  if (lower.includes("topengineeringcolle")) {
-    return `https://www.youtube.com/embed?listType=user_uploads&list=msajce-topengineeringcolle4475&${cleanParams}`;
-  }
-
-  // 3. Fallback to official MSAJCE campus video embed (https://youtu.be/aNVaQWh1Pp4)
-  return `https://www.youtube.com/embed/aNVaQWh1Pp4?${cleanParams}`;
-}
-
 export default function ResourceCards({ attachments }: ResourceCardsProps) {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
@@ -76,88 +53,14 @@ export default function ResourceCards({ attachments }: ResourceCardsProps) {
     setTimeout(() => setCopiedUrl(null), 1800);
   };
 
-  // Partition into visual media (images & videos) vs document file attachments
-  const mediaItems = attachments.filter((item) => isImageUrl(item.url, item.resource_type) || isVideoUrl(item.url, item.resource_type));
+  // Only keep document file attachments (Campus Media is completely removed as requested)
   const fileItems = attachments.filter((item) => !isImageUrl(item.url, item.resource_type) && !isVideoUrl(item.url, item.resource_type));
+
+  if (fileItems.length === 0) return null;
 
   return (
     <div className="my-3.5 flex flex-col gap-3.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {/* ── 1. INLINE EDGE-TO-EDGE CAMPUS IMAGES & STREAMING YOUTUBE IFRAME ── */}
-      {mediaItems.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-ink-3">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-accent">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
-            <span>Campus Media ({mediaItems.length})</span>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {mediaItems.map((item, idx) => {
-              const isImg = isImageUrl(item.url, item.resource_type);
-              const ytEmbed = getYouTubeEmbedUrl(item.url);
-              const fullUrl = item.url.startsWith("http") ? item.url : `https://${item.url}`;
-
-              // YouTube Embedded Player with Clean UI & Channel Link Button
-              if (ytEmbed) {
-                const isChannel = item.url.includes("@") || item.url.includes("channel") || item.url.includes("topengineeringcolle");
-                const channelUrl = item.url.startsWith("http") ? item.url : "https://www.youtube.com/@msajce-topengineeringcolle4475";
-
-                return (
-                  <div key={item.url + idx} className="flex flex-col gap-2 w-full">
-                    <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-line/70 shadow-md bg-black">
-                      <iframe
-                        src={ytEmbed}
-                        title="MSAJCE Official Campus Video"
-                        className="w-full h-full border-0 rounded-2xl"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                    {isChannel && (
-                      <a
-                        href={channelUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-between px-3 py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-500 text-xs font-semibold transition-all group"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                          </svg>
-                          <span>Visit Official Channel: @msajce-topengineeringcolle4475</span>
-                        </span>
-                        <span className="text-[10px] opacity-70 group-hover:translate-x-0.5 transition-transform">↗</span>
-                      </a>
-                    )}
-                  </div>
-                );
-              }
-
-              // Full Edge-to-Edge Image View (No filenames or bottom text bars)
-              if (isImg) {
-                return (
-                  <div key={item.url + idx} className="relative w-full rounded-2xl overflow-hidden border border-line/70 shadow-sm bg-inset group">
-                    <img
-                      src={fullUrl}
-                      alt="Campus Photo"
-                      className="w-full h-52 sm:h-60 object-cover rounded-2xl transition-transform duration-300 group-hover:scale-[1.01]"
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://msajce-edu.in/images/logo.png";
-                      }}
-                    />
-                  </div>
-                );
-              }
-
-              return null;
-            })}
-          </div>
-        </div>
-      )}
 
       {/* ── 2. OFFICIAL CAMPUS PDFS & DOCUMENTS (SINGLE HORIZONTAL ROW, OPEN IN NEW TAB) ── */}
       {fileItems.length > 0 && (

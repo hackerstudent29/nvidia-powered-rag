@@ -270,17 +270,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       window.removeEventListener("storage", syncVoice);
     };
   }, []);
-  const [expressivity, setExpressivity] = useState<number>(() => {
-    const saved = localStorage.getItem("lorin_tts_expressivity");
-    return saved !== null ? parseInt(saved, 10) : 2;
-  });
-  const [ttsSpeed, setTtsSpeed] = useState<number>(() => {
-    const saved = localStorage.getItem("lorin_tts_speed");
-    return saved !== null ? parseFloat(saved) : 1.15;
-  });
-
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
-  const [activeVoiceTab, setActiveVoiceTab] = useState<"all" | "style" | "speed" | "voices">("all");
   const [genderFilter, setGenderFilter] = useState<"all" | "Feminine" | "Masculine">("all");
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -313,18 +303,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
   };
 
-  const handleExpressivitySelect = (val: number) => {
-    setExpressivity(val);
-    localStorage.setItem("lorin_tts_expressivity", val.toString());
-    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
-  };
-
-  const handleSpeedSelect = (val: number) => {
-    setTtsSpeed(val);
-    localStorage.setItem("lorin_tts_speed", val.toString());
-    window.dispatchEvent(new CustomEvent("lorin_voice_settings_changed"));
-  };
-
   const handlePlayPreview = async (e: React.MouseEvent, voice: VoiceOption) => {
     e.stopPropagation();
     if (previewAudioRef.current) {
@@ -349,15 +327,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         body: JSON.stringify({
           text: `Hello! I am ${voice.name}, your AI voice assistant.`,
           voice: voice.id,
-          speed: ttsSpeed,
-          rate: ttsSpeed,
-          expressivity: expressivity
+          speed: 1.0,
+          rate: 1.0,
+          expressivity: 0
         })
       });
       const data = await res.json();
       if (data.audio_base64) {
         audio.src = data.audio_base64;
-        audio.playbackRate = ttsSpeed;
+        audio.playbackRate = 1.0;
         audio.onended = () => setPreviewingVoiceId(null);
         audio.onerror = () => setPreviewingVoiceId(null);
         await audio.play();
@@ -1238,193 +1216,38 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                       </button>
                     </div>
 
-                    {/* Compact Navbar Component with Framer Motion Sliding Indicator */}
-                    <div className="relative flex items-center gap-0.5 p-0.5 bg-black/[0.04] dark:bg-black/40 rounded-lg border border-black/[0.06] dark:border-white/[0.06] mb-2.5">
-                      {[
-                        { id: "all", label: "All", icon: SlidersHorizontal },
-                        { id: "style", label: "Style", icon: Sparkles },
-                        { id: "speed", label: "Speed", icon: Gauge },
-                        { id: "voices", label: "Voices", icon: AudioWaveform },
-                      ].map((tab) => {
-                        const Icon = tab.icon;
-                        const isActive = activeVoiceTab === tab.id;
-                        return (
+                    {/* Voice Filter Bar */}
+                    <div className="flex items-center justify-between mb-2 px-0.5">
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
+                        <AudioWaveform className="size-3 text-[#10b981]" />
+                        AI Speakers ({AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).length})
+                      </span>
+
+                      {/* Male / Female Filter Options */}
+                      <div className="flex items-center gap-0.5 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-md border border-black/[0.06] dark:border-white/[0.06]">
+                        {(["all", "Feminine", "Masculine"] as const).map((g) => (
                           <button
-                            key={tab.id}
+                            key={g}
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setActiveVoiceTab(tab.id as any);
+                              setGenderFilter(g);
                             }}
-                            className="relative flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer z-10"
-                          >
-                            {isActive && (
-                              <motion.div
-                                layoutId="voiceTabHighlight"
-                                className="absolute inset-0 rounded-md bg-white dark:bg-[#20222a] border border-black/[0.08] dark:border-emerald-500/40 shadow-xs"
-                                transition={{ type: "spring", stiffness: 450, damping: 30 }}
-                              />
+                            className={cn(
+                              "px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer",
+                              genderFilter === g
+                                ? "bg-white dark:bg-emerald-500/20 text-[#10b981] border border-black/10 dark:border-emerald-500/40 shadow-xs font-extrabold"
+                                : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200"
                             )}
-                            <span className={cn("relative z-10 flex items-center gap-1", isActive ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200")}>
-                              <Icon className="size-3" />
-                              <span>{tab.label}</span>
-                            </span>
+                          >
+                            {g === "all" ? "All" : g === "Feminine" ? "Female" : "Male"}
                           </button>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
-
-                    {/* Animated Resizing Content Container */}
-                    <motion.div
-                      layout
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                      className="overflow-hidden"
-                    >
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={activeVoiceTab}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.12 }}
-                        >
-                          {/* Section 1: Voice Style & Expressivity */}
-                          {(activeVoiceTab === "all" || activeVoiceTab === "style") && (
-                            <div className="mb-2.5 px-0.5">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
-                                  <Sparkles className="size-2.5 text-[#10b981]" />
-                                  Style & Tone
-                                </span>
-                                <span className="text-[9px] font-mono font-bold text-[#10b981]">
-                                  {expressivity === -2
-                                    ? "Robot (-2)"
-                                    : expressivity === -1
-                                    ? "Calm (-1)"
-                                    : expressivity === 0
-                                    ? "Normal (0)"
-                                    : expressivity === 1
-                                    ? "Animated (+1)"
-                                    : "Expressive (+2)"}
-                                </span>
-                              </div>
-                              <div className="grid grid-cols-5 gap-1 bg-black/[0.03] dark:bg-black/40 p-1 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
-                                {[
-                                  { val: -2, icon: Bot, title: "Robot" },
-                                  { val: -1, icon: Volume1, title: "Calm" },
-                                  { val: 0, icon: Volume2, title: "Normal" },
-                                  { val: 1, icon: Sparkles, title: "Animated" },
-                                  { val: 2, icon: Zap, title: "Expressive" }
-                                ].map((item) => {
-                                  const ItemIcon = item.icon;
-                                  const isSelected = expressivity === item.val;
-                                  return (
-                                    <button
-                                      key={item.val}
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleExpressivitySelect(item.val);
-                                      }}
-                                      className="relative flex flex-col items-center justify-center py-1.5 px-0.5 rounded-md text-[9px] font-medium transition-colors cursor-pointer text-center gap-0.5 z-10"
-                                    >
-                                      {isSelected && (
-                                        <motion.div
-                                          layoutId="expressivityHighlight"
-                                          className="absolute inset-0 rounded-md bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-xs"
-                                          transition={{ type: "spring", stiffness: 450, damping: 30 }}
-                                        />
-                                      )}
-                                      <ItemIcon className={cn("relative z-10 size-3.5 transition-colors", isSelected ? "text-[#10b981]" : "text-ink-3 dark:text-zinc-400")} />
-                                      <span className={cn("relative z-10 text-[8.5px] truncate max-w-full font-semibold transition-colors", isSelected ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400")}>{item.title}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Section 2: Speaking Speed (Pace) */}
-                          {(activeVoiceTab === "all" || activeVoiceTab === "speed") && (
-                            <div className="mb-2.5 px-0.5">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
-                                  <Gauge className="size-2.5 text-[#10b981]" />
-                                  Speaking Speed
-                                </span>
-                                <span className="text-[9px] font-mono font-bold text-[#10b981]">
-                                  {ttsSpeed}x
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-black/40 p-1 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
-                                {[0.5, 0.75, 1.0, 1.25, 1.5].map((spd) => {
-                                  const isSelected = ttsSpeed === spd;
-                                  return (
-                                    <button
-                                      key={spd}
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSpeedSelect(spd);
-                                      }}
-                                      className="relative flex-1 py-1 rounded-md text-[10px] font-mono font-bold transition-colors cursor-pointer text-center z-10"
-                                    >
-                                      {isSelected && (
-                                        <motion.div
-                                          layoutId="speedHighlight"
-                                          className="absolute inset-0 rounded-md bg-white dark:bg-emerald-500/20 border border-black/[0.1] dark:border-emerald-500/50 shadow-xs"
-                                          transition={{ type: "spring", stiffness: 450, damping: 30 }}
-                                        />
-                                      )}
-                                      <span className={cn("relative z-10 transition-colors", isSelected ? "text-[#10b981] font-bold" : "text-ink-3 dark:text-zinc-400")}>
-                                        {spd}x
-                                      </span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Section 3: AI Speaker Voice List */}
-                          {(activeVoiceTab === "all" || activeVoiceTab === "voices") && (
-                            <div className="px-0.5">
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-[9.5px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
-                                  <AudioWaveform className="size-2.5 text-[#10b981]" />
-                                  AI Speakers ({AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).length})
-                                </span>
-
-                                {/* Male / Female Filter Options (Voices tab only) */}
-                                {activeVoiceTab === "voices" && (
-                                  <div className="flex items-center gap-0.5 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-md border border-black/[0.06] dark:border-white/[0.06]">
-                                    {(["all", "Feminine", "Masculine"] as const).map((g) => (
-                                      <button
-                                        key={g}
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setGenderFilter(g);
-                                        }}
-                                        className={cn(
-                                          "px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold transition-all cursor-pointer",
-                                          genderFilter === g
-                                            ? "bg-white dark:bg-emerald-500/20 text-[#10b981] border border-black/10 dark:border-emerald-500/40 shadow-xs font-extrabold"
-                                            : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200"
-                                        )}
-                                      >
-                                        {g === "all" ? "All" : g === "Feminine" ? "Female" : "Male"}
-                                      </button>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className={cn(
-                                "flex flex-col gap-1 overflow-y-auto pr-0.5 custom-scrollbar transition-all duration-200",
-                                activeVoiceTab === "voices" ? "max-h-[280px]" : "max-h-36"
-                              )}>
-                                {AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).map((v) => (
+                    {/* AI Speaker Voice List */}
+                    <div className="flex flex-col gap-1 overflow-y-auto pr-0.5 custom-scrollbar max-h-64">
+                      {AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).map((v) => (
                                   <div
                                     key={v.id}
                                     onClick={(e) => {
@@ -1482,13 +1305,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                                   </div>
                                 ))}
                               </div>
-                            </div>
+                            </motion.div>
                           )}
-                        </motion.div>
-                      </AnimatePresence>
-                    </motion.div>
-                  </motion.div>
-                )}
 
               </div>
 
