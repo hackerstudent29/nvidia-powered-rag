@@ -1566,79 +1566,88 @@ const MessageItem = React.memo(function MessageItem({
 
         {/* Unified Sleek Bottom Toolbar for AI Messages */}
         {!message.is_streaming && (
-          <div className="mt-2.5 pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-black/[0.04] dark:border-white/[0.04]">
-            {/* Left: Quick Actions (Copy, Regenerate, Thumbs, TTS Voice) */}
-            <div className="flex items-center gap-1">
-              <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
-                >
-                  {copied ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">✓</span> : ACTION_ICONS.copy}
-                </button>
-              </Tooltip>
-
-              {onRegenerate && (
-                <Tooltip content="Regenerate response" position="top">
+          <div className="mt-2.5 pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-t border-black/[0.04] dark:border-white/[0.04]">
+            {/* Left: Quick Actions (Copy, Regenerate, Thumbs, TTS Voice) + Mobile-only Timestamp */}
+            <div className="flex items-center justify-between sm:justify-start gap-1 w-full sm:w-auto">
+              <div className="flex items-center gap-0.5 sm:gap-1">
+                <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
                   <button
                     type="button"
-                    onClick={() => onRegenerate?.(message.id)}
+                    onClick={handleCopy}
                     className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
                   >
-                    {ACTION_ICONS.retry}
+                    {copied ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">✓</span> : ACTION_ICONS.copy}
                   </button>
                 </Tooltip>
+
+                {onRegenerate && (
+                  <Tooltip content="Regenerate response" position="top">
+                    <button
+                      type="button"
+                      onClick={() => onRegenerate?.(message.id)}
+                      className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
+                    >
+                      {ACTION_ICONS.retry}
+                    </button>
+                  </Tooltip>
+                )}
+
+                <Tooltip content="Good response" position="top">
+                  <button
+                    type="button"
+                    onClick={() => handleThumbs(1)}
+                    className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
+                      isLiked ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                    }`}
+                  >
+                    {ACTION_ICONS.up}
+                  </button>
+                </Tooltip>
+
+                <Tooltip content="Bad response" position="top">
+                  <button
+                    type="button"
+                    onClick={() => handleThumbs(-1)}
+                    className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
+                      isDisliked ? "bg-red-500/15 text-red-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                    }`}
+                  >
+                    {ACTION_ICONS.down}
+                  </button>
+                </Tooltip>
+
+                <Tooltip content={isPlayingAudio ? "Stop Voice" : isLoadingAudio ? "Synthesizing Voice..." : "Read Aloud"} position="top">
+                  <button
+                    type="button"
+                    onClick={() => handleTTS()}
+                    disabled={isLoadingAudio}
+                    className={`flex size-7 items-center justify-center rounded-md transition-colors duration-100 cursor-pointer ${
+                      isPlayingAudio ? "text-accent bg-accent/15" : isLoadingAudio ? "text-orange-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                    }`}
+                  >
+                    {isLoadingAudio ? (
+                      <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83" />
+                      </svg>
+                    ) : isPlayingAudio ? (
+                      ACTION_ICONS.audioWave
+                    ) : (
+                      ACTION_ICONS.tts
+                    )}
+                  </button>
+                </Tooltip>
+              </div>
+
+              {/* Mobile-only Timestamp cleanly positioned on the icons row */}
+              {timeStr && (
+                <span className="text-[10px] font-mono text-ink-3/70 select-none sm:hidden pr-1 shrink-0">
+                  {timeStr}
+                </span>
               )}
-
-              <Tooltip content="Good response" position="top">
-                <button
-                  type="button"
-                  onClick={() => handleThumbs(1)}
-                  className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
-                    isLiked ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
-                  }`}
-                >
-                  {ACTION_ICONS.up}
-                </button>
-              </Tooltip>
-
-              <Tooltip content="Bad response" position="top">
-                <button
-                  type="button"
-                  onClick={() => handleThumbs(-1)}
-                  className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
-                    isDisliked ? "bg-red-500/15 text-red-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
-                  }`}
-                >
-                  {ACTION_ICONS.down}
-                </button>
-              </Tooltip>
-
-              <Tooltip content={isPlayingAudio ? "Stop Voice" : isLoadingAudio ? "Synthesizing Voice..." : "Read Aloud"} position="top">
-                <button
-                  type="button"
-                  onClick={() => handleTTS()}
-                  disabled={isLoadingAudio}
-                  className={`flex size-7 items-center justify-center rounded-md transition-colors duration-100 cursor-pointer ${
-                    isPlayingAudio ? "text-accent bg-accent/15" : isLoadingAudio ? "text-orange-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
-                  }`}
-                >
-                  {isLoadingAudio ? (
-                    <svg width="13.5" height="13.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83" />
-                    </svg>
-                  ) : isPlayingAudio ? (
-                    ACTION_ICONS.audioWave
-                  ) : (
-                    ACTION_ICONS.tts
-                  )}
-                </button>
-              </Tooltip>
             </div>
 
-            {/* Right: Model Meta, Sources Pill, and Timestamp */}
-            <div className="flex items-center gap-2 ml-auto">
+            {/* Right: Model Meta & Sources Pill */}
+            <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 sm:ml-auto w-full sm:w-auto">
               {realTokenMetrics && (
                 <TokenCostBadge metrics={realTokenMetrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
               )}
@@ -1651,7 +1660,7 @@ const MessageItem = React.memo(function MessageItem({
                     e.stopPropagation();
                     setSourcesOpen((current) => !current);
                   }}
-                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-all duration-150 border border-black/[0.08] dark:border-white/[0.08] cursor-pointer shrink-0 ${
+                  className={`flex items-center gap-1.5 rounded-full px-2 sm:px-2.5 py-0.5 text-[10.5px] sm:text-[11px] font-medium transition-all duration-150 border border-black/[0.08] dark:border-white/[0.08] cursor-pointer shrink-0 whitespace-nowrap ${
                     sourcesOpen
                       ? "bg-black/[0.08] dark:bg-white/[0.12] text-ink font-semibold"
                       : "bg-black/[0.02] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] text-ink-2 hover:text-ink"
@@ -1666,7 +1675,7 @@ const MessageItem = React.memo(function MessageItem({
                     strokeWidth="2.2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="text-accent"
+                    className="text-accent shrink-0"
                   >
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                     <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
@@ -1681,15 +1690,16 @@ const MessageItem = React.memo(function MessageItem({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2.2"
-                    className={`transition-transform duration-200 ${sourcesOpen ? "rotate-180" : ""}`}
+                    className={`transition-transform duration-200 shrink-0 ${sourcesOpen ? "rotate-180" : ""}`}
                   >
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </button>
               )}
 
+              {/* Desktop-only Timestamp */}
               {timeStr && (
-                <span className="text-[10.5px] font-mono text-ink-3/70 select-none shrink-0">
+                <span className="hidden sm:inline text-[10.5px] font-mono text-ink-3/70 select-none shrink-0">
                   {timeStr}
                 </span>
               )}

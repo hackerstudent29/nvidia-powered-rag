@@ -344,13 +344,25 @@ export default function ChatHeader({
             {/* Mobile / Tablet / Iframe Dropdown Panel */}
             <AnimatePresence>
               {mobileMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.92, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: 8 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                  className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06]"
-                >
+                <>
+                  {/* Backdrop Overlay with Blur */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="fixed inset-0 z-40 bg-black/35 backdrop-blur-xs"
+                    aria-hidden="true"
+                  />
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.92, y: 8 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                    className="absolute right-0 top-12 z-50 w-64 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06]"
+                  >
                   {/* User Profile Prompt (Only shown if student has NOT yet provided name/details) */}
                   {!userProfile?.name && onOpenProfile && (
                     <div className="pb-2 px-2 flex items-center justify-between">
@@ -481,8 +493,9 @@ export default function ChatHeader({
                     </div>
                   </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
+              </>
+            )}
+          </AnimatePresence>
           </div>
 
           {/* Desktop Accessibility Font Size Popover Modal */}

@@ -45,7 +45,7 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
         type="button"
         aria-expanded={isOpen}
         onClick={onClick}
-        className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline ${
+        className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10.5px] sm:text-[11px] font-medium transition-all duration-150 border border-line shadow-hairline whitespace-nowrap select-none shrink-0 cursor-pointer ${
           isOpen
             ? "bg-hover text-ink shadow-sm font-semibold border-line-strong"
             : "bg-transparent hover:bg-hover text-ink-2 hover:text-ink"
@@ -60,30 +60,35 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-accent"
+          className="text-accent shrink-0"
         >
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
 
         {cleanModelName && (
           <>
-            <span className="font-semibold text-ink">
+            <span className="font-semibold text-ink truncate max-w-[75px] xs:max-w-[105px] sm:max-w-none">
               {cleanModelName}
             </span>
-            <span className="text-ink-3/60">•</span>
+            <span className="text-ink-3/60 shrink-0">•</span>
           </>
         )}
 
         {totalTokens > 0 && (
           <>
-            <span className="tabular-nums font-mono text-ink font-medium">
-              {totalTokens.toLocaleString()} tokens
+            <span className="tabular-nums font-mono text-ink font-medium shrink-0 whitespace-nowrap">
+              <span className="inline sm:hidden">
+                {totalTokens >= 1000 ? `${(totalTokens / 1000).toFixed(1)}k` : totalTokens} tok
+              </span>
+              <span className="hidden sm:inline">
+                {totalTokens.toLocaleString()} tokens
+              </span>
             </span>
-            <span className="text-ink-3/60">•</span>
+            <span className="text-ink-3/60 shrink-0">•</span>
           </>
         )}
 
-        <span className="tabular-nums font-mono text-ink">
+        <span className="tabular-nums font-mono text-ink shrink-0 whitespace-nowrap">
           {formattedLatency}
         </span>
 
@@ -94,7 +99,7 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}
         >
           <path d="M6 9l6 6 6-6" />
         </svg>
@@ -211,13 +216,14 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
               <span className="text-[9px] font-normal lowercase text-ink-3">measured in real BPE tokens</span>
             </div>
 
-            <div className="rounded-xl border border-black/[0.08] dark:border-white/[0.08] overflow-hidden divide-y divide-black/[0.06] dark:divide-white/[0.06] bg-black/[0.01] dark:bg-white/[0.01]">
-              <div className="grid grid-cols-12 gap-2 px-3 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] text-[9.5px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
-                <div className="col-span-1">#</div>
-                <div className="col-span-5">Pipeline Step & Model</div>
-                <div className="col-span-3 text-right">Real Tokens</div>
-                <div className="col-span-3 text-right">Duration</div>
-              </div>
+            <div className="w-full overflow-x-auto scrollbar-thin rounded-xl border border-black/[0.08] dark:border-white/[0.08]">
+              <div className="min-w-[420px] divide-y divide-black/[0.06] dark:divide-white/[0.06] bg-black/[0.01] dark:bg-white/[0.01]">
+                <div className="grid grid-cols-12 gap-2 px-3 py-1.5 bg-black/[0.03] dark:bg-white/[0.04] text-[9.5px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
+                  <div className="col-span-1">#</div>
+                  <div className="col-span-5">Pipeline Step & Model</div>
+                  <div className="col-span-3 text-right">Real Tokens</div>
+                  <div className="col-span-3 text-right">Duration</div>
+                </div>
 
               {metrics.steps.map((step) => (
                 <div
@@ -252,6 +258,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         )}
