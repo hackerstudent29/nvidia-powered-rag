@@ -11,7 +11,8 @@ import {
   Plus,
   GraduationCap,
   Settings,
-  User
+  User,
+  ExternalLink
 } from "lucide-react";
 
 interface ChatHeaderProps {
@@ -24,6 +25,7 @@ interface ChatHeaderProps {
   onOpenProfile?: () => void;
   userProfile?: { name: string; age: number | string; purpose: string } | null;
   isStreaming: boolean;
+  isEmbed?: boolean;
 }
 
 export default function ChatHeader({
@@ -36,6 +38,7 @@ export default function ChatHeader({
   onOpenProfile,
   userProfile,
   isStreaming: _isStreaming,
+  isEmbed = false,
 }: ChatHeaderProps) {
   const navigate = useNavigate();
   const [fontSizeMenuOpen, setFontSizeMenuOpen] = useState(false);
@@ -171,6 +174,19 @@ export default function ChatHeader({
         setActivePill("theme");
       },
     },
+    ...(isEmbed
+      ? [
+          {
+            id: "fullscreen",
+            label: "Open Fullscreen",
+            icon: ExternalLink,
+            action: () => {
+              const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+              window.open(fullUrl, "_blank");
+            },
+          },
+        ]
+      : []),
   ];
 
   return (

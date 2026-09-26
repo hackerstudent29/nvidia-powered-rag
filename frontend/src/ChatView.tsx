@@ -31,7 +31,9 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
     }
   });
 
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !userProfile);
+  const isEmbed = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("embed") === "true";
+
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => !userProfile && !isEmbed);
 
   const handleSaveProfile = (profile: UserProfile) => {
     setUserProfile(profile);
@@ -177,6 +179,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         onOpenProfile={() => setIsOnboardingOpen(true)}
         userProfile={userProfile}
         isStreaming={isStreaming}
+        isEmbed={isEmbed}
       />
 
       <main
