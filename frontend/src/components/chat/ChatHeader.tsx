@@ -232,15 +232,15 @@ export default function ChatHeader({
           className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all"
         >
         {/* ── Brand & Badges ── */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <Tooltip content="Start New Chat" position="bottom">
             <motion.div
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex items-center justify-center cursor-pointer shrink-0 py-0.5"
+              className="flex items-center justify-center cursor-pointer shrink-0 -my-1"
             >
-              <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={52} interactive={true} />
+              <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={58} interactive={true} />
             </motion.div>
           </Tooltip>
 

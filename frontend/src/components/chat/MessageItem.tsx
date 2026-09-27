@@ -1264,7 +1264,7 @@ const MessageItem = React.memo(function MessageItem({
 
   return (
     <div ref={messageRef} className="flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
-      <div className="flex items-center gap-2 mb-2 shrink-0">
+      <div className="flex items-center gap-2.5 mb-2 shrink-0">
         <div className="shrink-0 flex items-center justify-center">
           <JellyBlobMascot
             emotion={
@@ -1276,12 +1276,12 @@ const MessageItem = React.memo(function MessageItem({
                 ? "love"
                 : "happy"
             }
-            size={28}
+            size={46}
             interactive={true}
           />
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-ink">Lorin AI</span>
+          <span className="text-xs sm:text-sm font-bold text-ink">Lorin AI</span>
           <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/50 px-1.5 py-0.2 text-[9px] font-semibold text-[#2E6B5E] dark:text-[#E1EED7]">
             MSAJCEA
           </span>

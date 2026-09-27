@@ -541,13 +541,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     return () => window.removeEventListener("collapse-chat-input", handleCollapse);
   }, [text, isStreaming, isRecording]);
 
-  // Auto-expand if text typed or streaming
+  // Auto-expand if text is actively typed
   useEffect(() => {
-    if ((text.trim() !== "" || isStreaming) && !expanded) {
+    if (text.trim() !== "" && !expanded) {
       setIsSmoothResize(false);
       setExpanded(true);
     }
-  }, [text, expanded, isStreaming]);
+  }, [text, expanded]);
 
   // Dynamic visualizer animation loop whenever recording is active
   useEffect(() => {
