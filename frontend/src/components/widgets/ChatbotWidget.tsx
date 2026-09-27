@@ -245,9 +245,9 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.75, y: 8 }}
                 transition={{ type: "spring", stiffness: 400, damping: 24 }}
-                className="relative px-3 pt-1 pb-3 rounded-t-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-[#1E1E24] dark:via-[#18181B] dark:to-[#0F0F12] border-t-2 border-x-2 border-[#2E6B5E]/40 dark:border-[#10b981]/50 shadow-[0_-6px_22px_rgba(46,107,94,0.18)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.6)] backdrop-blur-md flex items-center justify-center transition-colors"
+                className="relative px-4 pt-1.5 pb-3 rounded-t-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-[#1E1E24] dark:via-[#18181B] dark:to-[#0F0F12] border-t-2 border-x-2 border-[#2E6B5E]/40 dark:border-[#10b981]/50 shadow-[0_-6px_22px_rgba(46,107,94,0.18)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.6)] backdrop-blur-md flex items-center justify-center transition-colors"
               >
-                <JellyBlobMascot emotion="wave" size={44} interactive={true} />
+                <JellyBlobMascot emotion="wave" size={60} interactive={true} />
               </motion.div>
             )}
           </AnimatePresence>

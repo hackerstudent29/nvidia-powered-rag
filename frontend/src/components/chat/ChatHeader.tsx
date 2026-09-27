@@ -238,9 +238,9 @@ export default function ChatHeader({
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex items-center justify-center cursor-pointer shrink-0"
+              className="flex items-center justify-center cursor-pointer shrink-0 py-0.5"
             >
-              <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={36} interactive={true} />
+              <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={52} interactive={true} />
             </motion.div>
           </Tooltip>
 
