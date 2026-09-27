@@ -2000,10 +2000,92 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
     }
 }
 
+# Official FAQ Card & Quick Chip Prompt to Card Key Mapping
+# Preloaded for instant 0ms / 0-token responses when users click any of the 12 home cards or quick chips
+OFFICIAL_FAQ_CARD_PROMPTS: Dict[str, str] = {
+    # 1. Admission
+    "what are the admission criteria, tnea code 1301 details, counseling pathways, eligibility, and required documents for new students at msajcea?": "admission",
+    "what are the admission criteria, pathways, tnea code, and document requirements for msajcea?": "admission",
+    "admission guide": "admission",
+    "admissions": "admission",
+    "admission criteria": "admission",
+
+    # 2. Courses
+    "what are all the 12 ug & 2 pg degree courses, department specializations, and intake capacities offered at msajcea?": "courses",
+    "what are all the 12 ug & 2 pg degree courses, intake capacity, and departments offered at msajcea?": "courses",
+    "courses offered": "courses",
+    "all courses": "courses",
+    "degree courses": "courses",
+
+    # 3. Placements
+    "what are the placement statistics, top recruiting companies, highest salary package, and placement cell details for msajcea?": "placements",
+    "who are the top recruiters, placement statistics, and highest salary package at msajcea?": "placements",
+    "campus placements": "placements",
+    "placement statistics": "placements",
+
+    # 4. Scholarships
+    "what scholarship schemes, government fee waivers, 7.5% school student quota benefits, and merit assistance are available at msajcea?": "scholarships",
+    "what scholarships, including government aid, 7.5% quota, and merit schemes, are available at msajcea?": "scholarships",
+    "scholarships": "scholarships",
+    "scholarship schemes": "scholarships",
+
+    # 5. Boys Hostel
+    "what are the accommodation facilities, room capacity options, food menu, and safety rules for the boys hostel at msajcea?": "boys_hostel",
+    "what are the hostel facilities, room capacity, mess menu, and rules for the boys hostel at msajcea?": "boys_hostel",
+    "boys hostel": "boys_hostel",
+    "mens hostel": "boys_hostel",
+
+    # 6. Girls Hostel
+    "what safety features, 24/7 security, room amenities, warden supervision, and facilities apply to the girls hostel at msajcea?": "girls_hostel",
+    "what safety features, capacity, room amenities, and location details apply to the girls hostel at msajcea?": "girls_hostel",
+    "girls hostel": "girls_hostel",
+    "ladies hostel": "girls_hostel",
+
+    # 7. Bus Routes
+    "what are the college bus routes, pickup points across chennai, morning arrival timings, and transport coverage for msajcea?": "bus",
+    "what are the college bus routes, pickup points, timings, and transport coverage for msajcea?": "bus",
+    "bus routes": "bus",
+    "college bus routes": "bus",
+
+    # 8. Mess & Canteen
+    "what is the food quality, daily mess menu, dining hall capacity, and canteen options available for students at msajcea?": "mess",
+    "what is the mess food menu, dining hall capacity, canteen facilities, and timings at msajcea?": "mess",
+    "mess & canteen": "mess",
+    "mess and canteen": "mess",
+
+    # 9. Central Library
+    "what are the central library facilities, book collection, ieee digital journal access, study halls, and working hours at msajcea?": "library",
+    "tell me about the central library facilities, book collection, digital library, and working hours at msajcea.": "library",
+    "central library": "library",
+
+    # 10. Lab Facilities
+    "what engineering laboratories, high-performance computing centers, and specialized workshop facilities exist at msajcea?": "labs",
+    "what engineering lab facilities, computer centers, and specialized workshops are available at msajcea?": "labs",
+    "lab facilities": "labs",
+    "engineering labs": "labs",
+
+    # 11. Campus Life
+    "what sports facilities, athletic infrastructure, annual cultural events, and technical student clubs are active at msajcea?": "campus_life",
+    "what sports facilities, athletic infrastructure, and student clubs are active at msajcea?": "campus_life",
+    "campus life": "campus_life",
+
+    # 12. Contact Info
+    "what is the official contact info, phone numbers, email addresses, and campus location of msajcea at siruseri it park?": "contact",
+    "what is the official contact info, phone numbers, email addresses, and location map for msajcea?": "contact",
+    "contact info": "contact",
+    "official contact info": "contact"
+}
+
+# Pre-normalized lookup table for robust punctuation-insensitive matching
+NORM_FAQ_CARD_PROMPTS: Dict[str, str] = {
+    re.sub(r'[^a-z0-9\s&]', '', k.lower()): v
+    for k, v in OFFICIAL_FAQ_CARD_PROMPTS.items()
+}
+
 def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     """
-    Returns prebuilt summary cards ONLY when the user explicitly clicks a top-level prebuilt chip
-    or asks a generic high-level card overview query.
+    Returns prebuilt summary cards (0ms latency, 0 tokens) when the user clicks any of the 12
+    official FAQ cards or quick chips, or asks for a generic high-level card overview.
     NEVER intercepts specific questions, follow-up inquiries, outcome queries, syllabus, cutoffs,
     or questions containing inquiry words (e.g. why, how, what does, can you, list some).
     """
@@ -2022,7 +2104,22 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     if len(q_clean) < 3:
         return None
 
-    # CRITICAL GUARD: Never intercept specific questions or follow-up inquiries!
+    # 1. PRIORITY MATCH: Check if the user clicked one of the 12 official FAQ cards or quick chips
+    # This MUST execute before specific inquiry guards so card clicks always respond instantly!
+    q_norm = re.sub(r'[^a-z0-9\s&]', '', q_clean)
+    q_norm = ' '.join(q_norm.split())
+    if q_norm in NORM_FAQ_CARD_PROMPTS:
+        card_key = NORM_FAQ_CARD_PROMPTS[q_norm]
+        if card_key in PREBUILT_CARD_ANSWERS:
+            return PREBUILT_CARD_ANSWERS[card_key]
+
+    # Also check if any card prompt's key is an exact substring match for clicking cards
+    for card_prompt_norm, card_key in NORM_FAQ_CARD_PROMPTS.items():
+        if len(card_prompt_norm) >= 20 and (card_prompt_norm in q_norm or q_norm in card_prompt_norm):
+            if card_key in PREBUILT_CARD_ANSWERS:
+                return PREBUILT_CARD_ANSWERS[card_key]
+
+    # 2. CRITICAL GUARD: Never intercept specific questions or follow-up inquiries!
     # If the user is asking about specific sub-topics, rules, numbers, or outcomes, ALWAYS delegate to RAG.
     SPECIFIC_INQUIRY_TERMS = [
         "outcome", "outcomes", "po", "pos", "pso", "psos", "peo", "peos",
