@@ -52,6 +52,12 @@ export function useChat() {
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const activeSessionIdRef = useRef<string>(sessionId);
+
+  // Keep activeSessionIdRef strictly in sync with state
+  useEffect(() => {
+    activeSessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   // Sync rate limit state to localStorage
   useEffect(() => {
@@ -82,6 +88,19 @@ export function useChat() {
     }
   }, [messages, isStreaming]);
 
+  // Bulletproof instant save when user clicks the browser refresh button / reloads page
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (messages.length > 0) {
+        try {
+          localStorage.setItem("lorin_cached_messages", JSON.stringify(messages));
+        } catch (e) {}
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [messages]);
+
   // Fetch available models
   useEffect(() => {
     fetch(`${API_BASE}/models`)
@@ -103,14 +122,22 @@ export function useChat() {
   }, []);
 
   // Helper to load messages for a specific session ID from the server.
-  // IMPORTANT: If the server returns empty (e.g. after DB reset), do NOT wipe the
-  // localStorage cache — it may be the only copy of the user's current conversation.
+  // Race-condition guarded: only commits if targetSessionId matches the active session.
   const loadSessionMessages = async (targetSessionId: string) => {
+    if (activeSessionIdRef.current !== targetSessionId) {
+      return false; // Target session already superseded
+    }
+
     try {
       const res = await fetch(`${API_BASE}/sessions/${targetSessionId}`, {
         headers: { "X-User-ID": userId }
       });
       if (res.ok) {
+        // Double check session hasn't changed while network was in flight
+        if (activeSessionIdRef.current !== targetSessionId) {
+          return false;
+        }
+
         const data = await res.json();
         const rawHistory = Array.isArray(data) ? data : (data.messages || []);
         if (Array.isArray(rawHistory) && rawHistory.length > 0) {
@@ -137,15 +164,34 @@ export function useChat() {
             resource_attachments: h.resource_attachments,
             suggestions: h.suggestions || [],
           }));
-          setMessages(formatted);
-          localStorage.setItem("lorin_cached_messages", JSON.stringify(formatted));
+
+          setMessages((current) => {
+            // Drop if session changed mid-update
+            if (activeSessionIdRef.current !== targetSessionId) return current;
+
+            // Preserve local answers if server only returned user question
+            const currentHasAsst = current.some((m) => m.role === "assistant" && m.content && m.content.trim().length > 0);
+            const formattedHasAsst = formatted.some((m) => m.role === "assistant" && m.content && m.content.trim().length > 0);
+
+            if (currentHasAsst && !formattedHasAsst) {
+              const merged = [...formatted];
+              const localAsst = current.find((m) => m.role === "assistant");
+              if (localAsst) merged.push(localAsst);
+              try {
+                localStorage.setItem("lorin_cached_messages", JSON.stringify(merged));
+              } catch (e) {}
+              return merged;
+            }
+
+            try {
+              localStorage.setItem("lorin_cached_messages", JSON.stringify(formatted));
+            } catch (e) {}
+            return formatted;
+          });
           return true;
         }
-        // Server returned empty history for this session — don't clear local cache.
-        // The user might be mid-conversation and the server may have been reset.
         return false;
       }
-      // Non-200 response — don't clear local cache, server might be down.
     } catch (err) {
       console.error("Error loading session history:", err);
     }
@@ -175,16 +221,18 @@ export function useChat() {
   useEffect(() => {
     const initLastSession = async () => {
       const storedId = localStorage.getItem("lorin_session_id");
+      if (!storedId) return;
 
-      // localStorage already provided instant messages at line 17-24.
-      // Now sync with the server in the background.
-      const localCacheExists = messages.length > 0;
+      activeSessionIdRef.current = storedId;
 
       // Execute session list fetch and active history fetch IN PARALLEL!
       const [pastSessions, loaded] = await Promise.all([
         fetchSessions(),
-        storedId ? loadSessionMessages(storedId) : Promise.resolve(false)
+        loadSessionMessages(storedId)
       ]);
+
+      // If user clicked New Chat while init was running, abort
+      if (activeSessionIdRef.current !== storedId) return;
 
       if (Array.isArray(pastSessions) && pastSessions.length > 0) {
         const targetSession = pastSessions.find((s) => s.id === storedId);
@@ -193,10 +241,6 @@ export function useChat() {
           localStorage.setItem("lorin_session_id", targetSession.id);
         }
       }
-      // If the server returned no sessions but we have a local cache,
-      // keep the current messages visible. The server may have been reset
-      // or is temporarily unreachable — don't discard the user's active conversation.
-      // Messages are only cleared when the user explicitly clicks "New Chat".
     };
 
     initLastSession();
@@ -224,16 +268,22 @@ export function useChat() {
     if (isStreaming) {
       stopStreaming();
     }
+    activeSessionIdRef.current = newSessionId;
     setSessionId(newSessionId);
     localStorage.setItem("lorin_session_id", newSessionId);
+
+    // Optimistically clear previous session messages so they never bleed into this view
+    setMessages([]);
+    localStorage.removeItem("lorin_cached_messages");
+
     const loaded = await loadSessionMessages(newSessionId);
-    if (!loaded) {
+    if (!loaded && activeSessionIdRef.current === newSessionId) {
       setMessages([]);
       localStorage.removeItem("lorin_cached_messages");
     }
   };
 
-  // New Chat
+  // New Chat: Guarantees 100% clean slate, aborts in-flight history fetches
   const startNewChat = () => {
     audioManager.stopAll();
     window.dispatchEvent(new CustomEvent("stop-all-audio"));
@@ -241,6 +291,7 @@ export function useChat() {
       stopStreaming();
     }
     const newId = `sess_${Date.now()}`;
+    activeSessionIdRef.current = newId; // Immutably mark active session as newId immediately
     setSessionId(newId);
     localStorage.setItem("lorin_session_id", newId);
     setMessages([]);
@@ -513,19 +564,23 @@ export function useChat() {
         if (current.untilTimestamp && current.untilTimestamp <= Date.now()) return null;
         return current;
       });
-      setMessages((prev) =>
-        prev.map((msg) =>
+      setMessages((prev) => {
+        const updated = prev.map((msg) =>
           msg.id === assistantPlaceholderId
             ? { ...msg, is_streaming: false, timestamp: new Date() }
             : msg
-        )
-      );
+        );
+        try {
+          localStorage.setItem("lorin_cached_messages", JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
       fetchSessions();
     } catch (err: any) {
       if (err.name !== "AbortError") {
         console.error("Chat streaming error:", err);
-        setMessages((prev) =>
-          prev.map((msg) =>
+        setMessages((prev) => {
+          const updated = prev.map((msg) =>
             msg.id === assistantPlaceholderId
               ? {
                   ...msg,
@@ -535,8 +590,12 @@ export function useChat() {
                   is_streaming: false,
                 }
               : msg
-          )
-        );
+          );
+          try {
+            localStorage.setItem("lorin_cached_messages", JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
+        });
       }
     } finally {
       setIsStreaming(false);

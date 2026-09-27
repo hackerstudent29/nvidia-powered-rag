@@ -9,9 +9,14 @@ import base64
 import hashlib
 import asyncio
 import random
+import logging
 from datetime import datetime, timedelta, timezone
 import jwt
 from typing import List, Dict, Any, Optional, AsyncGenerator, Tuple
+
+# Configure enterprise logger
+logger = logging.getLogger("lorin_ai")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Force UTF-8 I/O for Windows consoles
 try:
@@ -3141,7 +3146,8 @@ async def stream_cached_or_prebuilt(
     session_id: str,
     model_id: str,
     start_time: float,
-    cache_type: str = "prebuilt"
+    cache_type: str = "prebuilt",
+    user_id: Optional[str] = None
 ) -> AsyncGenerator[str, None]:
     label = "instant campus guide" if cache_type == "prebuilt" else "verified precision cache"
 
@@ -3205,15 +3211,27 @@ async def stream_cached_or_prebuilt(
             if conn:
                 with conn.cursor() as cur:
                     cur.execute("""
-                        INSERT INTO chat_sessions (session_id, last_active_at)
-                        VALUES (%s, NOW())
+                        INSERT INTO chat_sessions (session_id, user_id, last_active_at, is_archived)
+                        VALUES (%s, %s, NOW(), FALSE)
                         ON CONFLICT (session_id) DO UPDATE
-                        SET last_active_at = NOW();
-                    """, (session_id,))
+                        SET user_id = COALESCE(EXCLUDED.user_id, chat_sessions.user_id),
+                            last_active_at = NOW(),
+                            is_archived = FALSE;
+                    """, (session_id, user_id))
 
                     user_msg_id = f"msg_{int(time.time()*1000)}_u"
                     asst_msg_id = f"msg_{int(time.time()*1000)}_a"
                     cat = categorize_user_query(user_query)
+
+                    # Ensure user message exists in this session
+                    cur.execute("SELECT count(*) FROM chat_messages WHERE session_id = %s AND role = 'user';", (session_id,))
+                    u_cnt_row = cur.fetchone()
+                    u_cnt = u_cnt_row[0] if u_cnt_row else 0
+                    if u_cnt == 0:
+                        cur.execute("""
+                            INSERT INTO chat_messages (message_id, session_id, role, content, category)
+                            VALUES (%s, %s, 'user', %s, %s);
+                        """, (user_msg_id, session_id, user_query, cat))
 
                     cur.execute("""
                         INSERT INTO chat_messages (message_id, session_id, role, content, model_used, latency_ms, citations, token_usage, reasoning_steps)
@@ -3601,7 +3619,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         session_id=session_id,
                         model_id=model_id,
                         start_time=start_time,
-                        cache_type="prebuilt"
+                        cache_type="prebuilt",
+                        user_id=user_id
                     ):
                         yield item
                     return
@@ -3626,7 +3645,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     session_id=session_id,
                     model_id=model_id,
                     start_time=start_time,
-                    cache_type="cache"
+                    cache_type="cache",
+                    user_id=user_id
                 ):
                     yield item
                 return
@@ -3775,7 +3795,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 session_id=session_id,
                                 model_id=model_id,
                                 start_time=start_time,
-                                cache_type="cache"
+                                cache_type="cache",
+                                user_id=user_id
                             ):
                                 yield item
                             return
@@ -4312,6 +4333,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 with DBContext() as conn:
                     if conn:
                         with conn.cursor() as cur:
+                            cur.execute("""
+                                INSERT INTO chat_sessions (session_id, user_id, last_active_at, is_archived)
+                                VALUES (%s, %s, NOW(), FALSE)
+                                ON CONFLICT (session_id) DO UPDATE
+                                SET user_id = COALESCE(EXCLUDED.user_id, chat_sessions.user_id),
+                                    last_active_at = NOW(),
+                                    is_archived = FALSE;
+                            """, (session_id, user_id))
                             asst_msg_id = f"msg_{int(time.time()*1000)}_a_err"
                             cur.execute("""
                                 INSERT INTO chat_messages (message_id, session_id, role, content, model_used, latency_ms)
