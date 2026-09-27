@@ -98,26 +98,26 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.16 }}
+          transition={{ duration: 0.15 }}
           onClick={handleBackdropClick}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-3.5"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3.5"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            initial={{ opacity: 0, scale: 0.94, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 16 }}
-            transition={{ type: "spring", damping: 26, stiffness: 350 }}
+            exit={{ opacity: 0, scale: 0.94, y: 12 }}
+            transition={{ type: "spring", damping: 28, stiffness: 400 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/10 bg-[#14151a] p-5 sm:p-6 text-[#f4f3ee] shadow-2xl"
+            className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/12 bg-[#121214] p-5 sm:p-6 text-[#f4f3ee] shadow-[0_24px_80px_rgba(0,0,0,0.8)] transform-gpu"
           >
-            {/* Glow Ambient Accent */}
-            <div className="absolute -top-20 -left-20 h-40 w-40 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 -right-20 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
+            {/* Glow Ambient Accents */}
+            <div className="absolute -top-16 -left-16 h-36 w-36 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -right-16 h-36 w-36 rounded-full bg-teal-500/15 blur-3xl pointer-events-none" />
 
             {/* Close Button (X) */}
             {onClose && (
               <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 type="button"
                 onClick={onClose}
@@ -128,29 +128,29 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
             )}
 
             {/* Modal Header */}
-            <div className="relative z-10 flex items-start gap-3 text-left pr-6 mb-1">
-              <div className="shrink-0 -mt-1">
-                <JellyBlobMascot emotion={modalMascotEmotion} size={58} interactive={true} />
+            <div className="relative z-10 flex items-center gap-3 text-left pr-6 mb-1">
+              <div className="shrink-0">
+                <JellyBlobMascot emotion={modalMascotEmotion} size={56} interactive={true} />
               </div>
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#34d399]">
+              <div className="space-y-0.5">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10.5px] font-bold text-[#34d399]">
                   <Sparkles className="h-3 w-3" />
                   <span>Welcome to Lorin AI</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white pt-0.5">
-                  Tell us about yourself
+                <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white">
+                  Setup Student Profile
                 </h2>
-                <p className="text-[11.5px] sm:text-xs text-[#b1ada1]">
-                  Personalize campus AI assistance for your profile.
+                <p className="text-[11.5px] text-[#b1ada1]">
+                  Personalize campus AI responses for your needs.
                 </p>
               </div>
             </div>
 
             {/* Form Body */}
-            <form onSubmit={handleSubmit} className="relative z-10 mt-5 space-y-3.5">
+            <form onSubmit={handleSubmit} className="relative z-10 mt-4 space-y-3.5">
               {/* 1. Name Input */}
               <div className="space-y-1">
-                <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
+                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#e4e4e7]">
                   <User className="h-3.5 w-3.5 text-emerald-400" />
                   <span>Your Name <span className="text-emerald-400">*</span></span>
                 </label>
@@ -164,7 +164,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                     setName(e.target.value);
                     if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                   }}
-                  className={`w-full rounded-xl border bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                  className={`w-full rounded-xl border bg-[#18181b] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981]/30 ${
                     errors.name ? 'border-red-500/80' : 'border-white/10'
                   }`}
                 />
@@ -173,7 +173,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
 
               {/* 2. Age Input */}
               <div className="space-y-1">
-                <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
+                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#e4e4e7]">
                   <Calendar className="h-3.5 w-3.5 text-emerald-400" />
                   <span>Your Age <span className="text-emerald-400">*</span></span>
                 </label>
@@ -189,7 +189,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                     setAge(e.target.value);
                     if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));
                   }}
-                  className={`w-full rounded-xl border bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                  className={`w-full rounded-xl border bg-[#18181b] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981]/30 ${
                     errors.age ? 'border-red-500/80' : 'border-white/10'
                   }`}
                 />
@@ -198,34 +198,32 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
 
               {/* 3. Custom Glassmorphic Animated Dropdown */}
               <div className="space-y-1 relative" ref={dropdownRef}>
-                <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
+                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#e4e4e7]">
                   <HelpCircle className="h-3.5 w-3.5 text-emerald-400" />
                   <span>Primary Interest / Category <span className="text-emerald-400">*</span></span>
                 </label>
 
                 {/* Custom Dropdown Trigger Button */}
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                <button
                   type="button"
                   onClick={() => setIsDropdownOpen((prev) => !prev)}
-                  className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white transition-colors hover:border-white/20 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
+                  className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#18181b] px-3.5 py-2.5 text-xs text-white transition-colors hover:border-white/20 focus:border-[#10b981] cursor-pointer"
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
-                    <span className="font-medium truncate">{selectedCategoryObj.label}</span>
+                    <span className="font-semibold text-emerald-400 truncate">{selectedCategoryObj.label}</span>
                   </div>
                   <ChevronDown className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-emerald-400' : ''}`} />
-                </motion.button>
+                </button>
 
                 {/* Custom Animated Options Menu */}
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                      initial={{ opacity: 0, scale: 0.96, y: -4 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -6 }}
-                      transition={{ duration: 0.14, ease: "easeOut" }}
-                      className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#181920] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5 origin-top"
+                      exit={{ opacity: 0, scale: 0.96, y: -4 }}
+                      transition={{ duration: 0.12, ease: "easeOut" }}
+                      className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#18181b] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5 origin-top"
                     >
                       {CATEGORY_OPTIONS.map((cat) => {
                         const isSelected = cat.value === purpose;
@@ -241,7 +239,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                             }}
                             className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
                               isSelected
-                                ? 'bg-emerald-500/15 text-[#34d399] font-medium border border-emerald-500/30'
+                                ? 'bg-emerald-500/15 text-[#34d399] font-bold border border-emerald-500/30'
                                 : 'text-zinc-200 hover:bg-white/5 hover:text-white'
                             }`}
                           >
@@ -266,13 +264,13 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               {/* Action Button */}
               <div className="pt-2">
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   transition={{ type: "spring", stiffness: 450, damping: 22 }}
                   type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:brightness-110 cursor-pointer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9E2339] hover:bg-[#861e30] dark:bg-[#10b981] dark:hover:bg-[#059669] dark:text-zinc-950 px-5 py-3 text-xs font-bold text-white shadow-md transition-colors cursor-pointer"
                 >
-                  <span>Start Assistant Chat</span>
+                  <span>Save & Start Assistant</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </motion.button>
               </div>

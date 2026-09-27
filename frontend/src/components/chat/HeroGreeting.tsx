@@ -134,42 +134,45 @@ const HeroGreeting = React.memo(function HeroGreeting({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
-      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2.5 sm:px-6 pt-20 sm:pt-24 md:pt-20 pb-4 sm:pb-6 my-auto"
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2.5 sm:px-6 pt-14 sm:pt-16 md:pt-14 pb-3 sm:pb-4 my-auto"
     >
       {/* ── Hero headline ── */}
-      <div className="relative flex flex-col items-center text-center mb-4 sm:mb-8 w-full">
+      <div className="relative flex flex-col items-center text-center mb-3 sm:mb-6 w-full">
         {/* Ambient glow backing */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[130px] rounded-full blur-[90px] opacity-30 dark:opacity-20 pointer-events-none"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[110px] rounded-full blur-[80px] opacity-25 dark:opacity-20 pointer-events-none"
           style={{ background: "radial-gradient(ellipse, #2E6B5E 0%, transparent 70%)" }}
         />
 
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative mb-2.5 sm:mb-3.5 flex flex-col items-center justify-center z-10 group cursor-pointer"
-        >
-          <JellyBlobMascot emotion="curious" size={82} interactive={true} showSubtitle={true} />
-        </motion.div>
+        {/* Mascot + Hello Headline in 1 Inline Row */}
+        <div className="relative z-10 flex items-center justify-center gap-2.5 sm:gap-4 flex-wrap sm:flex-nowrap">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="shrink-0 cursor-pointer"
+          >
+            <JellyBlobMascot emotion="curious" size={64} interactive={true} showSubtitle={false} />
+          </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          className="hero-title relative text-[1.35rem] min-[360px]:text-[1.55rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] z-10 whitespace-nowrap"
-        >
-          Hello, {firstName}.
-        </motion.h1>
+          <motion.h1
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.05 }}
+            className="hero-title text-[1.45rem] min-[360px]:text-[1.75rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] whitespace-nowrap"
+          >
+            Hello, {firstName}.
+          </motion.h1>
+        </div>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="relative z-10 mt-2 sm:mt-3 text-[12px] sm:text-[15px] text-ink-3 dark:text-[#b1ada1] max-w-[620px] leading-relaxed font-ui px-2"
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="relative z-10 mt-1.5 sm:mt-2.5 text-[12px] sm:text-[14.5px] text-ink-3 dark:text-[#b1ada1] max-w-[620px] leading-relaxed font-ui px-2"
         >
           Explore&nbsp;
           <span className="font-bold text-ink dark:text-[#f4f3ee]">

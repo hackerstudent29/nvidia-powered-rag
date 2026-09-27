@@ -110,9 +110,14 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
   const baseEmotion = emotion || moodProp || "idle";
   const mappedBaseMood: JellyBlobMood = EMOTION_MAP[baseEmotion] || "neutral";
 
-  // Reset idle timer on user interaction
+  // Throttle idle timer reset to once every 5 seconds to eliminate CPU event lag
+  const lastResetTimeRef = useRef<number>(0);
   const resetIdleTimer = useCallback(() => {
     if (!autoIdle) return;
+    const now = Date.now();
+    if (now - lastResetTimeRef.current < 4000) return;
+    lastResetTimeRef.current = now;
+
     if (isIdle) {
       setIsIdle(false);
       if (onWake) onWake();
@@ -120,7 +125,7 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     idleTimerRef.current = setTimeout(() => {
       setIsIdle(true);
-    }, 18000); // 18 seconds idle triggers sleepy mood
+    }, 20000);
   }, [autoIdle, isIdle, onWake]);
 
   useEffect(() => {
@@ -133,22 +138,28 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
     };
   }, [resetIdleTimer]);
 
-  // Handle dynamic cursor gaze tracking
+  // Handle dynamic cursor gaze tracking with requestAnimationFrame for 60-120fps smoothness
+  const rafIdRef = useRef<number | null>(null);
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    resetIdleTimer();
     if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-    const dx = e.clientX - centerX;
-    const dy = e.clientY - centerY;
+    if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = requestAnimationFrame(() => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
 
-    // Clamp gaze within viewBox units [-25, 25]
-    const gazeX = Math.max(-25, Math.min(25, Math.round(dx / 3)));
-    const gazeY = Math.max(-20, Math.min(20, Math.round(dy / 3)));
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
 
-    setComputedGaze({ x: gazeX, y: gazeY });
+      const gazeX = Math.max(-25, Math.min(25, Math.round(dx / 3.5)));
+      const gazeY = Math.max(-20, Math.min(20, Math.round(dy / 3.5)));
+
+      setComputedGaze((prev) => (prev.x === gazeX && prev.y === gazeY ? prev : { x: gazeX, y: gazeY }));
+    });
   };
 
   const handleMouseEnter = () => {
