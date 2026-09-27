@@ -209,8 +209,9 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant and ca
    - If a specific club, term, acronym, or entity is absent from the provided records, state directly in 1 polite sentence that official campus records do not document that entity, and offer contact with the campus helpdesk or admissions@msajce.edu.in.
    - NEVER make up student roles, faculty names, or event descriptions. Every name and role MUST be 100% grounded in verified records.
 3. Distinction Between College & Public Services:
-   - Dedicated college buses are strictly official institution-operated routes arriving at campus by 8:00 AM.
-   - Public MTC buses are municipal city transit lines, NOT college buses.
+   - Dedicated college buses are strictly official institution-operated routes (AR 3, AR 4, N 3, AR 6, AR 7, AR 8, AR 9, AR 10/R21, R 22) arriving at campus by 8:00 AM.
+   - Public MTC buses are municipal city transit lines (570, AC-570, 570S, 515, 555, 102, 19K, 568B), NOT college buses. Never claim a dedicated college bus passes through a stop if only public MTC buses or nearby routes serve that stop.
+   - For stops like Vadapalani, MTC 570 / AC-570 / 570S is the direct public city bus to Siruseri IT Park, while nearest dedicated college routes are AR 8 (Ashok Pillar/K.K. Nagar/Avichi School) and R 22 (Ramapuram/Guindy). Dedicated Route AR 3 operates from Uthiramerur.
 4. Academic & Research Attribution:
    - Patents, publications, and specialized labs belong strictly to the specific faculty or departments documented in the records. Never cross-attribute research or patents to unrelated faculty or operational staff.
 5. Topic Shift & State Isolation:
@@ -4153,7 +4154,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 if is_route_finder_allowed and route_finder:
                     matched_route = route_finder.find_route(user_query) or route_finder.find_route(expanded_query)
 
-                is_general_bus_q = (target_domain == CampusDomain.TRANSPORT) and any(phrase in user_query.lower() for phrase in ["how many buses", "number of buses", "total buses", "buses running", "buses in college", "bus count", "bus fleet", "bus routes", "bus facilities"])
+                is_general_bus_q = (target_domain == CampusDomain.TRANSPORT) and route_finder and (route_finder.is_general_transit_query(user_query) or route_finder.is_general_transit_query(expanded_query))
 
                 if matched_route:
                     route_id = matched_route.get("route_id")
@@ -4193,28 +4194,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "rrf_score": 1.0
                     }
                     retrieved_chunks = [route_chunk]
-                elif is_general_bus_q:
-                    fleet_chunk_text = (
-                        "### OFFICIAL MSAJCE TRANSPORT & BUS FLEET OVERVIEW\n"
-                        "MSAJCE operates **9 dedicated college bus routes** covering major pickup areas across Chennai, Chengalpattu, Kanchipuram, and Thiruvallur districts, in addition to MTC public bus connectivity to Siruseri IT Park / OMR.\n\n"
-                        "#### Official College Bus Routes & Primary Pickup Areas:\n"
-                        "1. **Route AR 3**: Koyambedu → Vadapalani → Guindy → Velachery → Medavakkam → MSAJCE\n"
-                        "2. **Route AR 4**: Red Hills → Padi → Thirumangalam → Porur → Tambaram → Vandalur → MSAJCE\n"
-                        "3. **Route AR 6**: ICF → Ayanavaram → Egmore → Triplicane → Kotturpuram → Madhya Kailash → Perungudi → MSAJCE\n"
-                        "4. **Route AR 7**: Central → Broadway → Marina → Mylapore → Adyar → Thiruvanmiyur → Sholinganallur → MSAJCE\n"
-                        "5. **Route AR 8**: Avadi → Ambattur → Porur → Chromepet → Tambaram → Medavakkam → MSAJCE\n"
-                        "6. **Route AR 9**: Poonamallee → Porur → Kovilambakkam → Keelkattalai → Medavakkam → MSAJCE\n"
-                        "7. **Route AR 10**: Kanchipuram → Sriperumbudur → Oragadam → Padappai → Tambaram → MSAJCE\n"
-                        "8. **Route N3**: Chengalpattu → Singaperumal Koil → Guduvanchery → Vandalur → MSAJCE\n"
-                        "9. **Route 22**: Thiruvallur → Sriperumbudur → Mudichur → Tambaram → Camp Road → MSAJCE\n\n"
-                        "All 9 college buses arrive at MSAJCE Campus (Siruseri OMR) by **8:00 AM** every morning."
-                    )
+                elif is_general_bus_q and route_finder:
+                    fleet_chunk_text = route_finder.get_fleet_overview()
                     retrieved_chunks = [{
                         "chunk_id": "route_finder_fleet_overview",
                         "title": "Official Transport & Bus Fleet Overview",
                         "source_file": "msajce_transport.md",
                         "category": "transport",
-                        "page_url": "https://msajce-edu.in/transport",
+                        "page_url": "https://msajce.edu.in/transport",
                         "content": fleet_chunk_text,
                         "rrf_score": 1.0
                     }]
@@ -4284,18 +4271,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         try:
                             stop_info, _ = route_finder.find_stop(user_query)
                             if not stop_info:
-                                for token in re.findall(r'\b[a-zA-Z0-9]{4,}\b', user_query):
-                                    if token.lower() not in ["which", "buses", "bus", "passing", "stop", "stops", "route", "routes", "timing", "timings", "about", "that", "this", "tell", "tellme", "briefly", "more", "details"]:
-                                        st_cand, _ = route_finder.find_stop(token)
-                                        if st_cand:
-                                            stop_info = st_cand
-                                            break
+                                stop_info, _ = route_finder.find_stop(expanded_query)
 
                             if stop_info:
                                 buses = route_finder.buses_from(stop_info["stop_id"])
                                 if buses:
                                     lines = [f"### VERIFIED BUS ROUTE SCHEDULE FOR STOP: {stop_info['name']} (Canonical ID: {stop_info['stop_id']})"]
                                     seen_routes = set()
+                                    college_buses_count = 0
+                                    public_buses_count = 0
                                     for b in buses:
                                         clean_id = re.sub(r'_(onward|return)$', '', b['route_id'], flags=re.IGNORECASE)
                                         if clean_id in seen_routes:
@@ -4304,11 +4288,18 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         clean_name = re.sub(r'_(onward|return)', '', b['route_name'], flags=re.IGNORECASE)
                                         is_college = (b['category'] == "college")
                                         if is_college:
-                                            lines.append(f"- [COLLEGE BUS] **Route {clean_id}** ({clean_name}): Boarding time at {stop_info['name']}: **{b['time_at_stop'] or 'Scheduled'}** | Arrival at MSAJCE Campus (Siruseri OMR): **8:00 AM**")
+                                            college_buses_count += 1
+                                            meta_info = b.get("meta", {})
+                                            driver_str = f" | Driver: {meta_info.get('driver')} (Phone: {meta_info.get('contact')})" if meta_info.get('driver') else ""
+                                            lines.append(f"- [DEDICATED COLLEGE BUS] **Route {clean_id}** ({clean_name}): Boarding time at {stop_info['name']}: **{b['time_at_stop'] or 'Scheduled'}** | Scheduled Arrival at MSAJCE Campus (Siruseri OMR): **8:00 AM**{driver_str}")
                                         else:
-                                            time_info = f"Boarding time at {stop_info['name']}: **{b['time_at_stop']}**" if b['time_at_stop'] else "Regular city service frequency"
-                                            lines.append(f"- [PUBLIC MTC BUS (CITY TRANSIT)] **Route {clean_id}** ({clean_name}): {time_info} | Public MTC Bus (NOT a college bus)")
-                                    
+                                            public_buses_count += 1
+                                            time_info = f"Boarding time at {stop_info['name']}: **{b['time_at_stop']}**" if b['time_at_stop'] else "Frequent public transit service (Every 5–15 mins)"
+                                            lines.append(f"- [PUBLIC MTC BUS (CITY TRANSIT)] **Route {clean_id}** ({clean_name}): {time_info} | Direct Public MTC City Bus connecting to Siruseri IT Park / MSAJCE Main Gate (NOT an official college bus).")
+
+                                    if college_buses_count == 0 and public_buses_count > 0:
+                                        lines.append(f"\n- **Important Transit Clarification**: No direct dedicated college bus operates with a boarding stop at {stop_info['name']}. Students commuting from {stop_info['name']} should take the direct public MTC buses listed above directly to Siruseri IT Park (MSAJCE Main Gate), or connect to nearby college bus pickup points (such as Route AR 8 at Ashok Pillar / K.K. Nagar, Route N3 at Saidapet / T. Nagar, or Route R22 at Ramapuram / Guindy).")
+
                                     rf_chunk_text = "\n".join(lines)
                                     retrieved_chunks.insert(0, {
                                         "chunk_id": f"route_finder_{stop_info['stop_id']}",

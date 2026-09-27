@@ -341,16 +341,26 @@ class CorrectiveRAGFilter:
                 purified.append(c)
             return purified
 
-        # If domain is TRANSPORT, prioritize transport chunks and drop unrelated research
+        # If domain is TRANSPORT, strictly retain transport chunks and purge unrelated academic/NAAC/society chunks
         if domain == CampusDomain.TRANSPORT:
-            purified = []
+            transport_chunks = []
             for c in chunks:
                 cat = (c.get("category") or "").lower()
                 src = (c.get("source_file") or "").lower()
-                if "research" in src and "bus" not in c.get("content", "").lower():
-                    continue
-                purified.append(c)
-            return purified if purified else chunks
+                title = (c.get("title") or "").lower()
+                chunk_id = (c.get("chunk_id") or "").lower()
+                content = (c.get("content") or "").lower()
+                
+                is_transport = (
+                    "transport" in cat or "transport" in src or 
+                    "bus" in title or "route" in title or 
+                    chunk_id.startswith("route_finder") or
+                    "bus" in content or "route ar" in content or "mtc" in content or "siruseri" in content
+                )
+                if is_transport and not any(unrelated in src for unrelated in ["msajce_naac.md", "msajce_iqac.md", "msajce_placement.md", "msajce_library.md", "msajce_professional_societies.md", "msajce_incubation.md", "msajce_research.md"]):
+                    transport_chunks.append(c)
+
+            return transport_chunks if transport_chunks else chunks
 
         # For other domains, drop chunks that blatantly conflict with intent
         return chunks
