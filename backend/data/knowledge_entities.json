@@ -3628,5 +3628,50 @@
       "title": "Fundamentals of Electrical Measuring Instruments",
       "status": "Filed & Published"
     }
+  },
+  {
+    "entity_key": "campus_location_map",
+    "entity_name": "MSAJCE Campus Location & Google Maps Navigation",
+    "entity_type": "LOCATION",
+    "aliases": [
+      "location",
+      "map",
+      "maps",
+      "map link",
+      "google maps",
+      "google map",
+      "google maps link",
+      "directions",
+      "directions to college",
+      "campus location",
+      "college location",
+      "msajce location",
+      "location of msajce",
+      "location of college",
+      "location of college msajce",
+      "where is msajce",
+      "where is msajce located",
+      "where is the college located",
+      "college address",
+      "campus address",
+      "msajce address",
+      "gps coordinates",
+      "coordinates",
+      "how to reach",
+      "how to reach msajce",
+      "plus code"
+    ],
+    "value": "Mohamed Sathak A.J. College of Engineering (MSAJCE) is located at 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Navalur, Chennai, Tamil Nadu – 603103, India. Coordinates: 12°50'08.9\"N 80°13'07.0\"E. Plus Code: R6P9+8C Egattur, Tamil Nadu. Official Google Maps Navigation Link: https://maps.app.goo.gl/nrTgXSwx1h76SjdSA",
+    "source_file": "msajce_about.md",
+    "source_url": "https://maps.app.goo.gl/nrTgXSwx1h76SjdSA",
+    "details": {
+      "institution": "Mohamed Sathak A.J. College of Engineering (MSAJCE)",
+      "address": "34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Navalur, Chennai, Tamil Nadu – 603103, India",
+      "landmark": "Inside SIPCOT IT Park Siruseri, surrounded by 100+ global IT companies (TCS, CTS, Infosys, Capgemini)",
+      "coordinates": "12°50'08.9\"N 80°13'07.0\"E",
+      "plus_code": "R6P9+8C Egattur, Tamil Nadu",
+      "google_maps_url": "https://maps.app.goo.gl/nrTgXSwx1h76SjdSA"
+    },
+    "surrounding_context": "Campus Location & Google Maps: Mohamed Sathak A.J. College of Engineering (MSAJCE) is situated in SIPCOT IT Park, Siruseri, Chennai. Google Maps: https://maps.app.goo.gl/nrTgXSwx1h76SjdSA"
   }
 ]

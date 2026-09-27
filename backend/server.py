@@ -159,6 +159,7 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant for Mo
 
 [IDENTITY & DOMAINS]
 - Official Domains: Use ONLY msajce (principal@msajce.edu.in, admissions@msajce.edu.in, https://msajce.edu.in). NEVER use msajcea or msajce-edu.in.
+- Campus Location & Google Maps Link: Mohamed Sathak A.J. College of Engineering (MSAJCE) is situated inside SIPCOT IT Park, 34, Rajiv Gandhi Salai (OMR), Siruseri, Egattur, Navalur, Chennai, Tamil Nadu – 603103, India (GPS Coordinates: 12°50'08.9"N 80°13'07.0"E | Plus Code: R6P9+8C Egattur, Tamil Nadu). Whenever the user asks about the college location, campus address, GPS coordinates, how to reach, or requests a map / directions, ALWAYS provide this verified Google Maps navigation link: [Mohamed Sathak A.J. College of Engineering on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA).
 - Creator Attribution: Architected & built by Ramanathan S. (Ram), B.Tech IT (Batch 2024-2028). Portfolio: https://ram-portfolio3d.vercel.app | GitHub: https://github.com/hackerstudent29. Acknowledge Ram respectfully as creator ONLY when the user explicitly asks who created, built, or developed Lorin AI. Do not insert creator attribution into other queries.
 
 [OUTPUT FORMATTING - STRICT ROW-WISE & ANTI-WALL-OF-TEXT]
@@ -2054,22 +2055,19 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
     },
     "contact": {
         "keywords": [
-            "What is the official contact info, phone numbers, email addresses, and campus location of MSAJCEA at Siruseri IT Park?",
-            "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?",
+            "What is the official contact info, phone numbers, email addresses, and campus location of MSAJCE at Siruseri IT Park?",
+            "What is the official contact info, phone numbers, email addresses, and location map for MSAJCE?",
             "contact info",
             "official contact",
             "phone numbers",
             "email addresses",
-            "campus location",
-            "location map",
-            "contact msajcea",
+            "contact msajce",
             "admission office phone",
-            "principal email",
-            "siruseri it park address"
+            "principal email"
         ],
-        "response": """# Official Contact Directory & Campus Location of MSAJCEA
+        "response": """# Official Contact Directory & Campus Location of MSAJCE
 
-**Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)**  
+**Mohamed Sathak A.J. College of Engineering (MSAJCE)**  
 *Approved by AICTE, Affiliated to Anna University, NAAC 'A+' Accredited | TNEA Code: 1301*
 
 ---
@@ -2104,7 +2102,62 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
 - **Kelambakkam Police Station**: Primary jurisdiction for the IT Park (~4 km away)
 - **SIPCOT 24/7 Mobile Security Patrol SUV**: Continuous patrol across campus perimeters""",
         "sources": [
-            {"chunk_id": "card_contact_01", "title": "Official MSAJCEA Contact & Campus Directory Record", "source_file": "msajce_about.md", "category": "contact", "page_url": "https://msajce.edu.in/contact.php", "score": 1.0, "snippet": "34 Rajiv Gandhi Salai OMR, Siruseri IT Park, Chennai 603103, 044-27476300, Dr. Santhosh Nathan 9840886992."}
+            {"chunk_id": "card_contact_01", "title": "Official MSAJCE Contact & Campus Directory Record", "source_file": "msajce_about.md", "category": "contact", "page_url": "https://msajce.edu.in/contact.php", "score": 1.0, "snippet": "34 Rajiv Gandhi Salai OMR, Siruseri IT Park, Chennai 603103, 044-27476300, Dr. Santhosh Nathan 9840886992."}
+        ]
+    },
+    "location": {
+        "keywords": [
+            "What is the location, address, GPS coordinates, and map link for MSAJCE?",
+            "What is the map link for location of college msajce?",
+            "map link for location of college msajce",
+            "map link for msajce",
+            "google maps link for msajce",
+            "google maps link",
+            "google maps",
+            "google map",
+            "msajce map link",
+            "msajce map",
+            "map link",
+            "location of college msajce",
+            "location of msajce",
+            "msajce location",
+            "where is msajce located",
+            "where is the college located",
+            "college location",
+            "campus location",
+            "msajce address",
+            "college address",
+            "campus address",
+            "siruseri it park address",
+            "directions to msajce",
+            "how to reach msajce",
+            "gps coordinates of msajce",
+            "msajce coordinates",
+            "coordinates of msajce"
+        ],
+        "response": """# Official Campus Location & Map Directions
+
+**Mohamed Sathak A.J. College of Engineering (MSAJCE)**  
+*Approved by AICTE, Affiliated to Anna University, NAAC 'A+' Accredited | TNEA Code: 1301*
+
+---
+
+### Campus Location & Geo-Coordinates
+- **Institution**: Mohamed Sathak A.J. College of Engineering (MSAJCE)
+- **Official Address**: 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Navalur, Chennai, Tamil Nadu – 603 103, India.
+- **Landmark**: Situated inside SIPCOT IT Park Siruseri, surrounded by 100+ global IT giants (TCS, CTS, Infosys, Capgemini).
+- **Coordinates**: **12°50'08.9"N 80°13'07.0"E**
+- **Plus Code**: **R6P9+8C Egattur, Tamil Nadu**
+- **Google Maps Navigation**: [Mohamed Sathak A.J. College of Engineering on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA)
+
+---
+
+### Transit & Connectivity
+- **Dedicated College Buses**: 9 dedicated college bus routes serving 175 stops across Chennai arriving at campus by 8:00 AM.
+- **Public MTC Buses**: City routes 19K, 570, AC-570, 102, 102X, and 568B connect to the Siruseri (Muttukadu) / IT Park bus stop.
+- **Nearest Metro & Rail**: Meenambakkam Airport Metro (connected via Bus Route MAA2) and Tambaram Railway Station (connected via Bus Route TAM1).""",
+        "sources": [
+            {"chunk_id": "card_location_01", "title": "Official MSAJCE Campus Location & Google Maps Record", "source_file": "msajce_about.md", "category": "contact", "page_url": "https://maps.app.goo.gl/nrTgXSwx1h76SjdSA", "score": 1.0, "snippet": "34 Rajiv Gandhi Salai OMR, Inside SIPCOT IT Park, Siruseri, Chennai 603103. Coordinates: 12°50'08.9\"N 80°13'07.0\"E. Google Maps Directions: https://maps.app.goo.gl/nrTgXSwx1h76SjdSA"}
         ]
     }
 }
@@ -2209,6 +2262,15 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     # Developer questions ("who is ram", "who created you")
     if any(k in q_clean for k in ["who is ram", "who is rama", "who is ramanathan", "who created you", "who made you", "who built you", "who developed you", "who programmed you", "developer of lorin", "creator of lorin", "ram portfolio"]):
         return PREBUILT_CARD_ANSWERS.get("developer")
+
+    # College Location & Google Maps Navigation link (0ms instant response)
+    if any(k in q_clean for k in [
+        "map link", "google map", "google maps", "location of college", "location of msajce",
+        "where is msajce", "where is the college located", "where is college located",
+        "msajce location", "college location", "campus location", "msajce address",
+        "college address", "campus address", "gps coordinates", "coordinates of msajce"
+    ]) and not any(k in q_clean for k in ["fee", "cutoff", "syllabus", "placement", "patent", "exam", "result"]):
+        return PREBUILT_CARD_ANSWERS.get("location")
 
     if len(q_clean) < 3:
         return None
