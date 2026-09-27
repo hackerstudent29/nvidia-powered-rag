@@ -236,7 +236,13 @@ const ChatHeader = React.memo(function ChatHeader({
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6"
+          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 relative flex items-center justify-between px-3.5 sm:px-6 rounded-full overflow-hidden
+            backdrop-blur-2xl
+            bg-white/60 dark:bg-[#0d0e12]/55
+            border border-white/70 dark:border-white/[0.09]
+            shadow-[0_8px_32px_rgba(0,0,0,0.10),0_1.5px_0_rgba(255,255,255,0.55)_inset,0_-1px_0_rgba(0,0,0,0.06)_inset] dark:shadow-[0_8px_40px_rgba(0,0,0,0.7),0_1px_0_rgba(255,255,255,0.06)_inset]
+            before:absolute before:inset-0 before:rounded-full before:pointer-events-none
+            before:bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(255,255,255,0.45)_0%,transparent_100%)] dark:before:bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(255,255,255,0.05)_0%,transparent_100%)]"
         >
           {/* ── Brand & Badges ── */}
           <div className="flex items-center gap-2 shrink-0">
@@ -272,7 +278,7 @@ const ChatHeader = React.memo(function ChatHeader({
             {!isEmbed && (
               <nav
                 ref={headerNavRef}
-                className="hidden lg:flex rounded-full items-center p-1 gap-1 border border-black/[0.06] dark:border-white/[0.08] bg-black/[0.03] dark:bg-white/[0.04] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                className="hidden lg:flex rounded-full items-center p-1 gap-1 border border-black/[0.06] dark:border-white/[0.07] bg-black/[0.04] dark:bg-white/[0.05] shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),inset_0_-1px_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl"
               >
                 {headerPills.map((pill) => {
                   const Icon = pill.icon;
