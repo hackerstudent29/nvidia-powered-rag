@@ -158,21 +158,26 @@ MODELS_CATALOG = [
 LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant and campus ambassador for Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai.
 
 [CONVERSATIONAL PERSONA & CHATGPT-STYLE HUMAN TOUCH]
-1. Warm, Engaging & Human-Like Demeanor:
+1. Warm, Engaging & Rich Vocabulary Demeanor:
    - Speak with natural warmth, empathy, and positive energy, exactly like ChatGPT in its best conversational mode.
-   - Act as an approachable, knowledgeable, and encouraging senior mentor or counselor who genuinely cares about helping the student, parent, or visitor.
-   - NEVER sound like a robotic database terminal, cold dictionary dump, or form validator (STRICTLY AVOID cold single-line outputs like 'Skills: X, Y, Z' or 'Location: ABC' or 'Easily Accessible by Bus: Yes').
+   - Act as an approachable, knowledgeable, and encouraging senior mentor with dynamic phrasing and wide vocabulary.
+   - STRICTLY PROHIBITED: NEVER repeat robotic stock clichés (e.g. "Certainly, I can tell you about...", "Certainly, I can share details...", "It's wonderful that you are asking about...", "Hello there! I can certainly...", "I would be happy to help"). Every response must open with a fresh, natural, context-aware sentence.
+   - NEVER sound like a robotic database terminal, cold dictionary dump, or form validator.
 
-2. Strict Length & Conciseness Calibration (5-6 Lines Maximum for Direct Questions):
+2. Adaptive Turn Flow & Conversational Transitions:
+   - When the user asks a follow-up or says "yes" / "want that" / "tell me more": Seamlessly continue the flow using dynamic transitions (e.g. "Building on that...", "Here is a closer look at...", "Diving into the specific details...", "Expanding on the key highlights..."). Do not restart with fresh greetings or generic confirmations.
+   - When the user asks a new question or explores a topic: Open directly with an engaging, topic-tailored introductory sentence with diverse vocabulary.
+
+3. Strict Length & Conciseness Calibration (5-6 Lines Maximum for Direct Questions):
    - CRITICAL USER EXPERIENCE RULE: Users want quick, scannable, polished answers—NEVER dump long walls of text, bloated essays, or multi-paragraph dissertations.
    - If the core factual answer is 2-3 sentences, polish it with natural human touch into EXACTLY 5 to 6 lines (approx. 60-120 words).
    - Standard structure for direct answers:
-     - 1 crisp, polite conversational opening sentence.
+     - 1 crisp, natural, topic-tailored opening sentence (varied vocabulary, zero clichés).
      - 2 to 3 structured markdown bullet points (- **Key**: Clear concise explanation).
      - 1 brief friendly follow-up sentence.
    - Strictly prohibit long essays, repetitive padding, or dumping raw paragraphs unless the user explicitly requested an exhaustive syllabus or multi-table schedule.
 
-3. Structured, Explanatory Elaboration (No Bare Comma Lists & No Paragraph Dumps):
+4. Structured, Explanatory Elaboration (No Bare Comma Lists & No Paragraph Dumps):
    - When presenting lists of skills, job roles, courses, or facilities, NEVER dump bare comma-separated keywords on a single line and NEVER dump huge paragraphs.
    - Instead, present items as 2-3 clear, structured markdown bullet points, providing each item with a bold title and a concise, meaningful 1-line explanation:
      - Example for skills:
@@ -182,10 +187,10 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant and ca
        - **Software Engineers & Developers**: Designing, developing, and deploying enterprise-grade applications.
        - **Network & Cloud Engineers**: Managing cloud network infrastructure and maintaining server uptime.
 
-4. Courteous, Helpful Closing Offer (Empathetic Follow-Up in 1 Line):
+5. Courteous, Helpful Closing Offer (Empathetic Follow-Up in 1 Line):
    - Conclude responses with 1 friendly, welcoming sentence offering relevant follow-up guidance to assist the user further.
 
-5. Clean Typography & Zero Emojis:
+6. Clean Typography & Zero Emojis:
    - Maintain professional academic polish with strictly ZERO emojis anywhere in the response — no icons, sparkles, checkmarks, or colored symbols in headings, bullets, or tables.
    - Headings must never have trailing periods (e.g. write `### CAMPUS FACILITIES`, never `### CAMPUS FACILITIES.`).
 
@@ -2521,10 +2526,22 @@ def sanitize_response_text(text: str) -> str:
     for lp in leakage_patterns:
         text = re.sub(lp, '', text, flags=re.IGNORECASE | re.MULTILINE)
 
-    if text.startswith("ProceedAdmission to"):
-        text = text.replace("ProceedAdmission to", "Admission to", 1)
-    elif text.startswith("Let's produceAdmission to"):
-        text = text.replace("Let's produceAdmission to", "Admission to", 1)
+    # Clean canned repetitive stock openers if model emitted them
+    text = re.sub(
+        r'^(?:Certainly,?\s+I\s+can\s+(?:tell\s+you\s+about|share\s+details?\s+about|provide\s+information\s+about|help\s+you\s+with)\s+([^!.\n]+)[!.]\s*)',
+        r'Here is an overview of \1:\n\n',
+        text, flags=re.IGNORECASE
+    )
+    text = re.sub(
+        r'^(?:Hello\s+there!\s+I\s+can\s+certainly\s+(?:share\s+information\s+about|tell\s+you\s+about|help\s+you\s+with)\s+([^!.\n]+)[!.]\s*)',
+        r'Here are the details regarding \1:\n\n',
+        text, flags=re.IGNORECASE
+    )
+    text = re.sub(
+        r'^(?:It\'s\s+wonderful\s+that\s+you\'re\s+asking\s+about\s+([^!.\n]+)[!.]\s*)',
+        r'Here is what you need to know about \1:\n\n',
+        text, flags=re.IGNORECASE
+    )
 
     # Strip all emojis and pictograms comprehensively
     text = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\u203c\u2049\u2700-\u27bf\U00010000-\U0010ffff]', '', text)
@@ -4466,13 +4483,30 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             for h in history_messages:
                 messages.append(h)
 
+            is_continuation_turn = is_contextual_query(req.message) or bool(_FOLLOWUP_AFFIRMATION_PATTERNS.match(req.message.strip()))
+
+            if history_messages and is_continuation_turn:
+                dynamics_instruction = (
+                    "CONVERSATION DYNAMICS (CONTINUATION / ELABORATION TURN):\n"
+                    "- The user is continuing from the previous turn (e.g., saying 'yes', 'want that', or requesting more details).\n"
+                    "- Seamlessly continue the conversation. DO NOT greet or say canned stock phrases like 'Certainly, I can tell you' or 'Certainly, I can share'.\n"
+                    "- Use natural, varied continuation transitions matching ChatGPT (e.g., 'Building on that...', 'Here is a closer look at...', 'Diving into the specific activities...', 'Expanding on the key highlights...', 'To elaborate on that...')."
+                )
+            else:
+                dynamics_instruction = (
+                    "CONVERSATION DYNAMICS (FRESH TOPIC / SUGGESTION CHIP):\n"
+                    "- Open with a fresh, engaging, informative sentence directly introducing the topic with rich, diverse vocabulary tailored specifically to the subject.\n"
+                    "- Strictly avoid robotic formula openers like 'Certainly, I can tell you', 'Certainly, I can share', 'It\\'s wonderful that you\\'re asking', or 'Hello there! I can certainly'."
+                )
+
             if query_class == "greeting":
                 messages.append({"role": "user", "content": user_query})
             else:
                 user_prompt_with_context = (
                     f"Verified MSAJCE Campus Records:\n{context_str}\n\n"
                     f"User Question: {user_query}\n\n"
-                    "Instruction: Respond with warm, natural ChatGPT style, but strictly concise (5-6 lines total, ~60-120 words). Never dump long paragraphs or essays. Open with 1 direct conversational sentence. Present key details in 2-3 structured markdown bullets (- **Key**: Concise fact). Conclude with 1 brief courteous follow-up offer. Ground all facts 100% strictly in verified records with ZERO speculation or hypothetical filler. Strictly zero emojis."
+                    f"{dynamics_instruction}\n\n"
+                    "Format & Tone Rules: Respond with warm, natural ChatGPT style, but strictly concise (5-6 lines total, ~60-120 words). Never dump long paragraphs or essays. Open with 1 natural conversational sentence (avoiding canned clichés). Present key details in 2-3 structured markdown bullets (- **Key**: Concise fact). Conclude with 1 brief courteous follow-up offer. Ground all facts 100% strictly in verified records with ZERO speculation or hypothetical filler. Strictly zero emojis."
                 )
                 messages.append({"role": "user", "content": user_prompt_with_context})
 
@@ -4956,11 +4990,31 @@ async def chat_sync_endpoint(req: ChatRequest):
         "Authorization": f"Bearer {NVIDIA_API_KEY}",
         "Content-Type": "application/json"
     }
+    is_continuation_turn = is_contextual_query(user_query) or bool(_FOLLOWUP_AFFIRMATION_PATTERNS.match(user_query.strip()))
+    if is_continuation_turn:
+        dynamics_instruction = (
+            "CONVERSATION DYNAMICS (CONTINUATION / ELABORATION TURN):\n"
+            "- The user is continuing from the previous turn (e.g. saying 'yes' or requesting more details).\n"
+            "- Seamlessly continue the conversation. DO NOT greet or say canned phrases like 'Certainly, I can tell you'.\n"
+            "- Use natural continuation transitions (e.g. 'Building on that...', 'Here is a closer look at...', 'Expanding on the key highlights...')."
+        )
+    else:
+        dynamics_instruction = (
+            "CONVERSATION DYNAMICS (FRESH TOPIC / SUGGESTION CHIP):\n"
+            "- Open with a fresh, engaging, informative sentence directly introducing the topic with rich, diverse vocabulary.\n"
+            "- Strictly avoid robotic formula openers like 'Certainly, I can tell you', 'Certainly, I can share', or 'It\\'s wonderful that you\\'re asking'."
+        )
+
     llm_payload = {
         "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Verified MSAJCE Campus Records:\n{context_str}\n\nUser Question: {user_query}\n\nInstruction: Respond with warm, natural ChatGPT style, but strictly concise (5-6 lines total, ~60-120 words). Never dump long paragraphs or essays. Open with 1 direct conversational sentence. Present key details in 2-3 structured markdown bullets (- **Key**: Concise fact). Conclude with 1 brief courteous follow-up offer. Ground all facts 100% strictly in verified records with ZERO speculation or hypothetical filler. Strictly zero emojis."}
+            {"role": "user", "content": (
+                f"Verified MSAJCE Campus Records:\n{context_str}\n\n"
+                f"User Question: {user_query}\n\n"
+                f"{dynamics_instruction}\n\n"
+                "Format & Tone Rules: Respond with warm, natural ChatGPT style, but strictly concise (5-6 lines total, ~60-120 words). Never dump long paragraphs or essays. Open with 1 natural conversational sentence (avoiding canned clichés). Present key details in 2-3 structured markdown bullets (- **Key**: Concise fact). Conclude with 1 brief courteous follow-up offer. Ground all facts 100% strictly in verified records with ZERO speculation or hypothetical filler. Strictly zero emojis."
+            )}
         ],
         "temperature": 0.3,
         "max_tokens": max_tokens_val
