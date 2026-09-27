@@ -78,6 +78,8 @@ export default function FeedbackModal({
 
   const modalContent = (
     <div
+      role="dialog"
+      aria-modal="true"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

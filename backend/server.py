@@ -4954,9 +4954,9 @@ async def regenerate_with_nemo(req: NeMoRegenerateRequest):
     if not context_str:
         context_str = "Official MSAJCEA records confirm: TNEA Code 1301, 12 UG & 2 PG degree programs, campus location inside SIPCOT IT Park, Siruseri, Chennai – 603 103."
 
-    # 5. LLM-as-a-Judge Self-Evaluation & Answer Synthesis
-    judge_prompt = f"""You are Lorin AI's Automated Self-Evaluation & Re-Evaluation Engine for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA).
-A user flagged a previous response with negative feedback (dislike).
+    # 5. LLM-as-a-Judge Self-Evaluation & Feedback Verification Engine
+    judge_prompt = f"""You are Lorin AI's Automated Quality Verification Engine for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA).
+A user submitted a dislike rating and feedback on a previous bot answer.
 
 [USER QUERY]:
 {query}
@@ -4964,19 +4964,20 @@ A user flagged a previous response with negative feedback (dislike).
 [PREVIOUS BOT ANSWER]:
 {original_bot_answer if original_bot_answer else "N/A"}
 
-[USER FEEDBACK REASON / COMMENT]:
+[USER'S TYPED FEEDBACK / COMPLAINT]:
 {user_comment if user_comment else "No specific comment provided."}
 
 [OFFICIAL MSAJCEA GROUND-TRUTH RECORDS]:
 {context_str}
 
 Instruction:
-1. Evaluate whether the previous answer was:
-   - "FALSE_DISLIKE": The previous answer was already 100% correct, grounded, accurate, and answered ALL parts of the user's question. (User disliked due to college policy/rules or clicked by accident).
-   - "INCOMPLETE_OR_PARTIAL": The previous answer only answered part of the user's question (e.g. user asked 2 questions in 1 message, bot answered 1 but missed the 2nd).
-   - "HALLUCINATION_OR_WRONG": The previous answer was incorrect, contained wrong facts, or hallucinated details.
+1. FIRST, perform a rigorous verification of the [USER'S TYPED FEEDBACK / COMPLAINT], [USER QUERY], and [PREVIOUS BOT ANSWER] against the [OFFICIAL MSAJCEA GROUND-TRUTH RECORDS]. Do NOT blindly accept user complaints without verification.
+2. Classify the dislike feedback into one of these exact categories:
+   - "FALSE_DISLIKE": The user's complaint is UNFOUNDED or invalid. The previous answer was already 100% accurate, complete, and grounded in official campus facts (e.g. user complained about a valid college policy/rule, typed an incorrect claim, or clicked dislike for fun).
+   - "INCOMPLETE_OR_PARTIAL": The user's feedback or query correctly identified that the previous answer only answered part of the question or missed key details requested.
+   - "HALLUCINATION_OR_WRONG": The user's feedback correctly identified a real error, or the previous answer contained wrong facts, hallucinated details, or contradicted official records.
 
-2. Generate a 100% accurate, high-precision, grounded response answering ALL parts of the user question based strictly on the official MSAJCEA facts above.
+3. Synthesize a 100% accurate, complete, high-precision grounded response answering ALL parts of the user question and resolving any valid user feedback using strictly official MSAJCEA facts.
 
 Format your output EXACTLY as follows:
 DIAGNOSIS: [FALSE_DISLIKE | INCOMPLETE_OR_PARTIAL | HALLUCINATION_OR_WRONG]

@@ -444,16 +444,35 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   // Global Keyboard listener — typing anywhere auto-expands and focuses prompt box
   useEffect(() => {
     const handleGlobalTyping = (e: KeyboardEvent) => {
-      const activeTag = document.activeElement?.tagName;
-      const isInputFocused =
+      const activeEl = document.activeElement as HTMLElement | null;
+      const activeTag = activeEl?.tagName;
+
+      // 1. If any input, textarea, select, or contenteditable is active anywhere in the document
+      if (
         activeTag === "INPUT" ||
         activeTag === "TEXTAREA" ||
-        (document.activeElement as HTMLElement)?.isContentEditable;
+        activeTag === "SELECT" ||
+        activeEl?.isContentEditable
+      ) {
+        return;
+      }
 
-      if (isInputFocused) return;
+      // 2. If focus is inside any modal, dialog, backdrop, or form overlay anywhere in DOM
+      if (
+        activeEl?.closest('[role="dialog"]') ||
+        activeEl?.closest('[aria-modal="true"]') ||
+        activeEl?.closest('.modal') ||
+        activeEl?.closest('[data-modal]') ||
+        document.querySelector('[role="dialog"]') ||
+        document.querySelector('[aria-modal="true"]') ||
+        document.querySelector('.fixed.inset-0')
+      ) {
+        return;
+      }
+
       if (e.ctrlKey || e.altKey || e.metaKey || e.key === "Escape" || e.key === "Tab") return;
 
-      // Printable single character keypresses
+      // Printable single character keypresses when NO modal is open
       if (e.key.length === 1) {
         expand();
         if (textareaRef.current) {

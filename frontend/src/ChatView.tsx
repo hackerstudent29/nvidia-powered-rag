@@ -99,11 +99,19 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
 
   useEffect(() => {
     const handleGlobalShortcuts = (e: KeyboardEvent) => {
-      const activeTag = document.activeElement?.tagName;
+      const activeEl = document.activeElement as HTMLElement | null;
+      const activeTag = activeEl?.tagName;
       const isInputFocused =
         activeTag === "INPUT" ||
         activeTag === "TEXTAREA" ||
-        (document.activeElement as HTMLElement)?.isContentEditable;
+        activeTag === "SELECT" ||
+        activeEl?.isContentEditable ||
+        Boolean(
+          activeEl?.closest('[role="dialog"]') ||
+          activeEl?.closest('[aria-modal="true"]') ||
+          document.querySelector('[role="dialog"]') ||
+          document.querySelector('[aria-modal="true"]')
+        );
 
       if (isInputFocused) return;
 
