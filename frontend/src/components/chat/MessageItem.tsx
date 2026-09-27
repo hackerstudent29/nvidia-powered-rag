@@ -842,6 +842,7 @@ const MessageItem = React.memo(function MessageItem({
     text: string;
     x: number;
     y: number;
+    placement: "above" | "below";
   } | null>(null);
 
   useEffect(() => {
@@ -863,10 +864,36 @@ const MessageItem = React.memo(function MessageItem({
           const range = selection.getRangeAt(0);
           const rect = range.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // Compact popover toolbar dimensions for mobile & tablet screen fit
+            const approxWidth = Math.min(270, viewportWidth - 24);
+            const approxHeight = 44;
+
+            // X-coordinate: center over selection, clamped strictly within viewport margins
+            const centerX = rect.left + rect.width / 2;
+            const minX = approxWidth / 2 + 12;
+            const maxX = viewportWidth - approxWidth / 2 - 12;
+            const clampedX = Math.max(minX, Math.min(maxX, centerX));
+
+            // Y-coordinate: header top bar is ~60px. If text selection is near top edge, place BELOW selection
+            let clampedY: number;
+            let placement: "above" | "below" = "above";
+
+            if (rect.top - approxHeight - 16 < 65) {
+              clampedY = Math.min(viewportHeight - 60, rect.bottom + 12);
+              placement = "below";
+            } else {
+              clampedY = Math.max(70, rect.top - 10);
+              placement = "above";
+            }
+
             setSelectionToolbar({
               text,
-              x: Math.max(120, Math.min(window.innerWidth - 120, rect.left + rect.width / 2)),
-              y: Math.max(50, rect.top - 12),
+              x: clampedX,
+              y: clampedY,
+              placement,
             });
           }
         } catch (e) {
@@ -1927,10 +1954,10 @@ const MessageItem = React.memo(function MessageItem({
             position: "fixed",
             left: `${selectionToolbar.x}px`,
             top: `${selectionToolbar.y}px`,
-            transform: "translate(-50%, -100%)",
+            transform: selectionToolbar.placement === "below" ? "translate(-50%, 0%)" : "translate(-50%, -100%)",
             zIndex: 99999,
           }}
-          className="flex items-center gap-1 p-1 rounded-xl bg-[#18181b] dark:bg-[#14151a] text-white shadow-2xl border border-white/20 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans"
+          className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] overflow-x-auto shrink-0"
         >
           {/* 1. Ask Lorin */}
           <button
@@ -1946,15 +1973,15 @@ const MessageItem = React.memo(function MessageItem({
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11.5px] font-semibold text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             <span>Ask Lorin</span>
           </button>
 
-          <div className="w-[1px] h-3.5 bg-white/20" />
+          <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
 
           {/* 2. Read Aloud */}
           <button
@@ -1965,16 +1992,16 @@ const MessageItem = React.memo(function MessageItem({
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11.5px] font-semibold text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
             </svg>
             <span>Read Aloud</span>
           </button>
 
-          <div className="w-[1px] h-3.5 bg-white/20" />
+          <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
 
           {/* 3. Copy */}
           <button
@@ -1989,9 +2016,9 @@ const MessageItem = React.memo(function MessageItem({
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
             }}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11.5px] font-semibold text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-emerald-400">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>

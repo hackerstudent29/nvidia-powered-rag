@@ -22,20 +22,20 @@
 }
 
 ::selection {
-  background-color: rgba(16, 185, 129, 0.32) !important;
-  color: inherit !important;
+  background-color: rgba(158, 35, 57, 0.28) !important;
+  color: #1C1917 !important;
 }
 ::-moz-selection {
-  background-color: rgba(16, 185, 129, 0.32) !important;
-  color: inherit !important;
+  background-color: rgba(158, 35, 57, 0.28) !important;
+  color: #1C1917 !important;
 }
 
 .dark ::selection {
-  background-color: rgba(16, 185, 129, 0.42) !important;
+  background-color: rgba(225, 29, 72, 0.42) !important;
   color: #ffffff !important;
 }
 .dark ::-moz-selection {
-  background-color: rgba(16, 185, 129, 0.42) !important;
+  background-color: rgba(225, 29, 72, 0.42) !important;
   color: #ffffff !important;
 }
 
