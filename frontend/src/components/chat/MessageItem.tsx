@@ -859,25 +859,30 @@ const MessageItem = React.memo(function MessageItem({
         return;
       }
 
-      if (messageRef.current && messageRef.current.contains(selection.anchorNode)) {
-        try {
-          const range = selection.getRangeAt(0);
+      try {
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : (container as Element);
+
+        if (!element?.closest(".chat-message-content")) {
+          setSelectionToolbar(null);
+          return;
+        }
+
+        if (messageRef.current && messageRef.current.contains(container)) {
           const rect = range.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
 
-            // Compact popover toolbar dimensions for mobile & tablet screen fit
-            const approxWidth = Math.min(270, viewportWidth - 24);
+            const approxWidth = Math.min(420, viewportWidth - 24);
             const approxHeight = 44;
 
-            // X-coordinate: center over selection, clamped strictly within viewport margins
             const centerX = rect.left + rect.width / 2;
             const minX = approxWidth / 2 + 12;
             const maxX = viewportWidth - approxWidth / 2 - 12;
             const clampedX = Math.max(minX, Math.min(maxX, centerX));
 
-            // Y-coordinate: header top bar is ~60px. If text selection is near top edge, place BELOW selection
             let clampedY: number;
             let placement: "above" | "below" = "above";
 
@@ -896,14 +901,30 @@ const MessageItem = React.memo(function MessageItem({
               placement,
             });
           }
-        } catch (e) {
-          setSelectionToolbar(null);
         }
+      } catch (e) {
+        setSelectionToolbar(null);
+      }
+    };
+
+    const handleScrollOrResize = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) {
+        setSelectionToolbar(null);
+      } else {
+        handleSelectionChange();
       }
     };
 
     document.addEventListener("selectionchange", handleSelectionChange);
-    return () => document.removeEventListener("selectionchange", handleSelectionChange);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
   }, []);
 
   // Strictly real token metrics sent by the backend server (no fake or estimated data)
@@ -1308,7 +1329,7 @@ const MessageItem = React.memo(function MessageItem({
     return (
       <div className="flex flex-col items-end my-3 sm:my-4 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-200">
         <div className="max-w-[85%] sm:max-w-[80%] min-w-0 box-border">
-          <div className="bg-[#E1EED7]/90 dark:bg-[#1C2C28] text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-[#2E6B5E]/25 dark:border-[#10b981]/30 font-medium">
+          <div className="chat-message-content bg-[#E1EED7]/90 dark:bg-[#1C2C28] text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-[#2E6B5E]/25 dark:border-[#10b981]/30 font-medium select-text">
             {message.content}
           </div>
         </div>
@@ -1371,7 +1392,7 @@ const MessageItem = React.memo(function MessageItem({
           durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
         />
 
-        <div onDoubleClick={handleCopy} className="prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden cursor-text">
+        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden cursor-text select-text">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -1956,6 +1977,7 @@ const MessageItem = React.memo(function MessageItem({
       {/* Floating Text Selection Popover Toolbar */}
       {selectionToolbar && typeof document !== "undefined" && createPortal(
         <div
+          onPointerDown={(e) => e.preventDefault()}
           style={{
             position: "fixed",
             left: `${selectionToolbar.x}px`,
@@ -1965,9 +1987,81 @@ const MessageItem = React.memo(function MessageItem({
           }}
           className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] overflow-x-auto shrink-0"
         >
-          {/* 1. Ask Lorin */}
+          {/* 1. Explain */}
+          {onSendPrompt && (
+            <button
+              type="button"
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => {
+                const textToExplain = selectionToolbar.text;
+                onSendPrompt(`Explain the following selected text clearly and concisely:\n\n"${textToExplain}"`);
+                setSelectionToolbar(null);
+                window.getSelection()?.removeAllRanges();
+              }}
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <span>Explain</span>
+            </button>
+          )}
+
+          {onSendPrompt && <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />}
+
+          {/* 2. Simplify */}
+          {onSendPrompt && (
+            <button
+              type="button"
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => {
+                const textToSimplify = selectionToolbar.text;
+                onSendPrompt(`Rewrite the following selected text in simpler language:\n\n"${textToSimplify}"`);
+                setSelectionToolbar(null);
+                window.getSelection()?.removeAllRanges();
+              }}
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              <span>Simplify</span>
+            </button>
+          )}
+
+          {onSendPrompt && <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />}
+
+          {/* 3. Summarize */}
+          {onSendPrompt && (
+            <button
+              type="button"
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => {
+                const textToSummarize = selectionToolbar.text;
+                onSendPrompt(`Summarize the following selected text:\n\n"${textToSummarize}"`);
+                setSelectionToolbar(null);
+                window.getSelection()?.removeAllRanges();
+              }}
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
+                <line x1="21" y1="10" x2="3" y2="10" />
+                <line x1="21" y1="6" x2="3" y2="6" />
+                <line x1="21" y1="14" x2="3" y2="14" />
+                <line x1="18" y1="18" x2="3" y2="18" />
+              </svg>
+              <span>Summarize</span>
+            </button>
+          )}
+
+          <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
+
+          {/* 4. Ask Lorin */}
           <button
             type="button"
+            onPointerDown={(e) => e.preventDefault()}
             onClick={() => {
               const textToUse = selectionToolbar.text;
               const textareaEl = document.querySelector('textarea') as HTMLTextAreaElement | null;
@@ -1975,6 +2069,7 @@ const MessageItem = React.memo(function MessageItem({
                 textareaEl.value = textToUse;
                 textareaEl.dispatchEvent(new Event('input', { bubbles: true }));
                 textareaEl.focus();
+                textareaEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
               }
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
@@ -1989,9 +2084,10 @@ const MessageItem = React.memo(function MessageItem({
 
           <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
 
-          {/* 2. Read Aloud */}
+          {/* 5. Read Aloud */}
           <button
             type="button"
+            onPointerDown={(e) => e.preventDefault()}
             onClick={() => {
               const textToRead = selectionToolbar.text;
               handleTTS(undefined, 0, textToRead);
@@ -2009,9 +2105,10 @@ const MessageItem = React.memo(function MessageItem({
 
           <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
 
-          {/* 3. Copy */}
+          {/* 6. Copy */}
           <button
             type="button"
+            onPointerDown={(e) => e.preventDefault()}
             onClick={() => {
               const textToCopy = selectionToolbar.text;
               navigator.clipboard?.writeText(textToCopy);

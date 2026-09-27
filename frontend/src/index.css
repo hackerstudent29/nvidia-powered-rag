@@ -23,20 +23,48 @@
 
 ::selection {
   background-color: rgba(158, 35, 57, 0.28) !important;
-  color: #1C1917 !important;
+  color: inherit !important;
 }
 ::-moz-selection {
   background-color: rgba(158, 35, 57, 0.28) !important;
-  color: #1C1917 !important;
+  color: inherit !important;
 }
 
 .dark ::selection {
   background-color: rgba(225, 29, 72, 0.42) !important;
-  color: #ffffff !important;
+  color: inherit !important;
 }
 .dark ::-moz-selection {
   background-color: rgba(225, 29, 72, 0.42) !important;
-  color: #ffffff !important;
+  color: inherit !important;
+}
+
+.chat-message-content {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: none;
+  touch-action: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat-message-content ::selection {
+  background-color: rgba(158, 35, 57, 0.35) !important;
+  color: inherit !important;
+}
+
+.dark .chat-message-content ::selection {
+  background-color: rgba(225, 29, 72, 0.45) !important;
+  color: inherit !important;
+}
+
+.chat-message-content ::-moz-selection {
+  background-color: rgba(158, 35, 57, 0.35) !important;
+  color: inherit !important;
+}
+
+.dark .chat-message-content ::-moz-selection {
+  background-color: rgba(225, 29, 72, 0.45) !important;
+  color: inherit !important;
 }
 
 @layer base {
