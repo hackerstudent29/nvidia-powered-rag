@@ -8,7 +8,7 @@ interface TokenCostBadgeProps {
 }
 
 export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBadgeProps) {
-  if (!metrics) {
+  if (!metrics || metrics.total_tokens === 0 || (metrics.prompt_tokens === 0 && metrics.completion_tokens === 0) || (metrics as any).is_prebuilt) {
     return null;
   }
 

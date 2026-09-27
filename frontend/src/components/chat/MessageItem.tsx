@@ -1796,7 +1796,7 @@ const MessageItem = React.memo(function MessageItem({
         )}
 
         {/* Expandable Usage/Stats Panel */}
-        {statsOpen && realTokenMetrics && (
+        {statsOpen && realTokenMetrics && realTokenMetrics.total_tokens > 0 && (
           <div className="mt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
             <TokenCostPanel metrics={realTokenMetrics} />
           </div>
