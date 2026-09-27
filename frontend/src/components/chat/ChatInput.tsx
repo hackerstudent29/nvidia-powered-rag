@@ -1159,14 +1159,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               }
             }}
             style={{
-              borderRadius: 24,
-              height: expanded ? containerHeight : (isMobileViewport ? 56 : 64),
+              borderRadius: expanded ? 28 : 9999,
+              height: expanded ? containerHeight : (isMobileViewport ? 48 : 54),
               transition: isSmoothResize ? SMOOTH_HEIGHT_TRANSITION : SPRING_TRANSITION,
               overflow: (expanded || isVoiceMenuOpen || isModelSelectOpen) ? "visible" : "hidden",
             }}
             className={cn(
-              "relative w-full border border-black/10 dark:border-white/15 bg-white/95 dark:bg-[#12141c]/95 backdrop-blur-2xl shadow-2xl transition-all z-10 focus-within:border-[#2E6B5E]/60 dark:focus-within:border-[#10b981]/60 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
-              expanded ? "cursor-text" : "cursor-pointer hover:border-[#2E6B5E]/40 dark:hover:border-[#10b981]/40"
+              "relative w-full border border-black/[0.08] dark:border-white/[0.12] bg-white/95 dark:bg-[#14151a]/95 backdrop-blur-xl shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-all z-10 focus-within:border-[#2E6B5E]/60 dark:focus-within:border-[#10b981]/60 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
+              expanded ? "cursor-text rounded-[28px]" : "cursor-pointer rounded-full hover:border-[#2E6B5E]/40 dark:hover:border-[#10b981]/40"
             )}
           >
             {/* Textarea Input */}
@@ -1197,7 +1197,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
               className={cn(
-                "absolute inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 sm:pl-5 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
+                "absolute inset-x-0 z-[2] w-full resize-none bg-transparent pl-5 sm:pl-6 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
                 expanded ? "top-0 py-3 opacity-100 scale-100 translate-y-0 pr-12" : "top-1/2 -translate-y-1/2 py-0 h-6 opacity-100 scale-100 cursor-pointer pr-36 sm:pr-40",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
               )}
