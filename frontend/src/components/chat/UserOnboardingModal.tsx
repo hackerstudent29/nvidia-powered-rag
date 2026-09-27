@@ -129,8 +129,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
 
             {/* Modal Header */}
             <div className="relative z-10 flex items-start gap-3 text-left pr-6 mb-1">
-              <div className="shrink-0 -mt-1 p-1 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 shadow-lg">
-                <JellyBlobMascot emotion={modalMascotEmotion} size={54} interactive={true} />
+              <div className="shrink-0 -mt-1">
+                <JellyBlobMascot emotion={modalMascotEmotion} size={58} interactive={true} />
               </div>
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#34d399]">

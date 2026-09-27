@@ -137,7 +137,7 @@ const HeroGreeting = React.memo(function HeroGreeting({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45 }}
-      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2.5 sm:px-6 my-auto py-2 sm:py-4"
+      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2.5 sm:px-6 pt-20 sm:pt-24 md:pt-20 pb-4 sm:pb-6 my-auto"
     >
       {/* ── Hero headline ── */}
       <div className="relative flex flex-col items-center text-center mb-4 sm:mb-8 w-full">
@@ -153,9 +153,7 @@ const HeroGreeting = React.memo(function HeroGreeting({
           transition={{ duration: 0.5 }}
           className="relative mb-2.5 sm:mb-3.5 flex flex-col items-center justify-center z-10 group cursor-pointer"
         >
-          <div className="p-1 rounded-3xl bg-gradient-to-b from-white/90 to-emerald-500/10 dark:from-white/10 dark:to-emerald-500/20 shadow-xl border border-emerald-500/20 backdrop-blur-md">
-            <JellyBlobMascot emotion="curious" size={72} interactive={true} showSubtitle={true} />
-          </div>
+          <JellyBlobMascot emotion="curious" size={82} interactive={true} showSubtitle={true} />
         </motion.div>
 
         <motion.h1

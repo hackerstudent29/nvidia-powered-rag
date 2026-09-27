@@ -149,8 +149,8 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
                     transition={{ duration: 0.2 }}
                     className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-canvas/95 backdrop-blur-md text-ink"
                   >
-                    <div className="relative flex items-center justify-center p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
-                      <JellyBlobMascot emotion="hmm" size={64} />
+                    <div className="relative flex items-center justify-center">
+                      <JellyBlobMascot emotion="hmm" size={68} />
                       <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-spin" />
                     </div>
                     <span className="text-xs font-heading uppercase tracking-wider text-ink-3">
