@@ -177,11 +177,14 @@ def build_dynamic_system_prompt(query: str = "", domain: Optional[CampusDomain] 
         "You are Lorin AI, the official student assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). Friendly, concise senior-student mentor tone.",
         "Official Domains: Use ONLY msajce (principal@msajce.edu.in, admissions@msajce.edu.in, https://msajce.edu.in). NEVER msajcea or msajce-edu.in.",
         "",
-        "[FORMATTING & STRUCTURE - STRICT NO PARAGRAPH DUMPING]",
-        "1. Direct Answer First: State exact answer in line 1 without intro fluff, query restatement, or background padding.",
-        "2. Structure: Simple facts -> 1 direct bold line + crisp bullet list (- **Key**: Value). Multi-detail facts -> Markdown tables (| ... |) or bold bullets under clear headings (### Section Title). Never dump narrative essays.",
-        "3. Zero Emojis: Strictly ZERO emojis across all responses, headings, bullets, and tables. Keep output clean and professional.",
-        "4. Strict Grounding: Ground all statements strictly in verified campus records. State exact numbers, counts, and official names. Never invent statistics."
+        "[MANDATORY ROW-WISE STRUCTURE RULES - ZERO INLINE BULLETS]",
+        "1. Direct Answer First: State the exact direct answer in line 1 in bold (e.g. '**Mr. D. Weslin** is an Associate Professor in the Department of Information Technology at MSAJCE.').",
+        "2. Mandatory Row-Wise Layout: NEVER smash fields or bullet points inline on the same line (STRICTLY FORBIDDEN: 'Sentence. - **Key**: Val - **Key2**: Val').",
+        "3. Every single attribute, role, qualification, book, patent, or detail MUST be on its OWN SEPARATE ROW/LINE.",
+        "   - Prefer a clean GFM Markdown Table (| Category | Details |) whenever answering questions about people, faculty, departments, courses, fees, placements, bus routes, cutoffs, or facilities.",
+        "   - If using bullet points, EVERY bullet MUST start with a newline (\\n- **Key**: Value) with an empty line before the list. Never put more than one bullet on the same line.",
+        "4. Zero Emojis: Strictly ZERO emojis across all responses, headings, bullets, and tables. Keep output clean and professional.",
+        "5. Strict Grounding: Ground all statements strictly in verified campus records. State exact numbers, official names, and IDs."
     ]
 
     modules = []
@@ -293,28 +296,27 @@ def structure_markdown_for_mobile(text: str) -> str:
             processed_lines.append(line)
             continue
 
-        # 1. Break consecutive inline bold key-value pairs ONLY if multiple exist on the exact same line
-        if len(re.findall(r'\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*', line)) > 1:
-            line = re.sub(
-                r'([^\n])\s*(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*)\s*',
-                r'\1\n- \2 ',
-                line
-            )
+        # 1. Break inline dashed/bullet markers (e.g. "...department. - **Role**: ...")
+        line = re.sub(r'([^\n])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)', r'\1\n\n- \2', line)
 
-        # 2. Break consecutive inline feature headers ONLY if multiple exist on the same line
-        if len(re.findall(r'[🎓💰🏫📝✨🔥📌⚡💡•]\s*\*\*', line)) > 1:
-            line = re.sub(
-                r'([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*',
-                r'\1\n- \2 ',
-                line
-            )
+        # 2. Break consecutive inline bold key-value pairs (matches both **Key**: and **Key:**)
+        line = re.sub(r'([^\n])\s{2,}(\*\*[A-Za-z0-9\s/&\-.]{2,35}(?::\*\*|\*\*:\s*))', r'\1\n\n- \2', line)
+
+        # 3. Break consecutive inline feature headers
+        line = re.sub(r'([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s/&\-.]{2,35}\*\*\s*[\—\-–])\s*', r'\1\n\n- \2 ', line)
 
         processed_lines.append(line)
 
     text = '\n'.join(processed_lines)
 
+    # Ensure there is a blank line before any unordered list following normal text
+    text = re.sub(r'([^\n])\n(- \*\*)', r'\1\n\n\2', text)
+
     # Clean up any accidental double bullets like "- - **" or "- - 🎓"
     text = re.sub(r'-\s*-\s*(?=\*\*|[🎓💰🏫📝✨🔥📌⚡💡•])', r'- ', text)
+
+    # Normalize excessive blank lines
+    text = re.sub(r'\n{3,}', '\n\n', text)
 
     return text
 
@@ -2440,6 +2442,11 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'msajcea\.ac\.in', 'msajce.edu.in', text, flags=re.IGNORECASE)
     text = re.sub(r'@msajcea\.in', '@msajce.edu.in', text, flags=re.IGNORECASE)
 
+    # Enforce strict row-wise formatting: break any smashed inline bullets or bold keys onto separate lines
+    text = re.sub(r'([^\n])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)', r'\1\n\n- \2', text)
+    text = re.sub(r'([^\n])\s{2,}(\*\*[A-Za-z0-9\s/&\-.]{2,35}\*\*:\s*)', r'\1\n\n- \2', text)
+    text = re.sub(r'([^\n])\n(- \*\*)', r'\1\n\n\2', text)
+
     # Preserve markdown tables as valid GFM table blocks without destroying individual rows
     text = re.sub(r'\n{3,}', '\n\n', text)
 
@@ -4243,7 +4250,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 user_prompt_with_context = (
                     f"Verified MSAJCEA Campus Records:\n{context_str}\n\n"
                     f"User Question: {user_query}\n\n"
-                    "Instruction: Direct structured response (bullets/tables). Ground strictly in records. Zero emojis."
+                    "INSTRUCTION: Provide a strictly ROW-WISE structured response (prefer a clean GFM Markdown Table | ... | or separate row-by-row bullet points with newlines). NEVER output inline bullet points or smash multiple fields onto one line. Ground strictly in campus records. Zero emojis."
                 )
                 messages.append({"role": "user", "content": user_prompt_with_context})
 
@@ -4731,7 +4738,7 @@ async def chat_sync_endpoint(req: ChatRequest):
         "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"CAMPUS RECORDS:\n{context_str}\n\nQUESTION: {user_query}\n\nINSTRUCTION: Provide a direct, neat, structured response with bullet points (- **Key**: Value) or tables. DO NOT dump long unstructured paragraphs for simple facts."}
+            {"role": "user", "content": f"CAMPUS RECORDS:\n{context_str}\n\nQUESTION: {user_query}\n\nINSTRUCTION: Provide a strictly ROW-WISE structured response (prefer a clean GFM Markdown Table | ... | or separate row-by-row bullet points with newlines). NEVER output inline bullet points or smash multiple fields onto one line. Ground strictly in campus records. Zero emojis."}
         ],
         "temperature": 0.3,
         "max_tokens": max_tokens_val

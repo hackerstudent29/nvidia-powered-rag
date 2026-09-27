@@ -173,7 +173,7 @@ function sanitizeMarkdownContent(content: string): string {
   // 4. Remove duplicate emojis right before [link]
   text = text.replace(/(?:✉️|📧|✉|📞|📱)\s*(\[[^\]]+\]\((?:mailto|tel):[^\)]+\))/g, "$1");
 
-  // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Line-wise key-value formatting only when multiple items are smashed inline
+  // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Enforce strict row-wise formatting for all inline bullets and key-value items
   const lines = text.split("\n");
   const processedLines: string[] = [];
 
@@ -186,25 +186,28 @@ function sanitizeMarkdownContent(content: string): string {
       continue;
     }
 
-    // A. Break consecutive inline bold key-value pairs ONLY if multiple exist on the exact same line
-    const kvCount = (line.match(/\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*/g) || []).length;
-    if (kvCount > 1) {
-      line = line.replace(/([^\n])\s*(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}:\*\*)\s*/g, "$1\n- $2 ");
-    }
+    // A. Break inline dashed/bullet markers (e.g. "...department. - **Role**: ...")
+    line = line.replace(/([^\n])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)/g, (_m, p1, p2) => `${p1}\n\n- ${p2}`);
 
-    // B. Break consecutive inline feature headers ONLY if multiple exist on the same line
-    const featCount = (line.match(/[🎓💰🏫📝✨🔥📌⚡💡•]\s*\*\*/g) || []).length;
-    if (featCount > 1) {
-      line = line.replace(/([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n- $2 ");
-    }
+    // B. Break consecutive inline bold key-value pairs (matches both **Key**: and **Key:**)
+    line = line.replace(/([^\n])\s{2,}(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}(?::\*\*|\*\*:\s*))/g, (_m, p1, p2) => `${p1}\n\n- ${p2}`);
+
+    // C. Break consecutive inline feature headers
+    line = line.replace(/([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n\n- $2 ");
 
     processedLines.push(line);
   }
 
   text = processedLines.join("\n");
 
+  // Ensure there is a blank line before any unordered list following normal text (required by CommonMark/ReactMarkdown)
+  text = text.replace(/([^\n])\n(- \*\*)/g, "$1\n\n$2");
+
   // Clean up any accidental double bullets like "- - **" or "- - 🎓"
   text = text.replace(/-\s*-\s*(?=\*\*|[🎓💰🏫📝✨🔥📌⚡💡•])/g, "- ");
+
+  // Normalize excessive blank lines
+  text = text.replace(/\n{3,}/g, "\n\n");
 
   return text;
 }
