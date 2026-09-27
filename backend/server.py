@@ -2847,26 +2847,18 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
 
 async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
     """
-    Permanent architectural solution for contextual follow-up query rewriting.
-    Uses fast LLM completion (with Vercel Gemini Flash Lite + NVIDIA NIM concurrent race)
-    to rewrite ambiguous/affirmative/referential queries using session history before passing into hybrid RAG.
-    Falls back gracefully to regex pronoun/affirmation resolution if LLM is unavailable or times out.
+    Universal Architectural Solution for Contextual Multi-Turn Query Resolution.
+    Evaluates any follow-up, elliptical, or referential user query across all campus domains
+    using session history in a fast concurrent LLM race (Gemini Flash Lite + Nemotron).
     """
     normalized_q = pre_normalize_department_acronyms(current_query)
     q_trim = normalized_q.strip()
     if not q_trim:
         return current_query
 
-    # Explicit Protection Check: If the question is a standalone patent, code, person, or academic inquiry,
-    # immediately bypass rewriter to prevent topic leakage from prior turns.
+    # Standalone Protection: Explicitly preserve standalone patent numbers or creator queries
     if is_standalone_or_protected_query(q_trim):
-        print(f"[QUERY REWRITER] Bypassing pronoun rewrite for standalone protected query: '{normalized_q}'")
-        return normalized_q
-
-    # Quick check: does query contain affirmations or pronouns/referential triggers?
-    is_affirmation = bool(_FOLLOWUP_AFFIRMATION_PATTERNS.match(q_trim))
-    is_referential = bool(_PRONOUN_TRIGGERS.search(q_trim))
-    if not is_affirmation and not is_referential:
+        print(f"[QUERY REWRITER] Bypassing rewriter for standalone protected query: '{normalized_q}'")
         return normalized_q
 
     # Fetch last 4 messages strictly from current active session (excluding current turn message)
@@ -2899,13 +2891,6 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
     if not filtered or len(filtered) < 1:
         return resolve_pronouns(normalized_q, session_id)
 
-    # Topic Shift Gate: Determine if user switched topic from prior assistant response
-    recent_asst_msg = next((r.get("content", "") for r in filtered if r.get("role") == "assistant"), "")
-    relation = topic_shift_detector.detect(q_trim, recent_asst_msg)
-    if relation != TopicRelation.FOLLOW_UP:
-        print(f"[TOPIC SHIFT DETECTOR] Detected {relation.value.upper()} for '{normalized_q}' (bypassing rewriter)")
-        return normalized_q
-
     MAX_HISTORY_CHARS = 1200
     current_chars = 0
     history_text_blocks = []
@@ -2926,13 +2911,16 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
 
     rewrite_prompt = (
         f"Recent Conversation History:\n{history_str}\n\n"
-        f"Follow-up User Input: \"{normalized_q}\"\n\n"
+        f"Current User Input: \"{normalized_q}\"\n\n"
         "TASK:\n"
-        "Rewrite the user's follow-up input into a complete, standalone, explicit search query by identifying what topic or question they are agreeing to, asking for, or referring to based strictly on the IMMEDIATELY PRECEDING Assistant response and conversation context.\n\n"
-        "CRITICAL RULES:\n"
-        "1. If the user input is an affirmative or continuation ('yes', 'yeah', 'sure', 'want that', 'like to know', 'give that', 'tell me more', 'details', 'ok', 'proceed'), look at the question, offer, or main topic at the end of the previous Assistant response, and rewrite it into a direct factual search query.\n"
-        "2. If the user input contains pronouns ('about that', 'tell me about him', 'its fee', 'his contact') or elliptical follow-ups ('any other it students', 'anyother it students', 'who else', 'what other courses', 'other recipients', 'anyone else', 'more details'), carry over the main context/subject from the previous turn (e.g., if previous turn discussed 'IT students who received alumni scholarships' and user asks 'any other it students??', rewrite to 'Other Information Technology IT students and alumni who received or contributed to MSAJCE alumni scholarships').\n"
-        "3. Output ONLY the single rewritten search query. Do NOT add explanations, quotes, markdown formatting, or preamble."
+        "Analyze the Current User Input in the context of the Recent Conversation History and produce a high-precision, standalone search query suitable for semantic & keyword search against the college campus database.\n\n"
+        "UNIVERSAL RULES:\n"
+        "1. IF the user input is a follow-up, continuation, elliptical query, or pronoun reference (e.g., 'yes', 'want that', 'tell me more', 'any other it students', 'any other students', 'and for ece?', 'who is the president?', 'what is his qualification?', 'how much for this?', 'who else?', 'what time?'):\n"
+        "   - Resolve all implicit context, pronouns, and missing subjects using the conversation history.\n"
+        "   - Formulate a fully explicit, standalone search query that includes the specific topic, entities, department, and constraints.\n"
+        "2. IF the user input is already a complete, self-contained, standalone question or shifts to a new topic (e.g., 'What is the TNEA code of the college?', 'Who is Dr. Weslin?', 'Where is the boys hostel?'):\n"
+        "   - Return the user's question as a clean, direct search query WITHOUT introducing unrelated context or keywords from earlier turns.\n"
+        "3. Output ONLY the final standalone search query. Zero explanations, zero quotes, zero markdown preamble."
     )
 
     try:
@@ -4074,7 +4062,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     return
 
 
-            if req.is_regeneration or is_contextual_query(user_query) or is_contextual_query(req.message):
+            is_rewritten_followup = (user_query.strip().lower() != req.message.strip().lower())
+            if req.is_regeneration or is_contextual_query(user_query) or is_contextual_query(req.message) or is_rewritten_followup:
                 delete_from_cache(user_query)
                 delete_from_cache(expanded_query)
                 cached_result = None
