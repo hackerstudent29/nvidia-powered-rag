@@ -388,16 +388,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     textRef.current = text;
   }, [text]);
 
-  // Sync external inputValue prop
+  // Sync external inputValue prop when updated by parent
   useEffect(() => {
-    if (inputValue !== undefined && inputValue !== text) {
+    if (inputValue !== undefined) {
       setText(inputValue);
       if (inputValue.trim() !== "" && !expanded) {
         setIsSmoothResize(false);
         setExpanded(true);
       }
     }
-  }, [inputValue, text, expanded]);
+  }, [inputValue]);
 
   // Expand helper: synchronously focuses textarea so mobile virtual keyboard appears on first tap
   const expand = useCallback(() => {
@@ -433,11 +433,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const handleValueChange = useCallback((val: string) => {
     setIsSmoothResize(true);
     setText(val);
+    if (onInputChange) {
+      onInputChange(val);
+    }
     if (val.trim() !== "" && !expanded) {
       setIsSmoothResize(false);
       setExpanded(true);
     }
-  }, [expanded]);
+  }, [expanded, onInputChange]);
 
   // Global Keyboard listener — typing anywhere auto-expands and focuses prompt box
   useEffect(() => {
