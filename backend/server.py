@@ -2625,6 +2625,8 @@ _FOLLOWUP_AFFIRMATION_PATTERNS = re.compile(
 # Pronoun / referential patterns that indicate the user is referring to something from a prior turn
 _PRONOUN_TRIGGERS = re.compile(
     r'\b(the same|above mentioned|given above|those details|these details)\b'
+    r'|\b(any\s*other|anyother|anyone\s+else|who\s+else|what\s+else|which\s+other|who\s+other|what\s+other|how\s+about\s+other|how\s+about\s+the\s+other|are\s+there\s+any\s+other|is\s+there\s+any\s+other|any\s+more|more\s+names?|other\s+students?|other\s+faculty|other\s+members?|other\s+recipients?|other\s+candidates?|more\s+recipients?)\b'
+    r'|\b(who\s+are\s+they|who\s+are\s+the\s+others|what\s+are\s+the\s+others|list\s+others|list\s+more|show\s+more|give\s+more)\b'
     r'|\b(full route|complete route|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt that|who is he|who is she|more info|further details|that briefly|this briefly)\b'
     r'|\bwhat (is|are|about) (that|them|those|him|her|it)\b'
     r'|\b(its|their|his|her) (route|routes|stops?|driver|contact|timings?|details?|fees?|profile|designation|department|qualification|sports|facilities|facility)\b'
@@ -2642,7 +2644,7 @@ def is_contextual_query(query: str) -> bool:
     q = query.strip()
     if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q):
         return True
-    if len(q.split()) <= 3 and (_PRONOUN_TRIGGERS.search(q) or re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details)$', q, re.IGNORECASE)):
+    if len(q.split()) <= 6 and (_PRONOUN_TRIGGERS.search(q) or re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details|anyother|any\s+other|who\s+else|what\s+else|others?|anyone\s+else)$', q, re.IGNORECASE)):
         return True
     return False
 
@@ -2926,10 +2928,10 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
         f"Recent Conversation History:\n{history_str}\n\n"
         f"Follow-up User Input: \"{normalized_q}\"\n\n"
         "TASK:\n"
-        "Rewrite the user's follow-up input into a complete, standalone, explicit search query by identifying what topic or question they are agreeing to, asking for, or referring to based strictly on the IMMEDIATELY PRECEDING Assistant response.\n\n"
+        "Rewrite the user's follow-up input into a complete, standalone, explicit search query by identifying what topic or question they are agreeing to, asking for, or referring to based strictly on the IMMEDIATELY PRECEDING Assistant response and conversation context.\n\n"
         "CRITICAL RULES:\n"
-        "1. If the user input is an affirmative or continuation ('yes', 'yeah', 'sure', 'want that', 'like to know', 'give that', 'tell me more', 'details', 'ok', 'proceed'), look at the question, offer, or main topic at the end of the previous Assistant response, and rewrite it into a direct factual search query (e.g., if Assistant asked 'Would you like to know more about the specific activities or events organized by the CSI?', rewrite to 'CSI Computer Society of India student branch activities events workshops and guest lectures at MSAJCE'; if Assistant asked 'Would you like to know more about the specific accreditation status or the activities of the IQAC?', rewrite to 'MSAJCE NAAC accreditation status grade and Internal Quality Assurance Cell IQAC activities').\n"
-        "2. If the user input contains pronouns ('about that', 'tell me about him', 'its fee', 'his contact'), replace the pronoun with the exact entity/person/department from the immediate previous turn.\n"
+        "1. If the user input is an affirmative or continuation ('yes', 'yeah', 'sure', 'want that', 'like to know', 'give that', 'tell me more', 'details', 'ok', 'proceed'), look at the question, offer, or main topic at the end of the previous Assistant response, and rewrite it into a direct factual search query.\n"
+        "2. If the user input contains pronouns ('about that', 'tell me about him', 'its fee', 'his contact') or elliptical follow-ups ('any other it students', 'anyother it students', 'who else', 'what other courses', 'other recipients', 'anyone else', 'more details'), carry over the main context/subject from the previous turn (e.g., if previous turn discussed 'IT students who received alumni scholarships' and user asks 'any other it students??', rewrite to 'Other Information Technology IT students and alumni who received or contributed to MSAJCE alumni scholarships').\n"
         "3. Output ONLY the single rewritten search query. Do NOT add explanations, quotes, markdown formatting, or preamble."
     )
 

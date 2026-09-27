@@ -248,9 +248,11 @@ class TopicShiftDetector:
         re.IGNORECASE
     )
 
-    # Referential follow-up starts
+    # Referential & elliptical follow-up starts
     REFERENTIAL_START_PATTERNS = re.compile(
-        r'^\s*(?:and\s+what\s+about|what\s+about\s+the|how\s+about\s+the|its|their|his|her)\s+',
+        r'^\s*(?:and\s+what\s+about|what\s+about\s+the|what\s+about\s+other|how\s+about\s+the|how\s+about\s+other|its|their|his|her|'
+        r'any\s*other|anyother|anyone\s+else|who\s+else|what\s+else|which\s+other|who\s+other|what\s+other|'
+        r'are\s+there\s+any\s+other|is\s+there\s+any\s+other|any\s+more|more\s+names?|other\s+students?|other\s+faculty|other\s+members?|other\s+recipients?)\b',
         re.IGNORECASE
     )
 
