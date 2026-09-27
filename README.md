@@ -12,25 +12,37 @@ nvidia powered AI/
 ├── .env                     # Secret credentials & endpoint configuration
 ├── .gitignore               # Ignored system and build files
 ├── .neon                    # Neon Functions metadata
-├── Dataset/                 # Official MSAJCEA knowledge base documents (50 files)
+├── Dataset/                 # Official MSAJCEA knowledge base documents
 │   ├── links folder/        # Official URL and document registry
+│   ├── transport_data/      # Bus stops, route geometry, and route finder
 │   └── msajce_*.md          # Campus, departments, admissions, placements, etc.
 ├── backend/                 # Python FastAPI Hybrid RAG backend
-│   ├── data/                # BM25 sparse index corpus (bm25_chunks.json)
-│   ├── ingest_knowledgebase.py # Ingestion pipeline for Qdrant & BM25
-│   ├── init_db.py           # Neon Postgres schema initialization
+│   ├── data/                # BM25 sparse index & entity registries
+│   ├── chunker.py           # NeMo parent-child chunking & hashing
+│   ├── domain_router.py     # Domain classification & intent routing
+│   ├── guardrails.py        # Safety & injection detection
+│   ├── ingest_knowledgebase.py # Vector embedding & BM25 ingestion pipeline
+│   ├── route_finder.py      # Campus transit routing engine
 │   └── server.py            # FastAPI streaming server, RRF, & DB session manager
-├── docs/                    # Architectural diagrams and credentials documentation
+├── docs/                    # Technical architecture, specifications & analysis
 │   ├── FINAL_ARCHITECTURE.md # Full technical specification & RAG pipeline flow
+│   ├── LORIN_AI_MSAJCE_CHATBOT_ANALYSIS.md # Evaluation & feature breakdown
+│   ├── MARKET_ANALYSIS_2024.md # Market & competitive analysis
+│   ├── PROJECT_SPECIFICATIONS.md # Complete architectural specifications
 │   └── TOOLS_AND_CREDENTIALS.md # Production service endpoints & keys guide
 ├── frontend/                # React 19 + Vite + Tailwind CSS web interface
-│   ├── dist/                # Production build artifacts
 │   ├── src/                 # Chat interface, token usage badges, thinking steps
 │   └── package.json         # Frontend dependencies & scripts
-├── hello.ts                 # Neon TypeScript function endpoint
-├── neon.ts                  # Neon client connection helper
+├── scripts/                 # Maintenance, cache clearing, and database utilities
+│   ├── check_db.py          # Database row & user inspector
+│   └── clear_cache.py       # One-shot cache & session reset
+├── check_db.py              # Root launcher for scripts/check_db.py
+├── clear_cache.py           # Root launcher for scripts/clear_cache.py
 ├── README.md                # Project documentation & launch guide
-└── skills-lock.json         # Workspace skills lock
+├── requirements.txt         # Backend Python dependencies
+├── start.bat                # Windows dual-server quickstart script
+├── start.ps1                # PowerShell dual-server quickstart script
+└── vercel.json              # Frontend cloud deployment descriptor
 ```
 
 ---
