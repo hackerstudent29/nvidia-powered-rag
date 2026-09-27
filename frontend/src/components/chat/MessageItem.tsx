@@ -177,6 +177,10 @@ function sanitizeMarkdownContent(content: string): string {
   text = text.replace(/\|\s*\|/g, "|\n|");
   text = text.replace(/\|\s+(?=\|\s*[A-Za-z0-9\*\-])/g, "|\n");
 
+  // 4.6. Clean any raw double bullets or isolated bullet characters
+  text = text.replace(/^\s*[\*\-•–—+]\s*[-–—•]\s*/gm, "- ");
+  text = text.replace(/^\s*[\*\-•–—+]\s*$/gm, "");
+
   // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Enforce strict row-wise formatting for all inline bullets and key-value items
   const lines = text.split("\n");
   const processedLines: string[] = [];
@@ -190,25 +194,37 @@ function sanitizeMarkdownContent(content: string): string {
       continue;
     }
 
-    // A. Break inline dashed/bullet markers (e.g. "...department. - **Role**: ...")
-    line = line.replace(/([^\n])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)/g, (_m, p1, p2) => `${p1}\n\n- ${p2}`);
+    // Normalize leading bullet marker if line starts with bullet
+    if (/^\s*[\*\-•–—+]\s+/.test(line)) {
+      line = line.replace(/^\s*[\*\-•–—+]\s+/, "- ");
+    }
 
-    // B. Break consecutive inline bold key-value pairs (matches both **Key**: and **Key:**)
-    line = line.replace(/([^\n])\s{2,}(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}(?::\*\*|\*\*:\s*))/g, (_m, p1, p2) => `${p1}\n\n- ${p2}`);
+    // A. Break inline dashed/bullet markers only if preceded by non-bullet text
+    line = line.replace(/([^\n\*\-•–—+\s])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)/g, (_m, p1, p2) => `${p1}\n- ${p2}`);
+
+    // B. Break consecutive inline bold key-value pairs only if preceded by non-bullet text
+    line = line.replace(/([^\n\*\-•–—+\s])\s{2,}(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}(?::\*\*|\*\*:\s*))/g, (_m, p1, p2) => `${p1}\n- ${p2}`);
 
     // C. Break consecutive inline feature headers
-    line = line.replace(/([^\n])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n\n- $2 ");
+    line = line.replace(/([^\n\*\-•–—+\s])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n- $2 ");
 
     processedLines.push(line);
   }
 
   text = processedLines.join("\n");
 
-  // Ensure there is a blank line before any unordered list following normal text (required by CommonMark/ReactMarkdown)
-  text = text.replace(/([^\n])\n(- \*\*)/g, "$1\n\n$2");
+  // Ensure there is a blank line before any unordered list following normal text
+  text = text.replace(/([^\n\r\-\*•\|>])\n(- \*\*)/g, "$1\n\n$2");
 
   // Clean up any accidental double bullets like "- - **" or "- - 🎓"
   text = text.replace(/-\s*-\s*(?=\*\*|[🎓💰🏫📝✨🔥📌⚡💡•])/g, "- ");
+
+  // Tighten consecutive bullet items so they form a clean single list
+  text = text.replace(/(\n-\s+[^\n]+)\n\n(-\s+)/g, "$1\n$2");
+  text = text.replace(/(\n-\s+[^\n]+)\n\n(-\s+)/g, "$1\n$2");
+
+  // Remove any empty bullet items that are on their own lines
+  text = text.replace(/^\s*[\*\-•–—+]\s*$/gm, "");
 
   // Normalize excessive blank lines
   text = text.replace(/\n{3,}/g, "\n\n");
