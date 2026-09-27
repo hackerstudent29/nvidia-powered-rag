@@ -75,29 +75,19 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
         )}
 
         {totalTokens > 0 ? (
-          <>
-            <span className="tabular-nums font-mono text-ink font-medium shrink-0 whitespace-nowrap">
-              <span className="inline sm:hidden">
-                {totalTokens >= 1000 ? `${(totalTokens / 1000).toFixed(1)}k` : totalTokens} tok
-              </span>
-              <span className="hidden sm:inline">
-                {totalTokens.toLocaleString()} tokens
-              </span>
+          <span className="tabular-nums font-mono text-ink font-medium shrink-0 whitespace-nowrap">
+            <span className="inline sm:hidden">
+              {totalTokens >= 1000 ? `${(totalTokens / 1000).toFixed(1)}k` : totalTokens} tok
             </span>
-            <span className="text-ink-3/60 shrink-0">•</span>
-          </>
+            <span className="hidden sm:inline">
+              {totalTokens.toLocaleString()} tokens
+            </span>
+          </span>
         ) : (
-          <>
-            <span className="tabular-nums font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0 whitespace-nowrap">
-              0 tokens (Free)
-            </span>
-            <span className="text-ink-3/60 shrink-0">•</span>
-          </>
+          <span className="tabular-nums font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0 whitespace-nowrap">
+            0 tokens (Free)
+          </span>
         )}
-
-        <span className="tabular-nums font-mono text-ink shrink-0 whitespace-nowrap">
-          {formattedLatency}
-        </span>
 
         <svg
           width="10"

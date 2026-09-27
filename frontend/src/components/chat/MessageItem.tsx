@@ -1625,21 +1625,22 @@ const MessageItem = React.memo(function MessageItem({
               <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip content={copied ? "Copied to clipboard!" : "Copy message"} position="top">
                   <motion.button
-                    whileHover={{ scale: 1.2, rotate: -6 }}
+                    whileHover={{ scale: 1.25, rotate: -8 }}
                     whileTap={{ scale: 0.85 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     type="button"
                     onClick={handleCopy}
-                    className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
+                    className="flex items-center justify-center size-7 bg-transparent border-0 outline-none shadow-none text-ink-3 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition-colors duration-150 select-none"
                   >
                     <AnimatePresence mode="wait">
                       {copied ? (
                         <motion.span
                           key="copied"
-                          initial={{ scale: 0.4, opacity: 0 }}
-                          animate={{ scale: 1.15, opacity: 1 }}
-                          exit={{ scale: 0.4, opacity: 0 }}
-                          className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400"
+                          initial={{ scale: 0.3, rotate: -30, opacity: 0 }}
+                          animate={{ scale: [0.3, 1.4, 1], rotate: 0, opacity: 1 }}
+                          exit={{ scale: 0.3, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeOut" }}
+                          className="text-[13px] font-black text-emerald-600 dark:text-emerald-400"
                         >
                           ✓
                         </motion.span>
@@ -1655,12 +1656,12 @@ const MessageItem = React.memo(function MessageItem({
                 {onRegenerate && (
                   <Tooltip content="Regenerate response" position="top">
                     <motion.button
-                      whileHover={{ scale: 1.2, rotate: 18 }}
-                      whileTap={{ scale: 0.85, rotate: -18 }}
-                      transition={{ type: "spring", stiffness: 450, damping: 18 }}
+                      whileHover={{ scale: 1.25, rotate: 180 }}
+                      whileTap={{ scale: 0.85, rotate: 360 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 18 }}
                       type="button"
                       onClick={() => onRegenerate?.(message.id)}
-                      className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
+                      className="flex items-center justify-center size-7 bg-transparent border-0 outline-none shadow-none text-ink-3 hover:text-teal-600 dark:hover:text-teal-400 cursor-pointer transition-colors duration-150 select-none"
                     >
                       {ACTION_ICONS.retry}
                     </motion.button>
@@ -1669,14 +1670,14 @@ const MessageItem = React.memo(function MessageItem({
 
                 <Tooltip content="Good response" position="top">
                   <motion.button
-                    whileHover={{ scale: 1.25, y: -2 }}
-                    whileTap={{ scale: 0.8 }}
-                    animate={isLiked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
+                    whileHover={{ scale: 1.3, y: -4, rotate: -12 }}
+                    whileTap={{ scale: 0.8, y: 1 }}
+                    animate={isLiked ? { y: [-2, -6, -2], rotate: [-10, 0], scale: [1, 1.3, 1] } : { y: 0, rotate: 0, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 15 }}
                     type="button"
                     onClick={() => handleThumbs(1)}
-                    className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
-                      isLiked ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                    className={`flex items-center justify-center size-7 bg-transparent border-0 outline-none shadow-none transition-colors duration-150 cursor-pointer select-none ${
+                      isLiked ? "text-[#9E2339] dark:text-[#E11D48]" : "text-ink-3 hover:text-[#9E2339] dark:hover:text-[#E11D48]"
                     }`}
                   >
                     {ACTION_ICONS.up}
@@ -1685,14 +1686,14 @@ const MessageItem = React.memo(function MessageItem({
 
                 <Tooltip content="Bad response" position="top">
                   <motion.button
-                    whileHover={{ scale: 1.25, y: 2 }}
-                    whileTap={{ scale: 0.8 }}
-                    animate={isDisliked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
+                    whileHover={{ scale: 1.3, y: 4, rotate: 12 }}
+                    whileTap={{ scale: 0.8, y: -1 }}
+                    animate={isDisliked ? { y: [2, 6, 2], rotate: [10, 0], scale: [1, 1.3, 1] } : { y: 0, rotate: 0, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 15 }}
                     type="button"
                     onClick={() => handleThumbs(-1)}
-                    className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
-                      isDisliked ? "bg-red-500/15 text-red-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                    className={`flex items-center justify-center size-7 bg-transparent border-0 outline-none shadow-none transition-colors duration-150 cursor-pointer select-none ${
+                      isDisliked ? "text-red-600 dark:text-red-400" : "text-ink-3 hover:text-red-600 dark:hover:text-red-400"
                     }`}
                   >
                     {ACTION_ICONS.down}
@@ -1701,14 +1702,14 @@ const MessageItem = React.memo(function MessageItem({
 
                 <Tooltip content={isPlayingAudio ? "Stop Voice" : isLoadingAudio ? "Synthesizing Voice..." : "Read Aloud"} position="top">
                   <motion.button
-                    whileHover={{ scale: 1.2, rotate: -6 }}
+                    whileHover={{ scale: 1.25, rotate: -8 }}
                     whileTap={{ scale: 0.85 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     type="button"
                     onClick={() => handleTTS()}
                     disabled={isLoadingAudio}
-                    className={`flex size-7 items-center justify-center rounded-md transition-colors duration-100 cursor-pointer ${
-                      isPlayingAudio ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/15" : isLoadingAudio ? "text-orange-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                    className={`flex size-7 items-center justify-center bg-transparent border-0 outline-none shadow-none transition-colors duration-150 cursor-pointer select-none ${
+                      isPlayingAudio ? "text-emerald-600 dark:text-emerald-400" : isLoadingAudio ? "text-amber-500" : "text-ink-3 hover:text-emerald-600 dark:hover:text-emerald-400"
                     }`}
                   >
                     {isLoadingAudio ? (
@@ -2015,10 +2016,11 @@ const MessageItem = React.memo(function MessageItem({
         />
       )}
 
-      {/* Toast Notification Banner */}
+      {/* Single Side Toast Notification */}
       {toastMsg && typeof document !== "undefined" && createPortal(
-        <div className="fixed bottom-24 right-4 sm:right-8 z-50 rounded-xl bg-zinc-900/90 text-white dark:bg-white/95 dark:text-zinc-950 px-4 py-2.5 text-xs font-bold shadow-2xl backdrop-blur-md border border-white/10 dark:border-black/10 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          {toastMsg}
+        <div className="fixed bottom-20 right-4 sm:right-8 z-[9999] flex items-center gap-2.5 rounded-xl bg-[#121214]/95 text-zinc-100 px-4 py-2.5 text-[12px] font-sans font-semibold shadow-2xl backdrop-blur-xl border border-[#9E2339]/40 dark:border-emerald-500/40 animate-in fade-in slide-in-from-right-4 duration-200 select-none pointer-events-none">
+          <span className="size-2 rounded-full bg-[#9E2339] dark:bg-emerald-400 animate-pulse shrink-0" />
+          <span>{toastMsg}</span>
         </div>,
         document.body
       )}

@@ -40,18 +40,18 @@ function formatChatDateDivider(rawTimestamp?: string | number | Date): string {
   const diffDays = Math.round((startOfNow.getTime() - startOfDate.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return `Today ${timeStr}`;
+    return `Today  •  ${timeStr}`;
   } else if (diffDays === 1) {
-    return `Yesterday ${timeStr}`;
+    return `Yesterday  •  ${timeStr}`;
   } else if (diffDays > 1 && diffDays < 7) {
     const dayName = date.toLocaleDateString([], { weekday: "long" });
-    return `${dayName} ${timeStr}`;
+    return `${dayName}  •  ${timeStr}`;
   } else if (date.getFullYear() === now.getFullYear()) {
     const monthDay = date.toLocaleDateString([], { month: "short", day: "numeric" });
-    return `${monthDay} ${timeStr}`;
+    return `${monthDay}  •  ${timeStr}`;
   } else {
     const fullDate = date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
-    return `${fullDate} ${timeStr}`;
+    return `${fullDate}  •  ${timeStr}`;
   }
 }
 
