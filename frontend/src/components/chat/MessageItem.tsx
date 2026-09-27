@@ -878,6 +878,12 @@ const MessageItem = React.memo(function MessageItem({
     placement: "above" | "below";
   } | null>(null);
 
+  // Manual highlight rects — painted as real DOM overlay divs so they persist
+  // even when React re-renders (browser ::selection disappears on re-render).
+  const [highlightRects, setHighlightRects] = useState<Array<{
+    left: number; top: number; width: number; height: number;
+  }>>([]);
+
   // Ref for the message container — declared early so selection useEffect can access it
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -888,12 +894,14 @@ const MessageItem = React.memo(function MessageItem({
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed) {
         setSelectionToolbar(null);
+        setHighlightRects([]);
         return;
       }
 
       const text = selection.toString().trim();
       if (!text || text.length < 2) {
         setSelectionToolbar(null);
+        setHighlightRects([]);
         return;
       }
 
@@ -904,6 +912,7 @@ const MessageItem = React.memo(function MessageItem({
 
         if (!element?.closest(".chat-message-content")) {
           setSelectionToolbar(null);
+          setHighlightRects([]);
           return;
         }
 
@@ -932,6 +941,19 @@ const MessageItem = React.memo(function MessageItem({
               placement = "above";
             }
 
+            // Capture per-line selection rects to paint manual highlight overlay.
+            // range.getClientRects() returns one rect per text line in the selection,
+            // giving pixel-perfect coverage even across wrapped lines.
+            const clientRects = Array.from(range.getClientRects())
+              .filter(r => r.width > 1 && r.height > 1)
+              .map(r => ({
+                left: r.left,
+                top: r.top,
+                width: r.width,
+                height: r.height,
+              }));
+            setHighlightRects(clientRects);
+
             setSelectionToolbar({
               text,
               x: clampedX,
@@ -942,6 +964,7 @@ const MessageItem = React.memo(function MessageItem({
         }
       } catch (e) {
         setSelectionToolbar(null);
+        setHighlightRects([]);
       }
     };
 
@@ -949,11 +972,11 @@ const MessageItem = React.memo(function MessageItem({
       const target = e.target as HTMLElement | null;
       // Don't dismiss when clicking inside the toolbar itself
       if (target?.closest(".selection-toolbar-portal")) return;
-      // Dismiss toolbar immediately if user taps/clicks outside of it
-      // (a new pointerup will re-evaluate if they start a new selection)
+      // Dismiss toolbar and clear painted rects when clicking outside
       if (target && !target.closest(".chat-message-content")) {
         if (timeoutId) clearTimeout(timeoutId);
         setSelectionToolbar(null);
+        setHighlightRects([]);
       }
     };
 
@@ -966,6 +989,11 @@ const MessageItem = React.memo(function MessageItem({
     const handleScrollOrResize = () => {
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed) {
+        setSelectionToolbar(null);
+        setHighlightRects([]);
+      } else {
+        // Rects are viewport-relative — re-evaluate on scroll so overlay moves with text
+        setHighlightRects([]);
         setSelectionToolbar(null);
       }
     };
@@ -2032,6 +2060,31 @@ const MessageItem = React.memo(function MessageItem({
 
       </div>
 
+      {/* Manual Selection Highlight Overlay — persists when toolbar mounts (browser ::selection disappears on re-render) */}
+      {highlightRects.length > 0 && typeof document !== "undefined" && createPortal(
+        <>
+          {highlightRects.map((r, i) => (
+            <div
+              key={i}
+              aria-hidden="true"
+              style={{
+                position: "fixed",
+                left: `${r.left}px`,
+                top: `${r.top}px`,
+                width: `${r.width}px`,
+                height: `${r.height}px`,
+                backgroundColor: "rgba(46, 107, 94, 0.38)",
+                pointerEvents: "none",
+                zIndex: 99990,
+                borderRadius: "2px",
+              }}
+              className="dark:!bg-[rgba(16,185,129,0.42)]"
+            />
+          ))}
+        </>,
+        document.body
+      )}
+
       {/* Floating Text Selection Popover Toolbar — Minimal 3 Options */}
       {selectionToolbar && typeof document !== "undefined" && createPortal(
         <div
@@ -2059,6 +2112,7 @@ const MessageItem = React.memo(function MessageItem({
                 textareaEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
               }
               setSelectionToolbar(null);
+              setHighlightRects([]);
               window.getSelection()?.removeAllRanges();
             }}
             className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
@@ -2079,6 +2133,7 @@ const MessageItem = React.memo(function MessageItem({
               const textToRead = selectionToolbar.text;
               handleTTS(undefined, 0, textToRead);
               setSelectionToolbar(null);
+              setHighlightRects([]);
               window.getSelection()?.removeAllRanges();
             }}
             className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
@@ -2104,6 +2159,7 @@ const MessageItem = React.memo(function MessageItem({
               setToastMsg(`✓ Copied selected text!`);
               setTimeout(() => setToastMsg(null), 2500);
               setSelectionToolbar(null);
+              setHighlightRects([]);
               window.getSelection()?.removeAllRanges();
             }}
             className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
