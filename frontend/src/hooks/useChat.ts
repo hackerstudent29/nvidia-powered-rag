@@ -102,7 +102,9 @@ export function useChat() {
       .catch((err) => console.error("Error fetching models:", err));
   }, []);
 
-  // Helper to load messages for a specific session ID
+  // Helper to load messages for a specific session ID from the server.
+  // IMPORTANT: If the server returns empty (e.g. after DB reset), do NOT wipe the
+  // localStorage cache — it may be the only copy of the user's current conversation.
   const loadSessionMessages = async (targetSessionId: string) => {
     try {
       const res = await fetch(`${API_BASE}/sessions/${targetSessionId}`, {
@@ -138,15 +140,12 @@ export function useChat() {
           setMessages(formatted);
           localStorage.setItem("lorin_cached_messages", JSON.stringify(formatted));
           return true;
-        } else {
-          setMessages([]);
-          localStorage.removeItem("lorin_cached_messages");
-          return false;
         }
-      } else {
-        setMessages([]);
-        localStorage.removeItem("lorin_cached_messages");
+        // Server returned empty history for this session — don't clear local cache.
+        // The user might be mid-conversation and the server may have been reset.
+        return false;
       }
+      // Non-200 response — don't clear local cache, server might be down.
     } catch (err) {
       console.error("Error loading session history:", err);
     }
@@ -177,6 +176,10 @@ export function useChat() {
     const initLastSession = async () => {
       const storedId = localStorage.getItem("lorin_session_id");
 
+      // localStorage already provided instant messages at line 17-24.
+      // Now sync with the server in the background.
+      const localCacheExists = messages.length > 0;
+
       // Execute session list fetch and active history fetch IN PARALLEL!
       const [pastSessions, loaded] = await Promise.all([
         fetchSessions(),
@@ -189,10 +192,11 @@ export function useChat() {
           setSessionId(targetSession.id);
           localStorage.setItem("lorin_session_id", targetSession.id);
         }
-      } else if (!pastSessions || pastSessions.length === 0) {
-        setMessages([]);
-        localStorage.removeItem("lorin_cached_messages");
       }
+      // If the server returned no sessions but we have a local cache,
+      // keep the current messages visible. The server may have been reset
+      // or is temporarily unreachable — don't discard the user's active conversation.
+      // Messages are only cleared when the user explicitly clicks "New Chat".
     };
 
     initLastSession();
