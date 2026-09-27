@@ -48,7 +48,8 @@ const ChatHeader = React.memo(function ChatHeader({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  const [activePill, setActivePill] = useState<string>("chat");
+  const headerNavRef = useRef<HTMLDivElement>(null);
+  const [activePill, setActivePill] = useState<string | null>(null);
 
   const [fontSize, setFontSizeState] = useState<"normal" | "large" | "xlarge">(
     () => {
@@ -115,6 +116,12 @@ const ChatHeader = React.memo(function ChatHeader({
         !mobileMenuRef.current.contains(target)
       ) {
         setMobileMenuOpen(false);
+      }
+      if (
+        headerNavRef.current &&
+        !headerNavRef.current.contains(target)
+      ) {
+        setActivePill(null);
       }
     };
     document.addEventListener("mousedown", handleOutside);
@@ -264,7 +271,8 @@ const ChatHeader = React.memo(function ChatHeader({
           <div className="flex items-center gap-1.5 relative">
             {!isEmbed && (
               <nav
-                className="hidden lg:flex rounded-full items-center p-1 border border-black/[0.06] dark:border-white/[0.08] bg-black/[0.03] dark:bg-white/[0.04] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                ref={headerNavRef}
+                className="hidden lg:flex rounded-full items-center p-1 gap-1 border border-black/[0.06] dark:border-white/[0.08] bg-black/[0.03] dark:bg-white/[0.04] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.5)] backdrop-blur-xl"
               >
                 {headerPills.map((pill) => {
                   const Icon = pill.icon;
@@ -273,15 +281,18 @@ const ChatHeader = React.memo(function ChatHeader({
                   return (
                     <Tooltip key={pill.id} content={pill.label} position="bottom">
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.94 }}
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.93 }}
                         transition={{ type: "spring", stiffness: 450, damping: 24 }}
-                        onClick={pill.action}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          pill.action();
+                        }}
                         type="button"
-                        className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[38px] cursor-pointer overflow-hidden ${
+                        className={`flex items-center justify-center rounded-full transition-all duration-200 relative h-9 cursor-pointer overflow-hidden ${
                           isActive
-                            ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
-                            : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
+                            ? "px-3.5 gap-2 bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
+                            : "size-9 bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink dark:hover:text-[#f4f3ee]"
                         }`}
                         aria-label={pill.label}
                       >
@@ -291,19 +302,19 @@ const ChatHeader = React.memo(function ChatHeader({
                           className="shrink-0 transition-transform duration-200"
                         />
 
-                        <div
-                          className={`overflow-hidden flex items-center whitespace-nowrap transition-all duration-200 ${
-                            isActive ? "w-[62px] opacity-100 ml-1.25" : "w-0 opacity-0 ml-0"
-                          }`}
-                        >
-                          <span
-                            className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
-                              isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
-                            }`}
-                          >
-                            {pill.label}
-                          </span>
-                        </div>
+                        <AnimatePresence>
+                          {isActive && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: "auto" }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.18, ease: "easeOut" }}
+                              className="font-bold text-xs whitespace-nowrap select-none overflow-hidden"
+                            >
+                              {pill.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                       </motion.button>
                     </Tooltip>
                   );
