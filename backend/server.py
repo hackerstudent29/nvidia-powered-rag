@@ -172,7 +172,11 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, official student assistant for Mohame
 
 [CAMPUS DOMAINS, CAREERS & POLICIES]
 1. Industry Careers & Salaries: Provide realistic entry/mid salary benchmarks (India ₹4-12+ LPA, global $70k-130k+), tech/engineering roles (Software Engineer, AI/ML, Cloud/DevOps, Cyber Security, VLSI, Embedded, Core), and skill paths. Batch 2025-2026 highlights: Highest Package: 8.0 LPA (KaarTech), Average: 4.0 LPA, 160+ Students Placed, 50+ Companies, 80% Placement Rate. Major Recruiters: KaarTech, LaunchEd Global, Datatech Genius, Besant Technologies, CAFS, Tata Electronics, TSP, GTT Data, Foxconn, Axis Bank.
-2. Transport: 9 dedicated bus routes (AR 3, AR 4, AR 6, AR 7, AR 8, AR 9, AR 10, N3, Route 22). Provide complete stop-by-stop schedule tables ONLY when explicitly asked for a specific bus route schedule. Never invent stop schedules for general campus queries.
+2. Transport:
+   - Dedicated College Buses: Exactly 9 official routes (AR 3, AR 4, N3, AR 6, AR 7, AR 8, AR 9, AR 10, R22). ONLY these 9 are dedicated college buses arriving at campus by 8:00 AM.
+   - Public MTC Transit: Buses like MAA2, 570, 570S, 568B, 102, 515, 555S are PUBLIC MTC BUSES; NEVER call them dedicated college buses. MAA2 is a Public MTC Electric AC Feeder bus connecting Siruseri IT Park to Chennai Airport.
+   - Single Bus Identity: Every bus is ONE bus. NEVER use internal transit tags like '_onward' or '_return' (e.g. write 'MTC 19K', NOT '19K_onward' or '19K_return'). Never list the same bus twice.
+   - Strict Stop Filtering: When asked about a specific location, stop, or route, answer ONLY about that specific stop or route. NEVER dump unrelated bus routes that do not serve that area (e.g. for Airport queries, mention only routes serving Airport like MAA2 and AR 10 at Meenambakkam; do NOT dump 570, 102, 19K which run elsewhere). Provide complete stop-by-stop schedule tables ONLY when explicitly asked for a specific bus route schedule.
 3. Admissions & Counseling: Official TNEA Counseling Code is 1301 (Anna University affiliated, AICTE approved). Highlight government quota, 7.5% government school preferential quota, and required certificates.
 4. Hostels & Dining: Separate on-campus hostels for boys and girls with 24/7 security. 500-seat central dining mess serving vegetarian and non-vegetarian meals.
 5. Patents & Research: Belong ONLY to named faculty (Dr. E. Dhiravidachelvi: Patent 2020101867, 202041033273; Mr. K. Vairaperumal: 202141021897 A). Never attribute academic works to operational staff (drivers, mess workers).
@@ -242,6 +246,10 @@ def structure_markdown_for_mobile(text: str) -> str:
 
     # Remove any empty bullet items that are on their own lines
     text = re.sub(r'^\s*[\*\-•–—+]\s*$', '', text, flags=re.MULTILINE)
+
+    # Strip internal dataset direction tags (_onward, _return) from bus route names and numbers
+    text = re.sub(r'\b([A-Za-z0-9\-_]+?)_(onward|return)\b', r'\1', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(MTC\s+[A-Za-z0-9\-]+|[0-9]{2,3}[A-Za-z]?)\s*,\s*\1\b', r'\1', text, flags=re.IGNORECASE)
 
     # Normalize excessive blank lines
     text = re.sub(r'\n{3,}', '\n\n', text)
@@ -2390,6 +2398,10 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'\|\s*\|', '|\n|', text)
     text = re.sub(r'\|\s+(?=\|\s*[A-Za-z0-9\*\-])', '|\n', text)
 
+    # Strip internal dataset direction tags (_onward, _return) from bus route names and numbers
+    text = re.sub(r'\b([A-Za-z0-9\-_]+?)_(onward|return)\b', r'\1', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(MTC\s+[A-Za-z0-9\-]+|[0-9]{2,3}[A-Za-z]?)\s*,\s*\1\b', r'\1', text, flags=re.IGNORECASE)
+
     # Preserve markdown tables as valid GFM table blocks without destroying individual rows
     text = re.sub(r'\n{3,}', '\n\n', text)
 
@@ -4022,9 +4034,19 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 buses = route_finder.buses_from(stop_info["stop_id"])
                                 if buses:
                                     lines = [f"### VERIFIED BUS ROUTE SCHEDULE FOR STOP: {stop_info['name']} (Canonical ID: {stop_info['stop_id']})"]
+                                    seen_routes = set()
                                     for b in buses:
-                                        cat_label = "COLLEGE BUS" if b['category'] == "college" else "PUBLIC MTC BUS"
-                                        lines.append(f"- [{cat_label}] **Route {b['route_id']}** ({b['route_name']}): Boarding time at {stop_info['name']}: **{b['time_at_stop'] or 'Scheduled'}** | Arrival at MSAJCEA Campus (Siruseri OMR): **{b['meta'].get('arrival', '8:00 AM')}**")
+                                        clean_id = re.sub(r'_(onward|return)$', '', b['route_id'], flags=re.IGNORECASE)
+                                        if clean_id in seen_routes:
+                                            continue
+                                        seen_routes.add(clean_id)
+                                        clean_name = re.sub(r'_(onward|return)', '', b['route_name'], flags=re.IGNORECASE)
+                                        is_college = (b['category'] == "college")
+                                        if is_college:
+                                            lines.append(f"- [COLLEGE BUS] **Route {clean_id}** ({clean_name}): Boarding time at {stop_info['name']}: **{b['time_at_stop'] or 'Scheduled'}** | Arrival at MSAJCEA Campus (Siruseri OMR): **8:00 AM**")
+                                        else:
+                                            time_info = f"Boarding time at {stop_info['name']}: **{b['time_at_stop']}**" if b['time_at_stop'] else "Regular city service frequency"
+                                            lines.append(f"- [PUBLIC MTC BUS (CITY TRANSIT)] **Route {clean_id}** ({clean_name}): {time_info} | Public MTC Bus (NOT a college bus)")
                                     
                                     rf_chunk_text = "\n".join(lines)
                                     retrieved_chunks.insert(0, {

@@ -113,11 +113,21 @@ class RouteFinder:
     def buses_from(self, stop_id: str):
         """Departure info at a stop, across every route serving it."""
         out = []
+        seen_buses = set()
         for route, idx in self._stop_to_routes.get(stop_id, []):
             st = route["stops"][idx]
+            raw_id = route["route_id"]
+            clean_route_id = re.sub(r'_(onward|return)$', '', raw_id, flags=re.IGNORECASE)
+            clean_name = re.sub(r'_(onward|return)', '', route["name"], flags=re.IGNORECASE)
+
+            # Deduplicate onward and return legs into a single bus entry per stop
+            if clean_route_id in seen_buses:
+                continue
+            seen_buses.add(clean_route_id)
+
             out.append({
-                "route_id": route["route_id"],
-                "route_name": route["name"],
+                "route_id": clean_route_id,
+                "route_name": clean_name,
                 "category": route["category"],
                 "time_at_stop": st.get("time"),
                 "meta": route.get("meta", {}),

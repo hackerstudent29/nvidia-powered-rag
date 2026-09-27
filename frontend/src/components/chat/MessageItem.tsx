@@ -226,6 +226,10 @@ function sanitizeMarkdownContent(content: string): string {
   // Remove any empty bullet items that are on their own lines
   text = text.replace(/^\s*[\*\-•–—+]\s*$/gm, "");
 
+  // Strip internal dataset direction tags (_onward, _return) from bus route names and numbers
+  text = text.replace(/\b([A-Za-z0-9\-_]+?)_(onward|return)\b/gi, "$1");
+  text = text.replace(/\b(MTC\s+[A-Za-z0-9\-]+|[0-9]{2,3}[A-Za-z]?)\s*,\s*\1\b/gi, "$1");
+
   // Normalize excessive blank lines
   text = text.replace(/\n{3,}/g, "\n\n");
 
