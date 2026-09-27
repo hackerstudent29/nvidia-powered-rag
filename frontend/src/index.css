@@ -39,31 +39,36 @@
   color: inherit !important;
 }
 
-.chat-message-content {
-  -webkit-user-select: text;
-  user-select: text;
+.chat-message-content,
+.chat-message-content * {
+  -webkit-user-select: text !important;
+  user-select: text !important;
   -webkit-touch-callout: none;
   touch-action: auto;
   -webkit-tap-highlight-color: transparent;
 }
 
-.chat-message-content ::selection {
-  background-color: rgba(158, 35, 57, 0.35) !important;
+.chat-message-content::selection,
+.chat-message-content *::selection {
+  background-color: rgba(46, 107, 94, 0.35) !important;
   color: inherit !important;
 }
 
-.dark .chat-message-content ::selection {
-  background-color: rgba(225, 29, 72, 0.45) !important;
+.dark .chat-message-content::selection,
+.dark .chat-message-content *::selection {
+  background-color: rgba(16, 185, 129, 0.45) !important;
   color: inherit !important;
 }
 
-.chat-message-content ::-moz-selection {
-  background-color: rgba(158, 35, 57, 0.35) !important;
+.chat-message-content::-moz-selection,
+.chat-message-content *::-moz-selection {
+  background-color: rgba(46, 107, 94, 0.35) !important;
   color: inherit !important;
 }
 
-.dark .chat-message-content ::-moz-selection {
-  background-color: rgba(225, 29, 72, 0.45) !important;
+.dark .chat-message-content::-moz-selection,
+.dark .chat-message-content *::-moz-selection {
+  background-color: rgba(16, 185, 129, 0.45) !important;
   color: inherit !important;
 }
 

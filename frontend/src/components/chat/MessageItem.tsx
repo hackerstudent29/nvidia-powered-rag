@@ -846,65 +846,71 @@ const MessageItem = React.memo(function MessageItem({
   } | null>(null);
 
   useEffect(() => {
+    let timeoutId: any = null;
+
     const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      if (!selection || selection.isCollapsed) {
-        setSelectionToolbar(null);
-        return;
-      }
+      if (timeoutId) clearTimeout(timeoutId);
 
-      const text = selection.toString().trim();
-      if (!text || text.length < 2) {
-        setSelectionToolbar(null);
-        return;
-      }
-
-      try {
-        const range = selection.getRangeAt(0);
-        const container = range.commonAncestorContainer;
-        const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : (container as Element);
-
-        if (!element?.closest(".chat-message-content")) {
+      timeoutId = setTimeout(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) {
           setSelectionToolbar(null);
           return;
         }
 
-        if (messageRef.current && messageRef.current.contains(container)) {
-          const rect = range.getBoundingClientRect();
-          if (rect.width > 0 && rect.height > 0) {
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            const approxWidth = Math.min(420, viewportWidth - 24);
-            const approxHeight = 44;
-
-            const centerX = rect.left + rect.width / 2;
-            const minX = approxWidth / 2 + 12;
-            const maxX = viewportWidth - approxWidth / 2 - 12;
-            const clampedX = Math.max(minX, Math.min(maxX, centerX));
-
-            let clampedY: number;
-            let placement: "above" | "below" = "above";
-
-            if (rect.top - approxHeight - 16 < 65) {
-              clampedY = Math.min(viewportHeight - 60, rect.bottom + 12);
-              placement = "below";
-            } else {
-              clampedY = Math.max(70, rect.top - 10);
-              placement = "above";
-            }
-
-            setSelectionToolbar({
-              text,
-              x: clampedX,
-              y: clampedY,
-              placement,
-            });
-          }
+        const text = selection.toString().trim();
+        if (!text || text.length < 2) {
+          setSelectionToolbar(null);
+          return;
         }
-      } catch (e) {
-        setSelectionToolbar(null);
-      }
+
+        try {
+          const range = selection.getRangeAt(0);
+          const container = range.commonAncestorContainer;
+          const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : (container as Element);
+
+          if (!element?.closest(".chat-message-content")) {
+            setSelectionToolbar(null);
+            return;
+          }
+
+          if (messageRef.current && messageRef.current.contains(container)) {
+            const rect = range.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              const viewportWidth = window.innerWidth;
+              const viewportHeight = window.innerHeight;
+
+              const approxWidth = Math.min(270, viewportWidth - 24);
+              const approxHeight = 44;
+
+              const centerX = rect.left + rect.width / 2;
+              const minX = approxWidth / 2 + 12;
+              const maxX = viewportWidth - approxWidth / 2 - 12;
+              const clampedX = Math.max(minX, Math.min(maxX, centerX));
+
+              let clampedY: number;
+              let placement: "above" | "below" = "above";
+
+              if (rect.top - approxHeight - 16 < 65) {
+                clampedY = Math.min(viewportHeight - 60, rect.bottom + 12);
+                placement = "below";
+              } else {
+                clampedY = Math.max(70, rect.top - 10);
+                placement = "above";
+              }
+
+              setSelectionToolbar({
+                text,
+                x: clampedX,
+                y: clampedY,
+                placement,
+              });
+            }
+          }
+        } catch (e) {
+          setSelectionToolbar(null);
+        }
+      }, 70);
     };
 
     const handleScrollOrResize = () => {
@@ -921,6 +927,7 @@ const MessageItem = React.memo(function MessageItem({
     window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       document.removeEventListener("selectionchange", handleSelectionChange);
       window.removeEventListener("scroll", handleScrollOrResize, true);
       window.removeEventListener("resize", handleScrollOrResize);
@@ -1974,7 +1981,7 @@ const MessageItem = React.memo(function MessageItem({
 
       </div>
 
-      {/* Floating Text Selection Popover Toolbar */}
+      {/* Floating Text Selection Popover Toolbar — Minimal 3 Options */}
       {selectionToolbar && typeof document !== "undefined" && createPortal(
         <div
           onPointerDown={(e) => e.preventDefault()}
@@ -1985,80 +1992,9 @@ const MessageItem = React.memo(function MessageItem({
             transform: selectionToolbar.placement === "below" ? "translate(-50%, 0%)" : "translate(-50%, -100%)",
             zIndex: 99999,
           }}
-          className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] overflow-x-auto shrink-0"
+          className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] shrink-0"
         >
-          {/* 1. Explain */}
-          {onSendPrompt && (
-            <button
-              type="button"
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => {
-                const textToExplain = selectionToolbar.text;
-                onSendPrompt(`Explain the following selected text clearly and concisely:\n\n"${textToExplain}"`);
-                setSelectionToolbar(null);
-                window.getSelection()?.removeAllRanges();
-              }}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-              <span>Explain</span>
-            </button>
-          )}
-
-          {onSendPrompt && <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />}
-
-          {/* 2. Simplify */}
-          {onSendPrompt && (
-            <button
-              type="button"
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => {
-                const textToSimplify = selectionToolbar.text;
-                onSendPrompt(`Rewrite the following selected text in simpler language:\n\n"${textToSimplify}"`);
-                setSelectionToolbar(null);
-                window.getSelection()?.removeAllRanges();
-              }}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-              <span>Simplify</span>
-            </button>
-          )}
-
-          {onSendPrompt && <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />}
-
-          {/* 3. Summarize */}
-          {onSendPrompt && (
-            <button
-              type="button"
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => {
-                const textToSummarize = selectionToolbar.text;
-                onSendPrompt(`Summarize the following selected text:\n\n"${textToSummarize}"`);
-                setSelectionToolbar(null);
-                window.getSelection()?.removeAllRanges();
-              }}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
-                <line x1="21" y1="10" x2="3" y2="10" />
-                <line x1="21" y1="6" x2="3" y2="6" />
-                <line x1="21" y1="14" x2="3" y2="14" />
-                <line x1="18" y1="18" x2="3" y2="18" />
-              </svg>
-              <span>Summarize</span>
-            </button>
-          )}
-
-          <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
-
-          {/* 4. Ask Lorin */}
+          {/* 1. Ask Lorin */}
           <button
             type="button"
             onPointerDown={(e) => e.preventDefault()}
@@ -2074,7 +2010,7 @@ const MessageItem = React.memo(function MessageItem({
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
             }}
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -2084,7 +2020,7 @@ const MessageItem = React.memo(function MessageItem({
 
           <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
 
-          {/* 5. Read Aloud */}
+          {/* 2. Read Aloud */}
           <button
             type="button"
             onPointerDown={(e) => e.preventDefault()}
@@ -2094,7 +2030,7 @@ const MessageItem = React.memo(function MessageItem({
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
             }}
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-emerald-400">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
@@ -2105,7 +2041,7 @@ const MessageItem = React.memo(function MessageItem({
 
           <div className="w-[1px] h-3.5 bg-white/20 shrink-0" />
 
-          {/* 6. Copy */}
+          {/* 3. Copy */}
           <button
             type="button"
             onPointerDown={(e) => e.preventDefault()}
@@ -2119,7 +2055,7 @@ const MessageItem = React.memo(function MessageItem({
               setSelectionToolbar(null);
               window.getSelection()?.removeAllRanges();
             }}
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11px] sm:text-[11.5px] font-semibold text-white transition-colors cursor-pointer shrink-0 whitespace-nowrap"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-emerald-400">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
