@@ -2944,9 +2944,18 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
                     resp = await http_client.post(url, headers=hdrs, json=payload, timeout=2.5)
                     if resp.status_code == 200:
                         res_data = resp.json()
-                        rewritten_raw = res_data["choices"][0]["message"]["content"].strip().strip('"\'`')
-                        rewritten_raw = re.sub(r'^(?:rewritten\s*(?:query|question)?:\s*)', '', rewritten_raw, flags=re.IGNORECASE).strip()
-                        if rewritten_raw and len(rewritten_raw) >= 3:
+                        rewritten_raw = res_data["choices"][0]["message"]["content"].strip()
+                        # 1. Strip <think>...</think> blocks
+                        rewritten_raw = re.sub(r'<think>.*?</think>', '', rewritten_raw, flags=re.DOTALL | re.IGNORECASE).strip()
+                        # 2. Strip "Here's a thinking process" / preamble
+                        if "thinking process" in rewritten_raw.lower() or "here's a" in rewritten_raw.lower():
+                            parts = [p.strip() for p in rewritten_raw.split("\n") if p.strip() and not p.strip().lower().startswith(("here's", "thinking", "1.", "2.", "3.", "*", "-"))]
+                            if parts:
+                                rewritten_raw = parts[-1]
+                        # 3. Strip leading labels like "Rewritten query:", "Standalone query:", quotes
+                        rewritten_raw = re.sub(r'^(?:(?:rewritten|standalone|final|search)?\s*(?:query|question)?:\s*)', '', rewritten_raw, flags=re.IGNORECASE).strip()
+                        rewritten_raw = rewritten_raw.strip('"\'`').strip()
+                        if rewritten_raw and len(rewritten_raw) >= 3 and not rewritten_raw.lower().startswith("here's"):
                             return (m_name, rewritten_raw)
                 except Exception as model_err:
                     print(f"[WARN] LLM Query Rewriter model {m_name} failed: {model_err}")
