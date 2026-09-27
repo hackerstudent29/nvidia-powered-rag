@@ -498,6 +498,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         return;
       }
 
+      // If interaction target is inside any modal, dialog, form, input, textarea or button, skip collapsing/blurring
+      const targetEl = target as HTMLElement;
+      if (
+        targetEl.closest?.('[role="dialog"]') ||
+        targetEl.closest?.('[aria-modal="true"]') ||
+        targetEl.closest?.('.fixed') ||
+        targetEl.closest?.('input, textarea, select, button, form, label')
+      ) {
+        return;
+      }
+
       setIsModelSelectOpen(false);
       setIsVoiceMenuOpen(false);
       setShowLockedToast(false);
@@ -506,11 +517,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       if (text.trim() === "" && !isStreaming && !isRecording) {
         setIsSmoothResize(false);
         setExpanded(false);
-        if (textareaRef.current) {
+        if (textareaRef.current && document.activeElement === textareaRef.current) {
           textareaRef.current.blur();
-        }
-        if (document.activeElement instanceof HTMLElement && document.activeElement.tagName === "TEXTAREA") {
-          document.activeElement.blur();
         }
       }
     };

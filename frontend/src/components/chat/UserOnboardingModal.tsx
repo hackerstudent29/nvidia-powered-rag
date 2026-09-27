@@ -95,6 +95,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
       {isOpen && (
         <motion.div
           ref={backdropRef}
+          role="dialog"
+          aria-modal="true"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

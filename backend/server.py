@@ -5027,8 +5027,17 @@ RE_EVALUATED_ANSWER:
         if len(answer_parts) > 1:
             final_answer = answer_parts[1].strip()
 
-    if not final_answer:
-        final_answer = reevaluated_raw if reevaluated_raw else f"Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) provides official guidance regarding '{query}'. The campus is located at 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Chennai – 603 103 (TNEA Code: 1301)."
+    # If feedback was classified as FALSE_DISLIKE (or if answer generation returned empty),
+    # retain the original verified bot answer intact.
+    if diagnosis_category == "FALSE_DISLIKE" and original_bot_answer:
+        final_answer = original_bot_answer
+    elif not final_answer:
+        if original_bot_answer:
+            final_answer = original_bot_answer
+        elif reevaluated_raw:
+            final_answer = reevaluated_raw
+        else:
+            final_answer = f"Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) provides official guidance regarding '{query}'. The campus is located at 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Chennai – 603 103 (TNEA Code: 1301)."
 
     # 6. Smart Cache Mutation & DB Persistence
     if diagnosis_category == "FALSE_DISLIKE":

@@ -816,9 +816,9 @@ export function useChat() {
           msg.id === assistantMsgId
             ? {
                 ...msg,
-                content: data.response || "No reranked response received.",
+                content: data.response || msg.content,
                 is_streaming: false,
-                sources: data.sources || [],
+                sources: data.sources && data.sources.length > 0 ? data.sources : msg.sources,
                 model: "nvidia/llama-nemotron-rerank-1b-v2",
               }
             : msg
@@ -831,7 +831,6 @@ export function useChat() {
           msg.id === assistantMsgId
             ? {
                 ...msg,
-                content: "Failed to regenerate with NVIDIA Nemotron. Please try again.",
                 is_streaming: false,
               }
             : msg

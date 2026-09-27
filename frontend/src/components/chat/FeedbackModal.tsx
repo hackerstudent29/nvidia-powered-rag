@@ -85,7 +85,10 @@ export default function FeedbackModal({
       }}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-150"
     >
-      <div className="relative w-full max-w-md rounded-2xl bg-surface dark:bg-[#14151a] p-6 shadow-2xl border border-line dark:border-white/10 text-ink dark:text-[#f4f3ee]">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md rounded-2xl bg-surface dark:bg-[#14151a] p-6 shadow-2xl border border-line dark:border-white/10 text-ink dark:text-[#f4f3ee]"
+      >
         <button
           type="button"
           onClick={onClose}
