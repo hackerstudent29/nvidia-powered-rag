@@ -228,8 +228,10 @@ def structure_markdown_for_mobile(text: str) -> str:
     if not text:
         return ""
 
-    # Clean any raw double bullets or isolated bullet characters
-    text = re.sub(r'^\s*[\*\-•–—+]\s*[-–—•]\s*', '- ', text, flags=re.MULTILINE)
+    # Strip standalone divider lines or lines with only dashes/dots/bullets (e.g. ---, ***, - -, • •)
+    text = re.sub(r'^\s*(?:[\*\-•–—+_]\s*){2,}$', '', text, flags=re.MULTILINE)
+    # Only clean double bullets when followed by actual words/markdown tokens, NEVER on empty lines or dividers
+    text = re.sub(r'^\s*[\*\-•–—+]\s*[-–—•]\s+(?=[A-Za-z0-9\(\[\`\*\"#])', '- ', text, flags=re.MULTILINE)
     text = re.sub(r'^\s*[\*\-•–—+]\s*$', '', text, flags=re.MULTILINE)
 
     # Restore table row line-breaks if table rows got smashed inline (e.g. "| r1 || r2 |" or "| r1 | | r2 |")
@@ -292,8 +294,8 @@ def structure_markdown_for_mobile(text: str) -> str:
     text = re.sub(r'(\n-\s+[^\n]+)\n\n(-\s+)', r'\1\n\2', text)
     text = re.sub(r'(\n-\s+[^\n]+)\n\n(-\s+)', r'\1\n\2', text)
 
-    # Remove any empty bullet items that are on their own lines
-    text = re.sub(r'^\s*[\*\-•–—+]\s*$', '', text, flags=re.MULTILINE)
+    # Remove any empty bullet items or stray dots/dashes that are on their own lines
+    text = re.sub(r'^\s*(?:[\*\-•–—+_]\s*)+$', '', text, flags=re.MULTILINE)
 
     # Strip internal dataset direction tags (_onward, _return) from bus route names and numbers
     text = re.sub(r'\b([A-Za-z0-9\-_]+?)_(onward|return)\b', r'\1', text, flags=re.IGNORECASE)
@@ -2053,16 +2055,12 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
 **Mohamed Sathak A.J. College of Engineering (MSAJCE)**  
 *Approved by AICTE, Affiliated to Anna University, NAAC 'A+' Accredited | TNEA Code: 1301*
 
----
-
 ### Campus Location & Geo-Coordinates
-- **Official Address**: 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Navalur, Chennai, Tamil Nadu – 603 103, India.
+- **Official Address**: 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Navalur, Chennai, Tamil Nadu 603103, India.
 - **Landmark**: Situated inside SIPCOT IT Park Siruseri, surrounded by 100+ global IT giants (TCS, CTS, Infosys, Capgemini).
 - **Coordinates**: **12°50'08.9"N 80°13'07.0"E**
 - **Plus Code**: **R6P9+8C Egattur, Tamil Nadu**
 - **Google Maps Navigation**: [Mohamed Sathak A.J. College of Engineering on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA)
-
----
 
 ### Official Directory of Key Personnel
 
@@ -2076,8 +2074,6 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
 | **Placement Directorate** | Mr. S.V. Vinodh (Placement Officer) | [044-27476300](tel:04427476300) | [placement@msajce.edu.in](mailto:placement@msajce.edu.in) |
 | **Transport Convener** | Dr. K.P. Santhosh Nathan | [+91 9840886992](tel:9840886992) | [ped.santhosh@msajce.edu.in](mailto:ped.santhosh@msajce.edu.in) |
 | **Official Website** | Web Portal | — | [https://msajce.edu.in](https://msajce.edu.in) |
-
----
 
 ### Emergency & Essential Public Services Near Campus
 - **SIPCOT Industrial Fire Station**: Located inside the IT Park First Cross Road ([044-27470720](tel:04427470720) / [044-24401213](tel:04424401213))
@@ -2501,8 +2497,10 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'@msajcea\.in', '@msajce.edu.in', text, flags=re.IGNORECASE)
     text = re.sub(r'\bMSAJCEA\b', 'MSAJCE', text)
 
-    # Clean any raw double bullets or isolated bullet characters
-    text = re.sub(r'^\s*[\*\-•–—+]\s*[-–—•]\s*', '- ', text, flags=re.MULTILINE)
+    # Strip standalone divider lines or lines with only dashes/dots/bullets (e.g. ---, ***, - -, • •)
+    text = re.sub(r'^\s*(?:[\*\-•–—+_]\s*){2,}$', '', text, flags=re.MULTILINE)
+    # Only clean double bullets when followed by actual words/markdown tokens, NEVER on empty lines or dividers
+    text = re.sub(r'^\s*[\*\-•–—+]\s*[-–—•]\s+(?=[A-Za-z0-9\(\[\`\*\"#])', '- ', text, flags=re.MULTILINE)
     text = re.sub(r'^\s*[\*\-•–—+]\s*$', '', text, flags=re.MULTILINE)
 
     # Enforce strict row-wise formatting: break any smashed inline bullets or bold keys onto separate lines
@@ -2514,8 +2512,8 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'(\n-\s+[^\n]+)\n\n(-\s+)', r'\1\n\2', text)
     text = re.sub(r'(\n-\s+[^\n]+)\n\n(-\s+)', r'\1\n\2', text)
 
-    # Remove any empty bullet items that are on their own lines
-    text = re.sub(r'^\s*[\*\-•–—+]\s*$', '', text, flags=re.MULTILINE)
+    # Remove any empty bullet items or stray dots/dashes that are on their own lines
+    text = re.sub(r'^\s*(?:[\*\-•–—+_]\s*)+$', '', text, flags=re.MULTILINE)
 
     # Restore table row line-breaks if table rows got smashed inline (e.g. "| r1 || r2 |" or "| r1 | | r2 |")
     text = re.sub(r'\|\s*\|', '|\n|', text)

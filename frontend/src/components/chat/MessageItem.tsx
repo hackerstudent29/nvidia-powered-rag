@@ -177,9 +177,12 @@ function sanitizeMarkdownContent(content: string): string {
   text = text.replace(/\|\s*\|/g, "|\n|");
   text = text.replace(/\|\s+(?=\|\s*[A-Za-z0-9\*\-])/g, "|\n");
 
-  // 4.6. Clean any raw double bullets or isolated bullet characters
-  text = text.replace(/^\s*[\*\-•–—+]\s*[-–—•]\s*/gm, "- ");
+  // 4.6. Strip standalone divider lines or lines with only dashes/dots/bullets (e.g. ---, ***, - -, • •)
+  text = text.replace(/^\s*(?:[\*\-•–—+_]\s*){2,}$/gm, "");
+  // Only clean double bullets when followed by actual words/markdown tokens, NEVER on empty lines or dividers
+  text = text.replace(/^\s*[\*\-•–—+]\s*[-–—•]\s+(?=[A-Za-z0-9\(\[\`\*\"#])/gm, "- ");
   text = text.replace(/^\s*[\*\-•–—+]\s*$/gm, "");
+  text = text.replace(/\bMSAJCEA\b/g, "MSAJCE");
 
   // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Enforce strict row-wise formatting for all inline bullets and key-value items
   const lines = text.split("\n");
@@ -200,51 +203,25 @@ function sanitizeMarkdownContent(content: string): string {
     }
 
     // A. Break inline dashed/bullet lists with balanced parenthesis preservation
-    if (/[A-Za-z0-9\)]\s+[-–—•]\s+[A-Z0-9\(]/.test(line)) {
-      const rawParts = line.split(/\s+[-–—•]\s+/);
-      const parts: string[] = [];
-      let currAcc = "";
-      for (const rawP of rawParts) {
-        if (!currAcc) {
-          currAcc = rawP;
-        } else {
-          const openCount = (currAcc.match(/\(/g) || []).length;
-          const closeCount = (currAcc.match(/\)/g) || []).length;
-          if (openCount > closeCount) {
-            currAcc += ` - ${rawP}`;
-          } else {
-            parts.push(currAcc);
-            currAcc = rawP;
-          }
-        }
-      }
-      if (currAcc) {
-        parts.push(currAcc);
-      }
+    // Only break if line explicitly has multiple items separated by bullets (•) or dashes (-),
+    // but NEVER break normal narrative sentences or addresses containing hyphens, dashes, dates, or pincodes (e.g. "Tamil Nadu - 603 103").
+    const isBulletLine = /^\s*[\*\-•]\s+/.test(line);
+    const hasMultipleBullets = (line.match(/\s+•\s+/g) || []).length >= 1 || (line.match(/\s+[-–—]\s+/g) || []).length >= 2;
 
-      if (parts.length >= 3 || (parts.length >= 2 && (/^\s*[\*\-•–—+]\s+/.test(line) || parts.some(p => p.includes("(") || p.length > 20)))) {
-        for (let idx = 0; idx < parts.length; idx++) {
-          let cleanP = parts[idx].trim();
-          if (!cleanP) continue;
-          if (idx === 0 && cleanP.includes(":") && !/^\s*[\*\-•–—+]\s+/.test(cleanP)) {
-            const lastColon = cleanP.lastIndexOf(":");
-            const prefix = cleanP.substring(0, lastColon).trim();
-            const itemPart = cleanP.substring(lastColon + 1).trim();
-            if (prefix) processedLines.push(prefix + ":");
-            cleanP = itemPart;
-          }
-          if (cleanP) {
-            if (cleanP.endsWith(":") || cleanP.startsWith("#")) {
-              processedLines.push(cleanP);
-            } else {
-              if (!/^\s*[\*\-•–—+]\s+/.test(cleanP)) {
-                cleanP = `- ${cleanP}`;
-              }
-              processedLines.push(cleanP);
+    if ((isBulletLine || hasMultipleBullets) && /[A-Za-z0-9\)]\s+[-–—•]\s+[A-Za-z0-9\(]/.test(line)) {
+      if (!/\b[A-Za-z]+\s*[-–—]\s*\d{3,6}\b/.test(line) || (line.match(/\s+[-–—]\s+/g) || []).length >= 2 || line.includes(" • ")) {
+        const rawParts = line.split(/\s+[-–—•]\s+/);
+        if (rawParts.length >= 3 || (isBulletLine && hasMultipleBullets && rawParts.length >= 2)) {
+          for (let idx = 0; idx < rawParts.length; idx++) {
+            let cleanP = rawParts[idx].trim();
+            if (!cleanP) continue;
+            if (!/^\s*[\*\-•–—+]\s+/.test(cleanP)) {
+              cleanP = `- ${cleanP}`;
             }
+            processedLines.push(cleanP);
           }
+          continue;
         }
-        continue;
       }
     }
 
@@ -272,8 +249,8 @@ function sanitizeMarkdownContent(content: string): string {
   text = text.replace(/(\n-\s+[^\n]+)\n\n(-\s+)/g, "$1\n$2");
   text = text.replace(/(\n-\s+[^\n]+)\n\n(-\s+)/g, "$1\n$2");
 
-  // Remove any empty bullet items that are on their own lines
-  text = text.replace(/^\s*[\*\-•–—+]\s*$/gm, "");
+  // Remove any empty bullet items or stray dots/dashes that are on their own lines
+  text = text.replace(/^\s*(?:[\*\-•–—+_]\s*)+$/gm, "");
 
   // Strip internal dataset direction tags (_onward, _return) from bus route names and numbers
   text = text.replace(/\b([A-Za-z0-9\-_]+?)_(onward|return)\b/gi, "$1");
@@ -1593,7 +1570,7 @@ const MessageItem = React.memo(function MessageItem({
                   {processHighlightedChildren(children)}
                 </h4>
               ),
-              hr: () => <hr className="my-5 border-black/[0.08] dark:border-white/[0.08]" />,
+              hr: () => null,
               blockquote: ({ children }) => (
                 <blockquote className="border-l-3 border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15px] text-ink-2 dark:text-zinc-300 italic">
                   {processHighlightedChildren(children)}
@@ -1707,13 +1684,13 @@ const MessageItem = React.memo(function MessageItem({
                     <a
                       href={cleanTel}
                       {...handlers}
-                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text"
+                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
                       title="Tap to call on default phone app | Long press to copy"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0 text-emerald-600 dark:text-emerald-400">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      {processHighlightedChildren(children)}
+                      <span className="whitespace-nowrap">{processHighlightedChildren(children)}</span>
                     </a>
                   );
                 }
@@ -1727,14 +1704,14 @@ const MessageItem = React.memo(function MessageItem({
                     <a
                       href={cleanMail}
                       {...handlers}
-                      className="relative z-10 cursor-pointer font-semibold text-[#2E6B5E] dark:text-[#34D399] underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text"
+                      className="relative z-10 cursor-pointer font-semibold text-[#2E6B5E] dark:text-[#34D399] underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
                       title="Tap to open Email client | Long press to copy"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
                         <rect width="20" height="16" x="2" y="4" rx="2" />
                         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                       </svg>
-                      {processHighlightedChildren(children)}
+                      <span className="whitespace-nowrap">{processHighlightedChildren(children)}</span>
                     </a>
                   );
                 }
