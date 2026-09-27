@@ -1522,15 +1522,15 @@ Located strategically inside the **SIPCOT IT Park, Siruseri** (Asia’s 2nd larg
 
 ---
 
-### Top Corporate Recruiters by Sector
+### Top Recognized Corporate Recruiters by Sector
 
-| Industry Sector | Key Recruiting Organizations |
+| Industry Sector | Top Marquee Recruiting Companies |
 |:---|:---|
-| **Tier-1 IT & Digital Services** | Tata Consultancy Services (TCS), Cognizant (CTS), Capgemini, HCL Technologies, Infosys, Hexaware Technologies, Aspire Systems, Atos, Zoho Corporation, Wipro, Cisco, KaarTech, Sutherland |
-| **Core Engineering & Automotive** | Tata Electronics, TVS Sundram Fasteners, TVS Mobility, Hyundai Motors, Larsen & Toubro (L&T), BorgWarner, Indo Tech Transformers, Grundfos, Numeric Legrand, Precision Instruments |
-| **Data Intelligence & Cloud Computing** | Datatech Genius, Besant Technologies, GTT Data Intelligence, Rapid Data IT Solutions, Sify AI Data Center, Equinix IBX Data Center |
-| **FinTech & Financial Analytics** | Axis Bank, CreditMantri, Intellect Design Arena, HDFC Bank, ICICI Prudential, Accenture, Virtusa |
-| **Robotics & Hardware Systems** | Foxconn, Kite Robotics, Ethical Engineers (P) Ltd, Sands Instrumentation, Denvik IoT |
+| **Tier-1 IT & Software Giants** | **TCS**, **Cognizant (CTS)**, **Infosys**, **Wipro**, **HCL Technologies**, **Capgemini**, **Zoho Corporation**, **Cisco**, **Hexaware**, **KaarTech** |
+| **Core Engineering & Automotive** | **Larsen & Toubro (L&T)**, **Tata Electronics**, **Hyundai Motors**, **TVS Group**, **Foxconn**, **BorgWarner**, **Numeric Legrand**, **Grundfos** |
+| **Banking, FinTech & Consulting** | **Axis Bank**, **HDFC Bank**, **Accenture**, **ICICI Prudential**, **Intellect Design Arena**, **CreditMantri** |
+| **Cloud, AI & Digital Infrastructure** | **Sify Technologies (AI Data Center)**, **Equinix (IBX Data Center)**, **Atos**, **Sutherland**, **Aspire Systems** |
+
 
 ---
 

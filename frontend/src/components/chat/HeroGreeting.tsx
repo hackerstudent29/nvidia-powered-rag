@@ -40,7 +40,7 @@ const FAQ_CARDS = [
   {
     id: "placements",
     icon: <Briefcase className="w-5 h-5" />,
-    title: "Campus Placements",
+    title: "Placements",
     subtitle: "Top packages & recruiters",
     q: "What are the placement statistics, top recruiting companies, highest salary package, and placement cell details for MSAJCEA?",
   },

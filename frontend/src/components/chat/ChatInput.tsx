@@ -174,7 +174,7 @@ const DISCLAIMER_SENTENCES = [
 const QUICK_CHIPS = [
   { label: "Admission Guide", query: "What are the admission criteria, pathways, TNEA code, and document requirements for MSAJCEA?" },
   { label: "Courses Offered", query: "What are all the 12 UG & 2 PG degree courses, intake capacity, and departments offered at MSAJCEA?" },
-  { label: "Campus Placements", query: "Who are the top recruiters, placement statistics, and highest salary package at MSAJCEA?" },
+  { label: "Placements", query: "Who are the top recruiters, placement statistics, and highest salary package at MSAJCEA?" },
   { label: "Scholarships", query: "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?" },
   { label: "Boys Hostel", query: "What are the hostel facilities, room capacity, mess menu, and rules for the Boys Hostel at MSAJCEA?" },
   { label: "Girls Hostel", query: "What safety features, capacity, room amenities, and location details apply to the Girls Hostel at MSAJCEA?" },
