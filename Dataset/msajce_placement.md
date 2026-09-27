@@ -52,6 +52,8 @@ The academic years 2022-2023 and 2021-2022 are notable periods, with **MSAJCEA**
 
 Further highlighting **MSAJCEA**'s dedication to placements, the years 2018-2019 and 2017-2018 also saw **MSAJCEA** working towards providing students with opportunities for career advancement. Additionally, the academic years 2016-2017 were also marked by **MSAJCEA**'s placement initiatives.
 
+For the latest 2025–2026 academic placement batch, **MSAJCEA** recorded an outstanding 80% overall placement percentage. Over 160 students secured campus placements with a total of more than 180 job offers across 50+ visiting recruiters, recording a highest salary package of ₹8.0 LPA (KaarTech) and an average salary package of ₹4.0 LPA. Full recruiter-by-recruiter details, package tiers, and offer distributions are comprehensively documented in Section 9.
+
 ## 6. Industry Institution Interaction Cell
 
 At Mohamed Sathak A.J. College of Engineering and Architecture, we place great emphasis on fostering strong collaboration between academia and industry through our Industry-Institute Interaction Cell. This cell plays a vital role in establishing partnerships with industries to enhance learning, innovation, and employability among our students. By serving as a platform for students to understand current industry expectations, identify skill gaps, and upgrade their competencies, the III Cell enables them to stay ahead of the curve.
@@ -125,4 +127,98 @@ During the 2020-2021 academic year, the Higher Education Cell organized several 
 To get in touch with the placement team at Mohamed Sathak A.J. College of Engineering and Architecture, you can reach out to the Placement Officer, Mr. S.V. Vinodh <!--ent_318-->. **MSAJCEA** is located at 34, Rajiv Gandhi Salai, also known as OMR, within the Siruseri IT Park in Siruseri, Chennai, with a pin code of 603103.
 
 For any queries or concerns, you can contact Mr. S.V. Vinodh <!--ent_318--> directly via phone at +91-99409 02255 or +91-89037 66391. Alternatively, you can also send an email to the placement team at placement@**MSAJCEA**-edu.in. For more information about **MSAJCEA** and its placement activities, you can visit their official website at www.**MSAJCEA**-edu.in.
+
+## 9. Major Recruiters 2026 & Placement Highlights (2025–2026 Batch)
+
+For the 2025–2026 placement season, Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) achieved strong placement outcomes across diverse engineering, technology, and management disciplines, recording an overall placement rate of 80%. During this academic recruitment cycle, over 160 students successfully obtained campus placements, generating more than 180 job offers from over 50 leading corporate recruiters and multinational enterprises. The highest salary package secured by graduating students reached ₹8.0 LPA (Lakhs Per Annum), while the average salary package across placed candidates stood at ₹4.0 LPA. Situated within the 800-acre SIPCOT IT Park in Siruseri, Chennai—Asia's second largest technology hub—the college maintains direct industry connectivity with more than 100 neighboring global tech firms, research centers, and manufacturing giants.
+
+### High-Value Recruitment Tier (₹8.0 LPA and ₹7.0 LPA)
+In the premier salary package category, enterprise SAP consulting and digital transformation firm KaarTech offered the batch's highest package of ₹8.0 LPA, recruiting 2 students for specialized enterprise resource planning and digital engineering positions. In the international educational technology sector, LaunchEd Global selected 1 student offering an annual package of ₹7.0 LPA.
+
+### Big Data & Cloud Analytics Tier (₹6.0 LPA)
+Data intelligence and cloud platform specialist Datatech Genius recruited 9 students at a salary package of ₹6.0 LPA. These roles focus on large-scale data engineering, predictive business intelligence, and cloud application deployment.
+
+### Advanced Engineering, Technology & FinTech Tier (₹5.0 LPA)
+The ₹5.0 LPA salary tier witnessed widespread recruitment across IT consulting, healthcare technology, electronics manufacturing, robotics, and core engineering domains. Besant Technologies hired 15 students at ₹5.0 LPA for cloud architecture and full-stack software development. Global digital transformation firm Sutherland recruited 6 students at ₹5.0 LPA, and healthcare technology software provider Doctpro also selected 6 students at ₹5.0 LPA for clinical management systems. In the core engineering design domain, Ethical Engineers (P) Ltd extended offers to 5 students at ₹5.0 LPA. Industrial automation and robotics pioneer Kite Robotics hired 3 students at ₹5.0 LPA, while IT consulting firm SCS (S Cube Solutions) also recruited 3 students at ₹5.0 LPA. Leading global electronics manufacturing company Foxconn hired 2 students at ₹5.0 LPA for hardware engineering. Algorithmic financial technology platform CreditMantri recruited 2 students at ₹5.0 LPA in data analytics, and power systems manufacturer Indo Tech Transformers Ltd hired 2 students at ₹5.0 LPA. In addition, clean mobility and automotive propulsion specialist BorgWarner, AutoTech e-commerce leader CARS 24, educational assessment platform Anups Academy, and precision mechanical engineering firm RR Enterprises each selected 1 student at ₹5.0 LPA.
+
+### Precision Electronics, Banking & Core Engineering Tier (₹4.0 LPA)
+In the ₹4.0 LPA package tier, multinational technology corporations and banking institutions provided valuable career launches. Total Solution Provider (TSP) recruited 15 students at ₹4.0 LPA for IT infrastructure management and systems engineering. Precision hardware and semiconductor giant Tata Electronics recruited 12 students at ₹4.0 LPA for high-tech manufacturing and assembly operations. Private sector banking leader Axis Bank hired 6 students at ₹4.0 LPA for banking technology and financial operations. Industrial equipment and automation firm Machineries recruited 5 students at ₹4.0 LPA. Technology training innovator Tap Academy hired 4 students at ₹4.0 LPA. Power conditioning and critical electrical systems leader Numeric (a group brand of Legrand) recruited 3 students at ₹4.0 LPA. Enterprise banking software architect Intellect Design Arena hired 1 student at ₹4.0 LPA. Embedded instrumentation firm Sands and pharmaceutical process specialist Sai Mirra Innopharm each hired 1 student at ₹4.0 LPA.
+
+### High-Volume Recruiters & Core Services Tier (₹3.0 LPA)
+The ₹3.0 LPA salary bracket served as the primary hiring volume driver for the 2025–2026 batch. Corporate Accommodation & Facility Services (CAFS) emerged as the single largest recruiter of the drive, extending offers to 20 students at ₹3.0 LPA. Business analytics and data intelligence firm GTT Data Intelligence recruited 14 students at ₹3.0 LPA. Automotive safety glass leader AIS (Asahi India Glass Ltd) recruited 8 students at ₹3.0 LPA. Network solutions provider inetz technologies recruited 6 students at ₹3.0 LPA. Technical talent recruitment platform FIITJOBS hired 3 students at ₹3.0 LPA. Premier infrastructure and engineering conglomerate Larsen & Toubro (L&T) hired 2 students at ₹3.0 LPA for core civil and electrical engineering projects. Secure smart card and payment solutions provider Manipal Payment & Identity (MPI) recruited 2 students at ₹3.0 LPA. Enterprise software and e-learning platform White House Business Solutions (WHBS) hired 2 students at ₹3.0 LPA. Digital consulting firm Trionova hired 2 students at ₹3.0 LPA, and engineering operations company Ose recruited 2 students at ₹3.0 LPA.
+
+A diverse group of specialized engineering and technology companies extended 1 offer each at ₹3.0 LPA. These recruiters include global water pump and fluid systems innovator Grundfos, healthcare revenue cycle management company Prochant, embedded IoT specialist Denvik, staffing solutions provider Innov (Your People Partner), wireless telecommunications firm Transwave Technologies, precision tooling specialist Fantek, civil engineering and structural design firm ACETECH, architectural construction firm Deejos, cloud services firm Rapid Data IT Solutions, electrical testing and engineering provider Voltech, network solutions provider Orbit IT Solutions, cloud consulting firm EntryKode, and enterprise platform company Platform3.
+
+### Technical Operations & Emerging Software Tier (₹2.0 LPA)
+In the ₹2.0 LPA package tier, specialized technology startups and manufacturing services recruited graduating engineers. Technical operations company Aurelon and digital engineering services firm Radtwin each recruited 2 students at ₹2.0 LPA. Enterprise information services company Inbox Info Solutions, precision manufacturing firm Sarada, mobile application developer AasaiTech, and automotive CAD styling specialist Diseñosys each recruited 1 student at ₹2.0 LPA.
+
+### Official Placement Performance Highlights (2025–2026 Batch)
+- **Highest Salary Package**: **₹8.0 LPA** (KaarTech)
+- **Average Salary Package**: **₹4.0 LPA**
+- **Total Students Placed**: **160+ Students**
+- **Total Offers Received**: **180+ Offers**
+- **Total Companies Visited**: **50+ Corporate Recruiters**
+- **Overall Placement Percentage**: **80%**
+- **Strategic Location Advantage**: Located inside SIPCOT IT Park, Siruseri, Chennai, surrounded by 100+ global tech giants.
+
+### Complete List of Major Recruiters 2026 (Package & Offers Breakdown)
+
+| Recruiter Company | Offers | Package (LPA) | Industry Domain & Specialization |
+|:---|:---:|:---:|:---|
+| **KaarTech** | 2 | **8 LPA** | Enterprise SAP & Digital Transformation (Highest Package) |
+| **LaunchEd Global** | 1 | **7 LPA** | EdTech & Global Career Learning |
+| **Datatech Genius** | 9 | **6 LPA** | Big Data, Analytics & Cloud Solutions |
+| **Besant Technologies** | 15 | **5 LPA** | Software Development & Cloud Platforms |
+| **Doctpro** | 6 | **5 LPA** | HealthTech & Clinical Management Systems |
+| **Sutherland** | 6 | **5 LPA** | Global IT Services & Digital Operations |
+| **Ethical Engineers (P) Ltd** | 5 | **5 LPA** | Engineering Design & Infrastructure |
+| **Kite Robotics** | 3 | **5 LPA** | Industrial Automation & Autonomous Systems |
+| **SCS (S Cube Solutions)** | 3 | **5 LPA** | Enterprise IT Consulting & Solutions |
+| **Foxconn** | 2 | **5 LPA** | Electronics Manufacturing & Hardware |
+| **CreditMantri** | 2 | **5 LPA** | FinTech & Algorithmic Credit Analysis |
+| **Indo Tech Transformers Ltd** | 2 | **5 LPA** | Electrical Power Systems & Engineering |
+| **BorgWarner** | 1 | **5 LPA** | Automotive Propulsion & Clean Mobility |
+| **CARS 24** | 1 | **5 LPA** | AutoTech E-Commerce Platform |
+| **Anups Academy** | 1 | **5 LPA** | Educational Mentorship & Assessment |
+| **RR Enterprises** | 1 | **5 LPA** | Precision Engineering & Mechanical Systems |
+| **TSP (Total Solution Provider)** | 15 | **4 LPA** | Technical Infrastructure & IT Services |
+| **Tata Electronics** | 12 | **4 LPA** | Precision Electronics & Semiconductor Mfg |
+| **Axis Bank** | 6 | **4 LPA** | Banking Operations & Financial Analytics |
+| **Machineries** | 5 | **4 LPA** | Industrial Machinery & Automation |
+| **Tap Academy** | 4 | **4 LPA** | AR/VR Upskilling & Tech Bootcamps |
+| **Numeric (Legrand Group)** | 3 | **4 LPA** | Power Conditioning & Industrial Systems |
+| **Intellect Design Arena** | 1 | **4 LPA** | FinTech Architecture & Banking Platforms |
+| **Sands** | 1 | **4 LPA** | Embedded Systems & Instrumentation |
+| **Sai Mirra Innopharm** | 1 | **4 LPA** | Pharmaceutical & Process Chemistry |
+| **CAFS** | 20 | **3 LPA** | Facility Management & Corporate Operations (Top Volume) |
+| **GTT Data** | 14 | **3 LPA** | Data Intelligence & Business Analytics |
+| **AIS (Asahi India Glass Ltd)** | 8 | **3 LPA** | Automotive Glass & Advanced Materials |
+| **inetz technologies** | 6 | **3 LPA** | Enterprise Networking & System Admin |
+| **FIITJOBS** | 3 | **3 LPA** | Talent Solutions & Technical Staffing |
+| **Larsen & Toubro (L&T)** | 2 | **3 LPA** | Infrastructure, Construction & Core Engg |
+| **MPI (Manipal Payment & Identity)** | 2 | **3 LPA** | Smart Card Tech & Payment Security |
+| **WHBS (White House Business)** | 2 | **3 LPA** | Enterprise Software & E-Learning |
+| **Trionova** | 2 | **3 LPA** | Web Technologies & IT Consulting |
+| **Ose** | 2 | **3 LPA** | Engineering Operations & Support |
+| **Grundfos** | 1 | **3 LPA** | Advanced Pump Solutions & Water Tech |
+| **Prochant** | 1 | **3 LPA** | Healthcare RCM & Medical Analytics |
+| **Denvik** | 1 | **3 LPA** | Embedded Systems & IoT Engineering |
+| **Innov (Your People Partner)** | 1 | **3 LPA** | Staffing & Workforce Solutions |
+| **Transwave Technologies** | 1 | **3 LPA** | Telecom & Wireless Infrastructure |
+| **Fantek** | 1 | **3 LPA** | Precision Engineering & Tooling |
+| **ACETECH** | 1 | **3 LPA** | Structural Design & Engineering |
+| **Deejos** | 1 | **3 LPA** | Architecture, Construction & Interiors |
+| **Rapid Data IT Solutions** | 1 | **3 LPA** | Cloud Services & Data Processing |
+| **Voltech** | 1 | **3 LPA** | Electrical Engineering & Power Testing |
+| **Orbit IT Solutions** | 1 | **3 LPA** | IT Network Infrastructure |
+| **EntryKode** | 1 | **3 LPA** | Software Consulting & Cloud Development |
+| **Platform3** | 1 | **3 LPA** | Enterprise Digital Platform Solutions |
+| **Aurelon** | 2 | **2 LPA** | Technical Operations & Support |
+| **Radtwin** | 2 | **2 LPA** | Digital Development & Software Services |
+| **Inbox (Info Solutions)** | 1 | **2 LPA** | IT Support & Enterprise Data Management |
+| **Sarada** | 1 | **2 LPA** | Engineering Operations & Manufacturing |
+| **AasaiTech** | 1 | **2 LPA** | Web & Mobile Software Development |
+| **Diseñosys** | 1 | **2 LPA** | Automotive Styling & CAD Engineering |
+
+
 
