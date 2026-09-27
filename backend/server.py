@@ -537,7 +537,7 @@ def compute_token_metrics(
     latency_sec = max(0.05, latency_ms / 1000.0)
     tokens_per_sec = round(completion_tokens / latency_sec, 1)
     
-    corpus_size = len(bm25_corpus) if bm25_corpus else 1178
+    corpus_size = len(bm25_corpus) if bm25_corpus else 1377
     
     steps = [
         {
@@ -4082,9 +4082,10 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 rag_latency_ms = int((time.time() - rag_start) * 1000)
                 
                 # Step 2 expands after embedding + search completes
+                total_rec_count = len(bm25_corpus) if bm25_corpus else 1377
                 yield json.dumps({
                     "type": "reasoning",
-                    "step": f"Evaluated 1,178 campus records. Fused top {len(retrieved_chunks)} verified sources",
+                    "step": f"Evaluated {total_rec_count:,} campus records. Fused top {len(retrieved_chunks)} verified sources",
                     "done": True
                 })
 
