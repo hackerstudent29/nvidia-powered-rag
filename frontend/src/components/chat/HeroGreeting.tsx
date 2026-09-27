@@ -189,9 +189,11 @@ const HeroGreeting = React.memo(function HeroGreeting({
             type="button"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.02 + idx * 0.01, duration: 0.18 }}
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 450, damping: 25 }}
             onClick={() => handleCardClick(card.q)}
-            className="group flex flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-2.5 min-[420px]:p-3 sm:p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md transform-gpu hover:-translate-y-0.5 transition-all duration-150 ease-out cursor-pointer w-full active:scale-[0.98] min-h-[74px] sm:min-h-[100px]"
+            className="group flex flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-2.5 min-[420px]:p-3 sm:p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md cursor-pointer w-full min-h-[74px] sm:min-h-[100px]"
           >
             <div className="flex items-center gap-2 sm:gap-3 w-full">
               {/* Icon Pill Container */}

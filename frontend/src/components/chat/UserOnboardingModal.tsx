@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User, Calendar, HelpCircle, ArrowRight, Sparkles, X, ChevronDown, Check } from 'lucide-react';
 import { JellyBlobMascot } from '../ui/JellyBlobMascot';
 
@@ -55,8 +56,6 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
     return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: { name?: string; age?: string } = {};
@@ -92,167 +91,195 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
   const modalMascotEmotion = hasErrors ? "sad" : isTyping ? "curious" : name.trim() ? "happy" : "shy";
 
   return (
-    <div
-      ref={backdropRef}
-      onClick={handleBackdropClick}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-3.5 animate-in fade-in duration-150"
-    >
-      <div
-        className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/10 bg-[#14151a] p-5 sm:p-6 text-[#f4f3ee] shadow-2xl animate-in zoom-in-95 duration-150"
-      >
-        {/* Glow Ambient Accent */}
-        <div className="absolute -top-20 -left-20 h-40 w-40 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -right-20 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
-
-        {/* Close Button (X) */}
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 z-20 flex size-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          ref={backdropRef}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16 }}
+          onClick={handleBackdropClick}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-3.5"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 16 }}
+            transition={{ type: "spring", damping: 26, stiffness: 350 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/10 bg-[#14151a] p-5 sm:p-6 text-[#f4f3ee] shadow-2xl"
           >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+            {/* Glow Ambient Accent */}
+            <div className="absolute -top-20 -left-20 h-40 w-40 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
 
-        {/* Modal Header */}
-        <div className="relative z-10 flex items-start gap-3 text-left pr-6 mb-1">
-          <div className="shrink-0 -mt-1 p-1 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 shadow-lg">
-            <JellyBlobMascot emotion={modalMascotEmotion} size={54} interactive={true} />
-          </div>
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#34d399]">
-              <Sparkles className="h-3 w-3" />
-              <span>Welcome to Lorin AI</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white pt-0.5">
-              Tell us about yourself
-            </h2>
-            <p className="text-[11.5px] sm:text-xs text-[#b1ada1]">
-              Personalize campus AI assistance for your profile.
-            </p>
-          </div>
-        </div>
-
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="relative z-10 mt-5 space-y-3.5">
-          {/* 1. Name Input */}
-          <div className="space-y-1">
-            <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
-              <User className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Your Name <span className="text-emerald-400">*</span></span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Ramanathan S"
-              value={name}
-              onFocus={() => setIsTyping(true)}
-              onBlur={() => setIsTyping(false)}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
-              }}
-              className={`w-full rounded-xl border bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                errors.name ? 'border-red-500/80' : 'border-white/10'
-              }`}
-            />
-            {errors.name && <p className="text-[10px] font-medium text-red-400 pl-0.5">{errors.name}</p>}
-          </div>
-
-          {/* 2. Age Input */}
-          <div className="space-y-1">
-            <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
-              <Calendar className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Your Age <span className="text-emerald-400">*</span></span>
-            </label>
-            <input
-              type="number"
-              min="10"
-              max="100"
-              placeholder="e.g. 18"
-              value={age}
-              onFocus={() => setIsTyping(true)}
-              onBlur={() => setIsTyping(false)}
-              onChange={(e) => {
-                setAge(e.target.value);
-                if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));
-              }}
-              className={`w-full rounded-xl border bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
-                errors.age ? 'border-red-500/80' : 'border-white/10'
-              }`}
-            />
-            {errors.age && <p className="text-[10px] font-medium text-red-400 pl-0.5">{errors.age}</p>}
-          </div>
-
-          {/* 3. Custom Glassmorphic Animated Dropdown */}
-          <div className="space-y-1 relative" ref={dropdownRef}>
-            <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
-              <HelpCircle className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Primary Interest / Category <span className="text-emerald-400">*</span></span>
-            </label>
-
-            {/* Custom Dropdown Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white transition-all hover:border-white/20 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
-            >
-              <div className="flex items-center gap-2 truncate pr-2">
-                <span className="font-medium truncate">{selectedCategoryObj.label}</span>
-              </div>
-              <ChevronDown className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-emerald-400' : ''}`} />
-            </button>
-
-            {/* Custom Animated Options Menu */}
-            {isDropdownOpen && (
-              <div
-                className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#181920] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
+            {/* Close Button (X) */}
+            {onClose && (
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                type="button"
+                onClick={onClose}
+                className="absolute top-4 right-4 z-20 flex size-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
               >
-                {CATEGORY_OPTIONS.map((cat) => {
-                  const isSelected = cat.value === purpose;
-                  return (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => {
-                        setPurpose(cat.value);
-                        setIsDropdownOpen(false);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-emerald-500/15 text-[#34d399] font-medium border border-emerald-500/30'
-                          : 'text-zinc-200 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      <div className="flex flex-col gap-0.5 truncate pr-2">
-                        <span className="font-semibold text-[11.5px]">{cat.label}</span>
-                        <span className="text-[10px] text-zinc-400 truncate font-normal">{cat.desc}</span>
-                      </div>
-                      {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />}
-                    </button>
-                  );
-                })}
-              </div>
+                <X className="h-4 w-4" />
+              </motion.button>
             )}
 
-            {/* Selected category description preview */}
-            <p className="text-[10.5px] text-emerald-400/90 italic pl-1 pt-0.5">
-              ↳ {selectedCategoryObj.desc}
-            </p>
-          </div>
+            {/* Modal Header */}
+            <div className="relative z-10 flex items-start gap-3 text-left pr-6 mb-1">
+              <div className="shrink-0 -mt-1 p-1 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 shadow-lg">
+                <JellyBlobMascot emotion={modalMascotEmotion} size={54} interactive={true} />
+              </div>
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#34d399]">
+                  <Sparkles className="h-3 w-3" />
+                  <span>Welcome to Lorin AI</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white pt-0.5">
+                  Tell us about yourself
+                </h2>
+                <p className="text-[11.5px] sm:text-xs text-[#b1ada1]">
+                  Personalize campus AI assistance for your profile.
+                </p>
+              </div>
+            </div>
 
-          {/* Action Button */}
-          <div className="pt-2">
-            <button
-              type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:brightness-110 active:scale-[0.98] cursor-pointer"
-            >
-              <span>Start Assistant Chat</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            {/* Form Body */}
+            <form onSubmit={handleSubmit} className="relative z-10 mt-5 space-y-3.5">
+              {/* 1. Name Input */}
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
+                  <User className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Your Name <span className="text-emerald-400">*</span></span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ramanathan S"
+                  value={name}
+                  onFocus={() => setIsTyping(true)}
+                  onBlur={() => setIsTyping(false)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+                  }}
+                  className={`w-full rounded-xl border bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                    errors.name ? 'border-red-500/80' : 'border-white/10'
+                  }`}
+                />
+                {errors.name && <p className="text-[10px] font-medium text-red-400 pl-0.5">{errors.name}</p>}
+              </div>
+
+              {/* 2. Age Input */}
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
+                  <Calendar className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Your Age <span className="text-emerald-400">*</span></span>
+                </label>
+                <input
+                  type="number"
+                  min="10"
+                  max="100"
+                  placeholder="e.g. 18"
+                  value={age}
+                  onFocus={() => setIsTyping(true)}
+                  onBlur={() => setIsTyping(false)}
+                  onChange={(e) => {
+                    setAge(e.target.value);
+                    if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));
+                  }}
+                  className={`w-full rounded-xl border bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 ${
+                    errors.age ? 'border-red-500/80' : 'border-white/10'
+                  }`}
+                />
+                {errors.age && <p className="text-[10px] font-medium text-red-400 pl-0.5">{errors.age}</p>}
+              </div>
+
+              {/* 3. Custom Glassmorphic Animated Dropdown */}
+              <div className="space-y-1 relative" ref={dropdownRef}>
+                <label className="flex items-center gap-1.5 text-[11.5px] font-medium text-[#e4e4e7]">
+                  <HelpCircle className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Primary Interest / Category <span className="text-emerald-400">*</span></span>
+                </label>
+
+                {/* Custom Dropdown Trigger Button */}
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="button"
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#1c1d24] px-3.5 py-2.5 text-xs text-white transition-colors hover:border-white/20 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
+                >
+                  <div className="flex items-center gap-2 truncate pr-2">
+                    <span className="font-medium truncate">{selectedCategoryObj.label}</span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-emerald-400' : ''}`} />
+                </motion.button>
+
+                {/* Custom Animated Options Menu */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                      transition={{ duration: 0.14, ease: "easeOut" }}
+                      className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#181920] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5 origin-top"
+                    >
+                      {CATEGORY_OPTIONS.map((cat) => {
+                        const isSelected = cat.value === purpose;
+                        return (
+                          <motion.button
+                            whileHover={{ x: 2 }}
+                            whileTap={{ scale: 0.98 }}
+                            key={cat.value}
+                            type="button"
+                            onClick={() => {
+                              setPurpose(cat.value);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+                              isSelected
+                                ? 'bg-emerald-500/15 text-[#34d399] font-medium border border-emerald-500/30'
+                                : 'text-zinc-200 hover:bg-white/5 hover:text-white'
+                            }`}
+                          >
+                            <div className="flex flex-col gap-0.5 truncate pr-2">
+                              <span className="font-semibold text-[11.5px]">{cat.label}</span>
+                              <span className="text-[10px] text-zinc-400 truncate font-normal">{cat.desc}</span>
+                            </div>
+                            {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />}
+                          </motion.button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Selected category description preview */}
+                <p className="text-[10.5px] text-emerald-400/90 italic pl-1 pt-0.5">
+                  ↳ {selectedCategoryObj.desc}
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-2">
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                  type="submit"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:brightness-110 cursor-pointer"
+                >
+                  <span>Start Assistant Chat</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

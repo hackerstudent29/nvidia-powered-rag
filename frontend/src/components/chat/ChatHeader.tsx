@@ -206,333 +206,372 @@ const ChatHeader = React.memo(function ChatHeader({
 
   return (
     <>
-      {/* Clean Viewport Dismiss Backdrop for Sandwich Menu & Popovers */}
-      {/* Clean Viewport Dismiss Backdrop for Sandwich Menu & Popovers */}
-      {(mobileMenuOpen || fontSizeMenuOpen) && (
-        <div
-          onClick={() => {
-            setMobileMenuOpen(false);
-            setFontSizeMenuOpen(false);
-          }}
-          className="fixed inset-0 bg-black/15 dark:bg-black/50 backdrop-blur-[2px] z-40 pointer-events-auto cursor-pointer animate-in fade-in duration-100"
-          aria-hidden="true"
-        />
-      )}
+      {/* Viewport Dismiss Backdrop */}
+      <AnimatePresence>
+        {(mobileMenuOpen || fontSizeMenuOpen) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setFontSizeMenuOpen(false);
+            }}
+            className="fixed inset-0 bg-black/15 dark:bg-black/50 backdrop-blur-[2px] z-40 pointer-events-auto cursor-pointer"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
       <div className="fixed top-2 sm:top-2.5 left-0 right-0 z-50 px-2.5 sm:px-6 pointer-events-none">
-        <header
-          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6 transition-all animate-in fade-in slide-in-from-top-3 duration-200"
+        <motion.header
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 backdrop-blur-xl bg-white/95 dark:bg-[#14151a]/95 border border-black/[0.08] dark:border-white/[0.12] shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] rounded-full flex items-center justify-between px-3.5 sm:px-6"
         >
-        {/* ── Brand & Badges ── */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Tooltip content="Start New Chat" position="bottom">
-            <div
-              onClick={onNewChat}
-              className="flex items-center justify-center cursor-pointer shrink-0 -my-1 hover:scale-105 active:scale-95 transition-transform"
-            >
-              <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={58} interactive={true} />
-            </div>
-          </Tooltip>
-
-          <div className="flex flex-col justify-center min-w-0 leading-none">
-            {/* Top Row: MSAJCE */}
-            <div className="flex items-center gap-1.5 leading-none">
-              <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#2E6B5E] dark:text-[#10b981] leading-none">
-                MSAJCE
-              </span>
-              <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.2 text-[8.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40 leading-none">
-                TNEA 1301
-              </span>
-            </div>
-            {/* Bottom Row: Lorin AI */}
-            <h1 className="text-xs sm:text-sm font-heading font-extrabold text-ink dark:text-[#f4f3ee] tracking-tight whitespace-nowrap leading-tight mt-0.5">
-              Lorin AI
-            </h1>
-          </div>
-        </div>
-
-        {/* ── HEADER NAVBAR RIGHT SIDE ── */}
-        <div className="flex items-center gap-1.5 relative">
-          {/* 1. PC View: Expandable Pill Navbar (Visible only on Desktop lg+, and hidden if embedded) */}
-          {!isEmbed && (
-            <nav
-              className="hidden lg:flex rounded-full items-center p-1 border border-black/[0.06] dark:border-white/[0.08] bg-black/[0.03] dark:bg-white/[0.04] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.5)] backdrop-blur-xl"
-            >
-              {headerPills.map((pill) => {
-                const Icon = pill.icon;
-                const isActive = activePill === pill.id;
-
-                return (
-                  <Tooltip key={pill.id} content={pill.label} position="bottom">
-                    <button
-                      onClick={pill.action}
-                      type="button"
-                      className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[38px] cursor-pointer overflow-hidden active:scale-95 ${
-                        isActive
-                          ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
-                          : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
-                      }`}
-                      aria-label={pill.label}
-                    >
-                      <Icon
-                        size={17}
-                        strokeWidth={isActive ? 2.3 : 1.8}
-                        className="shrink-0 transition-transform duration-200"
-                      />
-
-                      <div
-                        className={`overflow-hidden flex items-center whitespace-nowrap transition-all duration-200 ${
-                          isActive ? "w-[62px] opacity-100 ml-1.25" : "w-0 opacity-0 ml-0"
-                        }`}
-                      >
-                        <span
-                          className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
-                            isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
-                          }`}
-                        >
-                          {pill.label}
-                        </span>
-                      </div>
-                    </button>
-                  </Tooltip>
-                );
-              })}
-            </nav>
-          )}
-
-          {/* 2. Mobile, Tablet & Iframe: Minimal 3-Line Sandwich Button (☰) */}
-          <div className={isEmbed ? "flex relative z-50" : "flex lg:hidden relative z-50"} ref={mobileMenuRef}>
-            <Tooltip content={mobileMenuOpen ? "Close menu" : "Menu"} position="bottom">
-              <button
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                type="button"
-                aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
-                className={`size-9 rounded-full flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
-                  mobileMenuOpen
-                    ? "bg-[#2E6B5E]/15 text-[#2E6B5E] border border-[#2E6B5E]/30 dark:bg-[#10b981]/25 dark:text-[#10b981] dark:border-[#10b981]/40 shadow-xs"
-                    : "bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] border border-black/10 dark:border-white/15 hover:bg-black/[0.08] dark:hover:bg-white/[0.12] shadow-xs"
-                }`}
+          {/* ── Brand & Badges ── */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Tooltip content="Start New Chat" position="bottom">
+              <motion.div
+                whileHover={{ scale: 1.08, rotate: 2 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 450, damping: 20 }}
+                onClick={onNewChat}
+                className="flex items-center justify-center cursor-pointer shrink-0 -my-1"
               >
-                {mobileMenuOpen ? (
-                  <X size={18} strokeWidth={2.4} />
-                ) : (
-                  <Menu size={18} strokeWidth={2.4} />
-                )}
-              </button>
+                <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={58} interactive={true} />
+              </motion.div>
             </Tooltip>
 
-            {/* Mobile / Tablet / Iframe Dropdown Panel */}
-            {mobileMenuOpen && (
-              <div
-                className="absolute right-0 top-11 sm:top-12 z-50 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.7)] p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06] origin-top-right animate-in fade-in zoom-in-95 duration-100"
-              >
-                {/* User Profile Prompt (Only shown if student has NOT yet provided name/details) */}
-                {!userProfile?.name && onOpenProfile && (
-                  <div className="pb-2 px-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="size-7 rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] font-bold text-xs shrink-0">
-                        <User size={14} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-ink dark:text-[#f4f3ee] truncate">
-                          Student Profile
-                        </p>
-                        <p className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">
-                          Add name & details
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onOpenProfile();
-                      }}
-                      className="text-[10.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] hover:underline cursor-pointer shrink-0 ml-1"
-                    >
-                      Set Up
-                    </button>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="py-1.5 flex flex-col gap-0.5">
-                  {/* New Chat */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onNewChat();
-                    }}
-                    className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  >
-                    <Plus size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
-                    <span>Start New Chat</span>
-                  </button>
-
-                  {/* Chat History */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenHistory();
-                    }}
-                    className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  >
-                    <Clock size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
-                    <span>Chat History</span>
-                  </button>
-
-                  {/* Settings */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      if (onOpenSettings) onOpenSettings();
-                      else navigate("/settings");
-                    }}
-                    className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                  >
-                    <Settings size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
-                    <span>Settings & Voice</span>
-                  </button>
-
-                  {/* Open in Fullscreen (if iframe) */}
-                  {isEmbed && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
-                        window.open(fullUrl, "_blank");
-                      }}
-                      className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#2E6B5E] dark:text-[#10b981] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
-                    >
-                      <ExternalLink size={16} />
-                      <span>Open Full Website</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Settings & Appearance */}
-                <div className="pt-2 flex flex-col gap-1.5">
-                  {/* Theme Toggle */}
-                  <div className="flex items-center justify-between px-2 py-1">
-                    <span className="text-[11px] font-medium text-ink-3 dark:text-[#b1ada1] flex items-center gap-1.5">
-                      {isDark ? <Moon size={14} /> : <Sun size={14} />}
-                      Appearance
-                    </span>
-                    <button
-                      type="button"
-                      onClick={toggleTheme}
-                      className="px-2 py-1 rounded-lg text-[10.5px] font-bold border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.06] dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
-                    >
-                      {isDark ? "Dark Mode" : "Light Mode"}
-                    </button>
-                  </div>
-
-                  {/* Font Size Selector */}
-                  <div className="flex items-center justify-between px-2 py-1">
-                    <span className="text-[11px] font-medium text-ink-3 dark:text-[#b1ada1] flex items-center gap-1.5">
-                      <Type size={14} />
-                      Text Size
-                    </span>
-                    <div className="flex items-center gap-1 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
-                      {(["normal", "large", "xlarge"] as const).map((sz) => (
-                        <button
-                          key={sz}
-                          type="button"
-                          onClick={() => changeFontSize(sz)}
-                          className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold transition-all cursor-pointer ${
-                            fontSize === sz
-                              ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-xs"
-                              : "text-ink-3 dark:text-[#b1ada1] hover:text-ink dark:hover:text-[#f4f3ee]"
-                          }`}
-                        >
-                          {sz === "normal" ? "100%" : sz === "large" ? "115%" : "130%"}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+            <div className="flex flex-col justify-center min-w-0 leading-none">
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#2E6B5E] dark:text-[#10b981] leading-none">
+                  MSAJCE
+                </span>
+                <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.2 text-[8.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40 leading-none">
+                  TNEA 1301
+                </span>
               </div>
-            )}
+              <h1 className="text-xs sm:text-sm font-heading font-extrabold text-ink dark:text-[#f4f3ee] tracking-tight whitespace-nowrap leading-tight mt-0.5">
+                Lorin AI
+              </h1>
+            </div>
           </div>
 
-          {/* Desktop Accessibility Font Size Popover Modal */}
-          {fontSizeMenuOpen && (
-            <div
-              ref={fontSizeMenuRef}
-              className="absolute right-0 top-12 z-50 w-56 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-100"
-            >
-              <div className="px-3 py-1.5 border-b border-line/60 dark:border-white/[0.06]">
-                <p className="text-[11px] font-bold text-ink dark:text-[#f4f3ee]">
-                  Text Size Settings
-                </p>
-                <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">
-                  Easy reading for parents & low vision
-                </p>
-              </div>
-              <div className="flex flex-col gap-1 mt-1">
-                <button
+          {/* ── HEADER NAVBAR RIGHT SIDE ── */}
+          <div className="flex items-center gap-1.5 relative">
+            {!isEmbed && (
+              <nav
+                className="hidden lg:flex rounded-full items-center p-1 border border-black/[0.06] dark:border-white/[0.08] bg-black/[0.03] dark:bg-white/[0.04] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+              >
+                {headerPills.map((pill) => {
+                  const Icon = pill.icon;
+                  const isActive = activePill === pill.id;
+
+                  return (
+                    <Tooltip key={pill.id} content={pill.label} position="bottom">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.94 }}
+                        transition={{ type: "spring", stiffness: 450, damping: 24 }}
+                        onClick={pill.action}
+                        type="button"
+                        className={`flex items-center gap-0 px-2.5 sm:px-3 py-1.5 rounded-full transition-all duration-200 relative h-9 min-w-[36px] sm:min-w-[38px] cursor-pointer overflow-hidden ${
+                          isActive
+                            ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
+                            : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
+                        }`}
+                        aria-label={pill.label}
+                      >
+                        <Icon
+                          size={17}
+                          strokeWidth={isActive ? 2.3 : 1.8}
+                          className="shrink-0 transition-transform duration-200"
+                        />
+
+                        <div
+                          className={`overflow-hidden flex items-center whitespace-nowrap transition-all duration-200 ${
+                            isActive ? "w-[62px] opacity-100 ml-1.25" : "w-0 opacity-0 ml-0"
+                          }`}
+                        >
+                          <span
+                            className={`font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 truncate ${
+                              isActive ? "text-white dark:text-zinc-950 font-bold" : "opacity-0"
+                            }`}
+                          >
+                            {pill.label}
+                          </span>
+                        </div>
+                      </motion.button>
+                    </Tooltip>
+                  );
+                })}
+              </nav>
+            )}
+
+            {/* Sandwich Button */}
+            <div className={isEmbed ? "flex relative z-50" : "flex lg:hidden relative z-50"} ref={mobileMenuRef}>
+              <Tooltip content={mobileMenuOpen ? "Close menu" : "Menu"} position="bottom">
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                  onClick={() => setMobileMenuOpen((prev) => !prev)}
                   type="button"
-                  onClick={() => {
-                    changeFontSize("normal");
-                    setFontSizeMenuOpen(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                    fontSize === "normal"
-                      ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
-                      : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                  aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
+                  className={`size-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                    mobileMenuOpen
+                      ? "bg-[#2E6B5E]/15 text-[#2E6B5E] border border-[#2E6B5E]/30 dark:bg-[#10b981]/25 dark:text-[#10b981] dark:border-[#10b981]/40 shadow-xs"
+                      : "bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] border border-black/10 dark:border-white/15 hover:bg-black/[0.08] dark:hover:bg-white/[0.12] shadow-xs"
                   }`}
                 >
-                  <span>Standard (100%)</span>
-                  {fontSize === "normal" && (
-                    <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                  {mobileMenuOpen ? (
+                    <X size={18} strokeWidth={2.4} />
+                  ) : (
+                    <Menu size={18} strokeWidth={2.4} />
                   )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    changeFontSize("large");
-                    setFontSizeMenuOpen(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                    fontSize === "large"
-                      ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
-                      : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <span>Large (+15% Parents)</span>
-                  {fontSize === "large" && (
-                    <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    changeFontSize("xlarge");
-                    setFontSizeMenuOpen(false);
-                  }}
-                  className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
-                    fontSize === "xlarge"
-                      ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
-                      : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
-                  }`}
-                >
-                  <span>Extra Large (+30%)</span>
-                  {fontSize === "xlarge" && (
-                    <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
-                  )}
-                </button>
-              </div>
+                </motion.button>
+              </Tooltip>
+
+              {/* Mobile / Tablet Sandwich Dropdown Popup */}
+              <AnimatePresence>
+                {mobileMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94, y: -8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.94, y: -8 }}
+                    transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute right-0 top-11 sm:top-12 z-50 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.7)] p-2.5 divide-y divide-black/[0.06] dark:divide-white/[0.06] origin-top-right"
+                  >
+                    {!userProfile?.name && onOpenProfile && (
+                      <div className="pb-2 px-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="size-7 rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] font-bold text-xs shrink-0">
+                            <User size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-ink dark:text-[#f4f3ee] truncate">
+                              Student Profile
+                            </p>
+                            <p className="text-[10px] text-ink-3 dark:text-[#b1ada1] truncate">
+                              Add name & details
+                            </p>
+                          </div>
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onOpenProfile();
+                          }}
+                          className="text-[10.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] hover:underline cursor-pointer shrink-0 ml-1"
+                        >
+                          Set Up
+                        </motion.button>
+                      </div>
+                    )}
+
+                    <div className="py-1.5 flex flex-col gap-0.5">
+                      <motion.button
+                        whileHover={{ x: 3 }}
+                        whileTap={{ scale: 0.97 }}
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          onNewChat();
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                      >
+                        <Plus size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                        <span>Start New Chat</span>
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ x: 3 }}
+                        whileTap={{ scale: 0.97 }}
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          onOpenHistory();
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                      >
+                        <Clock size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                        <span>Chat History</span>
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ x: 3 }}
+                        whileTap={{ scale: 0.97 }}
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          if (onOpenSettings) onOpenSettings();
+                          else navigate("/settings");
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                      >
+                        <Settings size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
+                        <span>Settings & Voice</span>
+                      </motion.button>
+
+                      {isEmbed && (
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          whileTap={{ scale: 0.97 }}
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
+                            window.open(fullUrl, "_blank");
+                          }}
+                          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#2E6B5E] dark:text-[#10b981] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
+                        >
+                          <ExternalLink size={16} />
+                          <span>Open Full Website</span>
+                        </motion.button>
+                      )}
+                    </div>
+
+                    <div className="pt-2 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between px-2 py-1">
+                        <span className="text-[11px] font-medium text-ink-3 dark:text-[#b1ada1] flex items-center gap-1.5">
+                          {isDark ? <Moon size={14} /> : <Sun size={14} />}
+                          Appearance
+                        </span>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          type="button"
+                          onClick={toggleTheme}
+                          className="px-2 py-1 rounded-lg text-[10.5px] font-bold border border-black/10 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.06] dark:hover:bg-white/[0.1] transition-colors cursor-pointer"
+                        >
+                          {isDark ? "Dark Mode" : "Light Mode"}
+                        </motion.button>
+                      </div>
+
+                      <div className="flex items-center justify-between px-2 py-1">
+                        <span className="text-[11px] font-medium text-ink-3 dark:text-[#b1ada1] flex items-center gap-1.5">
+                          <Type size={14} />
+                          Text Size
+                        </span>
+                        <div className="flex items-center gap-1 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-lg border border-black/[0.06] dark:border-white/[0.06]">
+                          {(["normal", "large", "xlarge"] as const).map((sz) => (
+                            <motion.button
+                              whileHover={{ scale: 1.08 }}
+                              whileTap={{ scale: 0.92 }}
+                              key={sz}
+                              type="button"
+                              onClick={() => changeFontSize(sz)}
+                              className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold transition-all cursor-pointer ${
+                                fontSize === sz
+                                  ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-xs"
+                                  : "text-ink-3 dark:text-[#b1ada1] hover:text-ink dark:hover:text-[#f4f3ee]"
+                              }`}
+                            >
+                              {sz === "normal" ? "100%" : sz === "large" ? "115%" : "130%"}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          )}
-        </div>
-      </header>
-    </div>
-  </>
-);
+
+            {/* Desktop Accessibility Font Size Popover Modal */}
+            <AnimatePresence>
+              {fontSizeMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.94, y: -8 }}
+                  transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                  ref={fontSizeMenuRef}
+                  className="absolute right-0 top-12 z-50 w-56 rounded-2xl bg-white dark:bg-[#18181b] border border-black/10 dark:border-white/10 shadow-2xl p-2 origin-top-right"
+                >
+                  <div className="px-3 py-1.5 border-b border-line/60 dark:border-white/[0.06]">
+                    <p className="text-[11px] font-bold text-ink dark:text-[#f4f3ee]">
+                      Text Size Settings
+                    </p>
+                    <p className="text-[9.5px] text-ink-3 dark:text-[#b1ada1]">
+                      Easy reading for parents & low vision
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-1 mt-1">
+                    <motion.button
+                      whileHover={{ x: 2 }}
+                      whileTap={{ scale: 0.97 }}
+                      type="button"
+                      onClick={() => {
+                        changeFontSize("normal");
+                        setFontSizeMenuOpen(false);
+                      }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        fontSize === "normal"
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                          : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <span>Standard (100%)</span>
+                      {fontSize === "normal" && (
+                        <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                      )}
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ x: 2 }}
+                      whileTap={{ scale: 0.97 }}
+                      type="button"
+                      onClick={() => {
+                        changeFontSize("large");
+                        setFontSizeMenuOpen(false);
+                      }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        fontSize === "large"
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                          : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <span>Large (+15% Parents)</span>
+                      {fontSize === "large" && (
+                        <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                      )}
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ x: 2 }}
+                      whileTap={{ scale: 0.97 }}
+                      type="button"
+                      onClick={() => {
+                        changeFontSize("xlarge");
+                        setFontSizeMenuOpen(false);
+                      }}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                        fontSize === "xlarge"
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
+                          : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <span>Extra Large (+30%)</span>
+                      {fontSize === "xlarge" && (
+                        <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
+                      )}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.header>
+      </div>
+    </>
+  );
 });
 
 export default ChatHeader;
