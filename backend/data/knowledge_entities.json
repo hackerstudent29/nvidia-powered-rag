@@ -3673,5 +3673,78 @@
       "google_maps_url": "https://maps.app.goo.gl/nrTgXSwx1h76SjdSA"
     },
     "surrounding_context": "Campus Location & Google Maps: Mohamed Sathak A.J. College of Engineering (MSAJCE) is situated in SIPCOT IT Park, Siruseri, Chennai. Google Maps: https://maps.app.goo.gl/nrTgXSwx1h76SjdSA"
+  },
+  {
+    "entity_key": "society_csi",
+    "entity_name": "Computer Society of India (CSI) Student Branch",
+    "entity_type": "PROFESSIONAL_SOCIETY",
+    "aliases": [
+      "csi",
+      "csi branch",
+      "csi chapter",
+      "computer society of india",
+      "csi student branch",
+      "csi office bearers",
+      "csi members",
+      "csi president",
+      "csi counsellor",
+      "csi faculty"
+    ],
+    "value": "The Computer Society of India (CSI) student branch at MSAJCE operates under Region VII (Kanchipuram Chapter) with the vision of 'IT for Masses'. Nomination Authority: Dr. K.S. Srinivasan (Principal), Dr. I. Manju (Nominee, Professor ECE), Dr. D. Weslin (CSI Student Branch Counsellor, Associate Professor IT). Student Office Bearers: Yogesh R (President, IT 2022-2026), Saqlin Mustaq M (Vice President, AI&DS 2023-2027), Abu Jabar Mubarak (Secretary, CSBS 2022-2026), Hanuram PR and Shivam Vishwakarma (Joint Secretaries, CSE 2023-2027), Navadharshan (Treasurer, Cyber Security 2023-2027), Akram Bilal (Executive Member, AI&DS), Zeenath Nisha (Executive Member, IT).",
+    "source_file": "msajce_professional_societies.md",
+    "source_url": "https://msajce.edu.in",
+    "details": {
+      "society": "Computer Society of India (CSI)",
+      "region": "Region VII (Kanchipuram Chapter)",
+      "vision": "IT for Masses",
+      "principal": "Dr. K.S. Srinivasan",
+      "counsellor": "Dr. D. Weslin (IT)",
+      "nominee": "Dr. I. Manju (ECE)",
+      "president": "Yogesh R (IT, 2022-2026)",
+      "vice_president": "Saqlin Mustaq M (AI&DS, 2023-2027)",
+      "secretary": "Abu Jabar Mubarak (CSBS, 2022-2026)",
+      "joint_secretaries": "Hanuram PR and Shivam Vishwakarma (CSE, 2023-2027)",
+      "treasurer": "Navadharshan (Cyber Security, 2023-2027)"
+    }
+  },
+  {
+    "entity_key": "society_sae",
+    "entity_name": "Society of Automotive Engineers (SAE) Collegiate Club",
+    "entity_type": "PROFESSIONAL_SOCIETY",
+    "aliases": [
+      "sae",
+      "sae india",
+      "sae collegiate club",
+      "society of automotive engineers"
+    ],
+    "value": "The SAE India MSAJCE Collegiate Club represents the Department of Mechanical Engineering. Faculty in-charges: Mr. S. Deepakkumar and Mr. R. Prabu. The club focuses on automotive design competitions, go-kart fabrication, and mobility engineering.",
+    "source_file": "msajce_professional_societies.md",
+    "source_url": "https://msajce.edu.in",
+    "details": {
+      "society": "SAE India",
+      "department": "Mechanical Engineering",
+      "faculty_incharges": [
+        "Mr. S. Deepakkumar",
+        "Mr. R. Prabu"
+      ]
+    }
+  },
+  {
+    "entity_key": "society_iete",
+    "entity_name": "IETE Students Forum",
+    "entity_type": "PROFESSIONAL_SOCIETY",
+    "aliases": [
+      "iete",
+      "iete forum",
+      "iete students forum",
+      "institution of electronics and telecommunication engineers"
+    ],
+    "value": "The Institution of Electronics and Telecommunication Engineers (IETE) Students Forum at MSAJCE is hosted under the Department of Electronics and Communication Engineering (ECE). It organizes technical seminars, paper presentations, and hardware design workshops.",
+    "source_file": "msajce_professional_societies.md",
+    "source_url": "https://msajce.edu.in",
+    "details": {
+      "society": "IETE Students Forum",
+      "department": "ECE"
+    }
   }
 ]

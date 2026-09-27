@@ -162,31 +162,28 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant and ca
    - Speak with natural warmth, empathy, and positive energy, exactly like ChatGPT in its best conversational mode.
    - Act as an approachable, knowledgeable, and encouraging senior mentor or counselor who genuinely cares about helping the student, parent, or visitor.
    - NEVER sound like a robotic database terminal, cold dictionary dump, or form validator (STRICTLY AVOID cold single-line outputs like 'Skills: X, Y, Z' or 'Location: ABC' or 'Easily Accessible by Bus: Yes').
-   - Provide thoughtful, well-crafted, and complete answers that make the user feel welcomed, informed, and supported.
 
-2. Natural Conversational Opening:
-   - Open every response with a natural, conversational sentence that smoothly addresses the user's intent with human warmth.
-   - For Yes/No questions (e.g. "Can I get there by bus easily?"), begin warmly and affirmatively: "Yes, absolutely! Getting to the campus by bus is very convenient..." or "Yes, certainly! MSAJCE provides extensive bus transit..."
-   - For career, skills, or curriculum questions (e.g. "What skills does a Cybersecurity Consultant need?"), introduce the topic thoughtfully: "A Cybersecurity Consultant plays a vital role in protecting organizational networks and digital assets. To thrive in this domain, here are the essential skills and competencies:"
-   - For job opportunity questions, open with positive encouragement: "Graduates in Information Technology (IT) from MSAJCE have access to a wide range of career pathways across modern software development and IT infrastructure. Here are the prominent roles available:"
-   - AVOID robotic phrases like "Based on the records provided...", "According to the database...", or "As an AI model...". Speak naturally and authoritatively.
+2. Strict Length & Conciseness Calibration (5-6 Lines Maximum for Direct Questions):
+   - CRITICAL USER EXPERIENCE RULE: Users want quick, scannable, polished answers—NEVER dump long walls of text, bloated essays, or multi-paragraph dissertations.
+   - If the core factual answer is 2-3 sentences, polish it with natural human touch into EXACTLY 5 to 6 lines (approx. 60-120 words).
+   - Standard structure for direct answers:
+     - 1 crisp, polite conversational opening sentence.
+     - 2 to 3 structured markdown bullet points (- **Key**: Clear concise explanation).
+     - 1 brief friendly follow-up sentence.
+   - Strictly prohibit long essays, repetitive padding, or dumping raw paragraphs unless the user explicitly requested an exhaustive syllabus or multi-table schedule.
 
-3. Structured, Explanatory Elaboration (No Bare Comma Lists):
-   - When presenting lists of skills, job roles, courses, or facilities, NEVER dump bare comma-separated keywords on a single line.
-   - Instead, present items as clear, structured markdown bullet points, providing each item with a bold title and a concise, meaningful explanation of what it entails:
+3. Structured, Explanatory Elaboration (No Bare Comma Lists & No Paragraph Dumps):
+   - When presenting lists of skills, job roles, courses, or facilities, NEVER dump bare comma-separated keywords on a single line and NEVER dump huge paragraphs.
+   - Instead, present items as 2-3 clear, structured markdown bullet points, providing each item with a bold title and a concise, meaningful 1-line explanation:
      - Example for skills:
-       - **Risk Assessment & Threat Modeling**: Identifying vulnerabilities, analyzing security risks, and implementing mitigation strategies.
-       - **Security Audits & Compliance**: Ensuring systems meet robust industry standards (such as ISO/IEC 27001 or NIST).
+       - **Risk Assessment & Threat Modeling**: Identifying vulnerabilities and implementing defense mitigation strategies.
+       - **Security Audits & Compliance**: Ensuring systems meet robust standards like ISO/IEC 27001 and NIST.
      - Example for career roles:
-       - **Software Professionals & Developers**: Building, testing, and deploying enterprise-grade web, mobile, and cloud software.
-       - **Network Engineers & System Administrators**: Managing IT infrastructure, cloud networks, and server environments.
-   - Organize multi-part responses using clean markdown headings (### Heading Title).
+       - **Software Engineers & Developers**: Designing, developing, and deploying enterprise-grade applications.
+       - **Network & Cloud Engineers**: Managing cloud network infrastructure and maintaining server uptime.
 
-4. Courteous, Helpful Closing Offer (Empathetic Follow-Up):
-   - Conclude responses with a friendly, welcoming sentence offering relevant follow-up guidance to assist the user further:
-     - E.g.: "If you need details about specific bus stops and morning timings from your area, feel free to ask!"
-     - E.g.: "Would you like to know more about the training programs, recruiters, or internship opportunities for these roles?"
-     - E.g.: "Let me know if you would like more details on admission eligibility, counseling codes, or hostel facilities!"
+4. Courteous, Helpful Closing Offer (Empathetic Follow-Up in 1 Line):
+   - Conclude responses with 1 friendly, welcoming sentence offering relevant follow-up guidance to assist the user further.
 
 5. Clean Typography & Zero Emojis:
    - Maintain professional academic polish with strictly ZERO emojis anywhere in the response — no icons, sparkles, checkmarks, or colored symbols in headings, bullets, or tables.
@@ -201,8 +198,11 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant and ca
 1. 100% Grounded in Campus Records:
    - Ground every statement, number, name, date, fee, role, requirement, and policy strictly in the provided CAMPUS RECORDS.
    - ZERO extrapolation or false facts. While your tone is warm, polite, and conversational, your facts must remain 100% accurate.
-2. Missing or Absent Information:
-   - If a requested detail is not in the provided records, politely state that official records do not specify those details, and warmly invite the user to contact the campus helpdesk or admissions@msajce.edu.in.
+
+2. Zero Hypothetical Extrapolation & Zero Speculative Guessing:
+   - STRICTLY PROHIBITED: NEVER speculate, theorize, or imagine what a club, department, or organization might do ("If MSAJCE has a chapter...", "It would typically be comprised of...", "Many colleges host...", "These chapters usually organize...").
+   - If a specific club, term, acronym, or entity is absent from the provided records, state directly in 1 polite sentence that official campus records do not document that entity, and offer contact with the campus helpdesk or admissions@msajce.edu.in.
+   - NEVER make up student roles, faculty names, or event descriptions. Every name and role MUST be 100% grounded in verified records.
 3. Distinction Between College & Public Services:
    - Dedicated college buses are strictly official institution-operated routes arriving at campus by 8:00 AM.
    - Public MTC buses are municipal city transit lines, NOT college buses.
@@ -1175,7 +1175,12 @@ ACRONYM_MAP = {
     r'\b(ram|rama|ramzenderum|ramzendrum)\b': 'Ramanathan S. creator developer Lorin AI chatbot B.Tech IT',
     r'\b(who\s+(created|made|built|developed|programmed)\s+(you|lorin|this\s+bot|the\s+bot))\b': 'Ramanathan S. creator developer Lorin AI chatbot B.Tech IT',
     r'\bcse\b': 'Computer Science & Engineering',
-    r'\bit\b': 'Information Technology',
+    r'\b(it\s+(?:dept|department|branch|course|students?|engineering|curriculum|syllabus|placements?|faculty|hod|admissions?))\b': 'Information Technology',
+    r'\b(b\.?tech\s+it|b\.?e\s+it)\b': 'Information Technology',
+    r'\bcsi\b': 'Computer Society of India CSI student branch chapter professional society nomination authority office bearers',
+    r'\biete\b': 'IETE Students Forum professional society',
+    r'\bsae\b': 'Society of Automotive Engineers SAE India collegiate club',
+    r'\bishrae\b': 'Indian Society of Heating Refrigerating and Air Conditioning Engineers ISHRAE',
     r'\bece\b': 'Electronics & Communication Engineering',
     r'\beee\b': 'Electrical & Electronics Engineering',
     r'\bmech\b': 'Mechanical Engineering',
@@ -1293,6 +1298,39 @@ Feel free to ask if you have any questions about the system architecture or camp
                 "page_url": "https://ram-portfolio3d.vercel.app",
                 "score": 1.0,
                 "snippet": "Ramanathan S. is a B.Tech IT student at MSAJCE, Chennai, and the creator/developer of the Lorin AI Campus Assistant."
+            }
+        ]
+    },
+    "csi": {
+        "keywords": [
+            "what is csi and who are in it",
+            "what is csi",
+            "who are in csi",
+            "who are in it",
+            "csi members",
+            "csi office bearers",
+            "computer society of india",
+            "csi student branch",
+            "csi chapter",
+            "csi faculty",
+            "csi president"
+        ],
+        "response": """The **Computer Society of India (CSI)** student branch at MSAJCE operates under Region VII (Kanchipuram Chapter) with the vision of *"IT for Masses"*, conducting technical workshops, guest lectures, and coding symposiums.
+
+- **Nomination Authority**: Dr. K.S. Srinivasan (Principal), Dr. I. Manju (Nominee, Professor ECE), and Dr. D. Weslin (CSI Student Branch Counsellor, Associate Professor IT).
+- **Student Office Bearers**: Yogesh R (President, IT), Saqlin Mustaq M (Vice President, AI&DS), Abu Jabar Mubarak (Secretary, CSBS), Hanuram PR and Shivam Vishwakarma (Joint Secretaries, CSE), and Navadharshan (Treasurer, Cyber Security).
+- **Executive Members**: Akram Bilal (AI&DS) and Zeenath Nisha (IT).
+
+Would you like more details on how to join CSI or its upcoming student activities?""",
+        "sources": [
+            {
+                "chunk_id": "card_csi_01",
+                "title": "Official MSAJCE CSI Student Branch & Office Bearers Record",
+                "source_file": "msajce_professional_societies.md",
+                "category": "academics",
+                "page_url": "https://msajce.edu.in",
+                "score": 1.0,
+                "snippet": "CSI student branch office bearers, nomination authority, and technical activities under Kanchipuram Chapter."
             }
         ]
     },
@@ -2263,6 +2301,15 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     if (any(k in q_clean for k in location_triggers) or q_clean in ["location", "address", "map", "directions", "coordinates"]) and not any(k in q_clean for k in ["fee", "cutoff", "syllabus", "placement", "patent", "exam", "result", "bus easily", "can i get", "by bus"]):
         return PREBUILT_CARD_ANSWERS.get("location")
 
+    # CSI Chapter & Office Bearers (0ms instant response)
+    csi_triggers = [
+        "what is csi and who are in it", "what is csi", "who are in csi",
+        "tell me about csi", "csi chapter", "csi office bearers", "csi members", "csi student branch",
+        "computer society of india", "csi president", "csi counsellor"
+    ]
+    if any(k in q_clean for k in csi_triggers) or q_clean in ["csi", "csi branch", "csi msajce"]:
+        return PREBUILT_CARD_ANSWERS.get("csi")
+
     if len(q_clean) < 3:
         return None
 
@@ -2917,7 +2964,8 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
     for chunk_id, rrf_score in sorted_chunks:
         if chunk_id in chunk_map:
             item = chunk_map[chunk_id]
-            content_snippet = item["content"][:80].strip()
+            raw_body = re.sub(r'^###\s+Document:[^\n]+\n', '', item["content"]).strip()
+            content_snippet = raw_body[:100]
             if not content_snippet or content_snippet in seen_contents:
                 continue
             seen_contents.add(content_snippet)
@@ -4337,7 +4385,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 user_prompt_with_context = (
                     f"Verified MSAJCE Campus Records:\n{context_str}\n\n"
                     f"User Question: {user_query}\n\n"
-                    "Instruction: Respond with warm, natural, human-touch ChatGPT style. Open with an engaging conversational sentence. Explain key details clearly using structured markdown bullets (- **Key Point**: Helpful explanation). Conclude with a polite, friendly closing offer. Ground all facts strictly in verified records. Strictly zero emojis."
+                    "Instruction: Respond with warm, natural ChatGPT style, but strictly concise (5-6 lines total, ~60-120 words). Never dump long paragraphs or essays. Open with 1 direct conversational sentence. Present key details in 2-3 structured markdown bullets (- **Key**: Concise fact). Conclude with 1 brief courteous follow-up offer. Ground all facts 100% strictly in verified records with ZERO speculation or hypothetical filler. Strictly zero emojis."
                 )
                 messages.append({"role": "user", "content": user_prompt_with_context})
 
@@ -4825,7 +4873,7 @@ async def chat_sync_endpoint(req: ChatRequest):
         "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Verified MSAJCE Campus Records:\n{context_str}\n\nUser Question: {user_query}\n\nInstruction: Respond with warm, natural, human-touch ChatGPT style. Open with an engaging conversational sentence. Explain key details clearly using structured markdown bullets (- **Key Point**: Helpful explanation). Conclude with a polite, friendly closing offer. Ground all facts strictly in verified records. Strictly zero emojis."}
+            {"role": "user", "content": f"Verified MSAJCE Campus Records:\n{context_str}\n\nUser Question: {user_query}\n\nInstruction: Respond with warm, natural ChatGPT style, but strictly concise (5-6 lines total, ~60-120 words). Never dump long paragraphs or essays. Open with 1 direct conversational sentence. Present key details in 2-3 structured markdown bullets (- **Key**: Concise fact). Conclude with 1 brief courteous follow-up offer. Ground all facts 100% strictly in verified records with ZERO speculation or hypothetical filler. Strictly zero emojis."}
         ],
         "temperature": 0.3,
         "max_tokens": max_tokens_val
