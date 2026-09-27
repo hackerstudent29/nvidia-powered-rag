@@ -137,7 +137,7 @@ const HeroGreeting = React.memo(function HeroGreeting({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2.5 sm:px-6 pt-14 sm:pt-16 md:pt-14 pb-3 sm:pb-4 my-auto"
+      className="flex flex-col items-center w-full max-w-[1120px] mx-auto px-2 sm:px-6 pt-16 sm:pt-20 md:pt-16 pb-3 sm:pb-4 my-auto"
     >
       {/* ── Hero headline ── */}
       <div className="relative flex flex-col items-center text-center mb-3 sm:mb-6 w-full">
@@ -147,22 +147,22 @@ const HeroGreeting = React.memo(function HeroGreeting({
           style={{ background: "radial-gradient(ellipse, #2E6B5E 0%, transparent 70%)" }}
         />
 
-        {/* Mascot + Hello Headline in 1 Inline Row */}
-        <div className="relative z-10 flex items-center justify-center gap-2.5 sm:gap-4 flex-wrap sm:flex-nowrap">
+        {/* Mascot + Hello Headline on exact same line (flex-nowrap) on ALL screens */}
+        <div className="relative z-10 flex flex-row items-center justify-center gap-2 sm:gap-4 flex-nowrap w-full px-1">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
             className="shrink-0 cursor-pointer"
           >
-            <JellyBlobMascot emotion="curious" size={64} interactive={true} showSubtitle={false} />
+            <JellyBlobMascot emotion="curious" size={78} interactive={true} showSubtitle={true} autoLoop={true} />
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
-            className="hero-title text-[1.45rem] min-[360px]:text-[1.75rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] whitespace-nowrap"
+            className="hero-title text-[1.25rem] min-[360px]:text-[1.5rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] whitespace-nowrap shrink-0"
           >
             Hello, {firstName}.
           </motion.h1>

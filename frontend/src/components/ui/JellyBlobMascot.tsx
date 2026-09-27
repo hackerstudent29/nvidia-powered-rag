@@ -37,6 +37,7 @@ export interface JellyBlobMascotProps {
   showSubtitle?: boolean;
   interactive?: boolean;
   autoIdle?: boolean;
+  autoLoop?: boolean;
   messages?: Partial<Record<JellyBlobMood, string>>;
 }
 
@@ -57,13 +58,15 @@ const EMOTION_MAP: Record<JellyEmotion, JellyBlobMood> = {
   angry: "angry",
 };
 
-const POKE_EMOTIONS: JellyBlobMood[] = [
-  "surprised",
-  "shy",
-  "love",
-  "sideEye",
-  "happy",
-  "wave",
+const POKE_CYCLES: Array<{ mood: JellyBlobMood; msg: string }> = [
+  { mood: "curious", msg: "Ooh! What are you asking today?" },
+  { mood: "happy", msg: "MSAJCE TNEA Code is 1301!" },
+  { mood: "surprised", msg: "Whoa! You poked me!" },
+  { mood: "love", msg: "Explore 12 UG & 2 PG degrees!" },
+  { mood: "wave", msg: "Hello! I am Lorin AI assistant." },
+  { mood: "shy", msg: "Hehe! Tap any quick card below." },
+  { mood: "hmm", msg: "Top recruiters visit campus every year!" },
+  { mood: "sideEye", msg: "Hey, stop poking me!" },
 ];
 
 const DEFAULT_MESSAGES: Partial<Record<JellyBlobMood, string>> = {
@@ -95,22 +98,25 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
   showSubtitle = false,
   interactive = true,
   autoIdle = true,
+  autoLoop = true,
   messages,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [tempEmotion, setTempEmotion] = useState<JellyBlobMood | null>(null);
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const [tempMood, setTempMood] = useState<JellyBlobMood | null>(null);
+  const [customMsg, setCustomMsg] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
   const [computedGaze, setComputedGaze] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [pokeIndex, setPokeIndex] = useState(0);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loopIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const baseEmotion = emotion || moodProp || "idle";
   const mappedBaseMood: JellyBlobMood = EMOTION_MAP[baseEmotion] || "neutral";
 
-  // Throttle idle timer reset to once every 5 seconds to eliminate CPU event lag
+  // Throttle idle timer reset to eliminate CPU event lag
   const lastResetTimeRef = useRef<number>(0);
   const resetIdleTimer = useCallback(() => {
     if (!autoIdle) return;
@@ -137,6 +143,18 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, [resetIdleTimer]);
+
+  // Automatic looping through emotions and messages every 5.5 seconds
+  useEffect(() => {
+    if (!autoLoop || isIdle) return;
+    loopIntervalRef.current = setInterval(() => {
+      setCycleIndex((prev) => (prev + 1) % POKE_CYCLES.length);
+    }, 5500);
+
+    return () => {
+      if (loopIntervalRef.current) clearInterval(loopIntervalRef.current);
+    };
+  }, [autoLoop, isIdle]);
 
   // Handle dynamic cursor gaze tracking with requestAnimationFrame for 60-120fps smoothness
   const rafIdRef = useRef<number | null>(null);
@@ -172,17 +190,19 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
     setComputedGaze({ x: 0, y: 0 });
   };
 
-  // Handle poke reaction
+  // Handle poke reaction: cycle to next emotion & speech message on every click
   const triggerPokeReaction = () => {
     resetIdleTimer();
-    const nextMood = POKE_EMOTIONS[pokeIndex % POKE_EMOTIONS.length];
-    setPokeIndex((prev) => prev + 1);
-    setTempEmotion(nextMood);
+    const nextItem = POKE_CYCLES[(cycleIndex + 1) % POKE_CYCLES.length];
+    setCycleIndex((prev) => (prev + 1) % POKE_CYCLES.length);
+    setTempMood(nextItem.mood);
+    setCustomMsg(nextItem.msg);
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      setTempEmotion(null);
-    }, 1800);
+      setTempMood(null);
+      setCustomMsg(null);
+    }, 2800);
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -194,25 +214,37 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
   };
 
   const handleOverpoke = () => {
-    setTempEmotion("angry");
+    setTempMood("angry");
+    setCustomMsg("Ouch! Overpoked limit reached!");
     if (onOverpoke) onOverpoke();
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      setTempEmotion(null);
-    }, 2500);
+      setTempMood(null);
+      setCustomMsg(null);
+    }, 2800);
   };
 
   // Determine effective mood
+  const currentLoopItem = POKE_CYCLES[cycleIndex];
   let activeMood: JellyBlobMood = mappedBaseMood;
-  if (tempEmotion) {
-    activeMood = tempEmotion;
+
+  if (tempMood) {
+    activeMood = tempMood;
   } else if (isIdle && activeMood === "neutral") {
     activeMood = "sleepy";
   } else if (isHovered && activeMood === "neutral") {
     activeMood = "curious";
+  } else if (autoLoop && baseEmotion === "curious") {
+    activeMood = currentLoopItem.mood;
   }
 
+  const activeMessage = customMsg || (autoLoop && baseEmotion === "curious" ? currentLoopItem.msg : undefined);
+
   const mergedMessages = { ...DEFAULT_MESSAGES, ...messages };
+  if (activeMessage) {
+    mergedMessages[activeMood] = activeMessage;
+  }
+
   const finalGaze = customGaze || computedGaze;
 
   return (
@@ -239,7 +271,7 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
       }}
     >
       {showSubtitle && (
-        <div className="absolute -top-14 z-30 pointer-events-none transition-all duration-300 transform group-hover:-translate-y-1">
+        <div className="absolute -top-12 z-30 pointer-events-none transition-all duration-300 transform group-hover:-translate-y-1">
           <BlobSpeech mood={activeMood} messages={mergedMessages} />
         </div>
       )}
