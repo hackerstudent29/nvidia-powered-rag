@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Calendar, HelpCircle, ArrowRight, Sparkles, X, ChevronDown, Check } from 'lucide-react';
+import { JellyBlobMascot } from '../ui/JellyBlobMascot';
 
 export interface UserProfile {
   name: string;
@@ -31,6 +32,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
   const [purpose, setPurpose] = useState(initialProfile?.purpose || CATEGORY_OPTIONS[0].value);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; age?: string }>({});
+  const [isTyping, setIsTyping] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,9 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
 
   const selectedCategoryObj = CATEGORY_OPTIONS.find((c) => c.value === purpose) || CATEGORY_OPTIONS[0];
 
+  const hasErrors = Object.keys(errors).length > 0;
+  const modalMascotEmotion = hasErrors ? "sad" : isTyping ? "curious" : name.trim() ? "happy" : "shy";
+
   return (
     <div
       ref={backdropRef}
@@ -111,17 +116,22 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
         )}
 
         {/* Modal Header */}
-        <div className="relative z-10 space-y-1 text-left pr-6">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#34d399]">
-            <Sparkles className="h-3 w-3" />
-            <span>Welcome to Lorin AI</span>
+        <div className="relative z-10 flex items-start gap-3 text-left pr-6 mb-1">
+          <div className="shrink-0 -mt-1 p-1 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 shadow-lg">
+            <JellyBlobMascot emotion={modalMascotEmotion} size={54} interactive={true} />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white pt-1">
-            Tell us about yourself
-          </h2>
-          <p className="text-[11.5px] sm:text-xs text-[#b1ada1]">
-            Personalize campus AI assistance for your profile.
-          </p>
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#34d399]">
+              <Sparkles className="h-3 w-3" />
+              <span>Welcome to Lorin AI</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white pt-0.5">
+              Tell us about yourself
+            </h2>
+            <p className="text-[11.5px] sm:text-xs text-[#b1ada1]">
+              Personalize campus AI assistance for your profile.
+            </p>
+          </div>
         </div>
 
         {/* Form Body */}
@@ -136,6 +146,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               type="text"
               placeholder="e.g. Ramanathan S"
               value={name}
+              onFocus={() => setIsTyping(true)}
+              onBlur={() => setIsTyping(false)}
               onChange={(e) => {
                 setName(e.target.value);
                 if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
@@ -159,6 +171,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               max="100"
               placeholder="e.g. 18"
               value={age}
+              onFocus={() => setIsTyping(true)}
+              onBlur={() => setIsTyping(false)}
               onChange={(e) => {
                 setAge(e.target.value);
                 if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));

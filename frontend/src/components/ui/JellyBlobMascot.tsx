@@ -1,4 +1,4 @@
-import { FC } from "react";
+import React, { FC, useState, useEffect, useRef, useCallback } from "react";
 import {
   JellyBlobMascot as FeralBlobMascot,
   BlobSpeech,
@@ -36,6 +36,7 @@ export interface JellyBlobMascotProps {
   onClick?: () => void;
   showSubtitle?: boolean;
   interactive?: boolean;
+  autoIdle?: boolean;
   messages?: Partial<Record<JellyBlobMood, string>>;
 }
 
@@ -56,31 +57,165 @@ const EMOTION_MAP: Record<JellyEmotion, JellyBlobMood> = {
   angry: "angry",
 };
 
+const POKE_EMOTIONS: JellyBlobMood[] = [
+  "surprised",
+  "shy",
+  "love",
+  "sideEye",
+  "happy",
+  "wave",
+];
+
+const DEFAULT_MESSAGES: Partial<Record<JellyBlobMood, string>> = {
+  neutral: "Hey there! I am Lorin AI.",
+  curious: "Ooh! What are you asking?",
+  happy: "Glad to help with MSAJCE info!",
+  surprised: "Whoa! You poked me!",
+  love: "MSAJCE TNEA 1301 is awesome!",
+  shy: "Hehe, welcome to Lorin AI!",
+  sleepy: "Zzz... tap me to wake up!",
+  wave: "Hello there! Ask me anything.",
+  hmm: "Searching campus records...",
+  sideEye: "Hey! Stop poking me!",
+  sad: "Aww... let me try again!",
+  angry: "Ouch! Overpoked limit reached!",
+};
+
 export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
   emotion,
-  mood: moodProp = "idle",
+  mood: moodProp,
   size = 48,
   eyeStyle = "v1",
-  gaze,
+  gaze: customGaze,
   onOverpoke,
   onWake,
   onPoke,
   className = "",
   onClick,
   showSubtitle = false,
+  interactive = true,
+  autoIdle = true,
   messages,
 }) => {
-  const activeEmotion = emotion || moodProp || "idle";
-  const mappedMood: JellyBlobMood = EMOTION_MAP[activeEmotion] || "neutral";
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [tempEmotion, setTempEmotion] = useState<JellyBlobMood | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isIdle, setIsIdle] = useState(false);
+  const [computedGaze, setComputedGaze] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [pokeIndex, setPokeIndex] = useState(0);
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const baseEmotion = emotion || moodProp || "idle";
+  const mappedBaseMood: JellyBlobMood = EMOTION_MAP[baseEmotion] || "neutral";
+
+  // Reset idle timer on user interaction
+  const resetIdleTimer = useCallback(() => {
+    if (!autoIdle) return;
+    if (isIdle) {
+      setIsIdle(false);
+      if (onWake) onWake();
+    }
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      setIsIdle(true);
+    }, 18000); // 18 seconds idle triggers sleepy mood
+  }, [autoIdle, isIdle, onWake]);
+
+  useEffect(() => {
+    resetIdleTimer();
+    const handleGlobalPointer = () => resetIdleTimer();
+    window.addEventListener("pointermove", handleGlobalPointer, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", handleGlobalPointer);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [resetIdleTimer]);
+
+  // Handle dynamic cursor gaze tracking
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    resetIdleTimer();
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const dx = e.clientX - centerX;
+    const dy = e.clientY - centerY;
+
+    // Clamp gaze within viewBox units [-25, 25]
+    const gazeX = Math.max(-25, Math.min(25, Math.round(dx / 3)));
+    const gazeY = Math.max(-20, Math.min(20, Math.round(dy / 3)));
+
+    setComputedGaze({ x: gazeX, y: gazeY });
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    resetIdleTimer();
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setComputedGaze({ x: 0, y: 0 });
+  };
+
+  // Handle poke reaction
+  const triggerPokeReaction = () => {
+    resetIdleTimer();
+    const nextMood = POKE_EMOTIONS[pokeIndex % POKE_EMOTIONS.length];
+    setPokeIndex((prev) => prev + 1);
+    setTempEmotion(nextMood);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setTempEmotion(null);
+    }, 1800);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (interactive) {
+      triggerPokeReaction();
+    }
+    if (onPoke) onPoke();
+    if (onClick) onClick();
+  };
+
+  const handleOverpoke = () => {
+    setTempEmotion("angry");
+    if (onOverpoke) onOverpoke();
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setTempEmotion(null);
+    }, 2500);
+  };
+
+  // Determine effective mood
+  let activeMood: JellyBlobMood = mappedBaseMood;
+  if (tempEmotion) {
+    activeMood = tempEmotion;
+  } else if (isIdle && activeMood === "neutral") {
+    activeMood = "sleepy";
+  } else if (isHovered && activeMood === "neutral") {
+    activeMood = "curious";
+  }
+
+  const mergedMessages = { ...DEFAULT_MESSAGES, ...messages };
+  const finalGaze = customGaze || computedGaze;
 
   return (
     <div
-      className={`relative inline-flex flex-col items-center justify-center select-none ${className}`}
-      onClick={onClick}
+      ref={containerRef}
+      className={`relative inline-flex flex-col items-center justify-center select-none group cursor-pointer transition-transform duration-200 active:scale-95 ${className}`}
+      onClick={handleClick}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       style={{
         width: size,
         height: size,
-        // Override feral-blob palette to MSAJCE Emerald Green
+        // MSAJCE Emerald Green 3D Jelly Palette
         ["--jelly-body-top" as any]: "#6ee7b7",
         ["--jelly-body-mid" as any]: "#34d399",
         ["--jelly-body-deep" as any]: "#10b981",
@@ -93,20 +228,20 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
       }}
     >
       {showSubtitle && (
-        <div className="absolute -top-14 z-30 pointer-events-none">
-          <BlobSpeech mood={mappedMood} messages={messages} />
+        <div className="absolute -top-14 z-30 pointer-events-none transition-all duration-300 transform group-hover:-translate-y-1">
+          <BlobSpeech mood={activeMood} messages={mergedMessages} />
         </div>
       )}
 
       <div className="w-full h-full flex items-center justify-center pointer-events-auto">
         <FeralBlobMascot
-          mood={mappedMood}
+          mood={activeMood}
           eyeStyle={eyeStyle}
-          gaze={gaze}
-          onOverpoke={onOverpoke}
+          gaze={finalGaze}
+          onOverpoke={handleOverpoke}
           onWake={onWake}
           onPoke={onPoke}
-          className="w-full h-full"
+          className="w-full h-full filter drop-shadow-[0_4px_12px_rgba(16,185,129,0.35)]"
         />
       </div>
     </div>
