@@ -59,29 +59,29 @@ const EMOTION_MAP: Record<JellyEmotion, JellyBlobMood> = {
 };
 
 const POKE_CYCLES: Array<{ mood: JellyBlobMood; msg: string }> = [
-  { mood: "curious", msg: "Ooh! What are you asking today?" },
-  { mood: "happy", msg: "MSAJCE TNEA Code is 1301!" },
-  { mood: "surprised", msg: "Whoa! You poked me!" },
-  { mood: "love", msg: "Explore 12 UG & 2 PG degrees!" },
-  { mood: "wave", msg: "Hello! I am Lorin AI assistant." },
-  { mood: "shy", msg: "Hehe! Tap any quick card below." },
-  { mood: "hmm", msg: "Top recruiters visit campus every year!" },
-  { mood: "sideEye", msg: "Hey, stop poking me!" },
+  { mood: "curious", msg: "Ask me anything!" },
+  { mood: "happy", msg: "TNEA Code 1301!" },
+  { mood: "surprised", msg: "You poked me!" },
+  { mood: "love", msg: "12 UG & 2 PG degrees!" },
+  { mood: "wave", msg: "Hello! I'm Lorin AI." },
+  { mood: "shy", msg: "Tap any quick card!" },
+  { mood: "hmm", msg: "Top campus recruiters!" },
+  { mood: "sideEye", msg: "Stop poking me!" },
 ];
 
 const DEFAULT_MESSAGES: Partial<Record<JellyBlobMood, string>> = {
-  neutral: "Hey there! I am Lorin AI.",
-  curious: "Ooh! What are you asking?",
-  happy: "Glad to help with MSAJCE info!",
-  surprised: "Whoa! You poked me!",
-  love: "MSAJCE TNEA 1301 is awesome!",
-  shy: "Hehe, welcome to Lorin AI!",
-  sleepy: "Zzz... tap me to wake up!",
-  wave: "Hello there! Ask me anything.",
-  hmm: "Searching campus records...",
-  sideEye: "Hey! Stop poking me!",
-  sad: "Aww... let me try again!",
-  angry: "Ouch! Overpoked limit reached!",
+  neutral: "Hey! I'm Lorin AI.",
+  curious: "Ask me anything!",
+  happy: "Glad to help you!",
+  surprised: "You poked me!",
+  love: "TNEA Code 1301!",
+  shy: "Welcome to Lorin AI!",
+  sleepy: "Zzz... tap to wake!",
+  wave: "Hello! Ask away.",
+  hmm: "Searching records...",
+  sideEye: "Stop poking me!",
+  sad: "Aww... let me try!",
+  angry: "Ouch! Overpoked!",
 };
 
 export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
@@ -271,7 +271,7 @@ export const JellyBlobMascot: FC<JellyBlobMascotProps> = ({
       }}
     >
       {showSubtitle && (
-        <div className="absolute -top-12 z-30 pointer-events-none transition-all duration-300 transform group-hover:-translate-y-1">
+        <div className="absolute -top-11 sm:-top-13 left-1/2 -translate-x-1/2 z-30 pointer-events-none transition-all duration-300 transform group-hover:-translate-y-1 w-max max-w-[85vw] sm:max-w-none text-center flex justify-center">
           <BlobSpeech mood={activeMood} messages={mergedMessages} />
         </div>
       )}

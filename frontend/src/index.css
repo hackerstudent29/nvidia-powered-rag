@@ -755,3 +755,17 @@ textarea, input {
   font-family: 'Source Serif 4', Georgia, serif;
   font-optical-sizing: auto;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   BLOB SPEECH BUBBLE VIEWPORT OVERFLOW SAFETY
+   ══════════════════════════════════════════════════════════════ */
+.blob-bubble {
+  max-width: calc(100vw - 1.5rem) !important;
+}
+
+.blob-bubble-text {
+  max-width: calc(100vw - 2.5rem) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}

@@ -246,11 +246,11 @@ const ChatHeader = React.memo(function ChatHeader({
             </Tooltip>
 
             <div className="flex flex-col justify-center min-w-0 leading-none">
-              <div className="flex items-center gap-1.5 leading-none">
+              <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
                 <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#2E6B5E] dark:text-[#10b981] leading-none">
                   MSAJCE
                 </span>
-                <span className="hidden sm:inline-block rounded-full bg-[#D0CCE5]/60 dark:bg-[#4C1D95]/30 px-1.5 py-0.2 text-[8.5px] font-medium text-[#4C1D95] dark:text-[#c4b5fd] dark:border dark:border-[#4C1D95]/40 leading-none">
+                <span className="inline-block rounded-md bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 px-1.5 py-0.5 text-[8px] sm:text-[8.5px] font-mono font-bold text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/25 dark:border-[#10b981]/30 leading-none whitespace-nowrap">
                   TNEA 1301
                 </span>
               </div>

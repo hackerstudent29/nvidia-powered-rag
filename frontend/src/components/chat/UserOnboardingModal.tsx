@@ -128,11 +128,11 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               <div className="shrink-0">
                 <JellyBlobMascot emotion={modalMascotEmotion} size={58} interactive={true} />
               </div>
-              <div className="space-y-0.5">
-                <h2 className="text-xl sm:text-2xl font-bold font-oswald uppercase tracking-tight text-[#2E6B5E] dark:text-[#10b981]">
+              <div className="space-y-0.5 min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold font-oswald uppercase tracking-tight text-[#2E6B5E] dark:text-[#10b981] whitespace-nowrap">
                   Student Profile Setup
                 </h2>
-                <p className="text-[11.5px] font-libre text-slate-600 dark:text-[#b1ada1] leading-snug">
+                <p className="text-[11.5px] font-libre text-slate-600 dark:text-[#b1ada1] leading-snug truncate">
                   Personalize campus assistance for your academic interests.
                 </p>
               </div>
