@@ -2278,6 +2278,8 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     """
     if not query or not query.strip():
         return None
+    if is_contextual_query(query):
+        return None
     q_clean = query.strip().lower()
 
     # 0. Conversational greeting check (0ms instant response)
@@ -2584,8 +2586,26 @@ def rewrite_query(query: str) -> str:
             q_norm = f"{q_norm} {expansion}"
     return q_norm
 
+# Affirmative and continuation phrases accepting or requesting prior offer/topic
+_FOLLOWUP_AFFIRMATION_PATTERNS = re.compile(
+    r'^\s*(?:'
+    r'yes|yeah|yep|yup|ya|yea|sure|sure\s+thing|ok|okay|k|kk|alright|fine|definitely|absolutely|certainly|of\s+course|why\s+not|yes\s+please|yes\s+sure|yes\s+definitely|yes\s+absolutely|'
+    r'(?:i\s+)?want\s+(?:that|this|it|more|to\s+know|details?)|'
+    r'(?:i\s+)?(?:would\s+)?like\s+to\s+(?:know|learn|see|hear|get)(?:\s+(?:that|more|details?))?|'
+    r'(?:i\s+)?would\s+love\s+to(?:\s+(?:know|see|hear|get))?|'
+    r'give\s+(?:that|this|it|more|details?|info|information|me|me\s+that|me\s+more|me\s+details?|me\s+info)|'
+    r'giveme(?:\s+(?:that|this|it|more|details?|info))?|'
+    r'show\s+(?:that|this|it|more|details?|me|me\s+that|me\s+more|me\s+details?)|'
+    r'showme(?:\s+(?:that|this|it|more|details?))?|'
+    r'tell\s+(?:me|me\s+more|more|about\s+that|about\s+it|about\s+this|abt\s+that|abt\s+it|that|this)|'
+    r'tellme(?:\s+(?:more|about\s+that|about\s+it|that|this|abt\s+that))?|'
+    r'continue|proceed|go\s+ahead|go\s+on|carry\s+on|next|elaborate|explain(?:\s+further|\s+more)?|more\s+details?|more\s+info|more\s+information|details?|'
+    r'please|please\s+do|do\s+that|do\s+it|share\s+(?:that|details?|more|info)'
+    r')\s*[\.!\?]*$',
+    re.IGNORECASE
+)
+
 # Pronoun / referential patterns that indicate the user is referring to something from a prior turn
-# Strictly tightened: Bare words like 'this', 'that', 'who', 'it' are excluded to prevent false positives on standalone questions
 _PRONOUN_TRIGGERS = re.compile(
     r'\b(the same|above mentioned|given above|those details|these details)\b'
     r'|\b(full route|complete route|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt that|who is he|who is she|more info|further details|that briefly|this briefly)\b'
@@ -2595,6 +2615,46 @@ _PRONOUN_TRIGGERS = re.compile(
     re.IGNORECASE
 )
 
+def is_contextual_query(query: str) -> bool:
+    """
+    Returns True if the query is an affirmative, continuation, or short referential query
+    that depends entirely on conversation context and should NEVER be globally cached.
+    """
+    if not query:
+        return False
+    q = query.strip()
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q):
+        return True
+    if len(q.split()) <= 3 and (_PRONOUN_TRIGGERS.search(q) or re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details)$', q, re.IGNORECASE)):
+        return True
+    return False
+
+_ASSISTANT_OFFER_PATTERNS = [
+    re.compile(r'(?:would you like|do you want|shall i|should i|if you(?: would|\'d)? like|feel free to ask if you(?: would|\'d)? like|let me know if you(?: would|\'d)? like|if you need)\s+(?:to\s+(?:know|learn|hear|see|explore|get|read))?\s*(?:more\s+details?\s+(?:on|about)|more\s+(?:info|information)\s+(?:on|about)|more\s+about|more\s+on|details?\s+(?:on|about)|about|regarding)?\s*([^?.\n!]+)', re.IGNORECASE),
+    re.compile(r'(?:interested in|curious about)\s+([^?.\n!]+)', re.IGNORECASE),
+    re.compile(r'\b(?:about|regarding|on)\s+([^?.\n]{5,80})\?', re.IGNORECASE),
+]
+
+def extract_followup_topic_from_assistant(text: str) -> str:
+    """
+    Deterministically extracts the offered topic or question from the closing lines of the assistant message.
+    """
+    if not text:
+        return ''
+    lines = [l.strip() for l in text.strip().split('\n') if l.strip()]
+    search_scope = '\n'.join(lines[-3:]) if len(lines) >= 3 else text
+    
+    for pat in _ASSISTANT_OFFER_PATTERNS:
+        m = pat.search(search_scope)
+        if m:
+            topic = m.group(1).strip()
+            topic = re.sub(r'[\?\.!\'\"`]+$', '', topic).strip()
+            topic = re.sub(r',\s*(?:feel free to ask|please let me know|let me know).*$', '', topic, flags=re.IGNORECASE).strip()
+            topic = re.sub(r'^(?:more\s+about|more\s+on|about|on|regarding|the\s+specific|specific|the)\s+', '', topic, flags=re.IGNORECASE).strip()
+            if len(topic) >= 3 and not re.match(r'^(?:anything|something|more|it|this|that|help)$', topic, re.IGNORECASE):
+                return topic
+    return ''
+
 def is_standalone_or_protected_query(query: str) -> bool:
     """
     Checks if a query is a self-contained, standalone question or exact identifier lookup
@@ -2602,18 +2662,21 @@ def is_standalone_or_protected_query(query: str) -> bool:
     undergo pronoun resolution or history rewriting.
     """
     q_clean = query.strip()
+    # 0. Contextual affirmations or desire phrases are NEVER standalone
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_clean):
+        return False
     # 1. Exact numeric identifiers (patent numbers, roll numbers, Anna Univ codes, ISBNs)
     if re.search(r'\b\d{6,12}[A-Za-z]?\b', q_clean):
         return True
-    # 2. Research, patent, copyright, or publication keywords
-    if re.search(r'\b(patents?|patent\s*no|patent\s*number|copyright|isbn|journal|paper|research|publication|inventor|author|supervisor|advisor|advisors)\b', q_clean, re.IGNORECASE):
+    # 2. Research, patent, copyright, or publication keywords (only if not an affirmative)
+    if re.search(r'\b(patents?|patent\s*no|patent\s*number|copyright|isbn|journal|paper|research|publication|inventor|author|supervisor|advisor|advisors)\b', q_clean, re.IGNORECASE) and len(q_clean.split()) >= 3:
         return True
     # 3. Direct question structures targeting people or patents
     if re.search(r'\b(whose\s+patent|who\s+invented|who\s+published|who\s+filed|who\s+wrote|who\s+holds|who\s+is\s+dr|who\s+is\s+prof)\b', q_clean, re.IGNORECASE):
         return True
     # 4. Department-specific admissions or academic queries
     if re.search(r'\b(cutoff|cut-off|cut off|counselling|tnea|admissions?|fees?)\b', q_clean, re.IGNORECASE) and \
-       re.search(r'\b(information technology|it|cse|ece|eee|civil|mechanical|mech|ai\s*&?\s*ds|cyber security)\b', q_clean, re.IGNORECASE):
+       re.search(r'\b(information technology|it|cse|ece|eee|civil|mechanical|mech|ai\s*&?\s*ds|cyber security)\b', q_clean, re.IGNORECASE) and len(q_clean.split()) >= 4:
         return True
     return False
 
@@ -2666,7 +2729,7 @@ def pre_normalize_department_acronyms(query: str) -> str:
 
 def resolve_pronouns(current_query: str, session_id: str) -> str:
     """
-    Regex-based fallback helper: extracts entities from history context and replaces vague pronouns.
+    Regex-based fallback helper: extracts entities from history context and replaces vague pronouns or affirmations.
     """
     normalized_q = pre_normalize_department_acronyms(current_query)
 
@@ -2678,7 +2741,10 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
     if relation != TopicRelation.FOLLOW_UP:
         return normalized_q
 
-    if not _PRONOUN_TRIGGERS.search(normalized_q):
+    is_affirmation = bool(_FOLLOWUP_AFFIRMATION_PATTERNS.match(normalized_q))
+    is_referential = bool(_PRONOUN_TRIGGERS.search(normalized_q))
+
+    if not is_affirmation and not is_referential:
         return normalized_q
 
     last_assistant_content = ""
@@ -2707,6 +2773,13 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
     if not last_assistant_content and not last_user_content:
         return normalized_q
 
+    # 1. Affirmation / Continuation Handling
+    if is_affirmation:
+        offered_topic = extract_followup_topic_from_assistant(last_assistant_content)
+        if offered_topic:
+            print(f"[REGEX AFFIRMATION RESOLVER] '{current_query}' -> '{offered_topic}' (from assistant closing offer)")
+            return offered_topic
+
     # Strictly search last assistant content first to preserve recency
     context_text = last_assistant_content + " " + last_user_content
 
@@ -2720,6 +2793,10 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
 
     if not resolved_entity:
         return normalized_q
+
+    if is_affirmation:
+        print(f"[REGEX AFFIRMATION RESOLVER] '{current_query}' -> '{resolved_entity}'")
+        return resolved_entity
 
     # Safety: Do not inject a person's name into a clear course/department query
     is_person = bool(re.search(r'\b(?:Dr|Mr|Mrs|Ms|Prof)\b', resolved_entity, re.IGNORECASE))
@@ -2752,9 +2829,9 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
 async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
     """
     Permanent architectural solution for contextual follow-up query rewriting.
-    Uses fast LLM completion to rewrite ambiguous/referential queries using session history
-    before passing into hybrid RAG (BM25 + Qdrant + Nemotron reranker).
-    Falls back gracefully to regex pronoun resolution if LLM is unavailable or times out.
+    Uses fast LLM completion (with Vercel Gemini Flash Lite + NVIDIA NIM concurrent race)
+    to rewrite ambiguous/affirmative/referential queries using session history before passing into hybrid RAG.
+    Falls back gracefully to regex pronoun/affirmation resolution if LLM is unavailable or times out.
     """
     normalized_q = pre_normalize_department_acronyms(current_query)
     q_trim = normalized_q.strip()
@@ -2767,9 +2844,10 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
         print(f"[QUERY REWRITER] Bypassing pronoun rewrite for standalone protected query: '{normalized_q}'")
         return normalized_q
 
-    # Quick check: does query contain pronouns/referential triggers?
+    # Quick check: does query contain affirmations or pronouns/referential triggers?
+    is_affirmation = bool(_FOLLOWUP_AFFIRMATION_PATTERNS.match(q_trim))
     is_referential = bool(_PRONOUN_TRIGGERS.search(q_trim))
-    if not is_referential:
+    if not is_affirmation and not is_referential:
         return normalized_q
 
     # Fetch last 4 messages strictly from current active session (excluding current turn message)
@@ -2829,22 +2907,22 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
 
     rewrite_prompt = (
         f"Recent Conversation History:\n{history_str}\n\n"
-        f"Follow-up User Question: \"{normalized_q}\"\n\n"
+        f"Follow-up User Input: \"{normalized_q}\"\n\n"
         "TASK:\n"
-        "Rewrite the user's follow-up question into a complete, standalone, explicit search query by replacing vague pronouns (such as 'that', 'this', 'tellme abt that', 'tell me about that', 'tell me more', 'him', 'her', 'it') strictly with the main subject from the IMMEDIATELY PRECEDING Assistant response.\n"
+        "Rewrite the user's follow-up input into a complete, standalone, explicit search query by identifying what topic or question they are agreeing to, asking for, or referring to based strictly on the IMMEDIATELY PRECEDING Assistant response.\n\n"
         "CRITICAL RULES:\n"
-        "1. Focus ONLY on the topic in the immediate previous turn (e.g. if previous turn discussed sports/gym/facilities, rewrite to sports facilities; if previous turn discussed buses, rewrite to bus routes).\n"
-        "2. Do NOT inject unrelated subjects (like bus routes or faculty names) from older turns unless the user explicitly asked about them.\n"
-        "3. Output ONLY the single rewritten search query. Do NOT add explanations, quotes, or preamble."
+        "1. If the user input is an affirmative or continuation ('yes', 'yeah', 'sure', 'want that', 'like to know', 'give that', 'tell me more', 'details', 'ok', 'proceed'), look at the question, offer, or main topic at the end of the previous Assistant response, and rewrite it into a direct factual search query (e.g., if Assistant asked 'Would you like to know more about the specific activities or events organized by the CSI?', rewrite to 'CSI Computer Society of India student branch activities events workshops and guest lectures at MSAJCE'; if Assistant asked 'Would you like to know more about the specific accreditation status or the activities of the IQAC?', rewrite to 'MSAJCE NAAC accreditation status grade and Internal Quality Assurance Cell IQAC activities').\n"
+        "2. If the user input contains pronouns ('about that', 'tell me about him', 'its fee', 'his contact'), replace the pronoun with the exact entity/person/department from the immediate previous turn.\n"
+        "3. Output ONLY the single rewritten search query. Do NOT add explanations, quotes, markdown formatting, or preamble."
     )
 
     try:
         if http_client:
-            # Multi-model parallel race across verified NVIDIA NIM models using NVIDIA_API_KEY
+            # Multi-model parallel race across ultra-fast Vercel Gemini and NVIDIA NIM models
             models_to_try = [
+                ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
                 ("nvidia/nemotron-3.5-lightning-30b-a3b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
                 ("meta/muse-glimmer-30b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
-                ("moonshotai/kimi-k3", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
             ]
 
             async def _fetch_rewrite_model(m_name: str, url: str, hdrs: dict) -> Optional[tuple]:
@@ -3146,6 +3224,8 @@ TIER0_RAM_CACHE = ThreadSafeMemoryCache(capacity=1000)
 
 def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
     """Tier 0 RAM + Tier 1 Postgres SHA-256 exact match."""
+    if not query or is_contextual_query(query):
+        return None
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
     
@@ -3185,9 +3265,11 @@ def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
         print(f"[WARN] Cache read error: {e}")
     return None
 
-def check_semantic_cache(query_vector: List[float], threshold: float = 0.95) -> Optional[Dict[str, Any]]:
+def check_semantic_cache(query_vector: List[float], threshold: float = 0.95, query_text: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """Tier 2: Vector Semantic Match using pgvector."""
     if not query_vector:
+        return None
+    if query_text and is_contextual_query(query_text):
         return None
     try:
         with DBContext() as conn:
@@ -3222,6 +3304,8 @@ def check_semantic_cache(query_vector: List[float], threshold: float = 0.95) -> 
 
 def save_to_cache(query: str, response: str, sources: List[Dict[str, Any]], reasoning: List[str], latency_ms: int, query_vector: Optional[List[float]] = None):
     """Save synthesized response to query_cache (Tier 0 RAM + Tier 1 Neon DB)."""
+    if not query or is_contextual_query(query):
+        return
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
     
@@ -3971,7 +4055,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     return
 
 
-            if req.is_regeneration:
+            if req.is_regeneration or is_contextual_query(user_query) or is_contextual_query(req.message):
                 delete_from_cache(user_query)
                 delete_from_cache(expanded_query)
                 cached_result = None
@@ -4361,11 +4445,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                             "content": f"[Prior Discussion: Campus {turn_domain.value.capitalize()} Facilities]"
                                         })
                                     else:
-                                        # Compact semantic summary: Extract key topic / first 2 sentences instead of raw 2000-character tables
+                                        # Compact semantic summary: Preserve opening context and closing question/offer
                                         lines = [line.strip() for line in a_text.split('\n') if line.strip() and not line.strip().startswith('|') and not line.strip().startswith('#')]
-                                        summary_snippet = " ".join(lines[:2]) if lines else a_text[:180]
-                                        if len(summary_snippet) > 220:
-                                            summary_snippet = summary_snippet[:220].rsplit(' ', 1)[0] + "..."
+                                        if len(lines) <= 3:
+                                            summary_snippet = " ".join(lines)
+                                        else:
+                                            summary_snippet = f"{lines[0]} {' '.join(lines[1:3])} ... {lines[-1]}"
+                                        if len(summary_snippet) > 350:
+                                            summary_snippet = summary_snippet[:350].rsplit(' ', 1)[0] + "..."
                                         budgeted_history.append({
                                             "role": "assistant",
                                             "content": summary_snippet if summary_snippet else "[Prior campus response summary]"

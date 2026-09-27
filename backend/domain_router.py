@@ -223,6 +223,25 @@ class TopicShiftDetector:
     or a new topic shift, preventing contextual contamination.
     """
 
+    # Affirmative and continuation phrases accepting or requesting prior offer/topic
+    FOLLOWUP_AFFIRMATION_PATTERNS = re.compile(
+        r'^\s*(?:'
+        r'yes|yeah|yep|yup|ya|yea|sure|sure\s+thing|ok|okay|k|kk|alright|fine|definitely|absolutely|certainly|of\s+course|why\s+not|yes\s+please|yes\s+sure|yes\s+definitely|yes\s+absolutely|'
+        r'(?:i\s+)?want\s+(?:that|this|it|more|to\s+know|details?)|'
+        r'(?:i\s+)?(?:would\s+)?like\s+to\s+(?:know|learn|see|hear|get)(?:\s+(?:that|more|details?))?|'
+        r'(?:i\s+)?would\s+love\s+to(?:\s+(?:know|see|hear|get))?|'
+        r'give\s+(?:that|this|it|more|details?|info|information|me|me\s+that|me\s+more|me\s+details?|me\s+info)|'
+        r'giveme(?:\s+(?:that|this|it|more|details?|info))?|'
+        r'show\s+(?:that|this|it|more|details?|me|me\s+that|me\s+more|me\s+details?)|'
+        r'showme(?:\s+(?:that|this|it|more|details?))?|'
+        r'tell\s+(?:me|me\s+more|more|about\s+that|about\s+it|about\s+this|abt\s+that|abt\s+it|that|this)|'
+        r'tellme(?:\s+(?:more|about\s+that|about\s+it|that|this|abt\s+that))?|'
+        r'continue|proceed|go\s+ahead|go\s+on|carry\s+on|next|elaborate|explain(?:\s+further|\s+more)?|more\s+details?|more\s+info|more\s+information|details?|'
+        r'please|please\s+do|do\s+that|do\s+it|share\s+(?:that|details?|more|info)'
+        r')\s*[\.!\?]*$',
+        re.IGNORECASE
+    )
+
     # Pure anaphoric phrases that explicitly demand previous topic context
     STRICT_ANAPHORA_PATTERNS = re.compile(
         r'^\s*(?:what\s+about\s+(?:that|them|those|it|him|her)|tell\s+me\s+more|tell\s+about\s+(?:that|it|him|her)|more\s+details?|elaborate|explain\s+(?:further|more)|give\s+more\s+info|continue)\s*$',
@@ -248,7 +267,18 @@ class TopicShiftDetector:
         if re.search(r'\b(whose\s+patent|who\s+invented|who\s+published|who\s+filed|cutoff|tnea|admissions?|how\s+many\s+buses)\b', q_lower):
             return TopicRelation.STANDALONE
 
-        # Rule 3: Jev AI Model Topic Shift Evaluation (probabilistic System One discourse gate)
+        # Rule 3: Affirmative & Continuation Intent Matching (Immediate Follow-Up)
+        if self.FOLLOWUP_AFFIRMATION_PATTERNS.match(q_lower):
+            return TopicRelation.FOLLOW_UP
+
+        # Rule 4: Pure anaphora matching (explicit follow-up request)
+        if self.STRICT_ANAPHORA_PATTERNS.match(q_lower):
+            return TopicRelation.FOLLOW_UP
+
+        if self.REFERENTIAL_START_PATTERNS.match(q_lower):
+            return TopicRelation.FOLLOW_UP
+
+        # Rule 5: Jev AI Model Topic Shift Evaluation (probabilistic System One discourse gate)
         if last_assistant_snippet and jev_evaluator and jev_evaluator.is_enabled:
             try:
                 jev_res = jev_evaluator.evaluate_topic_shift_sync(current_query, last_assistant_snippet, timeout=2.5)
@@ -259,14 +289,7 @@ class TopicShiftDetector:
             except Exception:
                 pass
 
-        # Rule 4: Pure anaphora matching (explicit follow-up request)
-        if self.STRICT_ANAPHORA_PATTERNS.match(q_lower):
-            return TopicRelation.FOLLOW_UP
-
-        if self.REFERENTIAL_START_PATTERNS.match(q_lower):
-            return TopicRelation.FOLLOW_UP
-
-        # Rule 5: Domain Divergence Check
+        # Rule 6: Domain Divergence Check
         # If last turn discussed transport and current turn has zero transport keywords, it's a NEW_TOPIC
         if last_assistant_snippet:
             prev_lower = last_assistant_snippet.lower()
