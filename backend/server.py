@@ -1497,100 +1497,62 @@ Feel free to ask more about the system architecture or college technical facilit
             "placements 2026",
             "placement 2025-2026"
         ],
-        "response": """# Training, Placements & Major Recruiters 2026 at MSAJCE
+        "response": """# Training, Placements & Corporate Recruitment at MSAJCEA
 
-The **Department of Training & Placement** at **Mohamed Sathak A.J. College of Engineering (MSAJCE)** maintains an active corporate bridge, preparing students through intensive technical, aptitude, and full-stack bootcamps to ensure high-value career placements across leading multinational and core engineering enterprises.
+The **Department of Training & Placement** at **Mohamed Sathak A.J. College of Engineering (MSAJCE)** acts as an active corporate bridge, preparing engineering graduates through intensive technical, aptitude, and soft-skills bootcamps to ensure high-value career placements across leading multinational and core engineering enterprises.
+
+Located strategically inside the **SIPCOT IT Park, Siruseri** (Asia’s 2nd largest IT corridor spanning 800 acres), MSAJCE directly connects students to more than 100 neighboring global software, AI data centers, and advanced manufacturing giants.
 
 ---
 
-### Placement Highlights (2025–2026 Placement Batch)
+### Key Placement Performance Statistics (Summary)
+
+#### Current Batch (2025–2026 Academic Session)
 - **Highest Salary Package**: **₹8.0 LPA** (KaarTech)
 - **Average Salary Package**: **₹4.0 LPA**
 - **Total Students Placed**: **160+ Students**
-- **Total Offers Received**: **180+ Placement Offers**
-- **Companies Visited**: **50+ Corporate Recruiters**
+- **Total Placement Offers Received**: **180+ Offers**
+- **Visiting Corporate Recruiters**: **50+ Companies**
 - **Overall Placement Percentage**: **80%**
-- **Strategic Location Advantage**: Situated inside **SIPCOT IT Park, Siruseri** (Asia’s 2nd largest IT park, 800 acres), directly adjoining 100+ global software, AI, and engineering giants.
+
+#### Institutional Placement Track Record
+- **Consistent Overall Placement Rate**: **80% to 92%+** across recent graduation cohorts.
+- **Annual Corporate Recruiters**: Over **120+ top domestic and global enterprises** participate in campus placement drives.
+- **Top Compensation Range**: Historical high packages ranging up to **₹8.0 LPA – ₹12.5 LPA** across product development, full-stack IT, and core engineering roles.
 
 ---
 
-### Batch Recruitment Overview & Package Distribution
+### Top Corporate Recruiters by Sector
 
-For the **2025–2026 academic placement season**, MSAJCE achieved an **80% overall placement rate**, with over **160 students** securing **180+ placement offers** from **50+ visiting recruiters**. 
-
-- **High-Value Tier (₹8.0 LPA & ₹7.0 LPA)**: Enterprise digital transformation leader **KaarTech** offered the season's highest package of **₹8.0 LPA**, recruiting 2 students for SAP consulting. In EdTech, **LaunchEd Global** recruited 1 student at **₹7.0 LPA**.
-- **Big Data & Analytics Tier (₹6.0 LPA)**: Data intelligence firm **Datatech Genius** hired 9 students at **₹6.0 LPA** for cloud analytics and big data engineering.
-- **Advanced Tech, Core & FinTech Tier (₹5.0 LPA)**: Major recruiters included **Besant Technologies** (15 offers in cloud and software development), **Sutherland** (6 offers in digital services), **Doctpro** (6 offers in healthcare systems), **Ethical Engineers** (5 offers in engineering design), **Kite Robotics** (3 offers in robotics and automation), **SCS** (3 offers in IT consulting), **Foxconn** (2 offers in electronics manufacturing), **CreditMantri** (2 offers in fintech analytics), **Indo Tech Transformers** (2 offers in power systems), alongside **BorgWarner**, **CARS 24**, **Anups Academy**, and **RR Enterprises** (1 offer each).
-- **Semiconductor, Core & Banking Tier (₹4.0 LPA)**: Top recruiters included **TSP** (15 offers in technical infrastructure), **Tata Electronics** (12 offers in precision electronics and semiconductor manufacturing), **Axis Bank** (6 offers in banking operations), **Machineries** (5 offers), **Tap Academy** (4 offers in tech upskilling), **Numeric Legrand** (3 offers in power conditioning), **Intellect Design Arena** (1 offer in banking architecture), **Sands** (1 offer in embedded systems), and **Sai Mirra Innopharm** (1 offer).
-- **High-Volume & Specialized Tiers (₹3.0 LPA & ₹2.0 LPA)**: **CAFS** emerged as the top volume recruiter with 20 offers at ₹3.0 LPA, followed by **GTT Data** (14 offers), **AIS Glass** (8 offers), **inetz technologies** (6 offers), **FIITJOBS** (3 offers), **L&T** (2 offers), **MPI** (2 offers), **WHBS** (2 offers), **Trionova** (2 offers), and **Ose** (2 offers). Specialized core engineering and cloud firms including **Grundfos**, **Prochant**, **Denvik**, **Innov**, **Transwave**, **Fantek**, **ACETECH**, **Deejos**, **Rapid Data**, **Voltech**, **Orbit IT**, **EntryKode**, and **Platform3** each recruited 1 student at ₹3.0 LPA. Technical services and emerging engineering roles at ₹2.0 LPA were provided by **Aurelon** (2 offers), **Radtwin** (2 offers), **Inbox Info Solutions** (1 offer), **Sarada** (1 offer), **AasaiTech** (1 offer), and **Diseñosys** (1 offer).
-
----
-
-### Major Corporate Recruiters 2026 (Package & Offers Distribution)
-
-| Recruiter Company | Offers | Salary Package | Industry Specialization |
-|:---|:---:|:---:|:---|
-| **KaarTech** | 2 | **8 LPA** | Enterprise SAP & Digital Transformation (Highest Package) |
-| **LaunchEd Global** | 1 | **7 LPA** | EdTech & Global Career Learning |
-| **Datatech Genius** | 9 | **6 LPA** | Big Data, Analytics & Cloud Solutions |
-| **Besant Technologies** | 15 | **5 LPA** | Software Development & Cloud Platforms |
-| **Doctpro** | 6 | **5 LPA** | HealthTech & Clinical Management Systems |
-| **Sutherland** | 6 | **5 LPA** | Global IT Services & Digital Operations |
-| **Ethical Engineers (P) Ltd** | 5 | **5 LPA** | Engineering Design & Infrastructure |
-| **Kite Robotics** | 3 | **5 LPA** | Industrial Automation & Autonomous Systems |
-| **SCS (S Cube Solutions)** | 3 | **5 LPA** | Enterprise IT Consulting & Solutions |
-| **Foxconn** | 2 | **5 LPA** | Electronics Manufacturing & Hardware |
-| **CreditMantri** | 2 | **5 LPA** | FinTech & Algorithmic Credit Analysis |
-| **Indo Tech Transformers Ltd** | 2 | **5 LPA** | Electrical Power Systems & Engineering |
-| **BorgWarner** | 1 | **5 LPA** | Automotive Propulsion & Clean Mobility |
-| **CARS 24** | 1 | **5 LPA** | AutoTech E-Commerce Platform |
-| **Anups Academy** | 1 | **5 LPA** | Educational Mentorship & Assessment |
-| **RR Enterprises** | 1 | **5 LPA** | Precision Engineering & Mechanical Systems |
-| **TSP (Total Solution Provider)** | 15 | **4 LPA** | Technical Infrastructure & IT Services |
-| **Tata Electronics** | 12 | **4 LPA** | Precision Electronics & Semiconductor Mfg |
-| **Axis Bank** | 6 | **4 LPA** | Banking Operations & Financial Analytics |
-| **Machineries** | 5 | **4 LPA** | Industrial Machinery & Automation |
-| **Tap Academy** | 4 | **4 LPA** | AR/VR Upskilling & Tech Bootcamps |
-| **Numeric (Legrand Group)** | 3 | **4 LPA** | Power Conditioning & Industrial Systems |
-| **Intellect Design Arena** | 1 | **4 LPA** | FinTech Architecture & Banking Platforms |
-| **Sands** | 1 | **4 LPA** | Embedded Systems & Instrumentation |
-| **Sai Mirra Innopharm** | 1 | **4 LPA** | Pharmaceutical & Process Chemistry |
-| **CAFS** | 20 | **3 LPA** | Facility Management & Corporate Operations (Top Volume) |
-| **GTT Data** | 14 | **3 LPA** | Data Intelligence & Business Analytics |
-| **AIS (Asahi India Glass Ltd)** | 8 | **3 LPA** | Automotive Glass & Advanced Materials |
-| **inetz technologies** | 6 | **3 LPA** | Enterprise Networking & System Admin |
-| **FIITJOBS** | 3 | **3 LPA** | Talent Solutions & Technical Staffing |
-| **Larsen & Toubro (L&T)** | 2 | **3 LPA** | Infrastructure, Construction & Core Engg |
-| **MPI (Manipal Payment & Identity)** | 2 | **3 LPA** | Smart Card Tech & Payment Security |
-| **WHBS (White House Business)** | 2 | **3 LPA** | Enterprise Software & E-Learning |
-| **Trionova** | 2 | **3 LPA** | Web Technologies & IT Consulting |
-| **Ose** | 2 | **3 LPA** | Engineering Operations & Support |
-| **Grundfos** | 1 | **3 LPA** | Advanced Pump Solutions & Water Tech |
-| **Prochant** | 1 | **3 LPA** | Healthcare RCM & Medical Analytics |
-| **Denvik** | 1 | **3 LPA** | Embedded Systems & IoT Engineering |
-| **Innov (Your People Partner)** | 1 | **3 LPA** | Staffing & Workforce Solutions |
-| **Transwave Technologies** | 1 | **3 LPA** | Telecom & Wireless Infrastructure |
-| **Fantek** | 1 | **3 LPA** | Precision Engineering & Tooling |
-| **ACETECH** | 1 | **3 LPA** | Structural Design & Engineering |
-| **Deejos** | 1 | **3 LPA** | Architecture, Construction & Interiors |
-| **Rapid Data IT Solutions** | 1 | **3 LPA** | Cloud Services & Data Processing |
-| **Voltech** | 1 | **3 LPA** | Electrical Engineering & Power Testing |
-| **Orbit IT Solutions** | 1 | **3 LPA** | IT Network Infrastructure |
-| **EntryKode** | 1 | **3 LPA** | Software Consulting & Cloud Development |
-| **Platform3** | 1 | **3 LPA** | Enterprise Digital Platform Solutions |
-| **Aurelon** | 2 | **2 LPA** | Technical Operations & Support |
-| **Radtwin** | 2 | **2 LPA** | Digital Development & Software Services |
-| **Inbox (Info Solutions)** | 1 | **2 LPA** | IT Support & Enterprise Data Management |
-| **Sarada** | 1 | **2 LPA** | Engineering Operations & Manufacturing |
-| **AasaiTech** | 1 | **2 LPA** | Web & Mobile Software Development |
-| **Diseñosys** | 1 | **2 LPA** | Automotive Styling & CAD Engineering |
+| Industry Sector | Key Recruiting Organizations |
+|:---|:---|
+| **Tier-1 IT & Digital Services** | Tata Consultancy Services (TCS), Cognizant (CTS), Capgemini, HCL Technologies, Infosys, Hexaware Technologies, Aspire Systems, Atos, Zoho Corporation, Wipro, Cisco, KaarTech, Sutherland |
+| **Core Engineering & Automotive** | Tata Electronics, TVS Sundram Fasteners, TVS Mobility, Hyundai Motors, Larsen & Toubro (L&T), BorgWarner, Indo Tech Transformers, Grundfos, Numeric Legrand, Precision Instruments |
+| **Data Intelligence & Cloud Computing** | Datatech Genius, Besant Technologies, GTT Data Intelligence, Rapid Data IT Solutions, Sify AI Data Center, Equinix IBX Data Center |
+| **FinTech & Financial Analytics** | Axis Bank, CreditMantri, Intellect Design Arena, HDFC Bank, ICICI Prudential, Accenture, Virtusa |
+| **Robotics & Hardware Systems** | Foxconn, Kite Robotics, Ethical Engineers (P) Ltd, Sands Instrumentation, Denvik IoT |
 
 ---
 
-### Pre-Placement Training Modules
-1. **Aptitude & Logical Reasoning**: Daily scheduled aptitude drills starting from the 3rd semester.
-2. **Full-Stack Coding Bootcamps**: Hands-on sessions covering Python, Java, C++, SQL, React, and Data Structures.
-3. **Soft Skills & Corporate Etiquette**: Business communication, group discussion (GD) mastery, and professional etiquette.
+### Student Internship Track Record (Key Industry Partners)
+The college maintains robust corporate ties for hands-on student internships:
+- **Lenovo**: 75 Students
+- **Zoho Technologies**: 51 Students
+- **Green Valleys Shelters**: 45 Students
+- **Thermodyn / Thermodynedutech**: 70 Students
+- **Ozaro Media Teck**: 34 Students
+- **Sri KVS Industries**: 30 Students
+- **TVS Mobility & TVS Sundram Fasteners**: 20 Students
+- **Openwave Chennai**: 16 Students
+- **Veelog Nanoceramic**: 15 Students
+- **Preethi Engineering**: 14 Students
+
+---
+
+### Pre-Placement Training & Employability Bootcamps
+1. **Aptitude & Logical Reasoning**: Daily scheduled problem-solving drills starting from the 3rd semester.
+2. **Full-Stack Coding Bootcamps**: Intensive hands-on training in Python, Java, C++, SQL, React, and Data Structures & Algorithms.
+3. **Soft Skills & Corporate Readiness**: Business communication, group discussion (GD) mastery, and professional etiquette.
 4. **Mock Interviews & Mentoring**: Simulated technical and HR interviews conducted by corporate leaders and alumni.
 5. **Higher Education Guidance**: Specialized coaching by the Higher Education Cell for GATE, CAT, GRE, and TOEFL.
 
@@ -1601,9 +1563,9 @@ For the **2025–2026 academic placement season**, MSAJCE achieved an **80% over
 - **Mr. Ajin Sijo John** (Assistant Placement Officer / AP Mech): [+91 8903766391](tel:8903766391)
 - **Mrs. N. Kavitha** & **Mr. V.A. Babu Charies Earnest** (Placement Committee Members)
 - **Placement Office Line**: [044-27476300](tel:04427476300)
-- **Address**: Placement Directorate, Mohamed Sathak A.J. College of Engineering, 34 Rajiv Gandhi Salai (OMR), Siruseri IT Park, Chennai 603103""",
+- **Address**: Placement Directorate, Mohamed Sathak A.J. College of Engineering, 34 Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Chennai 603103""",
         "sources": [
-            {"chunk_id": "card_placements_01", "title": "Official MSAJCE 2025-2026 Placement Statistics & Major Recruiters", "source_file": "msajce_placement.md", "category": "placements", "page_url": "https://msajce-edu.in/index.php", "score": 1.0, "snippet": "Batch 2025-2026: Highest package ₹8.0 LPA (KaarTech), average ₹4.0 LPA, 160+ students placed, 180+ offers, 50+ companies visited, 80% placement rate."}
+            {"chunk_id": "card_placements_01", "title": "Official MSAJCE Placement Statistics & Recruiters Overview", "source_file": "msajce_placement.md", "category": "placements", "page_url": "https://msajce-edu.in/index.php", "score": 1.0, "snippet": "Overview & summary: 2025-2026 Batch highlights (8.0 LPA highest, 4.0 LPA average, 160+ placed, 80% placement rate), institutional 80-92% track record, sector recruiters, and internships."}
         ]
     },
     "scholarships": {
