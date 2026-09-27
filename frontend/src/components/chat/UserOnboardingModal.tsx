@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Calendar, HelpCircle, ArrowRight, Sparkles, X, ChevronDown, Check } from 'lucide-react';
+import { User, Calendar, HelpCircle, ArrowRight, X, ChevronDown, Check } from 'lucide-react';
 import { JellyBlobMascot } from '../ui/JellyBlobMascot';
 
 export interface UserProfile {
@@ -98,22 +98,18 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.1 }}
           onClick={handleBackdropClick}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3.5"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 dark:bg-black/75 backdrop-blur-md p-3.5"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 12 }}
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 12 }}
-            transition={{ type: "spring", damping: 28, stiffness: 400 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/12 bg-[#121214] p-5 sm:p-6 text-[#f4f3ee] shadow-[0_24px_80px_rgba(0,0,0,0.8)] transform-gpu"
+            className="relative w-full max-w-sm sm:max-w-[420px] overflow-visible rounded-3xl bg-[#F9F9F8] dark:bg-[#121214] p-5 sm:p-6 text-[#1A1C1C] dark:text-[#f4f3ee] shadow-2xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.85)] transform-gpu"
           >
-            {/* Glow Ambient Accents */}
-            <div className="absolute -top-16 -left-16 h-36 w-36 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-16 -right-16 h-36 w-36 rounded-full bg-teal-500/15 blur-3xl pointer-events-none" />
-
             {/* Close Button (X) */}
             {onClose && (
               <motion.button
@@ -121,38 +117,34 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                 whileTap={{ scale: 0.9 }}
                 type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 z-20 flex size-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+                className="absolute top-4 right-4 z-20 flex size-8 items-center justify-center rounded-full bg-black/[0.05] dark:bg-white/10 text-slate-600 dark:text-zinc-400 hover:bg-black/[0.1] dark:hover:bg-white/20 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </motion.button>
             )}
 
             {/* Modal Header */}
-            <div className="relative z-10 flex items-center gap-3 text-left pr-6 mb-1">
+            <div className="relative z-10 flex items-center gap-3 text-left pr-6 mb-2">
               <div className="shrink-0">
-                <JellyBlobMascot emotion={modalMascotEmotion} size={56} interactive={true} />
+                <JellyBlobMascot emotion={modalMascotEmotion} size={58} interactive={true} />
               </div>
               <div className="space-y-0.5">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10.5px] font-bold text-[#34d399]">
-                  <Sparkles className="h-3 w-3" />
-                  <span>Welcome to Lorin AI</span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-white">
-                  Setup Student Profile
+                <h2 className="text-xl sm:text-2xl font-bold font-oswald uppercase tracking-tight text-[#9E2339] dark:text-[#10b981]">
+                  Student Profile Setup
                 </h2>
-                <p className="text-[11.5px] text-[#b1ada1]">
-                  Personalize campus AI responses for your needs.
+                <p className="text-[11.5px] font-libre text-slate-600 dark:text-[#b1ada1] leading-snug">
+                  Personalize campus assistance for your academic interests.
                 </p>
               </div>
             </div>
 
             {/* Form Body */}
-            <form onSubmit={handleSubmit} className="relative z-10 mt-4 space-y-3.5">
+            <form onSubmit={handleSubmit} className="relative z-10 mt-4 space-y-4 font-libre">
               {/* 1. Name Input */}
               <div className="space-y-1">
-                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#e4e4e7]">
-                  <User className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Your Name <span className="text-emerald-400">*</span></span>
+                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-700 dark:text-[#e4e4e7]">
+                  <User className="h-3.5 w-3.5 text-[#9E2339] dark:text-emerald-400" />
+                  <span>Your Name <span className="text-[#9E2339] dark:text-emerald-400">*</span></span>
                 </label>
                 <input
                   type="text"
@@ -164,18 +156,18 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                     setName(e.target.value);
                     if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
                   }}
-                  className={`w-full rounded-xl border bg-[#18181b] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981]/30 ${
-                    errors.name ? 'border-red-500/80' : 'border-white/10'
+                  className={`w-full rounded-2xl bg-[#F0F0EF] dark:bg-[#18181b] px-4 py-3 text-xs text-[#1A1C1C] dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none transition-colors border-none focus:bg-[#EBEBEA] dark:focus:bg-[#202024] ${
+                    errors.name ? 'bg-red-500/10 text-red-600' : ''
                   }`}
                 />
-                {errors.name && <p className="text-[10px] font-medium text-red-400 pl-0.5">{errors.name}</p>}
+                {errors.name && <p className="text-[10px] font-medium text-red-500 pl-1">{errors.name}</p>}
               </div>
 
               {/* 2. Age Input */}
               <div className="space-y-1">
-                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#e4e4e7]">
-                  <Calendar className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Your Age <span className="text-emerald-400">*</span></span>
+                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-700 dark:text-[#e4e4e7]">
+                  <Calendar className="h-3.5 w-3.5 text-[#9E2339] dark:text-emerald-400" />
+                  <span>Your Age <span className="text-[#9E2339] dark:text-emerald-400">*</span></span>
                 </label>
                 <input
                   type="number"
@@ -189,41 +181,41 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                     setAge(e.target.value);
                     if (errors.age) setErrors((prev) => ({ ...prev, age: undefined }));
                   }}
-                  className={`w-full rounded-xl border bg-[#18181b] px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 outline-none transition-colors focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981]/30 ${
-                    errors.age ? 'border-red-500/80' : 'border-white/10'
+                  className={`w-full rounded-2xl bg-[#F0F0EF] dark:bg-[#18181b] px-4 py-3 text-xs text-[#1A1C1C] dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 outline-none transition-colors border-none focus:bg-[#EBEBEA] dark:focus:bg-[#202024] ${
+                    errors.age ? 'bg-red-500/10 text-red-600' : ''
                   }`}
                 />
-                {errors.age && <p className="text-[10px] font-medium text-red-400 pl-0.5">{errors.age}</p>}
+                {errors.age && <p className="text-[10px] font-medium text-red-500 pl-1">{errors.age}</p>}
               </div>
 
-              {/* 3. Custom Glassmorphic Animated Dropdown */}
+              {/* 3. Category Selector */}
               <div className="space-y-1 relative" ref={dropdownRef}>
-                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#e4e4e7]">
-                  <HelpCircle className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Primary Interest / Category <span className="text-emerald-400">*</span></span>
+                <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-700 dark:text-[#e4e4e7]">
+                  <HelpCircle className="h-3.5 w-3.5 text-[#9E2339] dark:text-emerald-400" />
+                  <span>Primary Interest / Category <span className="text-[#9E2339] dark:text-emerald-400">*</span></span>
                 </label>
 
-                {/* Custom Dropdown Trigger Button */}
+                {/* Custom Trigger Button */}
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen((prev) => !prev)}
-                  className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#18181b] px-3.5 py-2.5 text-xs text-white transition-colors hover:border-white/20 focus:border-[#10b981] cursor-pointer"
+                  className="flex w-full items-center justify-between rounded-2xl bg-[#F0F0EF] dark:bg-[#18181b] px-4 py-3 text-xs text-[#1A1C1C] dark:text-white transition-colors hover:bg-[#EBEBEA] dark:hover:bg-[#202024] cursor-pointer border-none"
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
-                    <span className="font-semibold text-emerald-400 truncate">{selectedCategoryObj.label}</span>
+                    <span className="font-bold text-[#9E2339] dark:text-[#34d399] truncate">{selectedCategoryObj.label}</span>
                   </div>
-                  <ChevronDown className={`h-4 w-4 shrink-0 text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-emerald-400' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#9E2339] dark:text-[#34d399]' : ''}`} />
                 </button>
 
-                {/* Custom Animated Options Menu */}
+                {/* Animated Options Menu */}
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.96, y: -4 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.96, y: -4 }}
-                      transition={{ duration: 0.12, ease: "easeOut" }}
-                      className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#18181b] p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5 origin-top"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.1, ease: "easeOut" }}
+                      className="absolute left-0 right-0 top-full mt-1.5 z-[120] max-h-52 overflow-y-auto rounded-2xl bg-[#F9F9F8] dark:bg-[#18181b] p-1.5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.9)] space-y-1 origin-top border-none"
                     >
                       {CATEGORY_OPTIONS.map((cat) => {
                         const isSelected = cat.value === purpose;
@@ -237,17 +229,17 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                               setPurpose(cat.value);
                               setIsDropdownOpen(false);
                             }}
-                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs transition-colors cursor-pointer border-none ${
                               isSelected
-                                ? 'bg-emerald-500/15 text-[#34d399] font-bold border border-emerald-500/30'
-                                : 'text-zinc-200 hover:bg-white/5 hover:text-white'
+                                ? 'bg-[#9E2339]/10 text-[#9E2339] dark:bg-emerald-500/15 dark:text-[#34d399] font-bold'
+                                : 'text-slate-800 dark:text-zinc-200 hover:bg-[#F0F0EF] dark:hover:bg-white/5'
                             }`}
                           >
                             <div className="flex flex-col gap-0.5 truncate pr-2">
                               <span className="font-semibold text-[11.5px]">{cat.label}</span>
-                              <span className="text-[10px] text-zinc-400 truncate font-normal">{cat.desc}</span>
+                              <span className="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-normal">{cat.desc}</span>
                             </div>
-                            {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />}
+                            {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-[#9E2339] dark:text-emerald-400" />}
                           </motion.button>
                         );
                       })}
@@ -256,7 +248,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                 </AnimatePresence>
 
                 {/* Selected category description preview */}
-                <p className="text-[10.5px] text-emerald-400/90 italic pl-1 pt-0.5">
+                <p className="text-[10.5px] text-slate-500 dark:text-emerald-400/90 italic pl-1 pt-0.5">
                   ↳ {selectedCategoryObj.desc}
                 </p>
               </div>
@@ -268,10 +260,10 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                   whileTap={{ scale: 0.97 }}
                   transition={{ type: "spring", stiffness: 450, damping: 22 }}
                   type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#9E2339] hover:bg-[#861e30] dark:bg-[#10b981] dark:hover:bg-[#059669] dark:text-zinc-950 px-5 py-3 text-xs font-bold text-white shadow-md transition-colors cursor-pointer"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#9E2339] hover:bg-[#861e30] text-white dark:bg-[#10b981] dark:hover:bg-[#059669] dark:text-zinc-950 px-5 py-3.5 text-xs font-extrabold uppercase font-oswald tracking-wider shadow-lg transition-colors cursor-pointer border-none"
                 >
                   <span>Save & Start Assistant</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-4 w-4" />
                 </motion.button>
               </div>
             </form>
