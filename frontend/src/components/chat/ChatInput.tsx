@@ -7,10 +7,10 @@ import { AIVoiceInput } from "../ui/AIVoiceInput";
 import { Bot, Volume1, Volume2, Sparkles, Zap, SlidersHorizontal, Check, X, Play, Square, Mic, Gauge, AudioWaveform } from "lucide-react";
 
 // ----------------------------------------------------------------------
-// Physics & Animation Constants
+// Physics & Animation Constants (Butter smooth Apple cubic-bezier curves)
 // ----------------------------------------------------------------------
-const SPRING_TRANSITION = "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-const SMOOTH_HEIGHT_TRANSITION = "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.15s ease-out";
+const SPRING_TRANSITION = "max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)";
+const SMOOTH_HEIGHT_TRANSITION = "max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)";
 
 // ----------------------------------------------------------------------
 // Sub-components
@@ -407,6 +407,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       textareaRef.current.focus();
     }
   }, []);
+
+  // Mobile startup: auto-open chatbot with keyboard ready to type; PC: start in compact small size
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobileDevice =
+      isMobile ||
+      window.innerWidth < 640 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    if (isMobileDevice) {
+      const timer = setTimeout(() => {
+        setIsSmoothResize(false);
+        setExpanded(true);
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setExpanded(false);
+    }
+  }, [isMobile]);
 
   const handleValueChange = useCallback((val: string) => {
     setIsSmoothResize(true);
@@ -904,11 +926,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     if (e) e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
+
+    // Immediately blur active textarea element to dismiss virtual keyboard on mobile
+    if (textareaRef.current) {
+      textareaRef.current.blur();
+    }
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    // Smoothly shrink/collapse chatbox back to compact small size
     setIsSmoothResize(false);
-    onSendMessage(trimmed, EFFORTS[effortIndex]);
-    handleValueChange("");
     setExpanded(false);
     setIsModelSelectOpen(false);
+    setIsVoiceMenuOpen(false);
+
+    // Send query and clear prompt
+    onSendMessage(trimmed, EFFORTS[effortIndex]);
+    handleValueChange("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
