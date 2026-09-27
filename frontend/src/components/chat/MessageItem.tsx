@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -1580,24 +1580,40 @@ const MessageItem = React.memo(function MessageItem({
             {/* Left: Quick Actions (Copy, Regenerate, Thumbs, TTS Voice) + Mobile-only Timestamp */}
             <div className="flex items-center justify-between sm:justify-start gap-1 w-full sm:w-auto">
               <div className="flex items-center gap-0.5 sm:gap-1">
-                <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
+                <Tooltip content={copied ? "Copied to clipboard!" : "Copy message"} position="top">
                   <motion.button
-                    whileHover={{ scale: 1.18, rotate: 4 }}
-                    whileTap={{ scale: 0.88, rotate: -4 }}
+                    whileHover={{ scale: 1.2, rotate: -6 }}
+                    whileTap={{ scale: 0.85 }}
                     transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={handleCopy}
                     className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
                   >
-                    {copied ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">✓</span> : ACTION_ICONS.copy}
+                    <AnimatePresence mode="wait">
+                      {copied ? (
+                        <motion.span
+                          key="copied"
+                          initial={{ scale: 0.4, opacity: 0 }}
+                          animate={{ scale: 1.15, opacity: 1 }}
+                          exit={{ scale: 0.4, opacity: 0 }}
+                          className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400"
+                        >
+                          ✓
+                        </motion.span>
+                      ) : (
+                        <motion.span key="uncopied" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+                          {ACTION_ICONS.copy}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </motion.button>
                 </Tooltip>
 
                 {onRegenerate && (
                   <Tooltip content="Regenerate response" position="top">
                     <motion.button
-                      whileHover={{ scale: 1.18, rotate: 18 }}
-                      whileTap={{ scale: 0.88, rotate: -18 }}
+                      whileHover={{ scale: 1.2, rotate: 18 }}
+                      whileTap={{ scale: 0.85, rotate: -18 }}
                       transition={{ type: "spring", stiffness: 450, damping: 18 }}
                       type="button"
                       onClick={() => onRegenerate?.(message.id)}
@@ -1610,8 +1626,9 @@ const MessageItem = React.memo(function MessageItem({
 
                 <Tooltip content="Good response" position="top">
                   <motion.button
-                    whileHover={{ scale: 1.2, y: -2 }}
-                    whileTap={{ scale: 0.85 }}
+                    whileHover={{ scale: 1.25, y: -2 }}
+                    whileTap={{ scale: 0.8 }}
+                    animate={isLiked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                     transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={() => handleThumbs(1)}
@@ -1625,8 +1642,9 @@ const MessageItem = React.memo(function MessageItem({
 
                 <Tooltip content="Bad response" position="top">
                   <motion.button
-                    whileHover={{ scale: 1.2, y: 2 }}
-                    whileTap={{ scale: 0.85 }}
+                    whileHover={{ scale: 1.25, y: 2 }}
+                    whileTap={{ scale: 0.8 }}
+                    animate={isDisliked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                     transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={() => handleThumbs(-1)}
@@ -1640,14 +1658,14 @@ const MessageItem = React.memo(function MessageItem({
 
                 <Tooltip content={isPlayingAudio ? "Stop Voice" : isLoadingAudio ? "Synthesizing Voice..." : "Read Aloud"} position="top">
                   <motion.button
-                    whileHover={{ scale: 1.18, rotate: -6 }}
-                    whileTap={{ scale: 0.88 }}
+                    whileHover={{ scale: 1.2, rotate: -6 }}
+                    whileTap={{ scale: 0.85 }}
                     transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={() => handleTTS()}
                     disabled={isLoadingAudio}
                     className={`flex size-7 items-center justify-center rounded-md transition-colors duration-100 cursor-pointer ${
-                      isPlayingAudio ? "text-accent bg-accent/15" : isLoadingAudio ? "text-orange-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
+                      isPlayingAudio ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/15" : isLoadingAudio ? "text-orange-500" : "text-ink-3 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink"
                     }`}
                   >
                     {isLoadingAudio ? (
@@ -1655,7 +1673,23 @@ const MessageItem = React.memo(function MessageItem({
                         <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83" />
                       </svg>
                     ) : isPlayingAudio ? (
-                      ACTION_ICONS.audioWave
+                      <div className="flex items-center justify-center gap-[2.5px] h-3.5 px-0.5">
+                        <motion.span
+                          className="w-[2.5px] bg-emerald-600 dark:bg-emerald-400 rounded-full"
+                          animate={{ height: ["4px", "14px", "5px", "13px", "4px"] }}
+                          transition={{ repeat: Infinity, duration: 0.75, ease: "easeInOut" }}
+                        />
+                        <motion.span
+                          className="w-[2.5px] bg-emerald-600 dark:bg-emerald-400 rounded-full"
+                          animate={{ height: ["13px", "5px", "14px", "4px", "13px"] }}
+                          transition={{ repeat: Infinity, duration: 0.65, delay: 0.1, ease: "easeInOut" }}
+                        />
+                        <motion.span
+                          className="w-[2.5px] bg-emerald-600 dark:bg-emerald-400 rounded-full"
+                          animate={{ height: ["5px", "14px", "4px", "11px", "5px"] }}
+                          transition={{ repeat: Infinity, duration: 0.85, delay: 0.2, ease: "easeInOut" }}
+                        />
+                      </div>
                     ) : (
                       ACTION_ICONS.tts
                     )}

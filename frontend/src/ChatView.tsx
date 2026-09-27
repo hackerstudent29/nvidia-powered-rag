@@ -12,6 +12,68 @@ import UserOnboardingModal, { UserProfile } from "./components/chat/UserOnboardi
 import { Tooltip } from "./components/Tooltip";
 import { AmbientBackground } from "./components/chat/AmbientBackground";
 
+function formatChatDateDivider(rawTimestamp?: string | number | Date): string {
+  if (!rawTimestamp) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+    return `Today ${timeStr}`;
+  }
+
+  let date: Date;
+  if (rawTimestamp instanceof Date) {
+    date = rawTimestamp;
+  } else if (typeof rawTimestamp === "number") {
+    date = new Date(rawTimestamp);
+  } else {
+    const parsed = new Date(rawTimestamp);
+    if (isNaN(parsed.getTime())) {
+      return `Today ${rawTimestamp}`;
+    }
+    date = parsed;
+  }
+
+  const now = new Date();
+  const timeStr = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+
+  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((startOfNow.getTime() - startOfDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return `Today ${timeStr}`;
+  } else if (diffDays === 1) {
+    return `Yesterday ${timeStr}`;
+  } else if (diffDays > 1 && diffDays < 7) {
+    const dayName = date.toLocaleDateString([], { weekday: "long" });
+    return `${dayName} ${timeStr}`;
+  } else if (date.getFullYear() === now.getFullYear()) {
+    const monthDay = date.toLocaleDateString([], { month: "short", day: "numeric" });
+    return `${monthDay} ${timeStr}`;
+  } else {
+    const fullDate = date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+    return `${fullDate} ${timeStr}`;
+  }
+}
+
+function shouldShowDateDivider(msg: any, prevMsg?: any): boolean {
+  if (!prevMsg) return true;
+  const ts1 = prevMsg.timestamp || prevMsg.created_at;
+  const ts2 = msg.timestamp || msg.created_at;
+  if (!ts1 || !ts2) return false;
+
+  const date1 = new Date(ts1);
+  const date2 = new Date(ts2);
+  if (isNaN(date1.getTime()) || isNaN(date2.getTime())) return false;
+
+  const diffMinutes = (date2.getTime() - date1.getTime()) / (1000 * 60);
+  const isDifferentDay =
+    date1.getFullYear() !== date2.getFullYear() ||
+    date1.getMonth() !== date2.getMonth() ||
+    date1.getDate() !== date2.getDate();
+
+  return isDifferentDay || diffMinutes >= 15;
+}
+
 export default function App({ initialSettingsOpen = false }: { initialSettingsOpen?: boolean }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -261,20 +323,32 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
           ) : (
             <div className="flex flex-col space-y-4 sm:space-y-6 pt-4 pb-2 sm:pb-3">
               {messages.map((msg, idx) => {
+                const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                const showDivider = shouldShowDateDivider(msg, prevMsg);
+                const dividerText = showDivider ? formatChatDateDivider(msg.timestamp || (msg as any).created_at) : null;
+
                 const prevUserMsg = idx > 0 ? messages.slice(0, idx).reverse().find(m => m.role === 'user') : null;
                 const userQueryText = prevUserMsg ? prevUserMsg.content : "MSAJCEA Inquiry";
                 return (
-                  <MessageItem
-                    key={msg.id}
-                    message={msg}
-                    userQuery={userQueryText}
-                    sessionId={sessionId}
-                    isLatestMessage={idx === messages.length - 1}
-                    onSendPrompt={handleSendPrompt}
-                    onRegenerate={handleRegenerate}
-                    onRegenerateWithNeMo={regenerateWithNeMo}
-                    onSubmitFeedback={submitFeedback}
-                  />
+                  <div key={msg.id} className="flex flex-col w-full">
+                    {showDivider && dividerText && (
+                      <div className="w-full flex items-center justify-center my-3 sm:my-4 py-0.5 select-none">
+                        <span className="text-[11px] font-medium text-ink-3/80 dark:text-[#9e9b91] bg-surface-2/70 dark:bg-white/[0.05] backdrop-blur-md px-3 py-1 rounded-full border border-black/5 dark:border-white/5 shadow-2xs font-sans">
+                          {dividerText}
+                        </span>
+                      </div>
+                    )}
+                    <MessageItem
+                      message={msg}
+                      userQuery={userQueryText}
+                      sessionId={sessionId}
+                      isLatestMessage={idx === messages.length - 1}
+                      onSendPrompt={handleSendPrompt}
+                      onRegenerate={handleRegenerate}
+                      onRegenerateWithNeMo={regenerateWithNeMo}
+                      onSubmitFeedback={submitFeedback}
+                    />
+                  </div>
                 );
               })}
               <div ref={endRef} />
