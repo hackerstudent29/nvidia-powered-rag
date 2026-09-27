@@ -2002,65 +2002,76 @@ Life at **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)*
 
 def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     """
-    Returns prebuilt summary cards when the user explicitly clicks a top-level prebuilt chip or asks a standard card query.
+    Returns prebuilt summary cards ONLY when the user explicitly clicks a top-level prebuilt chip
+    or asks a generic high-level card overview query.
+    NEVER intercepts specific questions, follow-up inquiries, outcome queries, syllabus, cutoffs,
+    or questions containing inquiry words (e.g. why, how, what does, can you, list some).
     """
     if not query or not query.strip():
         return None
     q_clean = query.strip().lower()
 
     # 0. Conversational greeting check (0ms instant response)
-    if re.match(r'^(?:hi|hello|hey|hola|namaste|vanakkam|good\s+(?:morning|afternoon|evening|day)|greetings|who\s+are\s+you|what\s+can\s+you\s+do|help\s*me|help)[\s!.,?]*$', q_clean):
+    if re.match(r'^(?:hi|hello|hey|hola|namaste|vanakkam|good\s+(?:morning|afternoon|evening|day)|greetings)[\s!.,?]*$', q_clean):
         return PREBUILT_CARD_ANSWERS.get("greeting")
+
+    # Developer questions ("who is ram", "who created you")
+    if any(k in q_clean for k in ["who is ram", "who is rama", "who is ramanathan", "who created you", "who made you", "who built you", "who developed you", "who programmed you", "developer of lorin", "creator of lorin", "ram portfolio"]):
+        return PREBUILT_CARD_ANSWERS.get("developer")
 
     if len(q_clean) < 3:
         return None
 
-    # Do NOT intercept follow-up or referential queries containing modifiers (e.g. "briefly", "in detail", "expand")
-    if any(w in q_clean for w in ["briefly", "in detail", "expand", "elaborate", "specifically", "about that"]):
+    # CRITICAL GUARD: Never intercept specific questions or follow-up inquiries!
+    # If the user is asking about specific sub-topics, rules, numbers, or outcomes, ALWAYS delegate to RAG.
+    SPECIFIC_INQUIRY_TERMS = [
+        "outcome", "outcomes", "po", "pos", "pso", "psos", "peo", "peos",
+        "po1", "po2", "po3", "po4", "po5", "po6", "po7", "po8", "po9", "po10", "po11", "po12",
+        "pso1", "pso2", "peo1", "peo2", "peo3",
+        "syllabus", "curriculum", "regulation", "regulations", "subject", "subjects", "sem", "semester",
+        "cutoff", "cutoffs", "cut off", "rank", "ranking", "fee", "fees", "cost", "how much", "how many",
+        "salary", "package", "highest", "average", "lowest", "lpa", "ctc", "internship stipend",
+        "company", "companies", "recruiter", "recruiters", "tier", "interview", "aptitude",
+        "lateral", "lateral entry", "7.5%", "nri", "quota", "document", "documents", "certificate",
+        "warden", "timing", "timings", "menu", "food", "dish", "breakfast", "lunch", "dinner",
+        "book", "books", "borrow", "renew", "fine", "delnet", "journal", "journals",
+        "equipment", "software", "machine", "faculty", "hod", "head of department", "principal name",
+        "sports", "cricket", "football", "gym", "culturals", "symposium", "conference",
+        "difference", "compare", "vs", "versus", "which is better", "can you", "explain",
+        "why", "how", "what does", "what do", "tell me what", "list some", "list the", "detail", "details of",
+        "briefly", "in detail", "expand", "elaborate", "specifically", "about that", "for that"
+    ]
+
+    words = re.findall(r'\b[a-z0-9_]+\b', q_clean)
+    words_set = set(words)
+    for term in SPECIFIC_INQUIRY_TERMS:
+        if " " in term:
+            if term in q_clean:
+                return None
+        else:
+            if term in words_set:
+                return None
+
+    # Natural sentences longer than 7 words are specific questions — never hijack them
+    if len(words) > 7:
         return None
 
-    # 1. Exact or keyword matching
+    # Check exact chip or card keywords
+    q_stripped = q_clean.strip("?!., ").strip()
     for card_key, card_data in PREBUILT_CARD_ANSWERS.items():
-        if card_key == "greeting":
+        if card_key in ("greeting", "developer"):
             continue
         for kw in card_data["keywords"]:
             kw_clean = kw.strip().lower()
-            if kw_clean and (
-                q_clean == kw_clean or 
-                q_clean == f"show {kw_clean}" or 
-                q_clean == f"view {kw_clean}" or
-                q_clean.startswith(kw_clean) or
-                (len(kw_clean) >= 5 and kw_clean in q_clean)
+            if not kw_clean:
+                continue
+            if (
+                q_stripped == kw_clean or
+                q_stripped == f"show {kw_clean}" or
+                q_stripped == f"view {kw_clean}" or
+                q_stripped == f"tell me about {kw_clean}"
             ):
                 return card_data
-
-    # 2. Topic keyword fallback matching
-    if any(k in q_clean for k in ["who is ram", "who is rama", "who is ramanathan", "who created you", "who made you", "who built you", "who developed you", "who programmed you", "developer of lorin", "creator of lorin"]) or q_clean in ["who is ram", "who is rama", "ram portfolio"]:
-        return PREBUILT_CARD_ANSWERS.get("developer")
-    elif "scholarship" in q_clean or "merit scheme" in q_clean or "pragati" in q_clean or "saksham" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("scholarships")
-    elif "admission" in q_clean or "tnea code 1301" in q_clean or "tnea 1301" in q_clean or "counseling code" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("admission")
-    elif "boys hostel" in q_clean or "boy hostel" in q_clean or "hostel for boys" in q_clean or "mens hostel" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("boys_hostel")
-    elif "girls hostel" in q_clean or "girl hostel" in q_clean or "hostel for girls" in q_clean or "ladies hostel" in q_clean or "womens hostel" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("girls_hostel")
-    elif ("bus" in q_clean and ("route" in q_clean or "transport" in q_clean or "pickup" in q_clean or "timing" in q_clean or "stop" in q_clean)) or "bus routes" in q_clean or "college bus" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("bus")
-    elif "mess" in q_clean or "canteen" in q_clean or "cafeteria" in q_clean or "food menu" in q_clean or "dining hall" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("mess")
-    elif "library" in q_clean or "central library" in q_clean or "book collection" in q_clean or "delnet" in q_clean or "j-gate" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("library")
-    elif "lab facilities" in q_clean or "engineering lab" in q_clean or "technology centre" in q_clean or "bot lab" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("labs")
-    elif "campus life" in q_clean or "sports facilities" in q_clean or "student clubs" in q_clean or "sathak fest" in q_clean or "sports ground" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("campus_life")
-    elif "contact info" in q_clean or "contact information" in q_clean or "phone number" in q_clean or "email address" in q_clean or "campus location" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("contact")
-    elif "course" in q_clean or "program" in q_clean or "degree" in q_clean or "intake capacity" in q_clean or "departments offered" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("courses")
-    elif "placement" in q_clean or "recruiter" in q_clean or "salary package" in q_clean or "internship" in q_clean:
-        return PREBUILT_CARD_ANSWERS.get("placements")
 
     return None
 
@@ -3609,7 +3620,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             # 2. Instant Prebuilt FAQ Card Matcher (Instant preseeded zero-latency response)
             if not req.is_regeneration:
-                prebuilt_card = get_prebuilt_card_answer(user_query) or get_prebuilt_card_answer(expanded_query)
+                prebuilt_card = get_prebuilt_card_answer(user_query)
                 if prebuilt_card:
                     logger.info(f"[Prebuilt Card] Serving instant prebuilt FAQ card for query: '{user_query}'")
                     async for item in stream_cached_or_prebuilt(
@@ -4178,7 +4189,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             # Absolute safeguard: if all LLM streams produced zero content tokens, synthesize full text from retrieved context
             if not collected_response or tokens_emitted_count == 0:
-                pb_card = get_prebuilt_card_answer(user_query) or (get_prebuilt_card_answer(expanded_query) if 'expanded_query' in locals() else None)
+                pb_card = get_prebuilt_card_answer(user_query)
                 if pb_card:
                     fallback_msg = pb_card["response"]
                 elif retrieved_chunks:
@@ -4317,7 +4328,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
         except Exception as e:
             print(f"[ERROR] Error in chat stream: {e}")
-            pb_card = get_prebuilt_card_answer(user_query) or (get_prebuilt_card_answer(expanded_query) if 'expanded_query' in locals() else None)
+            pb_card = get_prebuilt_card_answer(user_query)
             if pb_card:
                 error_text = pb_card["response"]
             elif 'retrieved_chunks' in locals() and retrieved_chunks:

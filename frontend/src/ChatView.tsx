@@ -351,7 +351,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
                   </div>
                 );
               })}
-              <div ref={endRef} />
+              <div ref={endRef} className="h-4 sm:h-6 shrink-0" />
             </div>
           )}
         </div>
@@ -362,7 +362,7 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
           <button
             type="button"
             onClick={() => scrollToBottom(false)}
-            className="fixed bottom-40 sm:bottom-36 left-1/2 -translate-x-1/2 z-40 flex size-9 sm:size-10 items-center justify-center rounded-full bg-surface/95 dark:bg-surface/90 backdrop-blur-md shadow-xl border border-line text-ink-2 hover:bg-hover hover:text-ink hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in-95 cursor-pointer"
+            className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-40 flex size-9 sm:size-10 items-center justify-center rounded-full bg-surface/95 dark:bg-surface/90 backdrop-blur-md shadow-xl border border-line text-ink-2 hover:bg-hover hover:text-ink hover:scale-105 active:scale-95 transition-all animate-in fade-in zoom-in-95 cursor-pointer"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />

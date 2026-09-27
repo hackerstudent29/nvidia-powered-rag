@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
@@ -839,6 +839,90 @@ function CodeBlock({ language, code }: { language?: string; code: string }) {
   );
 }
 
+const TableScrollContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 6);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    checkScroll();
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", checkScroll);
+    };
+  }, [checkScroll]);
+
+  const scrollByAmount = (amount: number) => {
+    if (!containerRef.current) return;
+    containerRef.current.scrollBy({ left: amount, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative my-4 w-full max-w-full rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-white/60 dark:bg-[#14151a]/60 backdrop-blur-xs overflow-hidden shadow-2xs group/table">
+      {/* Scroll Navigation Helper Controls for Desktop */}
+      {canScrollRight && (
+        <button
+          type="button"
+          onClick={() => scrollByAmount(260)}
+          className="absolute right-2 top-2 z-20 hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#9E2339] dark:bg-[#E11D48] text-white text-[11px] font-sans font-bold shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer select-none animate-in fade-in"
+          title="Scroll table to the right"
+        >
+          <span>More columns</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      )}
+
+      {canScrollLeft && (
+        <button
+          type="button"
+          onClick={() => scrollByAmount(-260)}
+          className="absolute left-2 top-2 z-20 hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-stone-800 dark:bg-zinc-700 text-white text-[11px] font-sans font-bold shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer select-none animate-in fade-in"
+          title="Scroll table to the left"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>Back</span>
+        </button>
+      )}
+
+      {/* Actual horizontal scroll track */}
+      <div
+        ref={containerRef}
+        className="w-full max-w-full overflow-x-auto overscroll-x-contain touch-pan-x table-scroll-container py-1"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
+        <table className="w-full min-w-[660px] border-collapse text-left bg-transparent">
+          {children}
+        </table>
+      </div>
+
+      {/* Mobile Swipe Hint */}
+      {(canScrollLeft || canScrollRight) && (
+        <div className="flex sm:hidden items-center justify-between px-3 py-1.5 bg-black/[0.02] dark:bg-white/[0.02] border-t border-black/[0.04] dark:border-white/[0.04] text-[10.5px]">
+          <span className="text-ink-3">{canScrollLeft ? "← Swipe left for previous" : ""}</span>
+          <span className="font-semibold text-[#9E2339] dark:text-[#E11D48] ml-auto">Scroll horizontally to view all →</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MessageItem = React.memo(function MessageItem({
   message,
   userQuery,
@@ -893,15 +977,15 @@ const MessageItem = React.memo(function MessageItem({
     const evaluateSelection = () => {
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed) {
-        setSelectionToolbar(null);
-        setHighlightRects([]);
+        setSelectionToolbar((prev) => (prev !== null ? null : prev));
+        setHighlightRects((prev) => (prev.length > 0 ? [] : prev));
         return;
       }
 
       const text = selection.toString().trim();
       if (!text || text.length < 2) {
-        setSelectionToolbar(null);
-        setHighlightRects([]);
+        setSelectionToolbar((prev) => (prev !== null ? null : prev));
+        setHighlightRects((prev) => (prev.length > 0 ? [] : prev));
         return;
       }
 
@@ -911,8 +995,8 @@ const MessageItem = React.memo(function MessageItem({
         const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : (container as Element);
 
         if (!element?.closest(".chat-message-content")) {
-          setSelectionToolbar(null);
-          setHighlightRects([]);
+          setSelectionToolbar((prev) => (prev !== null ? null : prev));
+          setHighlightRects((prev) => (prev.length > 0 ? [] : prev));
           return;
         }
 
@@ -963,8 +1047,8 @@ const MessageItem = React.memo(function MessageItem({
           }
         }
       } catch (e) {
-        setSelectionToolbar(null);
-        setHighlightRects([]);
+        setSelectionToolbar((prev) => (prev !== null ? null : prev));
+        setHighlightRects((prev) => (prev.length > 0 ? [] : prev));
       }
     };
 
@@ -975,8 +1059,8 @@ const MessageItem = React.memo(function MessageItem({
       // Dismiss toolbar and clear painted rects when clicking outside
       if (target && !target.closest(".chat-message-content")) {
         if (timeoutId) clearTimeout(timeoutId);
-        setSelectionToolbar(null);
-        setHighlightRects([]);
+        setSelectionToolbar((prev) => (prev !== null ? null : prev));
+        setHighlightRects((prev) => (prev.length > 0 ? [] : prev));
       }
     };
 
@@ -987,15 +1071,10 @@ const MessageItem = React.memo(function MessageItem({
     };
 
     const handleScrollOrResize = () => {
-      const sel = window.getSelection();
-      if (!sel || sel.isCollapsed) {
-        setSelectionToolbar(null);
-        setHighlightRects([]);
-      } else {
-        // Rects are viewport-relative — re-evaluate on scroll so overlay moves with text
-        setHighlightRects([]);
-        setSelectionToolbar(null);
-      }
+      // Only dismiss if the toolbar was actually active!
+      // This prevents 60fps re-renders during table horizontal scroll.
+      setSelectionToolbar((prev) => (prev !== null ? null : prev));
+      setHighlightRects((prev) => (prev.length > 0 ? [] : prev));
     };
 
     document.addEventListener("pointerdown", handlePointerDown as any);
@@ -1463,14 +1542,14 @@ const MessageItem = React.memo(function MessageItem({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs sm:text-sm font-bold text-ink">Lorin AI</span>
-          <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/50 px-1.5 py-0.2 text-[9px] font-semibold text-[#2E6B5E] dark:text-[#E1EED7]">
+          <span className="rounded-md bg-[#9E2339]/10 dark:bg-[#E11D48]/15 px-1.5 py-0.5 text-[9.5px] font-bold text-[#9E2339] dark:text-[#E11D48] tracking-wide uppercase font-oswald">
             MSAJCEA
           </span>
         </div>
       </div>
 
-      {/* AI message body — symmetric pl-0 sm:pl-7 and pr-2 sm:pr-10 right alignment buffer */}
-      <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 sm:pl-7 pr-2 sm:pr-10 overflow-hidden">
+      {/* AI message body — symmetric pl-0 sm:pl-7 and pr-0 sm:pr-2 */}
+      <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 sm:pl-7 pr-0 sm:pr-2 overflow-hidden">
         <ThinkingState
           variant="Steps"
           isLiveStreaming={message.is_streaming}
@@ -1478,79 +1557,77 @@ const MessageItem = React.memo(function MessageItem({
           durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
         />
 
-        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden cursor-text select-text">
+        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words cursor-text select-text">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => (
-                <p className="mb-3.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200 font-normal last:mb-0">
+                <p className="mb-3.5 text-[15px] sm:text-[15.5px] leading-7 font-libre text-ink dark:text-zinc-200 font-normal last:mb-0">
                   {processHighlightedChildren(children)}
                 </p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc pl-5 my-3 space-y-1.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
+                <ul className="list-disc pl-5 my-3 space-y-1.5 font-libre text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
                   {children}
                 </ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal pl-5 my-3 space-y-1.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
+                <ol className="list-decimal pl-5 my-3 space-y-1.5 font-libre text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
                   {children}
                 </ol>
               ),
               li: ({ children }) => (
-                <li className="leading-7 pl-0.5">
+                <li className="leading-7 pl-0.5 font-libre">
                   {processHighlightedChildren(children)}
                 </li>
               ),
               h1: ({ children }) => (
-                <h1 className="font-bold tracking-tight text-xl sm:text-2xl mt-6 mb-3 text-ink dark:text-white flex items-center gap-2">
+                <h1 className="font-oswald font-black uppercase tracking-tight text-xl sm:text-2xl mt-6 mb-3 text-ink dark:text-white flex items-center gap-2">
                   {processHighlightedChildren(children)}
                 </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="font-bold tracking-tight text-lg sm:text-xl mt-5 mb-2.5 text-ink dark:text-white border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5 flex items-center gap-2">
+                <h2 className="font-oswald font-black uppercase tracking-tight text-lg sm:text-xl mt-5 mb-2.5 text-[#9E2339] dark:text-[#E11D48] border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5 flex items-center gap-2">
                   {processHighlightedChildren(children)}
                 </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="font-semibold text-base sm:text-lg mt-4 mb-2 text-ink dark:text-zinc-100">
+                <h3 className="font-oswald font-bold uppercase tracking-tight text-base sm:text-lg mt-4 mb-2 text-ink dark:text-zinc-100">
                   {processHighlightedChildren(children)}
                 </h3>
               ),
               h4: ({ children }) => (
-                <h4 className="font-semibold text-sm sm:text-base mt-3 mb-1.5 text-ink-2 dark:text-zinc-300">
+                <h4 className="font-oswald font-bold uppercase text-sm sm:text-base mt-3 mb-1.5 text-ink-2 dark:text-zinc-300">
                   {processHighlightedChildren(children)}
                 </h4>
               ),
               hr: () => <hr className="my-5 border-black/[0.08] dark:border-white/[0.08]" />,
               blockquote: ({ children }) => (
-                <blockquote className="border-l-3 border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15px] text-ink-2 dark:text-zinc-300 italic">
+                <blockquote className="border-l-3 border-[#9E2339] dark:border-[#E11D48] pl-4 py-1 my-3.5 text-[15px] font-libre text-ink-2 dark:text-zinc-300 italic bg-[#9E2339]/[0.03] dark:bg-[#E11D48]/[0.05] rounded-r-lg">
                   {processHighlightedChildren(children)}
                 </blockquote>
               ),
               strong: ({ children }) => <strong className="font-semibold text-ink dark:text-white">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-5 bg-transparent border-none">
-                  <table className="w-full min-w-full border-separate border-spacing-0 text-left text-[14px] sm:text-[14.5px] leading-relaxed bg-transparent">{children}</table>
-                </div>
+                <TableScrollContainer>{children}</TableScrollContainer>
               ),
               thead: ({ children }) => (
-                <thead className="bg-[#2E6B5E]/[0.08] dark:bg-emerald-500/[0.12]">{children}</thead>
+                <thead className="bg-[#9E2339]/[0.06] dark:bg-[#E11D48]/[0.10] border-b-2 border-[#9E2339]/20 dark:border-[#E11D48]/25">{children}</thead>
               ),
               tbody: ({ children }) => (
                 <tbody className="divide-y divide-black/[0.06] dark:divide-white/[0.06] bg-transparent">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-[#2E6B5E]/[0.03] dark:hover:bg-emerald-500/[0.04] transition-colors bg-transparent">{children}</tr>
+                <tr className="hover:bg-[#9E2339]/[0.03] dark:hover:bg-[#E11D48]/[0.05] transition-colors bg-transparent">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="py-2.5 px-4 font-bold text-[12.5px] text-[#1e3a34] dark:text-emerald-400 uppercase tracking-wider whitespace-nowrap text-left select-none bg-[#2E6B5E]/[0.08] dark:bg-emerald-500/[0.12] border-b-2 border-[#2E6B5E]/20 dark:border-emerald-500/25 first:rounded-l-lg last:rounded-r-lg">
+                <th className="py-2.5 px-4 font-oswald font-black uppercase text-[12px] sm:text-[12.5px] tracking-wider text-[#9E2339] dark:text-[#E11D48] whitespace-nowrap text-left select-none">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="py-3.5 px-4 align-top leading-relaxed text-[13.5px] sm:text-[14px] text-ink/90 dark:text-zinc-300 bg-transparent border-b border-black/[0.06] dark:border-white/[0.06]">
+                <td className="py-3 px-4 align-top leading-relaxed font-libre text-[13px] sm:text-[14px] text-ink dark:text-zinc-200 bg-transparent border-b border-black/[0.06] dark:border-white/[0.06] whitespace-normal">
                   {processHighlightedChildren(children)}
                 </td>
               ),
