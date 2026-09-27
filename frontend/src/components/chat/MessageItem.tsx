@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -1285,11 +1286,6 @@ const MessageItem = React.memo(function MessageItem({
           <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/50 px-1.5 py-0.2 text-[9px] font-semibold text-[#2E6B5E] dark:text-[#E1EED7]">
             MSAJCEA
           </span>
-          {message.model && (
-            <span className="text-[10px] text-ink-3 hidden sm:inline-block">
-              • {message.model.replace("zai/", "").replace("google/", "").replace("minimax/", "")}
-            </span>
-          )}
         </div>
       </div>
 
@@ -1585,29 +1581,38 @@ const MessageItem = React.memo(function MessageItem({
             <div className="flex items-center justify-between sm:justify-start gap-1 w-full sm:w-auto">
               <div className="flex items-center gap-0.5 sm:gap-1">
                 <Tooltip content={copied ? "Copied!" : "Copy message"} position="top">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.18, rotate: 4 }}
+                    whileTap={{ scale: 0.88, rotate: -4 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={handleCopy}
                     className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
                   >
                     {copied ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">✓</span> : ACTION_ICONS.copy}
-                  </button>
+                  </motion.button>
                 </Tooltip>
 
                 {onRegenerate && (
                   <Tooltip content="Regenerate response" position="top">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.18, rotate: 18 }}
+                      whileTap={{ scale: 0.88, rotate: -18 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 18 }}
                       type="button"
                       onClick={() => onRegenerate?.(message.id)}
                       className="flex items-center justify-center size-7 rounded-md text-ink-3 transition-colors duration-100 hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink cursor-pointer"
                     >
                       {ACTION_ICONS.retry}
-                    </button>
+                    </motion.button>
                   </Tooltip>
                 )}
 
                 <Tooltip content="Good response" position="top">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.2, y: -2 }}
+                    whileTap={{ scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={() => handleThumbs(1)}
                     className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
@@ -1615,11 +1620,14 @@ const MessageItem = React.memo(function MessageItem({
                     }`}
                   >
                     {ACTION_ICONS.up}
-                  </button>
+                  </motion.button>
                 </Tooltip>
 
                 <Tooltip content="Bad response" position="top">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.2, y: 2 }}
+                    whileTap={{ scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={() => handleThumbs(-1)}
                     className={`flex items-center justify-center size-7 rounded-md transition-colors duration-100 cursor-pointer ${
@@ -1627,11 +1635,14 @@ const MessageItem = React.memo(function MessageItem({
                     }`}
                   >
                     {ACTION_ICONS.down}
-                  </button>
+                  </motion.button>
                 </Tooltip>
 
                 <Tooltip content={isPlayingAudio ? "Stop Voice" : isLoadingAudio ? "Synthesizing Voice..." : "Read Aloud"} position="top">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.18, rotate: -6 }}
+                    whileTap={{ scale: 0.88 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 18 }}
                     type="button"
                     onClick={() => handleTTS()}
                     disabled={isLoadingAudio}
@@ -1648,7 +1659,7 @@ const MessageItem = React.memo(function MessageItem({
                     ) : (
                       ACTION_ICONS.tts
                     )}
-                  </button>
+                  </motion.button>
                 </Tooltip>
               </div>
 

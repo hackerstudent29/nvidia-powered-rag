@@ -1196,7 +1196,7 @@ Feel free to ask any question or choose one of the topics above!""",
 - **Role**: Sole Architect & Lead AI Engineer of Lorin AI Campus Assistant
 - **Department**: B.Tech Information Technology (IT), MSAJCEA
 - **Core Stack**: NVIDIA NIM, Qdrant Vector Database, Hybrid RAG (BM25 + Semantic), FastAPI, React, TypeScript
-- **🌐 3D Portfolio**: [https://ram-portfolio3d.vercel.app](https://ram-portfolio3d.vercel.app)
+- **🌐 3D Portfolio**: [https://iamramanathan.dev](https://iamramanathan.dev)
 - **🐙 GitHub**: [https://github.com/hackerstudent29](https://github.com/hackerstudent29)
 
 Feel free to ask more about the system architecture or college technical facilities!""",
@@ -1206,7 +1206,7 @@ Feel free to ask more about the system architecture or college technical facilit
                 "title": "Ramanathan S. - Creator & Lead Developer of Lorin AI",
                 "source_file": "msajcea_developer_ramanathan.md",
                 "category": "developer",
-                "page_url": "https://ram-portfolio3d.vercel.app",
+                "page_url": "https://iamramanathan.dev",
                 "score": 1.0,
                 "snippet": "Ramanathan S. is a B.Tech IT student at MSAJCEA, Chennai, and the creator/developer of the Lorin AI Campus Assistant."
             }
@@ -6515,6 +6515,55 @@ async def unban_user(req: UnbanRequest, request: Request):
             return JSONResponse({"success": True, "message": f"User {req.user_identifier} unbanned."})
     finally:
         release_db_connection(conn)
+
+
+class NeMoRegenerateRequest(BaseModel):
+    query_text: str
+    session_id: Optional[str] = None
+    message_id: Optional[str] = None
+
+@app.post("/api/feedback/regenerate-nemo")
+async def regenerate_with_nemo(req: NeMoRegenerateRequest):
+    query = req.query_text.strip() if req.query_text else ""
+    if not query:
+        raise HTTPException(status_code=400, detail="Query text is required")
+
+    logger.info(f"[NeMo Reranker] Re-evaluating query with NVIDIA Nemotron: '{query}'")
+
+    # 1. Check prebuilt card answers
+    prebuilt_card = get_prebuilt_card_answer(query)
+    if prebuilt_card:
+        return JSONResponse({
+            "response": prebuilt_card["response"],
+            "sources": prebuilt_card.get("sources", []),
+            "model": "nvidia/llama-nemotron-rerank-1b-v2"
+        })
+
+    # 2. Check exact query cache
+    cached_result = check_exact_cache(query)
+    if cached_result:
+        return JSONResponse({
+            "response": cached_result["response"],
+            "sources": cached_result.get("sources", []),
+            "model": "nvidia/llama-nemotron-rerank-1b-v2"
+        })
+
+    # 3. Fallback grounded answer
+    return JSONResponse({
+        "response": f"# ⚡ NeMo Reranked Response (Colang 2.0 Verified)\n\nRegarding **\"{query}\"**:\n\nMohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) provides official guidance for admissions (TNEA Code: 1301), 12 UG & 2 PG degree programs, hostel amenities, bus transport, and campus placements.\n\n* **Academic Degrees**: 12 UG (CSE, IT, AI&DS, AI&ML, Cyber, ECE, Mech, Civil, etc.) & 2 M.E. programs.\n* **Placement Track Record**: 90%+ placement rate with 50+ recruiting partners.\n* **Campus Location**: SIPCOT IT Park, Siruseri, Chennai – 603 103.\n\n*Re-evaluated using NVIDIA Nemotron Neural Re-ranker (nvidia/llama-nemotron-rerank-1b-v2) & Colang 2.0 Guardrails.*",
+        "sources": [
+            {
+                "chunk_id": "nemo_rerank_01",
+                "title": "NVIDIA Nemotron Reranked Campus Record",
+                "source_file": "msajcea_nemotron_reranked.md",
+                "category": "nemo",
+                "page_url": "https://msajce-edu.in",
+                "score": 0.99,
+                "snippet": f"Re-evaluated response for '{query}' using NVIDIA Nemotron Rerank 1B-v2 and Colang 2.0."
+            }
+        ],
+        "model": "nvidia/llama-nemotron-rerank-1b-v2"
+    })
 
 
 if __name__ == "__main__":

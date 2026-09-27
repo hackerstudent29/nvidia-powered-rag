@@ -431,7 +431,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   }, [isMobile]);
 
   const handleValueChange = useCallback((val: string) => {
-    setIsSmoothResize(true);
     setText(val);
     if (onInputChange) {
       onInputChange(val);

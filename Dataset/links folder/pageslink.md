@@ -22,7 +22,7 @@ Faculty Profiles & Leadership	msajce-edu.in/faculty.php
 6	
 
 msajcea_developer_ramanathan.md
-Developer Profile (Ramanathan S)	ram-portfolio3d.vercel.app
+Developer Profile (Ramanathan S)	iamramanathan.dev
 7	
 
 msajcea_sipcot_companies.md
