@@ -1278,7 +1278,10 @@ const MessageItem = React.memo(function MessageItem({
     } else {
       setIsDisliked(true);
       setIsLiked(false);
-      setIsFeedbackOpen(true);
+      // Smooth 0.5-second reveal delay before opening feedback modal
+      setTimeout(() => {
+        setIsFeedbackOpen(true);
+      }, 500);
     }
   };
 
@@ -1305,7 +1308,7 @@ const MessageItem = React.memo(function MessageItem({
     return (
       <div className="flex flex-col items-end my-3 sm:my-4 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-200">
         <div className="max-w-[85%] sm:max-w-[80%] min-w-0 box-border">
-          <div className="bg-black/[0.04] dark:bg-white/[0.08] text-ink dark:text-zinc-100 px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-black/[0.03] dark:border-white/[0.05]">
+          <div className="bg-[#E1EED7]/90 dark:bg-[#1C2C28] text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-[#2E6B5E]/25 dark:border-[#10b981]/30 font-medium">
             {message.content}
           </div>
         </div>
@@ -1699,12 +1702,12 @@ const MessageItem = React.memo(function MessageItem({
                   <motion.button
                     whileHover={{ scale: 1.3, y: -4, rotate: -12 }}
                     whileTap={{ scale: 0.8, y: 1 }}
-                    animate={isLiked ? { y: [-2, -6, -2], rotate: [-10, 0], scale: [1, 1.3, 1] } : { y: 0, rotate: 0, scale: 1 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                    animate={isLiked ? { scale: [1, 1.45, 0.95, 1.15, 1], y: [-2, -7, 0], rotate: [-14, 0] } : { scale: 1, y: 0, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 14 }}
                     type="button"
                     onClick={() => handleThumbs(1)}
                     className={`flex items-center justify-center size-7 bg-transparent border-0 outline-none shadow-none transition-colors duration-150 cursor-pointer select-none ${
-                      isLiked ? "text-[#9E2339] dark:text-[#E11D48]" : "text-ink-3 hover:text-[#9E2339] dark:hover:text-[#E11D48]"
+                      isLiked ? "text-emerald-600 dark:text-emerald-400" : "text-ink-3 hover:text-emerald-600 dark:hover:text-emerald-400"
                     }`}
                   >
                     {ACTION_ICONS.up}
@@ -1715,8 +1718,8 @@ const MessageItem = React.memo(function MessageItem({
                   <motion.button
                     whileHover={{ scale: 1.3, y: 4, rotate: 12 }}
                     whileTap={{ scale: 0.8, y: -1 }}
-                    animate={isDisliked ? { y: [2, 6, 2], rotate: [10, 0], scale: [1, 1.3, 1] } : { y: 0, rotate: 0, scale: 1 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                    animate={isDisliked ? { scale: [1, 1.45, 0.95, 1.15, 1], y: [2, 7, 0], rotate: [14, 0] } : { scale: 1, y: 0, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 14 }}
                     type="button"
                     onClick={() => handleThumbs(-1)}
                     className={`flex items-center justify-center size-7 bg-transparent border-0 outline-none shadow-none transition-colors duration-150 cursor-pointer select-none ${
@@ -1887,23 +1890,26 @@ const MessageItem = React.memo(function MessageItem({
 
 
 
-        {/* NeMo Reranker Re-evaluate Action Banner on Dislike */}
+        {/* Re-evaluate Action Banner on Dislike (Simple, elegant 1-liner with zero model fluff) */}
         {isDisliked && onRegenerateWithNeMo && (
-          <div className="mt-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-500/30 text-[12px] text-emerald-800 dark:text-emerald-200">
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.35, delay: 0.5, ease: "easeOut" }}
+            className="mt-2.5 flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 text-[12px] text-emerald-900 dark:text-emerald-200 shadow-xs"
+          >
             <div className="flex items-center gap-2">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-emerald-600 dark:text-emerald-400 shrink-0">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              <span>Dissatisfied? Re-evaluate using <strong>NVIDIA Nemotron Neural Re-ranker (nvidia/llama-nemotron-rerank-1b-v2)</strong> & Colang 2.0 Guardrails</span>
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="font-medium">Dissatisfied with this answer? Re-evaluate with Neural Re-ranker</span>
             </div>
             <button
               type="button"
               onClick={() => onRegenerateWithNeMo(userQuery || message.content, message.id)}
               className="shrink-0 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] shadow-sm transition-all cursor-pointer"
             >
-              Re-evaluate with NeMo
+              Re-evaluate Answer
             </button>
-          </div>
+          </motion.div>
         )}
 
         {/* Expandable Usage/Stats Panel */}
