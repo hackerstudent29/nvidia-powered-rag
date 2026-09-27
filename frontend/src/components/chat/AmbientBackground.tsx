@@ -1,6 +1,6 @@
 import React from "react";
 
-export const AmbientBackground: React.FC = () => {
+export const AmbientBackground: React.FC = React.memo(function AmbientBackground() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none bg-[#F7F6ED] dark:bg-[#0b0c0e] transition-colors duration-300">
       {/* Top Left Floating Lavender Orb */}
@@ -27,4 +27,5 @@ export const AmbientBackground: React.FC = () => {
       <div className="absolute inset-0 bg-[radial-gradient(#1E293B_1px,transparent_1px)] dark:bg-[radial-gradient(#f4f3ee_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.025] dark:opacity-[0.03]" />
     </div>
   );
-};
+});
+

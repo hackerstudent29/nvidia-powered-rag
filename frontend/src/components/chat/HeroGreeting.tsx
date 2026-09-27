@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import {
   GraduationCap,
@@ -108,7 +109,7 @@ const FAQ_CARDS = [
   },
 ];
 
-export default function HeroGreeting({
+const HeroGreeting = React.memo(function HeroGreeting({
   onSelectPrompt,
   onPastePrompt,
 }: HeroGreetingProps) {
@@ -215,4 +216,7 @@ export default function HeroGreeting({
       </div>
     </motion.div>
   );
-}
+});
+
+export default HeroGreeting;
+

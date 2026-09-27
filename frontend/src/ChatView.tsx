@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useChat } from "./hooks/useChat";
 import { useMobileLayout } from "./hooks/useMobileLayout";
 import ChatHeader from "./components/chat/ChatHeader";
@@ -174,6 +174,42 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
     setIsStatsOpen(true);
   };
 
+  const handleSendPrompt = useCallback((prompt: string) => {
+    sendMessage(prompt);
+    setChatInput("");
+  }, [sendMessage]);
+
+  const handlePastePrompt = useCallback((prompt: string) => {
+    setChatInput(prompt);
+  }, []);
+
+  const handleRegenerate = useCallback((targetId?: string) => {
+    if (targetId) regenerateLastMessage(targetId);
+  }, [regenerateLastMessage]);
+
+  const handleSendMessage = useCallback((msg: string, effort?: string) => {
+    const clean = msg.trim().toLowerCase();
+    if (clean === "/admin" || clean === "/ admin" || clean === "admin/") {
+      setChatInput("");
+      window.location.href = "/admin";
+      return;
+    }
+    sendMessage(msg, effort);
+    setChatInput("");
+  }, [sendMessage]);
+
+  const handleClearRateLimit = useCallback(() => {
+    setRateLimitInfo(null);
+  }, [setRateLimitInfo]);
+
+  const handleOpenSettingsCallback = useCallback(() => {
+    setIsSettingsOpen(true);
+  }, []);
+
+  const handleOpenProfileCallback = useCallback(() => {
+    setIsOnboardingOpen(true);
+  }, []);
+
   return (
     // h-screen-safe uses 100dvh — fixes iOS Safari 100vh bug
     <div
@@ -190,8 +226,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         onSelectModel={setSelectedModel}
         onNewChat={startNewChat}
         onOpenHistory={handleOpenHistory}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenProfile={() => setIsOnboardingOpen(true)}
+        onOpenSettings={handleOpenSettingsCallback}
+        onOpenProfile={handleOpenProfileCallback}
         userProfile={userProfile}
         isStreaming={isStreaming}
         isEmbed={isEmbed}
@@ -211,11 +247,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
         <div className={`mx-auto max-w-4xl w-full min-h-full flex flex-col ${messages.length === 0 ? "justify-center" : "justify-start"}`}>
           {messages.length === 0 ? (
             <HeroGreeting
-              onSelectPrompt={(prompt) => {
-                sendMessage(prompt);
-                setChatInput("");
-              }}
-              onPastePrompt={(prompt) => setChatInput(prompt)}
+              onSelectPrompt={handleSendPrompt}
+              onPastePrompt={handlePastePrompt}
             />
           ) : (
             <div className="flex flex-col space-y-4 sm:space-y-6 pt-4 pb-2 sm:pb-3">
@@ -229,8 +262,8 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
                     userQuery={userQueryText}
                     sessionId={sessionId}
                     isLatestMessage={idx === messages.length - 1}
-                    onSendPrompt={(prompt) => sendMessage(prompt)}
-                    onRegenerate={(targetId) => regenerateLastMessage(targetId || msg.id)}
+                    onSendPrompt={handleSendPrompt}
+                    onRegenerate={handleRegenerate}
                     onRegenerateWithNeMo={regenerateWithNeMo}
                     onSubmitFeedback={submitFeedback}
                   />
@@ -261,23 +294,14 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
       <ChatInput
         inputValue={chatInput}
         onInputChange={setChatInput}
-        onSendMessage={(msg, effort) => {
-          const clean = msg.trim().toLowerCase();
-          if (clean === "/admin" || clean === "/ admin" || clean === "admin/") {
-            setChatInput("");
-            window.location.href = "/admin";
-            return;
-          }
-          sendMessage(msg, effort);
-          setChatInput("");
-        }}
+        onSendMessage={handleSendMessage}
         onStopStreaming={stopStreaming}
         isStreaming={isStreaming}
         showChips={messages.length > 0}
         rateLimitInfo={rateLimitInfo}
-        onClearRateLimit={() => setRateLimitInfo(null)}
+        onClearRateLimit={handleClearRateLimit}
         isMobile={isMobile}
-        onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenSettings={handleOpenSettingsCallback}
         selectedModel={selectedModel}
       />
 

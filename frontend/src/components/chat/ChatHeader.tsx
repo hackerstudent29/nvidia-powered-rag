@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ModelOption } from "../../types/chat";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "../Tooltip";
@@ -30,7 +30,7 @@ interface ChatHeaderProps {
   isEmbed?: boolean;
 }
 
-export default function ChatHeader({
+const ChatHeader = React.memo(function ChatHeader({
   models: _models,
   selectedModel: _selectedModel,
   onSelectModel: _onSelectModel,
@@ -573,4 +573,7 @@ export default function ChatHeader({
       </div>
     </>
   );
-}
+});
+
+export default ChatHeader;
+

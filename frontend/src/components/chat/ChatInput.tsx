@@ -433,12 +433,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const handleValueChange = useCallback((val: string) => {
     setIsSmoothResize(true);
     setText(val);
-    onInputChange?.(val);
     if (val.trim() !== "" && !expanded) {
       setIsSmoothResize(false);
       setExpanded(true);
     }
-  }, [onInputChange, expanded]);
+  }, [expanded]);
 
   // Global Keyboard listener — typing anywhere auto-expands and focuses prompt box
   useEffect(() => {
