@@ -3549,7 +3549,22 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 "done": True
             })
 
-            # 2. Prebuilt zero-token card answers removed as requested: all card questions run through live grounded LLM generation
+            # 2. Instant Prebuilt FAQ Card Matcher (Instant preseeded zero-latency response)
+            if not req.is_regeneration:
+                prebuilt_card = get_prebuilt_card_answer(user_query) or get_prebuilt_card_answer(expanded_query)
+                if prebuilt_card:
+                    logger.info(f"[Prebuilt Card] Serving instant prebuilt FAQ card for query: '{user_query}'")
+                    async for item in stream_cached_or_prebuilt(
+                        response_text=prebuilt_card["response"],
+                        sources=prebuilt_card.get("sources", []),
+                        user_query=user_query,
+                        session_id=session_id,
+                        model_id=model_id,
+                        start_time=start_time,
+                        cache_type="prebuilt"
+                    ):
+                        yield item
+                    return
 
 
             if req.is_regeneration:
