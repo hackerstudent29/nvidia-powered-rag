@@ -769,9 +769,9 @@ export function useChat() {
                 is_streaming: true,
                 model: "nvidia/llama-nemotron-rerank-1b-v2",
                 reasoning_steps: [
-                  "1. Activated NVIDIA Nemotron Reranker (nvidia/llama-nemotron-rerank-1b-v2)",
-                  "2. Intercepted Colang 2.0 Guardrails & domain boundary policies",
-                  "3. Fusing dense & sparse retrieval candidates via RRF (k=60)",
+                  "1. Activated Neural Re-ranker & Guardrail Verification",
+                  "2. Auditing previous response accuracy & completeness against official campus records",
+                  "3. Fusing dense Qdrant & sparse BM25 retrieval candidates",
                   "4. Generating high-precision re-evaluated campus response"
                 ],
               }
@@ -788,9 +788,9 @@ export function useChat() {
             model: "nvidia/llama-nemotron-rerank-1b-v2",
             is_streaming: true,
             reasoning_steps: [
-              "1. Activated NVIDIA Nemotron Reranker (nvidia/llama-nemotron-rerank-1b-v2)",
-              "2. Intercepted Colang 2.0 Guardrails & domain boundary policies",
-              "3. Fusing dense & sparse retrieval candidates via RRF (k=60)",
+              "1. Activated Neural Re-ranker & Guardrail Verification",
+              "2. Auditing previous response accuracy & completeness against official campus records",
+              "3. Fusing dense Qdrant & sparse BM25 retrieval candidates",
               "4. Generating high-precision re-evaluated campus response"
             ],
           },
