@@ -186,12 +186,13 @@ def build_dynamic_system_prompt(query: str = "", domain: Optional[CampusDomain] 
 
     modules = []
 
-    # 1. Developer / Creator Identity Module (Injected ONLY when asked about creator/developer/identity)
-    is_dev_q = any(k in q_lower for k in [
-        "who created", "who made", "who built", "who developed", "who programmed",
-        "creator", "developer", "author", "architect", "ram", "rama", "ramanathan",
-        "portfolio", "github", "your background"
-    ])
+    # 1. Developer / Creator Identity Module (Injected ONLY when explicitly asked about bot creator/developer)
+    is_dev_q = bool(re.search(
+        r'\b(who\s+(created|made|built|developed|programmed|coded)|creator|developer|author|architect|portfolio|github|your\s+background)\b'
+        r'|\b(ramanathan|ramzenderum|ramzendrum)\b'
+        r'|\bwho\s+is\s+(ram|rama)\b',
+        q_lower
+    ))
     if is_dev_q:
         modules.append(
             "[CREATOR & DEVELOPER IDENTITY]\n"
