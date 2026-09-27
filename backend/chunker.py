@@ -16,11 +16,11 @@ class Chunk:
     text: str
     section_title: str
     source_file: str
-    category: str = "General — MSAJCEA"
+    category: str = "General — MSAJCE"
     page_number: int = 1
     parent_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    title: str = "MSAJCEA Campus Document"
-    url: str = "https://www.msajce-edu.in"
+    title: str = "MSAJCE Campus Document"
+    url: str = "https://msajce.edu.in"
     department: str = "General"
     document_type: str = "markdown"
     chunk_index: int = 0
@@ -91,8 +91,8 @@ def convert_existing_chunks_to_parent_child():
 
     total_count = len(raw_items)
     for idx, item in enumerate(raw_items):
-        source = item.get("source_file", "msajcea_records.md")
-        sec_title = item.get("section_title") or item.get("topic_title") or "General — MSAJCEA"
+        source = item.get("source_file", "msajce_records.md")
+        sec_title = item.get("section_title") or item.get("topic_title") or "General — MSAJCE"
         
         parent_key = f"{source}_{sec_title}"
         if parent_key not in parent_map:
@@ -106,11 +106,11 @@ def convert_existing_chunks_to_parent_child():
             text=raw_t,
             section_title=sec_title,
             source_file=source,
-            category=item.get("category", "General — MSAJCEA"),
+            category=item.get("category", "General — MSAJCE"),
             page_number=1,
             parent_id=parent_uuid,
-            title=item.get("topic_title") or "MSAJCEA Campus Document",
-            url=item.get("page_url") or "https://www.msajce-edu.in",
+            title=item.get("topic_title") or "MSAJCE Campus Document",
+            url=item.get("page_url") or "https://msajce.edu.in",
             department=item.get("category", "General").capitalize(),
             document_type="markdown",
             chunk_index=idx + 1,

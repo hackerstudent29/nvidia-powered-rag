@@ -164,26 +164,26 @@ const MODELS_LIST = [
 const EFFORTS = ["Low", "Medium", "Max Effort"];
 
 const DISCLAIMER_SENTENCES = [
-  "Lorin AI is grounded on official Mohamed Sathak A.J. College of Engineering and Architecture records.",
+  "Lorin AI is grounded on official Mohamed Sathak A.J. College of Engineering records.",
   "AI models can occasionally make mistakes — answers are not guaranteed to be 100% accurate.",
-  "Please verify critical fee structures, admission criteria, and scholarship policies directly with official MSAJCEA Admission Office.",
+  "Please verify critical fee structures, admission criteria, and scholarship policies directly with official MSAJCE Admission Office.",
   "Lorin AI assumes no legal liability for admission decisions or financial commitments made based solely on generated responses.",
-  "Official college circulars, Anna University regulations, and MSAJCEA administrative notices override AI content."
+  "Official college circulars, Anna University regulations, and MSAJCE administrative notices override AI content."
 ];
 
 const QUICK_CHIPS = [
-  { label: "Admission Guide", query: "What are the admission criteria, pathways, TNEA code, and document requirements for MSAJCEA?" },
-  { label: "Courses Offered", query: "What are all the 12 UG & 2 PG degree courses, intake capacity, and departments offered at MSAJCEA?" },
-  { label: "Placements", query: "Who are the top recruiters, placement statistics, and highest salary package at MSAJCEA?" },
-  { label: "Scholarships", query: "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCEA?" },
-  { label: "Boys Hostel", query: "What are the hostel facilities, room capacity, mess menu, and rules for the Boys Hostel at MSAJCEA?" },
-  { label: "Girls Hostel", query: "What safety features, capacity, room amenities, and location details apply to the Girls Hostel at MSAJCEA?" },
-  { label: "Bus Routes", query: "What are the college bus routes, pickup points, timings, and transport coverage for MSAJCEA?" },
-  { label: "Mess & Canteen", query: "What is the mess food menu, dining hall capacity, canteen facilities, and timings at MSAJCEA?" },
-  { label: "Central Library", query: "Tell me about the Central Library facilities, book collection, digital library, and working hours at MSAJCEA." },
-  { label: "Lab Facilities", query: "What engineering lab facilities, computer centers, and specialized workshops are available at MSAJCEA?" },
-  { label: "Campus Life", query: "What sports facilities, athletic infrastructure, and student clubs are active at MSAJCEA?" },
-  { label: "Contact Info", query: "What is the official contact info, phone numbers, email addresses, and location map for MSAJCEA?" },
+  { label: "Admission Guide", query: "What are the admission criteria, pathways, TNEA code, and document requirements for MSAJCE?" },
+  { label: "Courses Offered", query: "What are all the 12 UG & 2 PG degree courses, intake capacity, and departments offered at MSAJCE?" },
+  { label: "Placements", query: "Who are the top recruiters, placement statistics, and highest salary package at MSAJCE?" },
+  { label: "Scholarships", query: "What scholarships, including government aid, 7.5% quota, and merit schemes, are available at MSAJCE?" },
+  { label: "Boys Hostel", query: "What are the hostel facilities, room capacity, mess menu, and rules for the Boys Hostel at MSAJCE?" },
+  { label: "Girls Hostel", query: "What safety features, capacity, room amenities, and location details apply to the Girls Hostel at MSAJCE?" },
+  { label: "Bus Routes", query: "What are the college bus routes, pickup points, timings, and transport coverage for MSAJCE?" },
+  { label: "Mess & Canteen", query: "What is the mess food menu, dining hall capacity, canteen facilities, and timings at MSAJCE?" },
+  { label: "Central Library", query: "Tell me about the Central Library facilities, book collection, digital library, and working hours at MSAJCE." },
+  { label: "Lab Facilities", query: "What engineering lab facilities, computer centers, and specialized workshops are available at MSAJCE?" },
+  { label: "Campus Life", query: "What sports facilities, athletic infrastructure, and student clubs are active at MSAJCE?" },
+  { label: "Contact Info", query: "What is the official contact info, phone numbers, email addresses, and location map for MSAJCE?" },
 ];
 
 export interface VoiceOption {
@@ -1190,7 +1190,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   setIsVoiceMenuOpen(false);
                 }
               }}
-              placeholder="Ask anything about MSAJCEA..."
+              placeholder="Ask anything about MSAJCE..."
               style={{
                 transition: isSmoothResize
                   ? "height 0.15s ease-out"

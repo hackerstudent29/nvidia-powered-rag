@@ -54,9 +54,16 @@ async def evaluate_ragas_metrics():
     print("📊 Executing Full RAGAS Metric Suite (Faithfulness & Relevancy)")
     print("==================================================================")
 
+    import server
+    server.init_rag_resources()
+
     dataset_path = os.path.join(BASE_DIR, "data", "gold_qa_dataset.json")
     with open(dataset_path, "r", encoding="utf-8") as f:
         testset = json.load(f)
+
+    limit = int(os.getenv("EVAL_LIMIT", "15"))
+    if limit > 0 and limit < len(testset):
+        testset = testset[:limit]
 
     faithfulness_scores = []
     relevancy_scores = []

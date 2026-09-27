@@ -170,14 +170,18 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student assistant for Mo
    - Format every factual property or attribute on its own dedicated line as a crisp bullet item: `- **Property**: Value`.
    - Every single bullet point MUST start on a new line. NEVER combine multiple fields or categories onto one line.
    - Separate distinct categories or logical sections with clean markdown subheadings (### Heading Title).
-3. Structured Tables (GFM Markdown):
+3. List & Enumeration Queries (e.g. courses, degree programmes, departments, facilities, amenities, clubs, requirements):
+   - EVERY SINGLE ITEM MUST START ON ITS OWN DEDICATED LINE with a bullet marker (`- Item Name`) or number (`1. Item Name`).
+   - STRICTLY NEVER join, concatenate, or separate list items horizontally using hyphens, dashes, commas, or semicolons on a single line (e.g. NEVER write '- CSE - IT - AI&DS' on one line).
+   - For course lists, provide either a clean vertical bulleted list (one course per row) or a structured GFM Markdown table.
+4. Structured Tables (GFM Markdown):
    - Whenever presenting multi-field data, comparison matrices, schedules, stop timings, fee breakdowns, or course lists, ALWAYS use GitHub Flavored Markdown (GFM) tables (`| Column | Column |`) with dashed dividers (`| :--- | :--- |`).
    - Every table row MUST be on its own line.
-4. Clean Typography & Zero Emojis:
+5. Clean Typography & Zero Emojis:
    - Strictly ZERO emojis anywhere in the response — no icons, sparkles, checkmarks, or colored symbols in headings, bullets, or tables.
    - Headings must never have trailing periods (e.g. write `### CAMPUS FACILITIES`, never `### CAMPUS FACILITIES.`).
    - Never output isolated bullet markers or stray symbols on their own line.
-5. Anti-Wall-of-Text:
+6. Anti-Wall-of-Text:
    - Strictly avoid dense narrative essays, paragraph dumps, or unbroken text walls for simple factual answers. Keep responses structured, scannable, and clean.
 
 [STRICT GROUNDING & VERIFIED RECORDS]
@@ -239,13 +243,49 @@ def structure_markdown_for_mobile(text: str) -> str:
         if re.match(r'^\s*[\*\-•–—+]\s+', line):
             line = re.sub(r'^\s*[\*\-•–—+]\s+', '- ', line)
 
-        # 1. Break inline dashed/bullet markers only if preceded by non-bullet text
+        # 1. Break inline dashed/bullet lists with balanced parenthesis preservation
+        if re.search(r'[A-Za-z0-9\)]\s+[-–—•]\s+[A-Z0-9\(]', line):
+            raw_parts = re.split(r'\s+[-–—•]\s+', line)
+            parts = []
+            curr_acc = ""
+            for raw_p in raw_parts:
+                if not curr_acc:
+                    curr_acc = raw_p
+                else:
+                    if curr_acc.count('(') > curr_acc.count(')'):
+                        curr_acc += " - " + raw_p
+                    else:
+                        parts.append(curr_acc)
+                        curr_acc = raw_p
+            if curr_acc:
+                parts.append(curr_acc)
+
+            if len(parts) >= 3 or (len(parts) >= 2 and (line.strip().startswith(('-', '*', '•')) or any('(' in p or len(p) > 20 for p in parts))):
+                for idx, p in enumerate(parts):
+                    clean_p = p.strip()
+                    if not clean_p:
+                        continue
+                    if idx == 0 and ':' in clean_p and not re.match(r'^[\*\-•–—+]\s+', clean_p):
+                        prefix, item_part = clean_p.rsplit(':', 1)
+                        if prefix.strip():
+                            processed_lines.append(prefix.strip() + ':')
+                        clean_p = item_part.strip()
+                    if clean_p:
+                        if clean_p.endswith(':') or clean_p.startswith('#'):
+                            processed_lines.append(clean_p)
+                        else:
+                            if not re.match(r'^[\*\-•–—+]\s+', clean_p):
+                                clean_p = f"- {clean_p}"
+                            processed_lines.append(clean_p)
+                continue
+
+        # 2. Break inline dashed/bullet markers only if preceded by non-bullet text
         line = re.sub(r'([^\n\*\-•–—+\s])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)', r'\1\n- \2', line)
 
-        # 2. Break consecutive inline bold key-value pairs only if preceded by non-bullet text
+        # 3. Break consecutive inline bold key-value pairs only if preceded by non-bullet text
         line = re.sub(r'([^\n\*\-•–—+\s])\s{2,}(\*\*[A-Za-z0-9\s/&\-.]{2,35}(?::\*\*|\*\*:\s*))', r'\1\n- \2', line)
 
-        # 3. Break consecutive inline feature headers
+        # 4. Break consecutive inline feature headers
         line = re.sub(r'([^\n\*\-•–—+\s])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s/&\-.]{2,35}\*\*\s*[\—\-–])\s*', r'\1\n- \2 ', line)
 
         processed_lines.append(line)
@@ -877,16 +917,16 @@ class DBContext:
 def tokenize_text(text: str) -> List[str]:
     return re.findall(r'\b[a-zA-Z0-9_]+\b', text.lower())
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+def init_rag_resources():
+    """Initializes Qdrant client, BM25 index, resource catalog, entities, and route finder."""
     global qdrant_client, bm25_index, bm25_corpus, http_client, db_pool
-    print("[INIT] Initializing Lorin AI Enterprise Server...")
+    print("[INIT] Initializing Lorin AI RAG resources...")
 
-    # 1. Async HTTP client
-    http_client = httpx.AsyncClient(timeout=60.0)
+    if http_client is None:
+        http_client = httpx.AsyncClient(timeout=60.0)
 
-    # 2. Neon DB Connection Pool
-    if DATABASE_URL:
+    # 1. Neon DB Connection Pool
+    if DATABASE_URL and db_pool is None:
         try:
             db_pool = ThreadedConnectionPool(minconn=1, maxconn=10, dsn=DATABASE_URL, sslmode="require")
             with DBContext() as conn:
@@ -899,8 +939,8 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             print(f"[WARN] Neon Pool init warning: {e}")
 
-    # 3. Qdrant Client
-    if QDRANT_URL and QDRANT_API_KEY:
+    # 2. Qdrant Client
+    if QDRANT_URL and QDRANT_API_KEY and qdrant_client is None:
         try:
             qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=15)
             collection_info = qdrant_client.get_collection(COLLECTION_NAME)
@@ -908,40 +948,47 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             print(f"[WARN] Qdrant Connection Error: {e}")
 
-    # 4. Load BM25 Lexical Index
-    bm25_path = os.path.join(os.path.dirname(__file__), "data", "bm25_chunks.json")
-    if os.path.exists(bm25_path):
-        try:
-            with open(bm25_path, "r", encoding="utf-8") as f:
-                raw_corpus = json.load(f)
-            
-            valid_corpus = []
-            tokenized_corpus = []
-            for doc in raw_corpus:
-                text_content = (doc.get("text") or doc.get("content") or "") + " " + (doc.get("topic_title") or doc.get("title") or "")
-                tokens = tokenize_text(text_content)
-                if tokens:
-                    valid_corpus.append(doc)
-                    tokenized_corpus.append(tokens)
+    # 3. Load BM25 Lexical Index
+    if bm25_index is None:
+        bm25_path = os.path.join(os.path.dirname(__file__), "data", "bm25_chunks.json")
+        if os.path.exists(bm25_path):
+            try:
+                with open(bm25_path, "r", encoding="utf-8") as f:
+                    raw_corpus = json.load(f)
+                
+                valid_corpus = []
+                tokenized_corpus = []
+                for doc in raw_corpus:
+                    text_content = (doc.get("text") or doc.get("content") or "") + " " + (doc.get("topic_title") or doc.get("title") or "")
+                    tokens = tokenize_text(text_content)
+                    if tokens:
+                        valid_corpus.append(doc)
+                        tokenized_corpus.append(tokens)
 
-            if tokenized_corpus:
-                bm25_corpus = valid_corpus
-                bm25_index = BM25Okapi(tokenized_corpus)
-                print(f"[OK] BM25 Sparse Index initialized with {len(bm25_corpus)} valid chunks!")
-        except Exception as e:
-            print(f"[WARN] BM25 Index Error: {e}")
-    else:
-        print(f"[WARN] BM25 chunks file not found at {bm25_path}")
+                if tokenized_corpus:
+                    bm25_corpus = valid_corpus
+                    bm25_index = BM25Okapi(tokenized_corpus)
+                    print(f"[OK] BM25 Sparse Index initialized with {len(bm25_corpus)} valid chunks!")
+            except Exception as e:
+                print(f"[WARN] BM25 Index Error: {e}")
+        else:
+            print(f"[WARN] BM25 chunks file not found at {bm25_path}")
 
-    # 5. Load Verified Resource Catalog
+    # 4. Load Verified Resource Catalog
     load_resource_catalog()
 
-    # 6. Load Knowledge Entities Index
+    # 5. Load Knowledge Entities Index
     load_entities_index()
 
-    # 7. Load Transport RouteFinder Engine
+    # 6. Load Transport RouteFinder Engine
     load_route_finder()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global http_client, db_pool
+    print("[INIT] Initializing Lorin AI Enterprise Server...")
+    http_client = httpx.AsyncClient(timeout=60.0)
+    init_rag_resources()
     yield
 
     if http_client:
@@ -2769,10 +2816,10 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
                 payload = hit.payload or {}
                 chunk_map[chunk_id] = {
                     "chunk_id": chunk_id,
-                    "title": payload.get("topic_title") or payload.get("title") or "MSAJCEA Official Record",
+                    "title": payload.get("topic_title") or payload.get("title") or "MSAJCE Official Record",
                     "source_file": payload.get("source_file", ""),
                     "category": payload.get("category", "general"),
-                    "page_url": payload.get("page_url", "https://msajce-edu.in"),
+                    "page_url": payload.get("page_url", "https://msajce.edu.in"),
                     "content": payload.get("text") or payload.get("content", ""),
                     "dense_score": hit.score
                 }
@@ -2796,10 +2843,10 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
                 if chunk_id not in chunk_map:
                     chunk_map[chunk_id] = {
                         "chunk_id": chunk_id,
-                        "title": doc.get("topic_title") or doc.get("title") or "MSAJCEA Official Record",
+                        "title": doc.get("topic_title") or doc.get("title") or "MSAJCE Official Record",
                         "source_file": doc.get("source_file", ""),
                         "category": doc.get("category", "general"),
-                        "page_url": doc.get("page_url", "https://msajce-edu.in"),
+                        "page_url": doc.get("page_url", "https://msajce.edu.in"),
                         "content": doc.get("text") or doc.get("content", ""),
                         "sparse_score": float(score)
                     }

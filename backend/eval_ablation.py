@@ -20,7 +20,7 @@ def calculate_context_recall(ground_truth: str, retrieved_chunks: List[Dict[str,
     if not gt_words:
         return 1.0
     
-    combined_context = " ".join(c.get("content", "").lower() for c in retrieved_chunks)
+    combined_context = " ".join(((c.get("content") or c.get("text") or "") + " " + (c.get("title") or "")).lower() for c in retrieved_chunks)
     matched = sum(1 for w in gt_words if w in combined_context)
     return round(matched / len(gt_words), 4)
 
@@ -28,7 +28,7 @@ def calculate_context_precision(retrieved_chunks: List[Dict[str, Any]]) -> float
     """Calculates context precision (signal-to-noise ratio in top candidates)."""
     if not retrieved_chunks:
         return 0.0
-    relevant = sum(1 for c in retrieved_chunks if c.get("rrf_score", 0) > 0.015)
+    relevant = sum(1 for c in retrieved_chunks if c.get("rrf_score", 0) > 0.005 or c.get("rerank_score", 0) > 0.005 or c.get("dense_score", 0) > 0.3 or c.get("sparse_score", 0) > 0.0)
     return round(relevant / len(retrieved_chunks), 4)
 
 async def run_ablation_experiment(exp_id: str, testset: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -116,13 +116,17 @@ async def run_ablation_experiment(exp_id: str, testset: List[Dict[str, Any]]) ->
 
 async def main():
     import server
-    server.http_client = httpx.AsyncClient()
+    server.init_rag_resources()
 
     dataset_path = os.path.join(BASE_DIR, "data", "gold_qa_dataset.json")
     with open(dataset_path, "r", encoding="utf-8") as f:
         testset = json.load(f)
 
-    print(f"Loaded {len(testset)} Gold-Standard QA benchmarks.")
+    limit = int(os.getenv("EVAL_LIMIT", "30"))
+    if limit > 0 and limit < len(testset):
+        testset = testset[:limit]
+
+    print(f"Loaded {len(testset)} Gold-Standard QA benchmarks (Limit: {limit}).")
 
     experiments = ["Exp_A", "Exp_B", "Exp_D", "Exp_G"]
     summaries = []

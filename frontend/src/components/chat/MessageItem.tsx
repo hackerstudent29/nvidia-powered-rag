@@ -199,13 +199,62 @@ function sanitizeMarkdownContent(content: string): string {
       line = line.replace(/^\s*[\*\-•–—+]\s+/, "- ");
     }
 
-    // A. Break inline dashed/bullet markers only if preceded by non-bullet text
+    // A. Break inline dashed/bullet lists with balanced parenthesis preservation
+    if (/[A-Za-z0-9\)]\s+[-–—•]\s+[A-Z0-9\(]/.test(line)) {
+      const rawParts = line.split(/\s+[-–—•]\s+/);
+      const parts: string[] = [];
+      let currAcc = "";
+      for (const rawP of rawParts) {
+        if (!currAcc) {
+          currAcc = rawP;
+        } else {
+          const openCount = (currAcc.match(/\(/g) || []).length;
+          const closeCount = (currAcc.match(/\)/g) || []).length;
+          if (openCount > closeCount) {
+            currAcc += ` - ${rawP}`;
+          } else {
+            parts.push(currAcc);
+            currAcc = rawP;
+          }
+        }
+      }
+      if (currAcc) {
+        parts.push(currAcc);
+      }
+
+      if (parts.length >= 3 || (parts.length >= 2 && (/^\s*[\*\-•–—+]\s+/.test(line) || parts.some(p => p.includes("(") || p.length > 20)))) {
+        for (let idx = 0; idx < parts.length; idx++) {
+          let cleanP = parts[idx].trim();
+          if (!cleanP) continue;
+          if (idx === 0 && cleanP.includes(":") && !/^\s*[\*\-•–—+]\s+/.test(cleanP)) {
+            const lastColon = cleanP.lastIndexOf(":");
+            const prefix = cleanP.substring(0, lastColon).trim();
+            const itemPart = cleanP.substring(lastColon + 1).trim();
+            if (prefix) processedLines.push(prefix + ":");
+            cleanP = itemPart;
+          }
+          if (cleanP) {
+            if (cleanP.endsWith(":") || cleanP.startsWith("#")) {
+              processedLines.push(cleanP);
+            } else {
+              if (!/^\s*[\*\-•–—+]\s+/.test(cleanP)) {
+                cleanP = `- ${cleanP}`;
+              }
+              processedLines.push(cleanP);
+            }
+          }
+        }
+        continue;
+      }
+    }
+
+    // B. Break inline dashed/bullet markers only if preceded by non-bullet text
     line = line.replace(/([^\n\*\-•–—+\s])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)/g, (_m, p1, p2) => `${p1}\n- ${p2}`);
 
-    // B. Break consecutive inline bold key-value pairs only if preceded by non-bullet text
+    // C. Break consecutive inline bold key-value pairs only if preceded by non-bullet text
     line = line.replace(/([^\n\*\-•–—+\s])\s{2,}(\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}(?::\*\*|\*\*:\s*))/g, (_m, p1, p2) => `${p1}\n- ${p2}`);
 
-    // C. Break consecutive inline feature headers
+    // D. Break consecutive inline feature headers
     line = line.replace(/([^\n\*\-•–—+\s])\s*(([🎓💰🏫📝✨🔥📌⚡💡•]\s*)?\*\*[A-Za-z0-9\s\/\&\-\(\)\.]{2,35}\*\*\s*[\—\-–])\s*/g, "$1\n- $2 ");
 
     processedLines.push(line);
@@ -1387,7 +1436,7 @@ const MessageItem = React.memo(function MessageItem({
 
   const handleThumbs = async (rating: number) => {
     setFeedbackRating(rating);
-    const query = userQuery || "MSAJCEA Campus Inquiry";
+    const query = userQuery || "MSAJCE Campus Inquiry";
     if (rating > 0) {
       setIsLiked(true);
       setIsDisliked(false);
@@ -1486,7 +1535,7 @@ const MessageItem = React.memo(function MessageItem({
         <div className="flex items-center gap-1.5">
           <span className="text-xs sm:text-sm font-bold text-ink">Lorin AI</span>
           <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/50 px-1.5 py-0.2 text-[9px] font-semibold text-[#2E6B5E] dark:text-[#E1EED7]">
-            MSAJCEA
+            MSAJCE
           </span>
         </div>
       </div>

@@ -75,7 +75,7 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
 
     # 1. Fast Local Jailbreak Pattern Pre-check (0ms)
     if is_jailbreak_attempt(q_lower):
-        return False, "I cannot comply with that request. I strictly operate under official MSAJCEA campus guidelines."
+        return False, "I cannot comply with that request. I strictly operate under official MSAJCE campus guidelines."
 
     # 2. Fast-path Whitelist: Benign greetings and conversational inquiries (0ms)
     if is_conversational_greeting(q_lower):
@@ -91,8 +91,8 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
     for pattern in OFF_TOPIC_PATTERNS:
         if re.search(pattern, q_lower):
             # Only allow if explicitly inquiring about college context
-            if not any(w in q_lower for w in ["msajce", "msajcea", "mohamed sathak"]):
-                return False, "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA). I can only assist with college admissions, departments, academics, placements, fees, and campus facilities."
+            if not any(w in q_lower for w in ["msajce", "mohamed sathak"]):
+                return False, "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I can only assist with college admissions, departments, academics, placements, fees, and campus facilities."
 
     # 5. Fast Domain & Knowledge Entity Whitelist (0ms)
     # If query contains any verified campus term or knowledge entity alias, permit immediately
@@ -104,7 +104,7 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
         try:
             jev_res = jev_evaluator.evaluate_query_sync(user_query, timeout=3.5)
             if not jev_res.is_safe:
-                return False, jev_res.refusal_reason or "I cannot comply with that request. I strictly operate under official MSAJCEA campus guidelines."
+                return False, jev_res.refusal_reason or "I cannot comply with that request. I strictly operate under official MSAJCE campus guidelines."
 
             taxonomy = get_all_categories()
             matched_meta = taxonomy.get(jev_res.category)
@@ -119,7 +119,7 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
                     refusal = (
                         (matched_meta.refusal_message if matched_meta else None)
                         or jev_res.refusal_reason
-                        or "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA). I can only assist with college admissions, departments, academics, placements, fees, and campus facilities."
+                        or "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I can only assist with college admissions, departments, academics, placements, fees, and campus facilities."
                     )
                     return False, refusal
         except Exception:

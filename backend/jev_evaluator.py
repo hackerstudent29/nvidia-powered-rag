@@ -56,27 +56,29 @@ class JevEvaluator:
     Client for typesafe-ai/jev running on Vercel AI Gateway.
     Executes typed, probabilistic System One decisions:
       - Prompt injection & safety assessment
-      - Domain boundary verification (MSAJCEA campus context)
+      - Domain boundary verification (MSAJCE campus context)
       - Category & department classification
       - Live web search necessity detection
     """
+    _globally_disabled = False
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None):
         self.api_key = api_key or AI_GATEWAY_API_KEY
         self.backup_api_key = AI_GATEWAY_API_KEY_BACKUP
         self.base_url = (base_url or VERCEL_AI_GATEWAY_URL).rstrip("/")
         self.evaluate_url = f"{self.base_url}/evaluate"
-        self._enabled = bool(self.api_key)
+        enable_env = os.getenv("ENABLE_JEV_GATEWAY", "true").lower() in ("true", "1", "yes")
+        self._enabled = bool(self.api_key) and enable_env and not JevEvaluator._globally_disabled
 
     @property
     def is_enabled(self) -> bool:
-        return self._enabled
+        return self._enabled and not JevEvaluator._globally_disabled
 
     def evaluate_query_sync(self, user_query: str, timeout: float = 6.0) -> JevEvaluationResult:
         """
         Synchronous evaluation of user prompt using typesafe-ai/jev.
         """
-        if not self._enabled:
+        if not self.is_enabled:
             return JevEvaluationResult(
                 is_safe=True,
                 safe_probability=1.0,
@@ -175,9 +177,9 @@ class JevEvaluator:
 
                         refusal = None
                         if not is_safe:
-                            refusal = "I cannot comply with that request. I strictly operate under official MSAJCEA campus guidelines."
+                            refusal = "I cannot comply with that request. I strictly operate under official MSAJCE campus guidelines."
                         elif not is_campus and cat_choice == "off_topic":
-                            refusal = "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA). I can only assist with college admissions, departments, academics, placements, and campus facilities."
+                            refusal = "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I can only assist with college admissions, departments, academics, placements, and campus facilities."
 
                         return JevEvaluationResult(
                             is_safe=is_safe,
@@ -192,6 +194,10 @@ class JevEvaluator:
                         )
                     else:
                         logger.warning(f"[Jev] Evaluate HTTP {resp.status_code}: {resp.text[:120]}")
+                        if resp.status_code in (401, 403, 404):
+                            JevEvaluator._globally_disabled = True
+                            self._enabled = False
+                            break
             except Exception as e:
                 logger.warning(f"[Jev] Failed attempt with key: {e}")
 
@@ -308,9 +314,9 @@ class JevEvaluator:
 
                         refusal = None
                         if not is_safe:
-                            refusal = "I cannot comply with that request. I strictly operate under official MSAJCEA campus guidelines."
+                            refusal = "I cannot comply with that request. I strictly operate under official MSAJCE campus guidelines."
                         elif not is_campus and cat_choice == "off_topic":
-                            refusal = "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA). I can only assist with college admissions, departments, academics, placements, and campus facilities."
+                            refusal = "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I can only assist with college admissions, departments, academics, placements, and campus facilities."
 
                         return JevEvaluationResult(
                             is_safe=is_safe,
@@ -325,6 +331,10 @@ class JevEvaluator:
                         )
                     else:
                         logger.warning(f"[JevAsync] Evaluate HTTP {resp.status_code}: {resp.text[:120]}")
+                        if resp.status_code in (401, 403, 404):
+                            JevEvaluator._globally_disabled = True
+                            self._enabled = False
+                            break
             except Exception as e:
                 logger.warning(f"[JevAsync] Failed attempt with key: {e}")
 
@@ -343,7 +353,7 @@ class JevEvaluator:
         Uses typesafe-ai/jev to evaluate whether the current user query is a continuation
         or a new topic shift from the prior turn.
         """
-        if not self._enabled or not previous_context:
+        if not self.is_enabled or not previous_context:
             return {"is_continuation": False, "probability": 0.0}
 
         payload = {
@@ -370,6 +380,10 @@ class JevEvaluator:
                         data = resp.json()
                         cont_prob = float(data.get("answers", {}).get("is_continuation", {}).get("probability", 0.0))
                         return {"is_continuation": cont_prob >= 0.6, "probability": cont_prob}
+                    elif resp.status_code in (401, 403, 404):
+                        JevEvaluator._globally_disabled = True
+                        self._enabled = False
+                        break
             except Exception:
                 pass
         return {"is_continuation": False, "probability": 0.0}
@@ -378,7 +392,7 @@ class JevEvaluator:
         """
         Uses typesafe-ai/jev as a Corrective RAG (CRAG) document relevance evaluator.
         """
-        if not self._enabled:
+        if not self.is_enabled:
             return True
 
         payload = {
@@ -405,6 +419,10 @@ class JevEvaluator:
                         data = resp.json()
                         rel_prob = float(data.get("answers", {}).get("is_relevant", {}).get("probability", 1.0))
                         return rel_prob >= 0.45
+                    elif resp.status_code in (401, 403, 404):
+                        JevEvaluator._globally_disabled = True
+                        self._enabled = False
+                        break
             except Exception:
                 pass
         return True
