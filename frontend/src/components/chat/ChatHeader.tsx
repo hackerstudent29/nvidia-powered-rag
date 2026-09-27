@@ -15,6 +15,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { JellyBlobMascot } from "../ui/JellyBlobMascot";
 
 interface ChatHeaderProps {
   models: ModelOption[];
@@ -234,12 +235,12 @@ export default function ChatHeader({
         <div className="flex items-center gap-2.5 shrink-0">
           <Tooltip content="Start New Chat" position="bottom">
             <motion.div
-              whileHover={{ scale: 1.06 }}
+              whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               onClick={onNewChat}
-              className="flex w-9 h-9 size-9 max-w-[36px] max-h-[36px] items-center justify-center rounded-full overflow-hidden shadow-sm border border-black/10 dark:border-white/20 cursor-pointer shrink-0 bg-black ring-1 ring-accent/30 p-0.5"
+              className="flex items-center justify-center cursor-pointer shrink-0"
             >
-              <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full block pointer-events-none" />
+              <JellyBlobMascot emotion={_isStreaming ? "hmm" : "idle"} size={36} interactive={true} />
             </motion.div>
           </Tooltip>
 

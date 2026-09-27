@@ -10,6 +10,7 @@ import ResourceCards from "./ResourceCards";
 import TokenCostBadge, { TokenCostPanel } from "./TokenCostBadge";
 import { audioManager } from "../../utils/audioManager";
 import { Tooltip } from "../Tooltip";
+import { JellyBlobMascot } from "../ui/JellyBlobMascot";
 
 import { cn } from "../../lib/utils";
 
@@ -1264,8 +1265,20 @@ const MessageItem = React.memo(function MessageItem({
   return (
     <div ref={messageRef} className="flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
       <div className="flex items-center gap-2 mb-2 shrink-0">
-        <div className="size-6 rounded-full overflow-hidden border border-black/10 dark:border-white/20 shadow-sm shrink-0 bg-black flex items-center justify-center ring-1 ring-accent/20">
-          <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover" />
+        <div className="shrink-0 flex items-center justify-center">
+          <JellyBlobMascot
+            emotion={
+              message.is_streaming
+                ? "hmm"
+                : feedbackRating === -1
+                ? "sad"
+                : feedbackRating === 1
+                ? "love"
+                : "happy"
+            }
+            size={28}
+            interactive={true}
+          />
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-ink">Lorin AI</span>

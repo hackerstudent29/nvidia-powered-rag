@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, FC } from "react";
 import { X, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EyeTracking } from "../ui/EyeTracking";
+import { JellyBlobMascot, JellyEmotion } from "../ui/JellyBlobMascot";
 
 const MINIMAL_MESSAGES = [
   "Ask Lorin AI",
@@ -148,18 +149,8 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
                     transition={{ duration: 0.2 }}
                     className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-canvas/95 backdrop-blur-md text-ink"
                   >
-                    <div className="relative flex items-center justify-center p-4 rounded-2xl bg-accent/10 border border-accent/20 text-accent">
-                      <EyeTracking
-                        eyeSize={36}
-                        gap={10}
-                        variant={isDark ? "cyber" : "cartoon"}
-                        irisColor={isDark ? "#00d4ff" : "#2E6B5E"}
-                        irisColorSecondary={isDark ? "#2E6B5E" : "#10b981"}
-                        scleraColor={isDark ? "#0a0a1a" : "#FFFFFF"}
-                        pupilColor={isDark ? "#001122" : "#0F172A"}
-                        pupilRange={0.75}
-                        reactivePupil={true}
-                      />
+                    <div className="relative flex items-center justify-center p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                      <JellyBlobMascot emotion="hmm" size={64} />
                       <Sparkles className="w-4 h-4 text-amber-400 absolute -top-1 -right-1 animate-spin" />
                     </div>
                     <span className="text-xs font-heading uppercase tracking-wider text-ink-3">
@@ -181,14 +172,14 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Bottom Sticky Mascot & Interactive Eyes Toggle */}
+      {/* Bottom Sticky Mascot & Interactive Launcher */}
       <div 
         data-chatbot-launcher="true"
         className="relative group cursor-pointer flex flex-col items-center"
       >
         {/* Floating Minimal Speech Bubble */}
         {!isOpen && (
-          <div className="absolute bottom-[calc(100%-0.4rem)] mb-0.5 flex flex-col items-center pointer-events-none transition-all duration-300 opacity-95 group-hover:opacity-100 group-hover:-translate-y-1.5">
+          <div className="absolute bottom-[calc(100%-0.4rem)] mb-0.5 flex flex-col items-center pointer-events-none transition-all duration-300 opacity-95 group-hover:opacity-100 group-hover:-translate-y-1.5 z-20">
             <motion.div
               key={textMessage}
               initial={{ opacity: 0, y: 4, scale: 0.95 }}
@@ -207,11 +198,11 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
           </div>
         )}
 
-        {/* Interactive Bot Toggle Button (Peeking Mascot when closed, Bot-like Closing Visor when open) */}
+        {/* Interactive Jelly Mascot Button */}
         <motion.button
           type="button"
           onClick={() => setIsOpen()}
-          whileHover={{ y: -3, scale: 1.05 }}
+          whileHover={{ y: -4, scale: 1.06 }}
           whileTap={{ scale: 0.92 }}
           transition={{ type: "spring", stiffness: 450, damping: 22 }}
           className="relative block focus:outline-none cursor-pointer"
@@ -254,20 +245,9 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.75, y: 8 }}
                 transition={{ type: "spring", stiffness: 400, damping: 24 }}
-                className="relative px-3.5 pt-2 pb-5 rounded-t-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-[#1E1E24] dark:via-[#18181B] dark:to-[#0F0F12] border-t-2 border-x-2 border-[#2E6B5E]/40 dark:border-[#10b981]/50 shadow-[0_-6px_22px_rgba(46,107,94,0.18)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.6)] backdrop-blur-md flex items-center justify-center transition-colors"
+                className="relative px-3 pt-1 pb-3 rounded-t-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-[#1E1E24] dark:via-[#18181B] dark:to-[#0F0F12] border-t-2 border-x-2 border-[#2E6B5E]/40 dark:border-[#10b981]/50 shadow-[0_-6px_22px_rgba(46,107,94,0.18)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.6)] backdrop-blur-md flex items-center justify-center transition-colors"
               >
-                <EyeTracking
-                  eyeSize={28}
-                  gap={8}
-                  variant={isDark ? "cyber" : "cartoon"}
-                  irisColor={isDark ? "#00d4ff" : "#2E6B5E"}
-                  irisColorSecondary={isDark ? "#2E6B5E" : "#10b981"}
-                  scleraColor={isDark ? "#0a0a1a" : "#FFFFFF"}
-                  pupilColor={isDark ? "#001122" : "#0F172A"}
-                  pupilRange={0.75}
-                  reactivePupil={true}
-                  blinkInterval={3500}
-                />
+                <JellyBlobMascot emotion="wave" size={44} interactive={true} />
               </motion.div>
             )}
           </AnimatePresence>

@@ -14,6 +14,7 @@ import {
   Phone,
   Sparkles,
 } from "lucide-react";
+import { JellyBlobMascot } from "../ui/JellyBlobMascot";
 
 interface HeroGreetingProps {
   onSelectPrompt: (prompt: string) => void;
@@ -149,10 +150,10 @@ export default function HeroGreeting({
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="relative mb-2.5 sm:mb-3.5 flex items-center justify-center z-10"
+          className="relative mb-2.5 sm:mb-3.5 flex flex-col items-center justify-center z-10 group cursor-pointer"
         >
-          <div className="size-14 sm:size-20 rounded-full overflow-hidden border-2 border-white/80 dark:border-white/20 shadow-xl bg-black p-0.5 ring-2 ring-accent/30">
-            <img src="/lorin-pic.png" alt="Lorin AI" className="w-full h-full object-cover rounded-full" />
+          <div className="p-1 rounded-3xl bg-gradient-to-b from-white/90 to-emerald-500/10 dark:from-white/10 dark:to-emerald-500/20 shadow-xl border border-emerald-500/20 backdrop-blur-md">
+            <JellyBlobMascot emotion="curious" size={72} interactive={true} showSubtitle={true} />
           </div>
         </motion.div>
 
