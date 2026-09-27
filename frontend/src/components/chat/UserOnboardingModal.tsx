@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, Calendar, HelpCircle, ArrowRight, Sparkles, X, ChevronDown, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export interface UserProfile {
   name: string;
@@ -9,14 +8,14 @@ export interface UserProfile {
 }
 
 export const CATEGORY_OPTIONS = [
-  { value: "College Enquiry", label: "🏫 College Enquiry", desc: "General info, campus location & overview" },
-  { value: "Admission Related", label: "🎓 Admission & Cutoffs", desc: "TNEA cutoff scores, counseling & application" },
-  { value: "MSAJCE Student", label: "🎓 Current MSAJCE Student", desc: "Campus help, exams, syllabus & department info" },
-  { value: "Fees & Scholarships", label: "💰 Fees & Scholarships", desc: "Tuition fees, 7.5% quota & financial aid" },
-  { value: "Placements & Career", label: "💼 Placements & Career", desc: "Top recruiters, salary packages & training" },
-  { value: "Hostel & Facilities", label: "🏢 Hostel & Campus Facilities", desc: "Accommodation, transport, labs & sports" },
-  { value: "Parent / Guardian", label: "👨‍👩‍👧 Parent / Guardian Inquiry", desc: "Safety, discipline, fees & campus infrastructure" },
-  { value: "Casual Chat", label: "💬 Casual Chat / Overview", desc: "Exploring Lorin AI features & general QA" }
+  { value: "College Enquiry", label: "College Enquiry", desc: "General info, campus location & overview" },
+  { value: "Admission Related", label: "Admission & Cutoffs", desc: "TNEA cutoff scores, counseling & application" },
+  { value: "MSAJCE Student", label: "Current MSAJCE Student", desc: "Campus help, exams, syllabus & department info" },
+  { value: "Fees & Scholarships", label: "Fees & Scholarships", desc: "Tuition fees, 7.5% quota & financial aid" },
+  { value: "Placements & Career", label: "Placements & Career", desc: "Top recruiters, salary packages & training" },
+  { value: "Hostel & Facilities", label: "Hostel & Campus Facilities", desc: "Accommodation, transport, labs & sports" },
+  { value: "Parent / Guardian", label: "Parent / Guardian Inquiry", desc: "Safety, discipline, fees & campus infrastructure" },
+  { value: "Casual Chat", label: "Casual Chat / Overview", desc: "Exploring Lorin AI features & general QA" }
 ];
 
 interface UserOnboardingModalProps {
@@ -91,14 +90,10 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
     <div
       ref={backdropRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-3.5 animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md p-3.5 animate-in fade-in duration-150"
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ type: "spring", stiffness: 350, damping: 25 }}
-        className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/10 bg-[#14151a] p-5 sm:p-6 text-[#f4f3ee] shadow-2xl transition-all"
+      <div
+        className="relative w-full max-w-sm sm:max-w-[410px] overflow-visible rounded-3xl border border-white/10 bg-[#14151a] p-5 sm:p-6 text-[#f4f3ee] shadow-2xl animate-in zoom-in-95 duration-150"
       >
         {/* Glow Ambient Accent */}
         <div className="absolute -top-20 -left-20 h-40 w-40 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none" />
@@ -195,42 +190,36 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
             </button>
 
             {/* Custom Animated Options Menu */}
-            <AnimatePresence>
-              {isDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.96, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 4 }}
-                  exit={{ opacity: 0, scale: 0.96, y: -4 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#181920] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5"
-                >
-                  {CATEGORY_OPTIONS.map((cat) => {
-                    const isSelected = cat.value === purpose;
-                    return (
-                      <button
-                        key={cat.value}
-                        type="button"
-                        onClick={() => {
-                          setPurpose(cat.value);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-emerald-500/15 text-[#34d399] font-medium border border-emerald-500/30'
-                            : 'text-zinc-200 hover:bg-white/5 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex flex-col gap-0.5 truncate pr-2">
-                          <span className="font-semibold text-[11.5px]">{cat.label}</span>
-                          <span className="text-[10px] text-zinc-400 truncate font-normal">{cat.desc}</span>
-                        </div>
-                        {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />}
-                      </button>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {isDropdownOpen && (
+              <div
+                className="absolute left-0 right-0 top-full mt-1 z-[120] max-h-48 overflow-y-auto rounded-2xl border border-white/15 bg-[#181920] p-1.5 shadow-[0_25px_60px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
+              >
+                {CATEGORY_OPTIONS.map((cat) => {
+                  const isSelected = cat.value === purpose;
+                  return (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => {
+                        setPurpose(cat.value);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-500/15 text-[#34d399] font-medium border border-emerald-500/30'
+                          : 'text-zinc-200 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex flex-col gap-0.5 truncate pr-2">
+                        <span className="font-semibold text-[11.5px]">{cat.label}</span>
+                        <span className="text-[10px] text-zinc-400 truncate font-normal">{cat.desc}</span>
+                      </div>
+                      {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Selected category description preview */}
             <p className="text-[10.5px] text-emerald-400/90 italic pl-1 pt-0.5">
@@ -249,7 +238,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
             </button>
           </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 }
