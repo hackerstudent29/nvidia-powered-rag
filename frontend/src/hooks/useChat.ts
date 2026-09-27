@@ -879,15 +879,18 @@ export function useChat() {
       }
 
       const data = await res.json();
+      const finalContent = typeof data.response === "string" && data.response.trim()
+        ? data.response
+        : (typeof data.response === "object" && data.response !== null ? JSON.stringify(data.response) : targetOriginalContent || "");
 
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantMsgId
             ? {
                 ...msg,
-                content: data.response || (msg.content && msg.content.trim() ? msg.content : targetOriginalContent || ""),
+                content: finalContent,
                 is_streaming: false,
-                sources: data.sources && data.sources.length > 0 ? data.sources : msg.sources,
+                sources: Array.isArray(data.sources) && data.sources.length > 0 ? data.sources : msg.sources,
                 model: "nvidia/llama-nemotron-rerank-1b-v2",
               }
             : msg
@@ -900,7 +903,7 @@ export function useChat() {
           msg.id === assistantMsgId
             ? {
                 ...msg,
-                content: msg.content && msg.content.trim() ? msg.content : targetOriginalContent || "",
+                content: msg.content && typeof msg.content === "string" && msg.content.trim() ? msg.content : targetOriginalContent || "",
                 is_streaming: false,
               }
             : msg

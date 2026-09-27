@@ -16,10 +16,10 @@ export default function ThinkingState({
   const [userToggled, setUserToggled] = useState<boolean | null>(null);
 
   // Normalize steps to strings and filter empty steps
-  let steps: string[] = liveSteps
+  let steps: string[] = Array.isArray(liveSteps)
     ? liveSteps
-        .map((s) => (typeof s === "string" ? s : s?.primary || ""))
-        .filter((s) => s && s.trim().length > 0)
+        .map((s) => (typeof s === "string" ? s : typeof s === "object" && s !== null ? (s as any).primary || (s as any).step || "" : ""))
+        .filter((s) => s && typeof s === "string" && s.trim().length > 0)
     : [];
 
   const hasDuration = typeof durationSeconds === "number" && durationSeconds > 0;

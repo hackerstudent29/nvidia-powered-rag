@@ -171,7 +171,7 @@ export default function FeedbackModal({
                 <button
                   type="button"
                   onClick={() => {
-                    onRegenerateWithNeMo();
+                    onRegenerateWithNeMo(queryText, messageId, responseText);
                     onClose();
                   }}
                   className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:opacity-95 transition-all cursor-pointer"

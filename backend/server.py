@@ -5389,10 +5389,10 @@ async def regenerate_with_nemo(req: NeMoRegenerateRequest):
 
     # 1. Guardrail Check
     try:
-        guardrail_refusal = check_guardrails(query)
-        if guardrail_refusal:
+        is_safe, refusal_reason = check_guardrails(query)
+        if not is_safe:
             return JSONResponse({
-                "response": guardrail_refusal,
+                "response": refusal_reason or "I cannot assist with requests that violate campus policies.",
                 "guardrail_triggered": True,
                 "model": "nvidia/llama-nemotron-rerank-1b-v2",
                 "sources": []
