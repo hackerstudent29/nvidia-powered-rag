@@ -837,6 +837,48 @@ const MessageItem = React.memo(function MessageItem({
   const [isDisliked, setIsDisliked] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  // Floating Selection Popover Toolbar State
+  const [selectionToolbar, setSelectionToolbar] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        setSelectionToolbar(null);
+        return;
+      }
+
+      const text = selection.toString().trim();
+      if (!text || text.length < 2) {
+        setSelectionToolbar(null);
+        return;
+      }
+
+      if (messageRef.current && messageRef.current.contains(selection.anchorNode)) {
+        try {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            setSelectionToolbar({
+              text,
+              x: Math.max(120, Math.min(window.innerWidth - 120, rect.left + rect.width / 2)),
+              y: Math.max(50, rect.top - 12),
+            });
+          }
+        } catch (e) {
+          setSelectionToolbar(null);
+        }
+      }
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => document.removeEventListener("selectionchange", handleSelectionChange);
+  }, []);
+
   // Strictly real token metrics sent by the backend server (no fake or estimated data)
   const realTokenMetrics = message.token_metrics !== undefined && message.token_metrics !== null ? message.token_metrics : undefined;
 
@@ -1026,9 +1068,9 @@ const MessageItem = React.memo(function MessageItem({
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleTTS = async (overrideVoice?: string, startWordOffset: number = 0) => {
+  const handleTTS = async (overrideVoice?: string, startWordOffset: number = 0, overrideText?: string) => {
     // If currently playing or loading, clicking stops audio immediately
-    if ((isPlayingAudio || isLoadingAudio) && overrideVoice === undefined && startWordOffset === 0) {
+    if ((isPlayingAudio || isLoadingAudio) && overrideVoice === undefined && startWordOffset === 0 && !overrideText) {
       stopAudio();
       return;
     }
@@ -1050,7 +1092,8 @@ const MessageItem = React.memo(function MessageItem({
       }
     }
 
-    const cleanText = prepareCleanTTSText(message.content);
+    const textToSynthesizeRaw = overrideText || message.content;
+    const cleanText = prepareCleanTTSText(textToSynthesizeRaw);
     if (!cleanText) return;
 
     const displayWords = extractDisplayWords(message.content);
@@ -1298,7 +1341,7 @@ const MessageItem = React.memo(function MessageItem({
           durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
         />
 
-        <div className="prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden">
+        <div onDoubleClick={handleCopy} className="prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words overflow-x-auto overflow-y-hidden cursor-text">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -1814,12 +1857,7 @@ const MessageItem = React.memo(function MessageItem({
           </div>
         )}
 
-        {/* Toast Notification */}
-        {toastMsg && (
-          <div className="mt-2 text-[12px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg w-fit animate-in fade-in duration-150">
-            {toastMsg}
-          </div>
-        )}
+
 
         {/* NeMo Reranker Re-evaluate Action Banner on Dislike */}
         {isDisliked && onRegenerateWithNeMo && (
@@ -1880,6 +1918,87 @@ const MessageItem = React.memo(function MessageItem({
         )}
 
       </div>
+
+      {/* Floating Text Selection Popover Toolbar */}
+      {selectionToolbar && typeof document !== "undefined" && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            left: `${selectionToolbar.x}px`,
+            top: `${selectionToolbar.y}px`,
+            transform: "translate(-50%, -100%)",
+            zIndex: 99999,
+          }}
+          className="flex items-center gap-1 p-1 rounded-xl bg-[#18181b] dark:bg-[#14151a] text-white shadow-2xl border border-white/20 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans"
+        >
+          {/* 1. Ask Lorin */}
+          <button
+            type="button"
+            onClick={() => {
+              const textToUse = selectionToolbar.text;
+              const textareaEl = document.querySelector('textarea') as HTMLTextAreaElement | null;
+              if (textareaEl) {
+                textareaEl.value = textToUse;
+                textareaEl.dispatchEvent(new Event('input', { bubbles: true }));
+                textareaEl.focus();
+              }
+              setSelectionToolbar(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11.5px] font-semibold text-white transition-colors cursor-pointer"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Ask Lorin</span>
+          </button>
+
+          <div className="w-[1px] h-3.5 bg-white/20" />
+
+          {/* 2. Read Aloud */}
+          <button
+            type="button"
+            onClick={() => {
+              const textToRead = selectionToolbar.text;
+              handleTTS(undefined, 0, textToRead);
+              setSelectionToolbar(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11.5px] font-semibold text-white transition-colors cursor-pointer"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            <span>Read Aloud</span>
+          </button>
+
+          <div className="w-[1px] h-3.5 bg-white/20" />
+
+          {/* 3. Copy */}
+          <button
+            type="button"
+            onClick={() => {
+              const textToCopy = selectionToolbar.text;
+              navigator.clipboard?.writeText(textToCopy);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+              setToastMsg(`✓ Copied selected text!`);
+              setTimeout(() => setToastMsg(null), 2500);
+              setSelectionToolbar(null);
+              window.getSelection()?.removeAllRanges();
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/15 text-[11.5px] font-semibold text-white transition-colors cursor-pointer"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            <span>Copy</span>
+          </button>
+        </div>,
+        document.body
+      )}
 
       {/* Feedback Modal */}
       {isFeedbackOpen && feedbackRating && onSubmitFeedback && (

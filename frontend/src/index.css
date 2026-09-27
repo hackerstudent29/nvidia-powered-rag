@@ -21,6 +21,24 @@
   font-family: 'Plus Jakarta Sans', 'Inter', 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+::selection {
+  background-color: rgba(16, 185, 129, 0.32) !important;
+  color: inherit !important;
+}
+::-moz-selection {
+  background-color: rgba(16, 185, 129, 0.32) !important;
+  color: inherit !important;
+}
+
+.dark ::selection {
+  background-color: rgba(16, 185, 129, 0.42) !important;
+  color: #ffffff !important;
+}
+.dark ::-moz-selection {
+  background-color: rgba(16, 185, 129, 0.42) !important;
+  color: #ffffff !important;
+}
+
 @layer base {
   /* ── LIGHT THEME TOKENS ── */
   :root {
