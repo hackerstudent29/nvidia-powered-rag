@@ -441,13 +441,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [expanded, onInputChange]);
 
-  // Global Keyboard listener — typing anywhere auto-expands and focuses prompt box
+  // Global Keyboard listener — typing anywhere on page auto-expands, focuses, and inputs into prompt box
   useEffect(() => {
     const handleGlobalTyping = (e: KeyboardEvent) => {
       const activeEl = document.activeElement as HTMLElement | null;
       const activeTag = activeEl?.tagName;
 
-      // 1. If any input, textarea, select, or contenteditable is active anywhere in the document
+      // 1. If any input, textarea, select, or contenteditable is already focused
       if (
         activeTag === "INPUT" ||
         activeTag === "TEXTAREA" ||
@@ -457,33 +457,63 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         return;
       }
 
-      // 2. If focus is inside any modal, dialog, backdrop, or form overlay anywhere in DOM
-      if (
+      // 2. If any popup, modal, dialog, drawer, or backdrop overlay is currently visible/open
+      const isModalOrPopupOpen = Boolean(
         activeEl?.closest('[role="dialog"]') ||
         activeEl?.closest('[aria-modal="true"]') ||
         activeEl?.closest('.modal') ||
         activeEl?.closest('[data-modal]') ||
-        document.querySelector('[role="dialog"]') ||
-        document.querySelector('[aria-modal="true"]') ||
-        document.querySelector('.fixed.inset-0')
+        activeEl?.closest('[data-drawer]') ||
+        document.querySelector('[role="dialog"]:not([aria-hidden="true"])') ||
+        document.querySelector('[aria-modal="true"]:not([aria-hidden="true"])') ||
+        document.querySelector('.modal:not([aria-hidden="true"])') ||
+        document.querySelector('[data-modal="true"]') ||
+        document.querySelector('#headlessui-portal-root')
+      );
+      if (isModalOrPopupOpen) {
+        return;
+      }
+
+      // 3. Ignore control / shortcut / navigation keys
+      if (
+        e.ctrlKey ||
+        e.altKey ||
+        e.metaKey ||
+        e.key === "Escape" ||
+        e.key === "Tab" ||
+        e.key === "Enter" ||
+        e.key.startsWith("F") ||
+        e.key.startsWith("Arrow") ||
+        e.key === "Backspace" ||
+        e.key === "Delete"
       ) {
         return;
       }
 
-      if (e.ctrlKey || e.altKey || e.metaKey || e.key === "Escape" || e.key === "Tab") return;
-
-      // Printable single character keypresses when NO modal is open
+      // 4. Printable single character keypresses when NO modal/popup is open
       if (e.key.length === 1) {
-        expand();
-        if (textareaRef.current) {
+        if (textareaRef.current && document.activeElement !== textareaRef.current) {
+          e.preventDefault();
+          expand();
+          setText((prev) => {
+            const nextVal = prev + e.key;
+            if (onInputChange) onInputChange(nextVal);
+            return nextVal;
+          });
           textareaRef.current.focus();
+          setTimeout(() => {
+            if (textareaRef.current) {
+              const len = textareaRef.current.value.length;
+              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = len;
+            }
+          }, 0);
         }
       }
     };
 
     window.addEventListener("keydown", handleGlobalTyping);
     return () => window.removeEventListener("keydown", handleGlobalTyping);
-  }, [expand]);
+  }, [expand, onInputChange]);
 
   // Unified outside interaction listener (pointerdown, touchstart, mousedown, click)
   // When tapping/clicking empty space outside prompt box on mobile or desktop:

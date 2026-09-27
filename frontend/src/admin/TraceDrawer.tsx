@@ -64,7 +64,7 @@ export const TraceDrawer: React.FC<TraceDrawerProps> = ({
       />
       
       {/* Compact Drawer */}
-      <div className={`fixed inset-y-0 right-0 w-full md:w-[560px] border-l shadow-2xl z-50 transform transition-transform duration-300 flex flex-col font-ui text-xs ${
+      <div role="dialog" aria-modal="true" className={`fixed inset-y-0 right-0 w-full md:w-[560px] border-l shadow-2xl z-50 transform transition-transform duration-300 flex flex-col font-ui text-xs ${
         isDark ? 'bg-[#0b0c0e] border-white/[0.08] text-[#f4f3ee]' : 'bg-white border-black/[0.08] text-[#1C1917]'
       }`}>
         

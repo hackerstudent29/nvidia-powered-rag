@@ -99,7 +99,7 @@ export default function SessionDrawer({
 
           {isMobile ? (
             /* Mobile Bottom Sheet */
-            <div className="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
+            <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none">
               <motion.div
                 ref={sheetRef}
                 initial={{ y: "100%" }}
@@ -209,7 +209,7 @@ export default function SessionDrawer({
             </div>
           ) : (
             /* Desktop Side Drawer */
-            <div className="fixed inset-0 z-50 flex justify-end pointer-events-none">
+            <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex justify-end pointer-events-none">
               <motion.div
                 initial={{ x: "100%" }}
                 animate={{ x: 0 }}

@@ -11,7 +11,7 @@ export default function StatsModal({ isOpen, onClose, stats, loading }: StatsMod
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4 animate-in fade-in duration-150">
       <div className="relative w-full max-w-lg rounded-2xl bg-surface p-6 shadow-2xl border border-line">
         <button
           type="button"
