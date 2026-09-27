@@ -161,64 +161,74 @@ In the ₹2.0 LPA package tier, specialized technology startups and manufacturin
 - **Overall Placement Percentage**: **80%**
 - **Strategic Location Advantage**: Located inside SIPCOT IT Park, Siruseri, Chennai, surrounded by 100+ global tech giants.
 
-### Complete List of Major Recruiters 2026 (Package & Offers Breakdown)
+### Recruiter-by-Recruiter Company Profiles & Offers (2025–2026 Batch)
 
-| Recruiter Company | Offers | Package (LPA) | Industry Domain & Specialization |
-|:---|:---:|:---:|:---|
-| **KaarTech** | 2 | **8 LPA** | Enterprise SAP & Digital Transformation (Highest Package) |
-| **LaunchEd Global** | 1 | **7 LPA** | EdTech & Global Career Learning |
-| **Datatech Genius** | 9 | **6 LPA** | Big Data, Analytics & Cloud Solutions |
-| **Besant Technologies** | 15 | **5 LPA** | Software Development & Cloud Platforms |
-| **Doctpro** | 6 | **5 LPA** | HealthTech & Clinical Management Systems |
-| **Sutherland** | 6 | **5 LPA** | Global IT Services & Digital Operations |
-| **Ethical Engineers (P) Ltd** | 5 | **5 LPA** | Engineering Design & Infrastructure |
-| **Kite Robotics** | 3 | **5 LPA** | Industrial Automation & Autonomous Systems |
-| **SCS (S Cube Solutions)** | 3 | **5 LPA** | Enterprise IT Consulting & Solutions |
-| **Foxconn** | 2 | **5 LPA** | Electronics Manufacturing & Hardware |
-| **CreditMantri** | 2 | **5 LPA** | FinTech & Algorithmic Credit Analysis |
-| **Indo Tech Transformers Ltd** | 2 | **5 LPA** | Electrical Power Systems & Engineering |
-| **BorgWarner** | 1 | **5 LPA** | Automotive Propulsion & Clean Mobility |
-| **CARS 24** | 1 | **5 LPA** | AutoTech E-Commerce Platform |
-| **Anups Academy** | 1 | **5 LPA** | Educational Mentorship & Assessment |
-| **RR Enterprises** | 1 | **5 LPA** | Precision Engineering & Mechanical Systems |
-| **TSP (Total Solution Provider)** | 15 | **4 LPA** | Technical Infrastructure & IT Services |
-| **Tata Electronics** | 12 | **4 LPA** | Precision Electronics & Semiconductor Mfg |
-| **Axis Bank** | 6 | **4 LPA** | Banking Operations & Financial Analytics |
-| **Machineries** | 5 | **4 LPA** | Industrial Machinery & Automation |
-| **Tap Academy** | 4 | **4 LPA** | AR/VR Upskilling & Tech Bootcamps |
-| **Numeric (Legrand Group)** | 3 | **4 LPA** | Power Conditioning & Industrial Systems |
-| **Intellect Design Arena** | 1 | **4 LPA** | FinTech Architecture & Banking Platforms |
-| **Sands** | 1 | **4 LPA** | Embedded Systems & Instrumentation |
-| **Sai Mirra Innopharm** | 1 | **4 LPA** | Pharmaceutical & Process Chemistry |
-| **CAFS** | 20 | **3 LPA** | Facility Management & Corporate Operations (Top Volume) |
-| **GTT Data** | 14 | **3 LPA** | Data Intelligence & Business Analytics |
-| **AIS (Asahi India Glass Ltd)** | 8 | **3 LPA** | Automotive Glass & Advanced Materials |
-| **inetz technologies** | 6 | **3 LPA** | Enterprise Networking & System Admin |
-| **FIITJOBS** | 3 | **3 LPA** | Talent Solutions & Technical Staffing |
-| **Larsen & Toubro (L&T)** | 2 | **3 LPA** | Infrastructure, Construction & Core Engg |
-| **MPI (Manipal Payment & Identity)** | 2 | **3 LPA** | Smart Card Tech & Payment Security |
-| **WHBS (White House Business)** | 2 | **3 LPA** | Enterprise Software & E-Learning |
-| **Trionova** | 2 | **3 LPA** | Web Technologies & IT Consulting |
-| **Ose** | 2 | **3 LPA** | Engineering Operations & Support |
-| **Grundfos** | 1 | **3 LPA** | Advanced Pump Solutions & Water Tech |
-| **Prochant** | 1 | **3 LPA** | Healthcare RCM & Medical Analytics |
-| **Denvik** | 1 | **3 LPA** | Embedded Systems & IoT Engineering |
-| **Innov (Your People Partner)** | 1 | **3 LPA** | Staffing & Workforce Solutions |
-| **Transwave Technologies** | 1 | **3 LPA** | Telecom & Wireless Infrastructure |
-| **Fantek** | 1 | **3 LPA** | Precision Engineering & Tooling |
-| **ACETECH** | 1 | **3 LPA** | Structural Design & Engineering |
-| **Deejos** | 1 | **3 LPA** | Architecture, Construction & Interiors |
-| **Rapid Data IT Solutions** | 1 | **3 LPA** | Cloud Services & Data Processing |
-| **Voltech** | 1 | **3 LPA** | Electrical Engineering & Power Testing |
-| **Orbit IT Solutions** | 1 | **3 LPA** | IT Network Infrastructure |
-| **EntryKode** | 1 | **3 LPA** | Software Consulting & Cloud Development |
-| **Platform3** | 1 | **3 LPA** | Enterprise Digital Platform Solutions |
-| **Aurelon** | 2 | **2 LPA** | Technical Operations & Support |
-| **Radtwin** | 2 | **2 LPA** | Digital Development & Software Services |
-| **Inbox (Info Solutions)** | 1 | **2 LPA** | IT Support & Enterprise Data Management |
-| **Sarada** | 1 | **2 LPA** | Engineering Operations & Manufacturing |
-| **AasaiTech** | 1 | **2 LPA** | Web & Mobile Software Development |
-| **Diseñosys** | 1 | **2 LPA** | Automotive Styling & CAD Engineering |
+#### Premier Package Tier (₹8.0 LPA & ₹7.0 LPA)
+- **KaarTech**: Enterprise SAP and digital transformation consultancy recruited 2 students at the highest annual salary package of ₹8.0 LPA.
+- **LaunchEd Global**: International educational technology enterprise recruited 1 student at an annual salary package of ₹7.0 LPA.
+
+#### Big Data & Cloud Analytics Tier (₹6.0 LPA)
+- **Datatech Genius**: Big data intelligence and cloud analytics provider recruited 9 students at an annual salary package of ₹6.0 LPA.
+
+#### Technology, Robotics & Core Engineering Tier (₹5.0 LPA)
+- **Besant Technologies**: Cloud computing and full-stack software development firm recruited 15 students at an annual salary package of ₹5.0 LPA.
+- **Sutherland**: Global digital operations and enterprise IT transformation provider recruited 6 students at an annual salary package of ₹5.0 LPA.
+- **Doctpro**: HealthTech software and clinical information systems company recruited 6 students at an annual salary package of ₹5.0 LPA.
+- **Ethical Engineers (P) Ltd**: Engineering design and infrastructure consultancy recruited 5 students at an annual salary package of ₹5.0 LPA.
+- **Kite Robotics**: Industrial robotics and autonomous automation systems developer recruited 3 students at an annual salary package of ₹5.0 LPA.
+- **SCS (S Cube Solutions)**: Enterprise IT solutions and software consulting firm recruited 3 students at an annual salary package of ₹5.0 LPA.
+- **Foxconn**: Multinational electronics and hardware manufacturing enterprise recruited 2 students at an annual salary package of ₹5.0 LPA.
+- **CreditMantri**: Algorithmic credit analytics and FinTech services provider recruited 2 students at an annual salary package of ₹5.0 LPA.
+- **Indo Tech Transformers Ltd**: Electrical power systems and transformer engineering manufacturer recruited 2 students at an annual salary package of ₹5.0 LPA.
+- **BorgWarner**: Automotive propulsion and clean mobility systems leader recruited 1 student at an annual salary package of ₹5.0 LPA.
+- **CARS 24**: AutoTech e-commerce and automotive trading platform recruited 1 student at an annual salary package of ₹5.0 LPA.
+- **Anups Academy**: Educational mentoring and assessment enterprise recruited 1 student at an annual salary package of ₹5.0 LPA.
+- **RR Enterprises**: Precision mechanical engineering and fabrication company recruited 1 student at an annual salary package of ₹5.0 LPA.
+
+#### Semiconductor, Core Engineering & Banking Tier (₹4.0 LPA)
+- **TSP (Total Solution Provider)**: Technical infrastructure and IT solutions provider recruited 15 students at an annual salary package of ₹4.0 LPA.
+- **Tata Electronics**: Precision electronics and semiconductor manufacturing leader recruited 12 students at an annual salary package of ₹4.0 LPA.
+- **Axis Bank**: Leading private sector banking institution recruited 6 students at an annual salary package of ₹4.0 LPA.
+- **Machineries**: Industrial automation and mechanical machinery enterprise recruited 5 students at an annual salary package of ₹4.0 LPA.
+- **Tap Academy**: Technical upskilling and AR/VR development training institute recruited 4 students at an annual salary package of ₹4.0 LPA.
+- **Numeric (Legrand Group)**: Industrial power conditioning and energy management provider recruited 3 students at an annual salary package of ₹4.0 LPA.
+- **Intellect Design Arena**: FinTech architecture and enterprise banking software company recruited 1 student at an annual salary package of ₹4.0 LPA.
+- **Sands**: Embedded systems and industrial instrumentation firm recruited 1 student at an annual salary package of ₹4.0 LPA.
+- **Sai Mirra Innopharm**: Pharmaceutical chemical synthesis and process research company recruited 1 student at an annual salary package of ₹4.0 LPA.
+
+#### High-Volume & Core Industry Tier (₹3.0 LPA)
+- **CAFS (Corporate Accommodation & Facility Services)**: Facility management and enterprise hospitality operations provider emerged as the highest volume recruiter, hiring 20 students at an annual salary package of ₹3.0 LPA.
+- **GTT Data**: Data intelligence, analytics, and business reporting firm recruited 14 students at an annual salary package of ₹3.0 LPA.
+- **AIS (Asahi India Glass Ltd)**: Premier automotive glass and specialized architectural materials manufacturer recruited 8 students at an annual salary package of ₹3.0 LPA.
+- **inetz technologies**: Enterprise networking and infrastructure services company recruited 6 students at an annual salary package of ₹3.0 LPA.
+- **FIITJOBS**: Technical staffing and corporate recruitment consultancy recruited 3 students at an annual salary package of ₹3.0 LPA.
+- **Larsen & Toubro (L&T)**: Global infrastructure, construction, and engineering conglomerate recruited 2 students at an annual salary package of ₹3.0 LPA.
+- **MPI (Manipal Payment & Identity)**: Secure smart card manufacturing and payment security provider recruited 2 students at an annual salary package of ₹3.0 LPA.
+- **WHBS (White House Business Solutions)**: Enterprise e-learning platforms and corporate software provider recruited 2 students at an annual salary package of ₹3.0 LPA.
+- **Trionova**: Web development and digital consulting agency recruited 2 students at an annual salary package of ₹3.0 LPA.
+- **Ose**: Industrial engineering support and technical services provider recruited 2 students at an annual salary package of ₹3.0 LPA.
+- **Grundfos**: Global water pumping solutions and fluid technology innovator recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Prochant**: Healthcare revenue cycle management and medical billing analytics firm recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Denvik**: Embedded IoT engineering and product design company recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Innov (Your People Partner)**: Workforce solutions and human resources consulting provider recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Transwave Technologies**: Wireless communications and telecommunications infrastructure company recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Fantek**: Precision mechanical tooling and engineering firm recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **ACETECH**: Civil structural design and engineering consultancy recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Deejos**: Architectural design, building construction, and turnkey interior enterprise recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Rapid Data IT Solutions**: Cloud data services and enterprise hosting provider recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Voltech**: Electrical power engineering, substation testing, and contracting company recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Orbit IT Solutions**: Network infrastructure and technical support services provider recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **EntryKode**: Cloud software consulting and application development firm recruited 1 student at an annual salary package of ₹3.0 LPA.
+- **Platform3**: Enterprise digital platform and application services company recruited 1 student at an annual salary package of ₹3.0 LPA.
+
+#### Technical Services & Emerging Engineering Tier (₹2.0 LPA)
+- **Aurelon**: Technical operations and software support provider recruited 2 students at an annual salary package of ₹2.0 LPA.
+- **Radtwin**: Digital solutions and web engineering agency recruited 2 students at an annual salary package of ₹2.0 LPA.
+- **Inbox (Info Solutions)**: Enterprise data management and IT support provider recruited 1 student at an annual salary package of ₹2.0 LPA.
+- **Sarada**: Industrial manufacturing and engineering services firm recruited 1 student at an annual salary package of ₹2.0 LPA.
+- **AasaiTech**: Web application and mobile software development startup recruited 1 student at an annual salary package of ₹2.0 LPA.
+- **Diseñosys**: Automotive CAD modeling and body styling engineering firm recruited 1 student at an annual salary package of ₹2.0 LPA.
+
 
 
 
