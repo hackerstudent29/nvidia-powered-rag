@@ -6603,6 +6603,73 @@ async def unban_user(req: UnbanRequest, request: Request):
         release_db_connection(conn)
 
 
+@app.post("/api/admin/reset-user-cache")
+async def reset_user_cache(request: Request):
+    """
+    Hard-reset all user interaction data (chat sessions, messages, query cache,
+    feedback, correction candidates, security bans, rate limit counters) while
+    preserving Qdrant vector chunks, BM25 index, and prebuilt card answers.
+    Requires admin Authorization header.
+    """
+    authenticate_admin_request(request)
+
+    # Also clear the in-memory Tier-0 RAM cache
+    TIER0_RAM_CACHE.cache.clear()
+    logger.info("[ADMIN] Tier-0 RAM cache cleared.")
+
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    try:
+        with conn.cursor() as cur:
+            # Truncate in FK dependency order (children before parents)
+            # message_feedback references chat_messages
+            # correction_candidates references chat_messages
+            # security_attack_logs / user_request_counters are independent
+            cur.execute("""
+                TRUNCATE TABLE
+                    message_feedback,
+                    correction_candidates,
+                    chat_messages,
+                    chat_sessions,
+                    query_cache,
+                    user_security_bans,
+                    security_attack_logs,
+                    user_request_counters
+                RESTART IDENTITY CASCADE;
+            """)
+            conn.commit()
+
+        logger.info("[ADMIN] Full user cache reset complete. Chunks, BM25, and prebuilt cards preserved.")
+        return JSONResponse({
+            "success": True,
+            "message": "All user interaction data cleared successfully.",
+            "cleared": [
+                "message_feedback",
+                "correction_candidates",
+                "chat_messages",
+                "chat_sessions",
+                "query_cache",
+                "user_security_bans",
+                "security_attack_logs",
+                "user_request_counters",
+                "TIER0_RAM_CACHE (in-memory)"
+            ],
+            "preserved": [
+                "Qdrant vector chunks",
+                "BM25 lexical index (bm25_chunks.json)",
+                "PREBUILT_CARD_ANSWERS (in-memory)",
+                "All data files in /data/"
+            ]
+        })
+    except Exception as e:
+        logger.error(f"[ADMIN] Reset user cache error: {e}")
+        raise HTTPException(status_code=500, detail=f"Reset failed: {str(e)}")
+    finally:
+        release_db_connection(conn)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
