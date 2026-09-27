@@ -1153,7 +1153,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             }}
             style={{
               borderRadius: 24,
-              height: expanded ? containerHeight : 48,
+              height: expanded ? containerHeight : (isMobileViewport ? 56 : 64),
               transition: isSmoothResize ? SMOOTH_HEIGHT_TRANSITION : SPRING_TRANSITION,
               overflow: (expanded || isVoiceMenuOpen || isModelSelectOpen) ? "visible" : "hidden",
             }}
@@ -1190,8 +1190,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
               className={cn(
-                "absolute top-0 inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 pr-12 py-3 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
-                expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-100 scale-100 translate-y-0 cursor-pointer",
+                "absolute inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 pr-12 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
+                expanded ? "top-0 py-3 opacity-100 scale-100 translate-y-0" : "top-1/2 -translate-y-1/2 py-2 opacity-100 scale-100 cursor-pointer",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
               )}
             />
@@ -1220,7 +1220,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             </div>
 
             {/* Right side controls container (Listening Waveform + Voice Selector + Mic Action Button) */}
-            <div className="absolute right-2 bottom-2 z-[10] flex items-center gap-2">
+            <div className={cn("absolute right-2 z-[10] flex items-center gap-2 transition-all duration-300", expanded ? "bottom-2" : "top-1/2 -translate-y-1/2")}>
               {/* Dynamic Animated Soundwave Visualizer */}
               <AnimatePresence>
                 {isRecording && (
