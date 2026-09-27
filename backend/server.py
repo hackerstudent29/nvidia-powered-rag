@@ -282,6 +282,10 @@ def structure_markdown_for_mobile(text: str) -> str:
     if not text:
         return ""
 
+    # Restore table row line-breaks if table rows got smashed inline (e.g. "| r1 || r2 |" or "| r1 | | r2 |")
+    text = re.sub(r'\|\s*\|', '|\n|', text)
+    text = re.sub(r'\|\s+(?=\|\s*[A-Za-z0-9\*\-])', '|\n', text)
+
     lines = text.split('\n')
     processed_lines = []
 
@@ -2443,6 +2447,10 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'([^\n])\s+[-–—•]\s+(\*\*[^*]+?\*\*:?)', r'\1\n\n- \2', text)
     text = re.sub(r'([^\n])\s{2,}(\*\*[A-Za-z0-9\s/&\-.]{2,35}\*\*:\s*)', r'\1\n\n- \2', text)
     text = re.sub(r'([^\n])\n(- \*\*)', r'\1\n\n\2', text)
+
+    # Restore table row line-breaks if table rows got smashed inline (e.g. "| r1 || r2 |" or "| r1 | | r2 |")
+    text = re.sub(r'\|\s*\|', '|\n|', text)
+    text = re.sub(r'\|\s+(?=\|\s*[A-Za-z0-9\*\-])', '|\n', text)
 
     # Preserve markdown tables as valid GFM table blocks without destroying individual rows
     text = re.sub(r'\n{3,}', '\n\n', text)

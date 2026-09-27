@@ -173,6 +173,10 @@ function sanitizeMarkdownContent(content: string): string {
   // 4. Remove duplicate emojis right before [link]
   text = text.replace(/(?:✉️|📧|✉|📞|📱)\s*(\[[^\]]+\]\((?:mailto|tel):[^\)]+\))/g, "$1");
 
+  // 4.5. Restore table row line-breaks if table rows got smashed inline (e.g. "| r1 || r2 |" or "| r1 | | r2 |")
+  text = text.replace(/\|\s*\|/g, "|\n|");
+  text = text.replace(/\|\s+(?=\|\s*[A-Za-z0-9\*\-])/g, "|\n");
+
   // 5. MOBILE & DESKTOP STRUCTURAL FORMATTING: Enforce strict row-wise formatting for all inline bullets and key-value items
   const lines = text.split("\n");
   const processedLines: string[] = [];
