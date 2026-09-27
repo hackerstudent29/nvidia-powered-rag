@@ -147,24 +147,33 @@ const HeroGreeting = React.memo(function HeroGreeting({
           style={{ background: "radial-gradient(ellipse, #2E6B5E 0%, transparent 70%)" }}
         />
 
-        {/* Mascot + Hello Headline on exact same line (flex-nowrap) on ALL screens */}
-        <div className="relative z-10 flex flex-row items-center justify-center gap-2 sm:gap-4 flex-nowrap w-full px-1">
+        {/* Hello, [Mascot] [firstName]. structure centered across all screen sizes */}
+        <div className="relative z-10 flex flex-row items-center justify-center gap-1.5 sm:gap-3.5 flex-nowrap w-full px-1">
+          <motion.h1
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className="hero-title text-[1.2rem] min-[360px]:text-[1.45rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] whitespace-nowrap shrink-0"
+          >
+            Hello,
+          </motion.h1>
+
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="shrink-0 cursor-pointer"
+            transition={{ duration: 0.3, delay: 0.03 }}
+            className="shrink-0 cursor-pointer mx-0.5 sm:mx-1"
           >
-            <JellyBlobMascot emotion="curious" size={74} interactive={true} showSubtitle={true} autoLoop={true} />
+            <JellyBlobMascot emotion="curious" size={68} interactive={true} showSubtitle={true} autoLoop={true} />
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.05 }}
-            className="hero-title text-[1.25rem] min-[360px]:text-[1.5rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] whitespace-nowrap shrink-0"
+            initial={{ opacity: 0, x: 6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.06 }}
+            className="hero-title text-[1.2rem] min-[360px]:text-[1.45rem] sm:text-[2.6rem] lg:text-[3.2rem] font-bold tracking-tight leading-none text-ink dark:text-[#f4f3ee] whitespace-nowrap shrink-0"
           >
-            Hello, {firstName}.
+            {firstName}.
           </motion.h1>
         </div>
 
