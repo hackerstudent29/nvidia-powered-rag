@@ -1099,7 +1099,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               expanded ? "cursor-text" : "cursor-pointer hover:border-[#2E6B5E]/40 dark:hover:border-[#10b981]/40"
             )}
           >
-            {/* Expanded Textarea Input */}
+            {/* Textarea Input */}
             <textarea
               ref={textareaRef}
               value={text}
@@ -1127,32 +1127,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
               className={cn(
-                "absolute top-0 inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 pr-12 py-3 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-medium placeholder:text-ink-3/60 dark:placeholder:text-zinc-500 cursor-text",
+                "absolute top-0 inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 pr-12 py-3 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
                 expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-100 scale-100 translate-y-0 cursor-pointer",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
               )}
             />
-
-            {/* Collapsed Placeholder Button (visual aid + click fallback) */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                expand();
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                expand();
-              }}
-              style={{ transition: isSmoothResize ? "none" : "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
-              className={cn(
-                "absolute left-0 right-28 top-0 z-[1] cursor-pointer pl-4 py-[14px] text-left text-sm font-medium leading-[17px] text-ink-3/80 dark:text-[#b1ada1]/80 outline-none flex items-center justify-between pointer-events-none",
-                !expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-105 translate-y-1"
-              )}
-              aria-label="Open prompt input"
-            >
-              <span className="truncate">Ask anything about MSAJCEA...</span>
-            </button>
 
             {/* Bottom Actions Bar (Effort Selector) */}
             <div
