@@ -748,14 +748,16 @@ export function useChat() {
   };
 
   // Regenerate response using NVIDIA Nemotron Reranker in-place on target message
-  const regenerateWithNeMo = async (queryText: string, targetMessageId?: string) => {
+  const regenerateWithNeMo = async (queryText: string, targetMessageId?: string, originalContent?: string) => {
     if (isStreaming || !queryText) return;
     setIsStreaming(true);
 
     let assistantMsgId = targetMessageId;
+    let targetOriginalContent = originalContent;
     if (!assistantMsgId) {
       const lastAsst = [...messages].reverse().find((m) => m.role === "assistant");
       assistantMsgId = lastAsst ? lastAsst.id : `msg_nemo_${Date.now()}`;
+      if (lastAsst) targetOriginalContent = lastAsst.content;
     }
 
     setMessages((prev) => {
@@ -765,7 +767,6 @@ export function useChat() {
           m.id === assistantMsgId
             ? {
                 ...m,
-                content: "",
                 is_streaming: true,
                 model: "nvidia/llama-nemotron-rerank-1b-v2",
                 reasoning_steps: [
@@ -783,7 +784,7 @@ export function useChat() {
           {
             id: assistantMsgId!,
             role: "assistant",
-            content: "",
+            content: targetOriginalContent || "",
             timestamp: new Date(),
             model: "nvidia/llama-nemotron-rerank-1b-v2",
             is_streaming: true,
@@ -806,8 +807,13 @@ export function useChat() {
           query_text: queryText,
           session_id: sessionId,
           message_id: assistantMsgId,
+          original_bot_answer: targetOriginalContent,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
       const data = await res.json();
 
@@ -816,7 +822,7 @@ export function useChat() {
           msg.id === assistantMsgId
             ? {
                 ...msg,
-                content: data.response || msg.content,
+                content: data.response || (msg.content && msg.content.trim() ? msg.content : targetOriginalContent || ""),
                 is_streaming: false,
                 sources: data.sources && data.sources.length > 0 ? data.sources : msg.sources,
                 model: "nvidia/llama-nemotron-rerank-1b-v2",
@@ -831,6 +837,7 @@ export function useChat() {
           msg.id === assistantMsgId
             ? {
                 ...msg,
+                content: msg.content && msg.content.trim() ? msg.content : targetOriginalContent || "",
                 is_streaming: false,
               }
             : msg

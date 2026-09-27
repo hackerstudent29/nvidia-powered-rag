@@ -24,7 +24,7 @@ interface MessageItemProps {
   isLatestMessage?: boolean;
   onSendPrompt?: (prompt: string) => void;
   onRegenerate?: (targetMessageId?: string) => void;
-  onRegenerateWithNeMo?: (queryText: string, targetMessageId?: string) => void;
+  onRegenerateWithNeMo?: (queryText: string, targetMessageId?: string, originalContent?: string) => void;
   onSubmitFeedback?: (data: {
     message_id: string;
     session_id: string;
@@ -1932,7 +1932,7 @@ const MessageItem = React.memo(function MessageItem({
             </div>
             <button
               type="button"
-              onClick={() => onRegenerateWithNeMo(userQuery || message.content, message.id)}
+              onClick={() => onRegenerateWithNeMo(userQuery || message.content, message.id, message.content)}
               className="shrink-0 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] shadow-sm transition-all cursor-pointer"
             >
               Re-evaluate Answer
@@ -2078,7 +2078,7 @@ const MessageItem = React.memo(function MessageItem({
           queryText={userQuery || "MSAJCEA Campus Inquiry"}
           responseText={message.content}
           onSubmit={onSubmitFeedback}
-          onRegenerateWithNeMo={onRegenerateWithNeMo ? () => onRegenerateWithNeMo(userQuery || message.content) : undefined}
+          onRegenerateWithNeMo={onRegenerateWithNeMo ? () => onRegenerateWithNeMo(userQuery || message.content, message.id, message.content) : undefined}
         />
       )}
 

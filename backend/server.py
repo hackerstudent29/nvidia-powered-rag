@@ -2059,6 +2059,46 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
 
     return None
 
+def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
+    m_clean = (m_name or "").lower()
+    vercel_backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or VERCEL_AI_GATEWAY_KEY
+    if "backup" in m_clean:
+        return (
+            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            {"Authorization": f"Bearer {vercel_backup_key}", "Content-Type": "application/json"},
+            "google/gemini-2.5-flash-lite"
+        )
+    elif "gemini" in m_clean or "google" in m_clean or "auto" in m_clean or "vercel" in m_clean or not m_clean:
+        return (
+            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
+            "google/gemini-2.5-flash-lite"
+        )
+    elif "mistral" in m_clean:
+        return (
+            f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
+            {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
+            "mistralai/mistral-nemotron"
+        )
+    elif "super" in m_clean or "120b" in m_clean:
+        return (
+            f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
+            {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
+            "nvidia/nemotron-3-super-120b-a12b"
+        )
+    elif "lightning" in m_clean or "nemotron" in m_clean:
+        return (
+            f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
+            {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
+            "nvidia/nemotron-3.5-lightning-30b-a3b"
+        )
+    else:
+        return (
+            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
+            "google/gemini-2.5-flash-lite"
+        )
+
 def sanitize_response_text(text: str) -> str:
     """
     Sanitizes response text by removing raw chunk metadata headers, carriage returns,
@@ -3981,46 +4021,6 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
 
-            def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
-                m_clean = (m_name or "").lower()
-                vercel_backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or VERCEL_AI_GATEWAY_KEY
-                if "backup" in m_clean:
-                    return (
-                        "https://ai-gateway.vercel.sh/v1/chat/completions",
-                        {"Authorization": f"Bearer {vercel_backup_key}", "Content-Type": "application/json"},
-                        "google/gemini-2.5-flash-lite"
-                    )
-                elif "gemini" in m_clean or "google" in m_clean or "auto" in m_clean or "vercel" in m_clean or not m_clean:
-                    return (
-                        "https://ai-gateway.vercel.sh/v1/chat/completions",
-                        {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
-                        "google/gemini-2.5-flash-lite"
-                    )
-                elif "mistral" in m_clean:
-                    return (
-                        f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
-                        {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
-                        "mistralai/mistral-nemotron"
-                    )
-                elif "super" in m_clean or "120b" in m_clean:
-                    return (
-                        f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
-                        {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
-                        "nvidia/nemotron-3-super-120b-a12b"
-                    )
-                elif "lightning" in m_clean or "nemotron" in m_clean:
-                    return (
-                        f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
-                        {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
-                        "nvidia/nemotron-3.5-lightning-30b-a3b"
-                    )
-                else:
-                    return (
-                        "https://ai-gateway.vercel.sh/v1/chat/completions",
-                        {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
-                        "google/gemini-2.5-flash-lite"
-                    )
-
             candidate_models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash-lite-backup"]
             for candidate in [model_id, "mistralai/mistral-nemotron", "nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-3-super-120b-a12b"]:
                 if candidate and candidate not in candidate_models:
@@ -4293,7 +4293,18 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
         except Exception as e:
             print(f"[ERROR] Error in chat stream: {e}")
-            error_text = "I am temporarily unable to connect to the Lorin AI campus service. Please try again in a moment."
+            pb_card = get_prebuilt_card_answer(user_query) or (get_prebuilt_card_answer(expanded_query) if 'expanded_query' in locals() else None)
+            if pb_card:
+                error_text = pb_card["response"]
+            elif 'retrieved_chunks' in locals() and retrieved_chunks:
+                clean_notes = []
+                for c in retrieved_chunks[:5]:
+                    raw = c.get("content", "")
+                    clean_text = re.sub(r'^(?:#{1,4}\s*)?Document:.*\n?', '', raw, flags=re.MULTILINE | re.IGNORECASE).strip()
+                    clean_notes.append(f"### {c.get('title', 'Campus Record')}\n{clean_text}")
+                error_text = "\n\n".join(clean_notes)
+            else:
+                error_text = "I am temporarily unable to connect to the Lorin AI campus service. Please try again in a moment."
             try:
                 with DBContext() as conn:
                     if conn:
@@ -4823,6 +4834,8 @@ class NeMoRegenerateRequest(BaseModel):
     query_text: str
     session_id: Optional[str] = None
     message_id: Optional[str] = None
+    original_bot_answer: Optional[str] = None
+    user_comment: Optional[str] = None
 
 
 @app.post("/api/feedback/regenerate-nemo")
@@ -4858,10 +4871,11 @@ async def regenerate_with_nemo(req: NeMoRegenerateRequest):
     except Exception as e:
         print(f"[WARN] Guardrail check error: {e}")
 
-    # 2. Fetch Original Bot Answer & User Feedback Comment from DB
-    original_bot_answer = ""
-    user_comment = ""
-    if req.message_id:
+    # 2. Fetch Original Bot Answer & User Feedback Comment from payload or DB
+    original_bot_answer = (req.original_bot_answer or "").strip()
+    user_comment = (req.user_comment or "").strip()
+
+    if req.message_id and not original_bot_answer:
         try:
             with DBContext() as conn:
                 if conn:
@@ -4871,10 +4885,11 @@ async def regenerate_with_nemo(req: NeMoRegenerateRequest):
                         if row:
                             original_bot_answer = row["content"]
                         
-                        cur.execute("SELECT feedback_text FROM message_feedback WHERE message_id = %s LIMIT 1;", (req.message_id,))
-                        fb_row = cur.fetchone()
-                        if fb_row:
-                            user_comment = fb_row["feedback_text"] or ""
+                        if not user_comment:
+                            cur.execute("SELECT feedback_text FROM message_feedback WHERE message_id = %s LIMIT 1;", (req.message_id,))
+                            fb_row = cur.fetchone()
+                            if fb_row:
+                                user_comment = fb_row["feedback_text"] or ""
         except Exception as e:
             print(f"[WARN] Failed fetching original message context: {e}")
 
@@ -4950,6 +4965,10 @@ async def regenerate_with_nemo(req: NeMoRegenerateRequest):
         snippet = chunk.get("snippet") or chunk.get("content") or ""
         context_blocks.append(f"### Source: {chunk.get('title')}\n{snippet}")
 
+    prebuilt_card = get_prebuilt_card_answer(query) or get_prebuilt_card_answer(rewrite_query(query))
+    if prebuilt_card:
+        context_blocks.insert(0, f"### Prebuilt Ground Truth Record:\n{prebuilt_card['response']}")
+
     context_str = "\n\n".join(context_blocks)
     if not context_str:
         context_str = "Official MSAJCEA records confirm: TNEA Code 1301, 12 UG & 2 PG degree programs, campus location inside SIPCOT IT Park, Siruseri, Chennai – 603 103."
@@ -4985,19 +5004,19 @@ RE_EVALUATED_ANSWER:
 [Your complete, helpful, accurate grounded response here]"""
 
     models_to_try = [
-        "nvidia/nemotron-3.5-lightning-30b-a3b",
-        "meta/muse-glimmer-30b",
-        "deepseek-ai/deepseek-v4-flash-0731",
-        "google/gemma-4-31b-it"
+        "google/gemini-2.5-flash-lite",
+        "mistralai/mistral-nemotron",
+        "nvidia/nemotron-3.5-lightning-30b-a3b"
     ]
 
     reevaluated_raw = ""
-    winning_model = "nvidia/llama-nemotron-rerank-1b-v2"
+    winning_model = "google/gemini-2.5-flash-lite"
 
     for m_id in models_to_try:
         try:
+            target_url, target_headers, target_model_slug = get_model_endpoint_config(m_id)
             payload = {
-                "model": m_id,
+                "model": target_model_slug,
                 "messages": [
                     {"role": "system", "content": LORIN_SYSTEM_PROMPT},
                     {"role": "user", "content": judge_prompt}
@@ -5005,9 +5024,7 @@ RE_EVALUATED_ANSWER:
                 "temperature": 0.2,
                 "max_tokens": 1800
             }
-            headers = {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}
-            url = f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions"
-            resp = await http_client.post(url, headers=headers, json=payload, timeout=20.0)
+            resp = await http_client.post(target_url, headers=target_headers, json=payload, timeout=20.0)
             if resp.status_code == 200:
                 reevaluated_raw = resp.json()["choices"][0]["message"]["content"].strip()
                 winning_model = m_id
@@ -5028,16 +5045,21 @@ RE_EVALUATED_ANSWER:
             final_answer = answer_parts[1].strip()
 
     # If feedback was classified as FALSE_DISLIKE (or if answer generation returned empty),
-    # retain the original verified bot answer intact.
+    # retain the original verified bot answer intact or use prebuilt card ground truth.
     if diagnosis_category == "FALSE_DISLIKE" and original_bot_answer:
         final_answer = original_bot_answer
     elif not final_answer:
         if original_bot_answer:
             final_answer = original_bot_answer
+        elif prebuilt_card:
+            final_answer = prebuilt_card["response"]
         elif reevaluated_raw:
             final_answer = reevaluated_raw
         else:
             final_answer = f"Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) provides official guidance regarding '{query}'. The campus is located at 34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Chennai – 603 103 (TNEA Code: 1301)."
+
+    if prebuilt_card and not sources:
+        sources = prebuilt_card.get("sources", [])
 
     # 6. Smart Cache Mutation & DB Persistence
     if diagnosis_category == "FALSE_DISLIKE":
