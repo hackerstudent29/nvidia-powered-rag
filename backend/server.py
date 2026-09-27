@@ -4157,14 +4157,17 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             # Absolute safeguard: if all LLM streams produced zero content tokens, synthesize full text from retrieved context
             if not collected_response or tokens_emitted_count == 0:
-                if retrieved_chunks:
+                pb_card = get_prebuilt_card_answer(user_query) or (get_prebuilt_card_answer(expanded_query) if 'expanded_query' in locals() else None)
+                if pb_card:
+                    fallback_msg = pb_card["response"]
+                elif retrieved_chunks:
                     clean_notes = []
                     for c in retrieved_chunks[:5]:
                         raw = c.get("content", "")
                         clean_text = re.sub(r'^(?:#{1,4}\s*)?Document:.*\n?', '', raw, flags=re.MULTILINE | re.IGNORECASE)
                         clean_text = re.sub(r'^(?:#{1,4}\s*)?Section:.*\n?', '', clean_text, flags=re.MULTILINE | re.IGNORECASE)
                         clean_text = re.sub(r'^(?:#{1,4}\s*)?Version:.*\n?', '', clean_text, flags=re.MULTILINE | re.IGNORECASE).strip()
-                        clean_notes.append(f"### {c['title']}\n{clean_text}")
+                        clean_notes.append(f"### {c.get('title', 'Campus Record')}\n{clean_text}")
                     fallback_msg = "\n\n".join(clean_notes)
                 else:
                     fallback_msg = (

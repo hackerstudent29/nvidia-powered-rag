@@ -591,9 +591,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     if (!textareaRef.current) return;
     const el = textareaRef.current;
     
+    if (!expanded) {
+      el.style.height = '24px';
+      setTextareaHeight(24);
+      setIsScrolling(false);
+      return;
+    }
+
     el.style.height = 'auto';
     const scrollHeight = el.scrollHeight;
-    const newHeight = Math.max(52, Math.min(scrollHeight, 160));
+    const newHeight = Math.max(48, Math.min(scrollHeight, 160));
     el.style.height = `${newHeight}px`;
     
     setTextareaHeight((prev) => (prev !== newHeight ? newHeight : prev));
@@ -1190,8 +1197,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
               className={cn(
-                "absolute inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 pr-12 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
-                expanded ? "top-0 py-3 opacity-100 scale-100 translate-y-0" : "top-1/2 -translate-y-1/2 py-2 opacity-100 scale-100 cursor-pointer",
+                "absolute inset-x-0 z-[2] w-full resize-none bg-transparent pl-4 sm:pl-5 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
+                expanded ? "top-0 py-3 opacity-100 scale-100 translate-y-0 pr-12" : "top-1/2 -translate-y-1/2 py-0 h-6 opacity-100 scale-100 cursor-pointer pr-36 sm:pr-40",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
               )}
             />
@@ -1274,7 +1281,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                         setIsVoiceMenuOpen(!isVoiceMenuOpen);
                       }
                     }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E1EED7]/90 dark:bg-[#10b981]/15 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E]/15 dark:hover:bg-[#10b981]/25 text-xs font-bold transition-all cursor-pointer border border-[#2E6B5E]/20 dark:border-[#10b981]/30 shadow-xs"
                   >
                     <Mic className="size-3.5 text-[#10b981]" />
                     <span>

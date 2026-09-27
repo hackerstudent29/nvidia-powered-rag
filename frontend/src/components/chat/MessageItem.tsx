@@ -848,89 +848,97 @@ const MessageItem = React.memo(function MessageItem({
   useEffect(() => {
     let timeoutId: any = null;
 
-    const handleSelectionChange = () => {
-      if (timeoutId) clearTimeout(timeoutId);
+    const evaluateSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        setSelectionToolbar(null);
+        return;
+      }
 
-      timeoutId = setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection || selection.isCollapsed) {
+      const text = selection.toString().trim();
+      if (!text || text.length < 2) {
+        setSelectionToolbar(null);
+        return;
+      }
+
+      try {
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : (container as Element);
+
+        if (!element?.closest(".chat-message-content")) {
           setSelectionToolbar(null);
           return;
         }
 
-        const text = selection.toString().trim();
-        if (!text || text.length < 2) {
-          setSelectionToolbar(null);
-          return;
-        }
+        if (messageRef.current && messageRef.current.contains(container)) {
+          const rect = range.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
 
-        try {
-          const range = selection.getRangeAt(0);
-          const container = range.commonAncestorContainer;
-          const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : (container as Element);
+            const approxWidth = Math.min(270, viewportWidth - 24);
+            const approxHeight = 44;
 
-          if (!element?.closest(".chat-message-content")) {
-            setSelectionToolbar(null);
-            return;
-          }
+            const centerX = rect.left + rect.width / 2;
+            const minX = approxWidth / 2 + 12;
+            const maxX = viewportWidth - approxWidth / 2 - 12;
+            const clampedX = Math.max(minX, Math.min(maxX, centerX));
 
-          if (messageRef.current && messageRef.current.contains(container)) {
-            const rect = range.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-              const viewportWidth = window.innerWidth;
-              const viewportHeight = window.innerHeight;
+            let clampedY: number;
+            let placement: "above" | "below" = "above";
 
-              const approxWidth = Math.min(270, viewportWidth - 24);
-              const approxHeight = 44;
-
-              const centerX = rect.left + rect.width / 2;
-              const minX = approxWidth / 2 + 12;
-              const maxX = viewportWidth - approxWidth / 2 - 12;
-              const clampedX = Math.max(minX, Math.min(maxX, centerX));
-
-              let clampedY: number;
-              let placement: "above" | "below" = "above";
-
-              if (rect.top - approxHeight - 16 < 65) {
-                clampedY = Math.min(viewportHeight - 60, rect.bottom + 12);
-                placement = "below";
-              } else {
-                clampedY = Math.max(70, rect.top - 10);
-                placement = "above";
-              }
-
-              setSelectionToolbar({
-                text,
-                x: clampedX,
-                y: clampedY,
-                placement,
-              });
+            if (rect.top - approxHeight - 16 < 65) {
+              clampedY = Math.min(viewportHeight - 60, rect.bottom + 12);
+              placement = "below";
+            } else {
+              clampedY = Math.max(70, rect.top - 10);
+              placement = "above";
             }
+
+            setSelectionToolbar({
+              text,
+              x: clampedX,
+              y: clampedY,
+              placement,
+            });
           }
-        } catch (e) {
-          setSelectionToolbar(null);
         }
-      }, 70);
+      } catch (e) {
+        setSelectionToolbar(null);
+      }
+    };
+
+    const handlePointerDown = (e: PointerEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest(".selection-toolbar-portal")) return;
+    };
+
+    const handlePointerUp = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(evaluateSelection, 20);
     };
 
     const handleScrollOrResize = () => {
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed) {
         setSelectionToolbar(null);
-      } else {
-        handleSelectionChange();
       }
     };
 
-    document.addEventListener("selectionchange", handleSelectionChange);
+    document.addEventListener("pointerdown", handlePointerDown as any);
+    document.addEventListener("pointerup", handlePointerUp as any);
+    document.addEventListener("touchend", handlePointerUp as any);
     window.addEventListener("scroll", handleScrollOrResize, true);
     window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
-      document.removeEventListener("selectionchange", handleSelectionChange);
-      window.removeEventListener("scroll", handleScrollOrResize, true);
-      window.removeEventListener("resize", handleScrollOrResize);
+      document.removeEventListener("pointerdown", handlePointerDown as any);
+      document.removeEventListener("pointerup", handlePointerUp as any);
+      document.removeEventListener("touchend", handlePointerUp as any);
+      window.addEventListener("scroll", handleScrollOrResize, true);
+      window.addEventListener("resize", handleScrollOrResize);
     };
   }, []);
 
