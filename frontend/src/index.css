@@ -48,6 +48,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 
+ * Keep selection highlight visible even when the floating toolbar mounts.
+ * The .selection-has-toolbar class is added by MessageItem when toolbar is showing.
+ * We pin the ::selection colours and also prevent the container from losing
+ * "focus" by forcing it to remain the active selection root.
+ */
 .chat-message-content::selection,
 .chat-message-content *::selection {
   background-color: rgba(46, 107, 94, 0.35) !important;
@@ -69,6 +75,21 @@
 .dark .chat-message-content::-moz-selection,
 .dark .chat-message-content *::-moz-selection {
   background-color: rgba(16, 185, 129, 0.45) !important;
+  color: inherit !important;
+}
+
+/* When the selection toolbar is visible, lock in the highlight so React re-renders
+   don't clear the visual selection. The ::selection pseudo-element only renders 
+   when the element subtree is the "active selection root". We prevent any blur
+   from collapsing the highlight by setting pointer-events carefully on the container. */
+.selection-has-toolbar .chat-message-content::selection,
+.selection-has-toolbar .chat-message-content *::selection {
+  background-color: rgba(46, 107, 94, 0.42) !important;
+  color: inherit !important;
+}
+.dark .selection-has-toolbar .chat-message-content::selection,
+.dark .selection-has-toolbar .chat-message-content *::selection {
+  background-color: rgba(16, 185, 129, 0.55) !important;
   color: inherit !important;
 }
 

@@ -259,6 +259,35 @@ function prepareCleanTTSText(markdown: string): string {
   // 3. Transform markdown links [text](url) -> text
   text = text.replace(/\[\s*([^\]]+?)\s*\]\(\s*([^\)]+?)\s*\)/g, "$1");
 
+  // 3b. Pre-processing: strip redundant parenthesized acronyms when the full form already precedes them.
+  // e.g. "Information Technology (IT)" -> "Information Technology"
+  //      "AI & Data Science (AIDS)" -> "AI and Data Science"
+  //      "Computer Science & Engineering (CSE)" -> "Computer Science and Engineering"
+  // This MUST run BEFORE individual acronym replacements below, or the acronym gets expanded
+  // inside the parentheses and results in double-reading.
+  const acronymParenMap: Array<[RegExp, string]> = [
+    // Dept names with parenthesized short codes
+    [/\bInformation\s+Technology\s*\(\s*I\.?T\.?\s*\)/gi, "Information Technology"],
+    [/\bAI\s*[&and]+\s*Data\s+Science\s*\(\s*AI?DS?\s*\)/gi, "AI and Data Science"],
+    [/\bAI\s*[&and]+\s*Machine\s+Learning\s*\(\s*AI\/ML\s*\)/gi, "AI and Machine Learning"],
+    [/\bAI\s*[&and]+\s*Machine\s+Learning\s*\(\s*AIML\s*\)/gi, "AI and Machine Learning"],
+    [/\bComputer\s+Science\s*[&and]*\s*Engineering\s*\(\s*CSE\s*\)/gi, "Computer Science and Engineering"],
+    [/\bComputer\s+Science\s*[&and]*\s*Business\s+Systems\s*\(\s*CSBS\s*\)/gi, "Computer Science and Business Systems"],
+    [/\bElectronics\s*[&and]+\s*Communication\s*(?:Engineering)?\s*\(\s*ECE\s*\)/gi, "Electronics and Communication Engineering"],
+    [/\bElectrical\s*[&and]+\s*Electronics\s*(?:Engineering)?\s*\(\s*EEE\s*\)/gi, "Electrical and Electronics Engineering"],
+    [/\bMechanical\s+Engineering\s*\(\s*MECH\s*\)/gi, "Mechanical Engineering"],
+    [/\bCivil\s+Engineering\s*\(\s*CIVIL\s*\)/gi, "Civil Engineering"],
+    // Degree abbreviations after full degree name
+    [/\bBachelor\s+of\s+Engineering\s*\(\s*B\.?E\.?\s*\)/gi, "Bachelor of Engineering"],
+    [/\bBachelor\s+of\s+Technology\s*\(\s*B\.?Tech\.?\s*\)/gi, "Bachelor of Technology"],
+    [/\bMaster\s+of\s+(?:Engineering|Technology)\s*\(\s*M\.?(?:E|Tech)\.?\s*\)/gi, "Master of Engineering"],
+    // Generic: strip any (2-5 capital letter acronym) if preceded by a word
+    [/\b([A-Z][a-z]+(?:\s+[A-Z&][a-z]*)*)\s+\(([A-Z]{2,5})\)/g, "$1"],
+  ];
+  for (const [pattern, replacement] of acronymParenMap) {
+    text = text.replace(pattern, replacement);
+  }
+
   // 4. Clean email addresses for natural reading: user@domain.ext -> user at domain dot ext
   text = text.replace(
     /\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})\b/g,
@@ -359,36 +388,40 @@ function prepareCleanTTSText(markdown: string): string {
     [/\bSIPCOT\b/gi, "Sipcot"],
     [/\bOMR\b/gi, "OMR"],
     [/\bECR\b/gi, "ECR"],
-    [/\bNAAC\b/gi, "NAAC"],
-    [/\bAICTE\b/gi, "AICTE"],
-    [/\bTNEA\b/gi, "TNEA"],
-    [/\bNBA\b/gi, "NBA"],
-    [/\bNIRF\b/gi, "NIRF"],
-    [/\bIQAC\b/gi, "IQAC"],
-    [/\bIEEE\b/gi, "IEEE"],
-    [/\bISTE\b/gi, "ISTE"],
-    [/\bNPTEL\b/gi, "NPTEL"],
+    [/\bNAAC\b/gi, "N. A. A. C."],
+    [/\bAICTE\b/gi, "A. I. C. T. E."],
+    // TNEA: spell each letter so TTS doesn't guess "tinia" — force letter-by-letter reading
+    [/\bTNEA\b/gi, "T. N. E. A."],
+    [/\bNBA\b/gi, "N. B. A."],
+    [/\bNIRF\b/gi, "N. I. R. F."],
+    [/\bIQAC\b/gi, "I. Q. A. C."],
+    [/\bIEEE\b/gi, "I. E. E. E."],
+    [/\bISTE\b/gi, "I. S. T. E."],
+    [/\bNPTEL\b/gi, "N. P. T. E. L."],
 
     // Academic Departments & Degrees
+    // Standalone acronyms (only reached if NOT already preceded by full dept name — stripped above)
     [/\bAI&DS\b/gi, "AI and Data Science"],
     [/\bAIDS\b/gi, "AI and Data Science"],
     [/\bAIML\b|\bAI\/ML\b/gi, "AI and Machine Learning"],
-    [/\bCSE\b/gi, "Computer Science"],
-    [/\bECE\b/gi, "Electronics and Communication"],
-    [/\bEEE\b/gi, "Electrical and Electronics"],
-    [/\bIT\b/gi, "Information Technology"],
-    [/\bMECH\b/gi, "Mechanical"],
-    [/\bCIVIL\b/gi, "Civil"],
-    [/\bB\.Tech\b|\bBTech\b/gi, "B Tech"],
-    [/\bM\.Tech\b|\bMTech\b/gi, "M Tech"],
-    [/\bB\.E\b|\bBE\b/gi, "B E"],
-    [/\bM\.E\b|\bME\b/gi, "M E"],
-    [/\bM\.B\.A\b|\bMBA\b/gi, "MBA"],
-    [/\bPh\.D\b|\bPhD\b/gi, "PhD"],
+    [/\bCSE\b/gi, "Computer Science and Engineering"],
+    [/\bCSBS\b/gi, "Computer Science and Business Systems"],
+    [/\bECE\b/gi, "Electronics and Communication Engineering"],
+    [/\bEEE\b/gi, "Electrical and Electronics Engineering"],
+    // IT: only expand when truly standalone (not inside a phrase like "IT Park" where it means the place)
+    [/\bIT\b(?!\s+(?:Park|Hub|Sector|Zone|industry|industries))/gi, "Information Technology"],
+    [/\bMECH\b/gi, "Mechanical Engineering"],
+    [/\bCIVIL\b/gi, "Civil Engineering"],
+    [/\bB\.Tech\b|\bBTech\b/gi, "B. Tech"],
+    [/\bM\.Tech\b|\bMTech\b/gi, "M. Tech"],
+    [/\bB\.E\.?\b/gi, "Bachelor of Engineering"],
+    [/\bM\.E\.?\b/gi, "Master of Engineering"],
+    [/\bM\.B\.A\b|\bMBA\b/gi, "Master of Business Administration"],
+    [/\bPh\.D\b|\bPhD\b/gi, "Doctor of Philosophy"],
     [/\bUG\b/gi, "undergraduate"],
     [/\bPG\b/gi, "postgraduate"],
-    [/\bCGPA\b/gi, "CGPA"],
-    [/\bGPA\b/gi, "GPA"],
+    [/\bCGPA\b/gi, "C. G. P. A."],
+    [/\bGPA\b/gi, "G. P. A."],
     [/\bLPA\b|\blpa\b/gi, "Lakhs per annum"],
 
     // Chennai / OMR / Campus Bus Stop Locations (Smooth, unhyphenated, natural fast pronunciation)
@@ -845,6 +878,9 @@ const MessageItem = React.memo(function MessageItem({
     placement: "above" | "below";
   } | null>(null);
 
+  // Ref for the message container — declared early so selection useEffect can access it
+  const messageRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     let timeoutId: any = null;
 
@@ -911,12 +947,20 @@ const MessageItem = React.memo(function MessageItem({
 
     const handlePointerDown = (e: PointerEvent | TouchEvent) => {
       const target = e.target as HTMLElement | null;
+      // Don't dismiss when clicking inside the toolbar itself
       if (target?.closest(".selection-toolbar-portal")) return;
+      // Dismiss toolbar immediately if user taps/clicks outside of it
+      // (a new pointerup will re-evaluate if they start a new selection)
+      if (target && !target.closest(".chat-message-content")) {
+        if (timeoutId) clearTimeout(timeoutId);
+        setSelectionToolbar(null);
+      }
     };
 
     const handlePointerUp = () => {
       if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(evaluateSelection, 20);
+      // Short delay lets the browser finalise the selection range after drag ends
+      timeoutId = setTimeout(evaluateSelection, 30);
     };
 
     const handleScrollOrResize = () => {
@@ -937,15 +981,14 @@ const MessageItem = React.memo(function MessageItem({
       document.removeEventListener("pointerdown", handlePointerDown as any);
       document.removeEventListener("pointerup", handlePointerUp as any);
       document.removeEventListener("touchend", handlePointerUp as any);
-      window.addEventListener("scroll", handleScrollOrResize, true);
-      window.addEventListener("resize", handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, []);
 
   // Strictly real token metrics sent by the backend server (no fake or estimated data)
   const realTokenMetrics = message.token_metrics !== undefined && message.token_metrics !== null ? message.token_metrics : undefined;
 
-  const messageRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const wordCounterRef = useRef<number>(0);
@@ -1373,7 +1416,7 @@ const MessageItem = React.memo(function MessageItem({
   const processHighlightedChildren = (node: React.ReactNode): React.ReactNode => node;
 
   return (
-    <div ref={messageRef} className="flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300">
+    <div ref={messageRef} className={`flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300${selectionToolbar ? " selection-has-toolbar" : ""}`}>
       <div className="flex items-center gap-2.5 mb-2 shrink-0">
         <div className="shrink-0 flex items-center justify-center">
           <JellyBlobMascot
@@ -2000,7 +2043,7 @@ const MessageItem = React.memo(function MessageItem({
             transform: selectionToolbar.placement === "below" ? "translate(-50%, 0%)" : "translate(-50%, -100%)",
             zIndex: 99999,
           }}
-          className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] shrink-0"
+          className="selection-toolbar-portal flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] shrink-0"
         >
           {/* 1. Ask Lorin */}
           <button
