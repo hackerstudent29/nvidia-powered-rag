@@ -1801,7 +1801,7 @@ const MessageItem = React.memo(function MessageItem({
             </div>
 
             {/* Right: Model Meta & Sources Pill */}
-            <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 sm:ml-auto w-full sm:w-auto">
+            <div className="flex items-center justify-end flex-wrap gap-1.5 sm:gap-2 ml-auto w-full sm:w-auto">
               {realTokenMetrics && (
                 <TokenCostBadge metrics={realTokenMetrics} isOpen={statsOpen} onClick={() => setStatsOpen(prev => !prev)} />
               )}
