@@ -107,10 +107,26 @@ EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 MODELS_CATALOG = [
     {
         "id": "auto",
-        "name": "Auto (High-Velocity Multi-Model Engine)",
-        "provider": "Vercel / NVIDIA NIM",
-        "description": "Auto-selects optimal synthesis engine (Gemini Flash Lite / Qwen-3 32B / Ling Free)",
+        "name": "Auto (NVIDIA NIM MoE & Dual-Gateway Engine)",
+        "provider": "NVIDIA NIM / Vercel",
+        "description": "Auto-selects optimal MoE reasoning engine (Nemotron 3 Super 120B / Gemini Flash / Qwen-3)",
         "is_default": True,
+        "supports_reasoning": True
+    },
+    {
+        "id": "nvidia/nemotron-3-super-120b-a12b",
+        "name": "NVIDIA Nemotron 3 Super 120B",
+        "provider": "NVIDIA NIM Infrastructure",
+        "description": "NVIDIA flagship 120B MoE reasoning engine delivering high-accuracy campus synthesis",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
+        "id": "nvidia/nemotron-3-ultra-550b-a55b",
+        "name": "NVIDIA Nemotron 3 Ultra 550B",
+        "provider": "NVIDIA NIM Infrastructure",
+        "description": "NVIDIA ultra-capacity 550B MoE model for deep compound multi-part reasoning",
+        "is_default": False,
         "supports_reasoning": True
     },
     {
@@ -134,22 +150,6 @@ MODELS_CATALOG = [
         "name": "Ling 3.0 Flash (100% Free)",
         "provider": "Vercel AI Gateway (Free Tier)",
         "description": "High-speed free tier workhorse with 256K context and 210 TPS",
-        "is_default": False,
-        "supports_reasoning": True
-    },
-    {
-        "id": "openai/gpt-oss-safeguard-20b",
-        "name": "OpenAI GPT-OSS Safeguard 20B",
-        "provider": "Vercel AI Gateway",
-        "description": "Instant 0.2s TTFT open model with safety evaluation and 131K context",
-        "is_default": False,
-        "supports_reasoning": True
-    },
-    {
-        "id": "amazon/nova-lite",
-        "name": "Amazon Nova Lite",
-        "provider": "Vercel AI Gateway",
-        "description": "Fast 0.4s multimodal-ready engine with 300K context ($0.06/M in)",
         "is_default": False,
         "supports_reasoning": True
     }
@@ -189,10 +189,12 @@ UNIVERSAL STRUCTURED OUTPUT GUIDELINES:
 
 def auto_select_model(query: str) -> str:
     """
-    Automatically selects the optimal high-velocity synthesis model:
-    - Primary Engine -> google/gemini-2.5-flash-lite (Vercel AI Gateway, 1M context, 413 TPS)
-    - Fallback -> alibaba/qwen-3-32b / inclusionai/ling-3.0-flash-sante-free / nvidia/nemotron-3-super-120b-a12b
+    Automatically selects the optimal synthesis model:
+    - Primary Engine -> nvidia/nemotron-3-super-120b-a12b (NVIDIA NIM Infrastructure)
+    - Fallback -> google/gemini-2.5-flash-lite / alibaba/qwen-3-32b (Vercel AI Gateway)
     """
+    if os.getenv("NVIDIA_API_KEY"):
+        return "nvidia/nemotron-3-super-120b-a12b"
     return "google/gemini-2.5-flash-lite"
 
 def structure_markdown_for_mobile(text: str) -> str:
@@ -4732,12 +4734,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
             candidate_models = [
-                "zai/glm-5.3-flash",
-                "openai/gpt-oss-20b",
-                "alibaba/qwen-3-32b",
-                "google/gemini-2.5-flash-lite",
-                "inclusionai/ling-3.0-flash-sante-free",
                 "nvidia/nemotron-3-super-120b-a12b",
+                "nvidia/nemotron-3-ultra-550b-a55b",
+                "google/gemini-2.5-flash-lite",
+                "alibaba/qwen-3-32b",
+                "inclusionai/ling-3.0-flash-sante-free",
                 "google/gemini-2.5-flash-lite-backup"
             ]
             if model_id and model_id != "auto" and model_id not in candidate_models:
