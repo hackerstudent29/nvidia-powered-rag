@@ -2752,7 +2752,7 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
                         JOIN chat_sessions s ON s.session_id = m.session_id
                         WHERE m.session_id = %s AND COALESCE(s.is_archived, FALSE) = FALSE
                         ORDER BY m.created_at DESC
-                        LIMIT 4;
+                        LIMIT 10;
                     """, (session_id,))
                     rows = cur.fetchall()
                     for row in rows:
@@ -2836,7 +2836,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
         print(f"[QUERY REWRITER] Bypassing rewriter for standalone protected query: '{normalized_q}'")
         return normalized_q
 
-    # Fetch last 4 messages strictly from current active session (excluding current turn message)
+    # Fetch last 10 messages (up to 5 dialogue pairs) from current active session
     history_messages = []
     try:
         with DBContext() as conn:
@@ -2847,7 +2847,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
                         JOIN chat_sessions s ON s.session_id = m.session_id
                         WHERE m.session_id = %s AND COALESCE(s.is_archived, FALSE) = FALSE
                         ORDER BY m.created_at DESC
-                        LIMIT 4;
+                        LIMIT 10;
                     """, (session_id,))
                     history_messages = cur.fetchall()
     except Exception as e:
@@ -2866,7 +2866,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
     if not filtered or len(filtered) < 1:
         return resolve_pronouns(normalized_q, session_id)
 
-    MAX_HISTORY_CHARS = 1200
+    MAX_HISTORY_CHARS = 3000
     current_chars = 0
     history_text_blocks = []
     
@@ -3190,16 +3190,104 @@ def decompose_multi_hop_query(query: str) -> List[str]:
 
     return sub_queries if sub_queries else [query]
 
-def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 12) -> List[Dict[str, Any]]:
+async def decompose_multi_hop_query_llm(query: str) -> List[str]:
+    """
+    Enterprise Agentic Multi-Hop Semantic Query Decomposer (Hybrid AI + Deterministic Fallback).
+    Dynamically breaks down complex, comparative, or multi-domain student prompts into atomic
+    search queries using a fast concurrent LLM race (Gemini Flash Lite + Nemotron Lightning).
+    """
+    q_clean = query.strip()
+    if not q_clean:
+        return [query]
+
+    # Fast Gating: If single simple query (< 14 words, 1 question mark, no comparison keywords), skip LLM in 0ms
+    comp_triggers = ["compare", "versus", "vs", "difference between", "both", "all of", "also tell", "then tell", "and how", "what about"]
+    is_compound = (
+        len(q_clean.split()) > 14
+        or any(t in q_clean.lower() for t in comp_triggers)
+        or q_clean.count('?') >= 2
+        or len(re.split(r'[\?\n;]+', q_clean)) >= 2
+    )
+
+    if not is_compound:
+        return decompose_multi_hop_query(q_clean)
+
+    prompt = (
+        f"Decompose this complex or multi-topic college campus inquiry into 2 to 6 atomic, standalone search sub-queries "
+        f"for retrieving official Mohamed Sathak A.J. College of Engineering (MSAJCE) campus records.\n\n"
+        f"User Inquiry: \"{q_clean}\"\n\n"
+        f"Output ONLY a valid JSON array of plain strings without explanation or markdown fences (e.g. [\"MSAJCE boys hostel facilities\", \"MSAJCE bus routes\"])."
+    )
+
+    try:
+        client = get_http_client()
+        if client:
+            models_to_try = [
+                ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
+                ("nvidia/nemotron-3.5-lightning-30b-a3b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
+                ("meta/muse-glimmer-30b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
+            ]
+
+            async def _fetch_decompose(m_name: str, url: str, hdrs: dict) -> Optional[List[str]]:
+                try:
+                    payload = {
+                        "model": m_name,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "temperature": 0.1,
+                        "max_tokens": 160
+                    }
+                    resp = await client.post(url, headers=hdrs, json=payload, timeout=2.0)
+                    if resp.status_code == 200:
+                        raw = resp.json()["choices"][0]["message"]["content"].strip()
+                        raw = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL | re.IGNORECASE).strip()
+                        raw = re.sub(r'^```(?:json)?\s*', '', raw, flags=re.IGNORECASE)
+                        raw = re.sub(r'\s*```$', '', raw)
+                        raw = raw.strip()
+                        
+                        start_idx = raw.find('[')
+                        end_idx = raw.rfind(']')
+                        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                            json_str = raw[start_idx:end_idx+1]
+                            parsed = json.loads(json_str)
+                            if isinstance(parsed, list) and len(parsed) >= 2:
+                                clean_list = []
+                                for item in parsed:
+                                    s_item = str(item).strip()
+                                    if s_item and len(s_item.split()) >= 2:
+                                        if "msajce" not in s_item.lower() and "mohamed sathak" not in s_item.lower():
+                                            s_item = f"MSAJCE {s_item}"
+                                        clean_list.append(s_item)
+                                if len(clean_list) >= 2:
+                                    print(f"[AI QUERY DECOMPOSER WINNER: {m_name}] Extracted {len(clean_list)} sub-queries")
+                                    return clean_list
+                except Exception:
+                    pass
+                return None
+
+            tasks = [asyncio.create_task(_fetch_decompose(m, u, h)) for m, u, h in models_to_try]
+            for completed in asyncio.as_completed(tasks):
+                res = await completed
+                if res:
+                    for t in tasks:
+                        if not t.done():
+                            t.cancel()
+                    return res
+    except Exception as e:
+        print(f"[WARN] AI Query Decomposer Exception: {e}")
+
+    # Seamless fallback to deterministic regex clause decomposer
+    return decompose_multi_hop_query(q_clean)
+
+def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 12, sub_queries: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Parallel hybrid search with sub-query decomposition & balanced round-robin interleaving."""
-    sub_queries = decompose_multi_hop_query(user_query)
-    if len(sub_queries) == 1:
+    active_sub_queries = sub_queries if (sub_queries and len(sub_queries) >= 1) else decompose_multi_hop_query(user_query)
+    if len(active_sub_queries) == 1:
         return hybrid_search(user_query, query_vector, top_k=top_k)
 
     branch_results: Dict[str, List[Dict[str, Any]]] = {}
-    slots_per_branch = max(2, min(4, top_k // len(sub_queries) + 1))
+    slots_per_branch = max(2, min(4, top_k // len(active_sub_queries) + 1))
 
-    for sq in sub_queries:
+    for sq in active_sub_queries:
         branch_results[sq] = hybrid_search(sq, query_vector=None, top_k=slots_per_branch + 1)
 
     # Balanced round-robin interleaving to guarantee multi-topic representation
@@ -3207,7 +3295,7 @@ def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]]
     seen_ids = set()
 
     for r_idx in range(slots_per_branch + 1):
-        for sq in sub_queries:
+        for sq in active_sub_queries:
             b_list = branch_results.get(sq, [])
             if r_idx < len(b_list):
                 c = b_list[r_idx]
@@ -3224,7 +3312,7 @@ def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]]
             seen_ids.add(cid)
             aggregated_chunks.append(dc)
 
-    max_target = max(top_k, min(35, len(sub_queries) * 3))
+    max_target = max(top_k, min(35, len(active_sub_queries) * 3))
     return aggregated_chunks[:max_target]
 
 def validate_citations(answer_text: str, retrieved_chunks: List[Dict[str, Any]]) -> str:
@@ -4207,19 +4295,19 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             elif query_class == "targeted":
                 RAG_TOP_K      = 6
                 MAX_TOKENS     = 4096
-                HISTORY_LIMIT  = 4
+                HISTORY_LIMIT  = 5
             elif query_class == "transport":
                 RAG_TOP_K      = 10      # Retrieve full transport context chunks
                 MAX_TOKENS     = 4096
-                HISTORY_LIMIT  = 4
+                HISTORY_LIMIT  = 5
             elif query_class == "complex":
                 RAG_TOP_K      = 28
                 MAX_TOKENS     = 4096
-                HISTORY_LIMIT  = 4
+                HISTORY_LIMIT  = 5
             else:
                 RAG_TOP_K      = 8
                 MAX_TOKENS     = 4096
-                HISTORY_LIMIT  = 4
+                HISTORY_LIMIT  = 5
 
             CHUNK_TRIM = 99999
 
@@ -4332,7 +4420,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 yield item
                             return
 
-                    retrieved_chunks = multi_hop_hybrid_search(expanded_query, query_vector, top_k=RAG_TOP_K)
+                    sub_queries = await decompose_multi_hop_query_llm(expanded_query)
+                    retrieved_chunks = multi_hop_hybrid_search(expanded_query, query_vector, top_k=RAG_TOP_K, sub_queries=sub_queries)
 
                     # If compound inquiry with transport, inject verified transit overview or matched route
                     if matched_route:
@@ -4558,8 +4647,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     else:
                                         i += 1
                                 
-                                # Hierarchical Semantic State Compression + Domain Isolation:
-                                current_active_domain = domain_router.classify(user_query)
+                                # High-Fidelity 5-Turn Conversational Memory Compactor:
                                 budgeted_history = []
                                 
                                 for k in range(0, len(clean_history), 2):
@@ -4567,29 +4655,19 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     a_pair = clean_history[k+1]
                                     u_text = u_pair["content"].strip()
                                     a_text = a_pair["content"].strip()
-                                    turn_domain = domain_router.classify(u_text)
                                     
+                                    # Always keep user question intact
                                     budgeted_history.append({"role": "user", "content": u_text})
                                     
-                                    is_cross_domain_risk = (
-                                        current_active_domain in [CampusDomain.RESEARCH, CampusDomain.ACADEMICS, CampusDomain.ADMISSIONS, CampusDomain.FEES]
-                                        and turn_domain in [CampusDomain.TRANSPORT, CampusDomain.CAMPUS_LIFE]
-                                    )
+                                    # Retain structured assistant facts up to 600 chars (~150 tokens) per turn
+                                    clean_a = a_text.strip()
+                                    if len(clean_a) > 600:
+                                        clean_a = clean_a[:600].rsplit(' ', 1)[0] + "..."
                                     
-                                    if is_cross_domain_risk:
-                                        budgeted_history.append({
-                                            "role": "assistant",
-                                            "content": f"[Prior Discussion: Campus {turn_domain.value.capitalize()} Facilities]"
-                                        })
-                                    else:
-                                        lines = [line.strip() for line in a_text.split('\n') if line.strip() and not line.strip().startswith('|') and not line.strip().startswith('#')]
-                                        summary_snippet = lines[0] if lines else ""
-                                        if len(summary_snippet) > 150:
-                                            summary_snippet = summary_snippet[:150].rsplit(' ', 1)[0] + "..."
-                                        budgeted_history.append({
-                                            "role": "assistant",
-                                            "content": summary_snippet if summary_snippet else "[Prior campus response summary]"
-                                        })
+                                    budgeted_history.append({
+                                        "role": "assistant",
+                                        "content": clean_a if clean_a else "[Prior campus response]"
+                                    })
                                 
                                 history_messages = budgeted_history
                 except Exception as e:
@@ -5059,7 +5137,8 @@ async def chat_sync_endpoint(req: ChatRequest):
                 "created_at": datetime.utcnow().isoformat() + "Z"
             }
 
-    retrieved_chunks = multi_hop_hybrid_search(user_query, query_vector, top_k=top_k_val) if top_k_val > 0 else []
+    sub_queries = await decompose_multi_hop_query_llm(user_query) if top_k_val > 0 else []
+    retrieved_chunks = multi_hop_hybrid_search(user_query, query_vector, top_k=top_k_val, sub_queries=sub_queries) if top_k_val > 0 else []
 
     # RouteFinder injection
     if route_finder:
