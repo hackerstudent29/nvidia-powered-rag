@@ -106,7 +106,8 @@ const ChatHeader = React.memo(function ChatHeader({
       if (
         fontSizeMenuOpen &&
         fontSizeMenuRef.current &&
-        !fontSizeMenuRef.current.contains(target)
+        !fontSizeMenuRef.current.contains(target) &&
+        !headerNavRef.current?.contains(target)
       ) {
         setFontSizeMenuOpen(false);
       }
@@ -236,7 +237,7 @@ const ChatHeader = React.memo(function ChatHeader({
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 relative flex items-center justify-between px-3.5 sm:px-6 rounded-full overflow-hidden
+          className="pointer-events-auto max-w-4xl w-full mx-auto h-14 sm:h-16 relative flex items-center justify-between px-3.5 sm:px-6 rounded-full
             backdrop-blur-2xl
             bg-white/60 dark:bg-[#0d0e12]/55
             border border-white/70 dark:border-white/[0.09]
