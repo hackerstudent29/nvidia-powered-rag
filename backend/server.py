@@ -92,6 +92,8 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 VERCEL_AI_GATEWAY_KEY = os.getenv("AI_GATEWAY_API_KEY") or os.getenv("VERCEL_AI_GATEWAY_KEY") or os.getenv("AI_GATEWAY_API_KEY_BACKUP")
 VERCEL_AI_GATEWAY_URL = os.getenv("VERCEL_AI_GATEWAY_URL", "https://ai-gateway.vercel.sh/v1")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "msajceadmin")
@@ -107,9 +109,9 @@ EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 MODELS_CATALOG = [
     {
         "id": "auto",
-        "name": "Auto (NVIDIA NIM MoE & Dual-Gateway Engine)",
-        "provider": "NVIDIA NIM / Vercel",
-        "description": "Auto-selects optimal MoE reasoning engine (Nemotron 3 Super 120B / Gemini Flash / Qwen-3)",
+        "name": "Auto (NVIDIA NIM MoE & Multi-Cloud Engine)",
+        "provider": "NVIDIA NIM / Vercel / OpenRouter",
+        "description": "Auto-selects optimal MoE reasoning engine across 3 distinct providers with zero-stall failover",
         "is_default": True,
         "supports_reasoning": True
     },
@@ -134,6 +136,14 @@ MODELS_CATALOG = [
         "name": "Google Gemini 2.5 Flash Lite",
         "provider": "Vercel AI Gateway",
         "description": "Frontier low-latency reasoning with 1M context window (413 TPS)",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
+        "id": "nvidia/nemotron-3-super-120b-a12b:free",
+        "name": "NVIDIA Nemotron 3 Super 120B (Free)",
+        "provider": "OpenRouter (Free Tier)",
+        "description": "OpenRouter free-tier 120B MoE backup engine with zero-cost multi-cloud resilience",
         "is_default": False,
         "supports_reasoning": True
     },
@@ -407,6 +417,27 @@ MODEL_PRICING = {
         "output_per_1k": 0.0,
         "cache_per_1k": 0.0,
     },
+    "nvidia/nemotron-3-super-120b-a12b:free": {
+        "name": "NVIDIA Nemotron 3 Super 120B (Free)",
+        "provider": "OpenRouter (Free Tier)",
+        "input_per_1k": 0.0,
+        "output_per_1k": 0.0,
+        "cache_per_1k": 0.0,
+    },
+    "nvidia/nemotron-3-ultra-550b-a55b:free": {
+        "name": "NVIDIA Nemotron 3 Ultra 550B (Free)",
+        "provider": "OpenRouter (Free Tier)",
+        "input_per_1k": 0.0,
+        "output_per_1k": 0.0,
+        "cache_per_1k": 0.0,
+    },
+    "google/gemma-4-26b-a4b-it:free": {
+        "name": "Google Gemma 4 26B (Free)",
+        "provider": "OpenRouter (Free Tier)",
+        "input_per_1k": 0.0,
+        "output_per_1k": 0.0,
+        "cache_per_1k": 0.0,
+    },
     "stepfun/step-3.5-flash": {
         "name": "Step 3.5 Flash",
         "provider": "Vercel AI Gateway",
@@ -428,12 +459,19 @@ MODEL_PRICING = {
         "output_per_1k": 0.00080,
         "cache_per_1k": 0.00005,
     },
+    "nvidia/nemotron-3-ultra-550b-a55b": {
+        "name": "NVIDIA Nemotron 3 Ultra 550B",
+        "provider": "NVIDIA NIM Infrastructure",
+        "input_per_1k": 0.00030,
+        "output_per_1k": 0.00080,
+        "cache_per_1k": 0.00005,
+    },
     "default": {
-        "name": "GLM-5.3 Flash",
-        "provider": "Vercel AI Gateway",
-        "input_per_1k": 0.00003,
-        "output_per_1k": 0.00025,
-        "cache_per_1k": 0.00002,
+        "name": "Nemotron 3 Super 120B",
+        "provider": "NVIDIA NIM Infrastructure",
+        "input_per_1k": 0.00030,
+        "output_per_1k": 0.00080,
+        "cache_per_1k": 0.00005,
     }
 }
 
@@ -2385,35 +2423,56 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
 def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
     m_clean = (m_name or "").lower()
     vercel_backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or VERCEL_AI_GATEWAY_KEY
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", OPENROUTER_API_KEY)
+    
+    # 1. OpenRouter Models (any model with :free or openrouter prefix)
+    if ":free" in m_clean or m_clean.startswith("openrouter/") or "openrouter" in m_clean:
+        actual_model = m_name.replace("openrouter/", "")
+        return (
+            f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions",
+            {
+                "Authorization": f"Bearer {openrouter_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://msajce.edu.in",
+                "X-Title": "Lorin AI Campus Assistant"
+            },
+            actual_model
+        )
+    
+    # 2. Vercel Backup Key
     if "backup" in m_clean:
         return (
-            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {vercel_backup_key}", "Content-Type": "application/json"},
             "google/gemini-2.5-flash-lite"
         )
-    elif "ultra" in m_clean or "550b" in m_clean:
+    
+    # 3. Direct NVIDIA NIM Models
+    if ("ultra" in m_clean or "550b" in m_clean) and ":free" not in m_clean:
         return (
             f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
             "nvidia/nemotron-3-ultra-550b-a55b"
         )
-    elif "super" in m_clean or "120b" in m_clean or ("nemotron" in m_clean and "3.5" not in m_clean and "embed" not in m_clean and "rerank" not in m_clean):
+    elif ("super" in m_clean or "120b" in m_clean or ("nemotron" in m_clean and "3.5" not in m_clean and "embed" not in m_clean and "rerank" not in m_clean)) and ":free" not in m_clean:
         return (
             f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
             "nvidia/nemotron-3-super-120b-a12b"
         )
-    elif m_name and ("/" in m_name or "glm" in m_clean or "qwen" in m_clean or "deepseek" in m_clean or "gpt" in m_clean or "gemini" in m_clean):
+    
+    # 4. Vercel AI Gateway Models
+    elif m_name and ("/" in m_name or "glm" in m_clean or "qwen" in m_clean or "deepseek" in m_clean or "gpt" in m_clean or "gemini" in m_clean or "ling" in m_clean or "step" in m_clean or "nova" in m_clean):
         return (
-            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
             m_name
         )
     else:
         return (
-            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
-            "zai/glm-5.3-flash"
+            "google/gemini-2.5-flash-lite"
         )
 
 def sanitize_response_text(text: str) -> str:
@@ -2920,14 +2979,18 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
 
     try:
         if http_client:
-            # Multi-model parallel race across verified fast Vercel models (Gemini Flash Lite, Qwen-3 32B, GPT-OSS Safeguard)
-            models_to_try = [
+            # Step 2 Model Sequence: Primary (Vercel Gemini 2.5 Flash Lite) -> Secondary (NVIDIA NIM) -> Tertiary (OpenRouter Free)
+            step2_models = [
+                # Primary Worker: Vercel AI Gateway (Sub-250ms, 1M Context, Smart & Low Cost)
                 ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                ("alibaba/qwen-3-32b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                ("openai/gpt-oss-safeguard-20b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
+                # Secondary Failover: NVIDIA NIM Infrastructure (Flagship 120B MoE)
+                ("nvidia/nemotron-3-super-120b-a12b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
+                # Tertiary Failover: OpenRouter Multi-Cloud (100% Free 550B MoE)
+                ("nvidia/nemotron-3-ultra-550b-a55b:free", f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Campus Assistant"}),
             ]
 
-            async def _fetch_rewrite_model(m_name: str, url: str, hdrs: dict) -> Optional[tuple]:
+            for m_idx, (m_name, url, hdrs) in enumerate(step2_models):
+                role_label = "Primary Worker" if m_idx == 0 else f"Failover #{m_idx}"
                 try:
                     payload = {
                         "model": m_name,
@@ -2939,32 +3002,20 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
                     if resp.status_code == 200:
                         res_data = resp.json()
                         rewritten_raw = res_data["choices"][0]["message"]["content"].strip()
-                        # 1. Strip <think>...</think> blocks
                         rewritten_raw = re.sub(r'<think>.*?</think>', '', rewritten_raw, flags=re.DOTALL | re.IGNORECASE).strip()
-                        # 2. Strip "Here's a thinking process" / preamble
                         if "thinking process" in rewritten_raw.lower() or "here's a" in rewritten_raw.lower():
                             parts = [p.strip() for p in rewritten_raw.split("\n") if p.strip() and not p.strip().lower().startswith(("here's", "thinking", "1.", "2.", "3.", "*", "-"))]
                             if parts:
                                 rewritten_raw = parts[-1]
-                        # 3. Strip leading labels like "Rewritten query:", "Standalone query:", quotes
                         rewritten_raw = re.sub(r'^(?:(?:rewritten|standalone|final|search)?\s*(?:query|question)?:\s*)', '', rewritten_raw, flags=re.IGNORECASE).strip()
                         rewritten_raw = rewritten_raw.strip('"\'`').strip()
                         if rewritten_raw and len(rewritten_raw) >= 3 and not rewritten_raw.lower().startswith("here's"):
-                            return (m_name, rewritten_raw)
+                            print(f"[STEP 2 REWRITER SUCCESS] '{current_query}' → '{rewritten_raw}' ({role_label}: {m_name})")
+                            return rewritten_raw
+                    else:
+                        print(f"[STEP 2 REWRITER {role_label.upper()} FAILED] Model {m_name} HTTP {resp.status_code}. Failing over...")
                 except Exception as model_err:
-                    print(f"[WARN] LLM Query Rewriter model {m_name} failed: {model_err}")
-                return None
-
-            tasks = [asyncio.create_task(_fetch_rewrite_model(m_name, url, hdrs)) for m_name, url, hdrs in models_to_try]
-            for completed in asyncio.as_completed(tasks):
-                result = await completed
-                if result:
-                    m_name, rewritten_raw = result
-                    for t in tasks:
-                        if not t.done():
-                            t.cancel()
-                    print(f"[SIMULTANEOUS MULTI-MODEL QUERY REWRITER] '{current_query}' → '{rewritten_raw}' (Fastest winner: {m_name})")
-                    return rewritten_raw
+                    print(f"[STEP 2 REWRITER {role_label.upper()} ERROR] Model {m_name}: {model_err}. Failing over...")
     except Exception as e:
         print(f"[WARN] LLM Query Rewriter Exception: {e}")
 
@@ -3242,13 +3293,18 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
     try:
         client = get_http_client()
         if client:
-            models_to_try = [
+            # Step 3 Model Sequence: Primary (OpenRouter Free 120B MoE) -> Secondary (Vercel) -> Tertiary (NVIDIA NIM)
+            step3_models = [
+                # Primary Worker: OpenRouter Free Tier (100% Free, 120B Parameters, 667ms)
+                ("nvidia/nemotron-3-super-120b-a12b:free", f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Campus Assistant"}),
+                # Secondary Failover: Vercel AI Gateway (300ms, High Throughput)
                 ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                ("alibaba/qwen-3-32b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                ("openai/gpt-oss-safeguard-20b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
+                # Tertiary Failover: NVIDIA NIM Infrastructure (Direct NIM)
+                ("nvidia/nemotron-3-super-120b-a12b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
             ]
 
-            async def _fetch_decompose(m_name: str, url: str, hdrs: dict) -> Optional[List[str]]:
+            for m_idx, (m_name, url, hdrs) in enumerate(step3_models):
+                role_label = "Primary Worker" if m_idx == 0 else f"Failover #{m_idx}"
                 try:
                     payload = {
                         "model": m_name,
@@ -3256,7 +3312,7 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
                         "temperature": 0.1,
                         "max_tokens": 160
                     }
-                    resp = await client.post(url, headers=hdrs, json=payload, timeout=2.0)
+                    resp = await client.post(url, headers=hdrs, json=payload, timeout=2.5)
                     if resp.status_code == 200:
                         raw = resp.json()["choices"][0]["message"]["content"].strip()
                         raw = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL | re.IGNORECASE).strip()
@@ -3278,20 +3334,12 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
                                             s_item = f"MSAJCE {s_item}"
                                         clean_list.append(s_item)
                                 if len(clean_list) >= 2:
-                                    print(f"[AI QUERY DECOMPOSER WINNER: {m_name}] Extracted {len(clean_list)} sub-queries")
+                                    print(f"[STEP 3 DECOMPOSER SUCCESS] Extracted {len(clean_list)} sub-queries ({role_label}: {m_name})")
                                     return clean_list
-                except Exception:
-                    pass
-                return None
-
-            tasks = [asyncio.create_task(_fetch_decompose(m, u, h)) for m, u, h in models_to_try]
-            for completed in asyncio.as_completed(tasks):
-                res = await completed
-                if res:
-                    for t in tasks:
-                        if not t.done():
-                            t.cancel()
-                    return res
+                    else:
+                        print(f"[STEP 3 DECOMPOSER {role_label.upper()} FAILED] Model {m_name} HTTP {resp.status_code}. Failing over...")
+                except Exception as err:
+                    print(f"[STEP 3 DECOMPOSER {role_label.upper()} ERROR] Model {m_name}: {err}. Failing over...")
     except Exception as e:
         print(f"[WARN] AI Query Decomposer Exception: {e}")
 
@@ -4734,12 +4782,18 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
             candidate_models = [
+                # 1. Primary Engine: NVIDIA NIM Infrastructure
                 "nvidia/nemotron-3-super-120b-a12b",
-                "nvidia/nemotron-3-ultra-550b-a55b",
+                # 2. Secondary Engine: Vercel AI Gateway
                 "google/gemini-2.5-flash-lite",
+                # 3. Tertiary Engine: OpenRouter Multi-Cloud Infrastructure (Free Tier)
+                "nvidia/nemotron-3-super-120b-a12b:free",
+                # 4. Failover 1: Vercel Low-Latency Engine
                 "alibaba/qwen-3-32b",
-                "inclusionai/ling-3.0-flash-sante-free",
-                "google/gemini-2.5-flash-lite-backup"
+                # 5. Failover 2: OpenRouter Ultra MoE Engine
+                "nvidia/nemotron-3-ultra-550b-a55b:free",
+                # 6. Failover 3: Vercel Free Workhorse
+                "inclusionai/ling-3.0-flash-sante-free"
             ]
             if model_id and model_id != "auto" and model_id not in candidate_models:
                 candidate_models.insert(0, model_id)
@@ -4764,7 +4818,13 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     "stream_options": {"include_usage": True}
                 }
 
-                provider_label = "Vercel AI Gateway" if "vercel" in target_url else "NVIDIA NIM Infrastructure"
+                if "openrouter" in target_url:
+                    provider_label = "OpenRouter Multi-Cloud Infrastructure"
+                elif "vercel" in target_url:
+                    provider_label = "Vercel AI Gateway"
+                else:
+                    provider_label = "NVIDIA NIM Infrastructure"
+
                 if candidate_idx == 0:
                     yield json.dumps({
                         "type": "reasoning",
@@ -5299,7 +5359,13 @@ async def chat_sync_endpoint(req: ChatRequest):
 
     answer = None
     models_to_try = [model_id] if model_id and model_id != "auto" else []
-    for m_cand in ["nvidia/nemotron-3-ultra-550b-a55b", "nvidia/nemotron-3-super-120b-a12b", "google/gemini-2.5-flash-lite", "google/gemini-2.5-flash-lite-backup"]:
+    for m_cand in [
+        "nvidia/nemotron-3-super-120b-a12b",
+        "google/gemini-2.5-flash-lite",
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        "alibaba/qwen-3-32b",
+        "nvidia/nemotron-3-ultra-550b-a55b:free"
+    ]:
         if m_cand not in models_to_try:
             models_to_try.append(m_cand)
 
@@ -6450,37 +6516,45 @@ async def convert_text_to_conversational_speech_script(text: str) -> str:
     )
 
     try:
-        api_key = NVIDIA_API_KEY
-        if api_key and http_client:
-            payload = {
-                "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
-                "messages": [
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": clean}
-                ],
-                "temperature": 0.3,
-                "max_tokens": 500
-            }
-            res = await http_client.post(
-                f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                },
-                json=payload,
-                timeout=6.0
-            )
-            if res.status_code == 200:
-                data = res.json()
-                choice = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-                if choice and len(choice.strip()) > 10:
-                    result = choice.strip()
-                    if len(SPEECH_SCRIPT_CACHE) > 200:
-                        SPEECH_SCRIPT_CACHE.clear()
-                    SPEECH_SCRIPT_CACHE[cache_key] = result
-                    return result
+        if http_client:
+            step6_models = [
+                # Primary Worker: Vercel AI Gateway (Ultra-Fast 0.2s TTFT)
+                ("alibaba/qwen-3-32b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
+                # Secondary Failover: NVIDIA NIM Infrastructure
+                ("nvidia/nemotron-3-super-120b-a12b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
+                # Tertiary Failover: OpenRouter Multi-Cloud Free Tier
+                ("nvidia/nemotron-3-ultra-550b-a55b:free", f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Campus Assistant"}),
+            ]
+
+            for m_idx, (m_name, url, hdrs) in enumerate(step6_models):
+                role_label = "Primary Worker" if m_idx == 0 else f"Failover #{m_idx}"
+                try:
+                    payload = {
+                        "model": m_name,
+                        "messages": [
+                            {"role": "system", "content": system_instruction},
+                            {"role": "user", "content": clean}
+                        ],
+                        "temperature": 0.3,
+                        "max_tokens": 500
+                    }
+                    res = await http_client.post(url, headers=hdrs, json=payload, timeout=5.0)
+                    if res.status_code == 200:
+                        data = res.json()
+                        choice = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                        if choice and len(choice.strip()) > 10:
+                            result = choice.strip()
+                            if len(SPEECH_SCRIPT_CACHE) > 200:
+                                SPEECH_SCRIPT_CACHE.clear()
+                            SPEECH_SCRIPT_CACHE[cache_key] = result
+                            print(f"[STEP 6 SPEECH ADAPTATION SUCCESS] ({role_label}: {m_name})")
+                            return result
+                    else:
+                        print(f"[STEP 6 SPEECH ADAPTATION {role_label.upper()} FAILED] Model {m_name} HTTP {res.status_code}. Failing over...")
+                except Exception as err:
+                    print(f"[STEP 6 SPEECH ADAPTATION {role_label.upper()} ERROR] Model {m_name}: {err}. Failing over...")
     except Exception as err:
-        print(f"[WARN] Conversational speech LLM adaptation timeout/fallback: {err}")
+        print(f"[WARN] Conversational speech LLM adaptation exception: {err}")
 
     fallback_result = normalize_tts_text_for_speech(clean)
     SPEECH_SCRIPT_CACHE[cache_key] = fallback_result
