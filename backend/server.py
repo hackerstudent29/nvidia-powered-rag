@@ -107,49 +107,49 @@ EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 MODELS_CATALOG = [
     {
         "id": "auto",
-        "name": "Auto (NVIDIA NIM Engine)",
-        "provider": "NVIDIA NIM Infrastructure",
-        "description": "Auto-selects optimal NVIDIA NIM MoE & reasoning engine",
+        "name": "Auto (High-Velocity Multi-Model Engine)",
+        "provider": "Vercel / NVIDIA NIM",
+        "description": "Auto-selects optimal MoE synthesis engine (GLM-5.3 Flash / Qwen 3.8 / Nemotron)",
         "is_default": True,
         "supports_reasoning": True
     },
     {
-        "id": "meta/muse-glimmer-30b",
-        "name": "Meta Muse Glimmer 30B",
-        "provider": "NVIDIA NIM Cloud",
-        "description": "Multimodal 30B reasoning model with native tool-calling",
+        "id": "zai/glm-5.3-flash",
+        "name": "GLM 5.3 Flash",
+        "provider": "Vercel AI Gateway",
+        "description": "Ultra-efficient 1M context engine with high-precision tabular formatting (50% off)",
         "is_default": False,
         "supports_reasoning": True
     },
     {
-        "id": "deepseek-ai/deepseek-v4-flash-0731",
-        "name": "DeepSeek V4 Flash 284B",
-        "provider": "NVIDIA NIM Cloud",
-        "description": "284B MoE model optimized for coding, chat & agentic workflows",
+        "id": "alibaba/qwen3.8-27b",
+        "name": "Alibaba Qwen 3.8 27B",
+        "provider": "Vercel AI Gateway",
+        "description": "Blazing 836 TPS high-throughput engine for long schedules and comprehensive responses",
         "is_default": False,
         "supports_reasoning": True
     },
     {
-        "id": "nvidia/nemotron-3.5-lightning-30b-a3b",
-        "name": "NVIDIA Nemotron 3.5 Lightning 30B",
-        "provider": "NVIDIA NIM Cloud",
-        "description": "Fastest 30B A3B MoE model with leading domain accuracy",
+        "id": "deepseek/deepseek-v4.1-flash",
+        "name": "DeepSeek V4.1 Flash",
+        "provider": "Vercel AI Gateway",
+        "description": "Deep MoE reasoning for multi-topic campus inquiries ($0.02/M in)",
         "is_default": False,
         "supports_reasoning": True
     },
     {
-        "id": "google/gemma-4-31b-it",
-        "name": "Google Gemma 4 31B",
-        "provider": "NVIDIA NIM Cloud",
-        "description": "Dense 31B model delivering frontier reasoning for coding & workflows",
+        "id": "openai/gpt-oss-20b",
+        "name": "OpenAI GPT-OSS 20B",
+        "provider": "Vercel AI Gateway",
+        "description": "Ultra-fast 855 TPS open architecture engine for sub-second responses",
         "is_default": False,
-        "supports_reasoning": False
+        "supports_reasoning": True
     },
     {
-        "id": "moonshotai/kimi-k3",
-        "name": "Moonshot Kimi K3",
-        "provider": "NVIDIA NIM Cloud",
-        "description": "2.8T MoE for long-horizon coding & agentic tool use",
+        "id": "google/gemini-2.5-flash-lite",
+        "name": "Google Gemini 2.5 Flash Lite",
+        "provider": "Vercel AI Gateway",
+        "description": "Low-latency frontier reasoning with 1M context window",
         "is_default": False,
         "supports_reasoning": True
     }
@@ -189,13 +189,11 @@ UNIVERSAL STRUCTURED OUTPUT GUIDELINES:
 
 def auto_select_model(query: str) -> str:
     """
-    Automatically selects the optimal LLM model with zero-stall failover:
-    - Primary Engine -> nvidia/nemotron-3-ultra-550b-a55b (NVIDIA NIM)
-    - Fallback -> google/gemini-2.5-flash-lite (Vercel AI Gateway)
+    Automatically selects the optimal high-velocity synthesis model:
+    - Primary Engine -> zai/glm-5.3-flash (Vercel AI Gateway, 1M context, 50% off)
+    - Fallback -> alibaba/qwen3.8-27b / nvidia/nemotron-3-super-120b-a12b / google/gemini-2.5-flash-lite
     """
-    if os.getenv("NVIDIA_API_KEY"):
-        return "nvidia/nemotron-3-ultra-550b-a55b"
-    return "google/gemini-2.5-flash-lite"
+    return "zai/glm-5.3-flash"
 
 def structure_markdown_for_mobile(text: str) -> str:
     """
@@ -374,24 +372,31 @@ def flush_reasoning_step(buffer: str) -> Optional[str]:
 MODEL_PRICING = {
     "zai/glm-5.3-flash": {
         "name": "GLM-5.3 Flash",
-        "provider": "NVIDIA NIM / Vercel",
-        "input_per_1k": 0.00007,
-        "output_per_1k": 0.00024,
-        "cache_per_1k": 0.00001,
-    },
-    "z-ai/glm-5.3-flash": {
-        "name": "GLM-5.3 Flash",
-        "provider": "NVIDIA NIM",
-        "input_per_1k": 0.00007,
-        "output_per_1k": 0.00024,
-        "cache_per_1k": 0.00001,
-    },
-    "alibaba/qwen3.7-flash": {
-        "name": "Qwen 3.7 Flash",
         "provider": "Vercel AI Gateway",
-        "input_per_1k": 0.00005,
-        "output_per_1k": 0.00020,
+        "input_per_1k": 0.00003,
+        "output_per_1k": 0.00025,
+        "cache_per_1k": 0.00002,
+    },
+    "alibaba/qwen3.8-27b": {
+        "name": "Alibaba Qwen 3.8 27B",
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00004,
+        "output_per_1k": 0.00040,
         "cache_per_1k": 0.00001,
+    },
+    "deepseek/deepseek-v4.1-flash": {
+        "name": "DeepSeek V4.1 Flash",
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00002,
+        "output_per_1k": 0.00042,
+        "cache_per_1k": 0.0000027,
+    },
+    "openai/gpt-oss-20b": {
+        "name": "OpenAI GPT-OSS 20B",
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00007,
+        "output_per_1k": 0.00030,
+        "cache_per_1k": 0.00004,
     },
     "google/gemini-2.5-flash-lite": {
         "name": "Gemini 2.5 Flash Lite",
@@ -400,26 +405,19 @@ MODEL_PRICING = {
         "output_per_1k": 0.00040,
         "cache_per_1k": 0.00001,
     },
-    "meta/muse-spark-1.2-contributor": {
-        "name": "Meta Muse Spark 1.2",
-        "provider": "Vercel / NVIDIA",
-        "input_per_1k": 0.00008,
-        "output_per_1k": 0.00025,
-        "cache_per_1k": 0.00001,
-    },
-    "meta/muse-glimmer-30b": {
-        "name": "Meta Muse Glimmer 30B",
-        "provider": "NVIDIA NIM",
-        "input_per_1k": 0.00008,
-        "output_per_1k": 0.00025,
-        "cache_per_1k": 0.00001,
+    "nvidia/nemotron-3-super-120b-a12b": {
+        "name": "NVIDIA Nemotron 3 Super 120B",
+        "provider": "NVIDIA NIM Infrastructure",
+        "input_per_1k": 0.00030,
+        "output_per_1k": 0.00080,
+        "cache_per_1k": 0.00005,
     },
     "default": {
         "name": "GLM-5.3 Flash",
-        "provider": "NVIDIA NIM / Vercel",
-        "input_per_1k": 0.00007,
-        "output_per_1k": 0.00024,
-        "cache_per_1k": 0.00001,
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00003,
+        "output_per_1k": 0.00025,
+        "cache_per_1k": 0.00002,
     }
 }
 
@@ -2383,17 +2381,23 @@ def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
             {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
             "nvidia/nemotron-3-ultra-550b-a55b"
         )
-    elif "super" in m_clean or "120b" in m_clean or "nemotron" in m_clean or "nvidia" in m_clean:
+    elif "super" in m_clean or "120b" in m_clean or ("nemotron" in m_clean and "3.5" not in m_clean and "embed" not in m_clean and "rerank" not in m_clean):
         return (
             f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
             "nvidia/nemotron-3-super-120b-a12b"
         )
+    elif m_name and ("/" in m_name or "glm" in m_clean or "qwen" in m_clean or "deepseek" in m_clean or "gpt" in m_clean or "gemini" in m_clean):
+        return (
+            "https://ai-gateway.vercel.sh/v1/chat/completions",
+            {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
+            m_name
+        )
     else:
         return (
             "https://ai-gateway.vercel.sh/v1/chat/completions",
             {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
-            "google/gemini-2.5-flash-lite"
+            "zai/glm-5.3-flash"
         )
 
 def sanitize_response_text(text: str) -> str:
@@ -4714,8 +4718,10 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
             candidate_models = [
+                "zai/glm-5.3-flash",
+                "alibaba/qwen3.8-27b",
+                "deepseek/deepseek-v4.1-flash",
                 "nvidia/nemotron-3-super-120b-a12b",
-                "nvidia/nemotron-3-ultra-550b-a55b",
                 "google/gemini-2.5-flash-lite",
                 "google/gemini-2.5-flash-lite-backup"
             ]
