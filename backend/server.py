@@ -2665,6 +2665,13 @@ def is_standalone_or_protected_query(query: str) -> bool:
     if re.search(r'\b(cutoff|cut-off|cut off|counselling|tnea|admissions?|fees?)\b', q_clean, re.IGNORECASE) and \
        re.search(r'\b(information technology|it|cse|ece|eee|civil|mechanical|mech|ai\s*&?\s*ds|cyber security)\b', q_clean, re.IGNORECASE) and len(q_clean.split()) >= 4:
         return True
+    # 5. Compound / Multi-question queries with 2+ questions or multi-topic inquiry
+    if (q_clean.count('?') >= 2 or len(q_clean.split()) >= 15) and any(w in q_clean.lower() for w in [
+        "what is", "what are", "how does", "what courses", "what sports", "what are the library", 
+        "sports facilities", "library facilities", "accreditation", "entrepreneurship", "incubation",
+        "procedure for", "contact the", "compare", "tell me how", "tell me about"
+    ]):
+        return True
     return False
 
 # Patterns to extract key entities from previous assistant responses
@@ -3099,12 +3106,13 @@ def classify_query(query: str) -> str:
 
 def decompose_multi_hop_query(query: str) -> List[str]:
     """
-    Decomposes complex comparative questions and multi-topic inquiries into focused sub-queries.
-    Supports:
-    1. Multi-department comparisons (e.g., 'Compare CSE and AI&DS placements')
-    2. Multi-topic broad compound queries (e.g., 'courses, intake, admission process, transport, and hostel')
+    Enterprise Dynamic Query Decomposer for Multi-Topic and Compound Campus Queries.
+    Breaks down complex comparative questions, multi-part sentences, and multi-domain prompts
+    into atomic, search-optimized sub-queries targeting distinct campus knowledge records.
     """
-    q_lower = query.lower()
+    q_clean = query.strip()
+    q_lower = q_clean.lower()
+
     comp_triggers = ["compare", "versus", "vs", "difference between", "both"]
     depts = ["cse", "computer science", "it", "information technology", "ece", "eee", "mech", "civil", "cyber", "ai & ds", "ai & ml", "aiml", "aids", "vlsi", "act", "csbs", "architecture", "b.arch", "b.des"]
     found_depts = [d for d in depts if re.search(rf'\b{re.escape(d)}\b', q_lower)]
@@ -3128,27 +3136,59 @@ def decompose_multi_hop_query(query: str) -> List[str]:
                 sub_queries.append(f"{f} {asp} msajce")
         return sub_queries[:4]
 
-    # Check for multi-topic / compound inquiries across distinct campus domains
-    topic_map = [
-        (["course", "courses", "programme", "programmes", "intake", "seat", "seats", "degree", "ug", "pg", "b.e", "b.tech"], "msajce undergraduate courses sanctioned intake quota departments"),
-        (["admission", "admissions", "eligibility", "tnea", "counselling", "apply", "application", "lateral entry"], "msajce admission process eligibility tnea counselling code"),
-        (["transport", "bus", "buses", "route", "routes", "commute", "travel", "mtc", "driver"], "msajce transport official college bus routes departure schedules"),
-        (["hostel", "hostels", "accommodation", "stay", "room", "rooms", "boys hostel", "girls hostel"], "msajce boys hostel girls hostel rooms blocks capacity facilities wifi amenities"),
-        (["mess", "canteen", "food", "dining", "cafeteria"], "msajce hostel mess food dining hall cafeteria timings"),
-        (["placement", "placements", "salary", "package", "recruiter", "recruiters", "companies", "highest package"], "msajce placements top recruiters highest package salary companies"),
-        (["fee", "fees", "tuition", "cost", "scholarship", "scholarships"], "msajce fee structure tuition scholarship concession"),
-        (["facility", "facilities", "infrastructure", "campus", "sports", "library", "gym", "lab", "labs"], "msajce campus facilities infrastructure library sports gymnasium")
-    ]
-    
-    detected_subqueries = []
-    for keywords, target_query in topic_map:
-        if any(re.search(rf'\b{re.escape(kw)}\b', q_lower) for kw in keywords):
-            detected_subqueries.append(target_query)
-            
-    if len(detected_subqueries) >= 2:
-        return detected_subqueries[:4]  # Bound: Max 4 topic branches
+    # 1. Structural Sentence & Clause Splitting
+    raw_splits = re.split(r'[\?\n;]+', q_clean)
+    clauses = [s.strip() for s in raw_splits if len(s.strip().split()) >= 3]
 
-    return [query]
+    if len(clauses) <= 1:
+        split_pattern = r'(?:,\s*(?:and\s+)?|\.\s+|\s+also\s+|\s+then\s+|\s+and\s+)(?=(?:what|which|how|where|who|tell\s+me|compare|give|is\s+there|are\s+there|what\s+are|what\s+is|what\s+does|how\s+does|how\s+many|can\s+you)\b)'
+        parts = re.split(split_pattern, q_clean, flags=re.IGNORECASE)
+        clauses = [p.strip(' ,.?\n') for p in parts if len(p.strip().split()) >= 3]
+
+    sub_queries = []
+    seen_normalized = set()
+
+    for c in clauses:
+        c_low = c.lower()
+        sub_c = re.sub(r'^(?:i\s+want\s+to\s+know(?:\s+more)?(?:\s+about\s+msajce)?(?:\s+before\s+joining)?[\.\,\:]*\s*|i\s+would\s+like\s+to\s+know(?:\s+about)?[\.\,\:]*\s*)', '', c, flags=re.IGNORECASE).strip()
+        if len(sub_c.split()) >= 3:
+            c = sub_c
+            c_low = c.lower()
+
+        if "msajce" not in c_low and "mohamed sathak" not in c_low:
+            search_clause = f"MSAJCE {c}"
+        else:
+            search_clause = c
+
+        norm_key = " ".join(sorted(re.findall(r'\b[a-z0-9]+\b', c_low)))
+        if norm_key and norm_key not in seen_normalized:
+            seen_normalized.add(norm_key)
+            sub_queries.append(search_clause)
+
+    # 2. Comprehensive Specialized Campus Aspect Anchors
+    aspect_patterns = [
+        (r'\b(naac|nba|accreditation|autonomous|ranking|nirf|grade)\b', "msajce naac nba accreditation status grade autonomous"),
+        (r'\b(information\s+technology|it\s+dept|b\.?tech\s+it)\b', "msajce information technology it department courses curriculum intake"),
+        (r'\b(department|departments|branches|programs|programmes|degree\s+courses)\b', "msajce undergraduate engineering departments courses intake"),
+        (r'\b(sports|games|gym|gymnasium|playground|cricket|football|volleyball|basketball|badminton|indoor|outdoor)\b', "msajce sports facilities games gymnasium physical education director grounds"),
+        (r'\b(library|books|journals|digital\s+library|reading\s+room|delnet|ieee)\b', "msajce central library facilities books journals working hours digital library"),
+        (r'\b(entrepreneurship|innovation|incubation|incubator|edc|iic|startups?|msme|patents?)\b', "msajce entrepreneurship innovation incubation centre edc msme startups support"),
+        (r'\b(administration|contact|procedure|helpdesk|phone|email|office|principal|address)\b', "msajce administration contact details principal office phone email address procedure"),
+        (r'\b(hostel|hostels|rooms?|occupancy|boys\s+hostel|girls\s+hostel)\b', "msajce boys girls hostel facilities rooms blocks capacity wifi"),
+        (r'\b(transport|bus|buses|routes?|stops?|commute|driver)\b', "msajce transport official college bus routes schedules"),
+        (r'\b(placement|placements|salary|package|recruiters?|companies)\b', "msajce placements top recruiters highest package salary"),
+        (r'\b(fee|fees|tuition|scholarship|scholarships|concession)\b', "msajce fee structure tuition scholarship concession"),
+        (r'\b(mess|canteen|food|dining|cafeteria)\b', "msajce mess food canteen dining hall timings"),
+        (r'\b(admission|admissions|cutoff|cut-off|tnea|counselling|apply|application|lateral\s+entry)\b', "msajce admission process eligibility tnea counselling code")
+    ]
+
+    for pat, target_subq in aspect_patterns:
+        if re.search(pat, q_lower):
+            norm_target = " ".join(sorted(target_subq.split()))
+            if not any(norm_target in " ".join(sorted(sq.lower().split())) for sq in sub_queries):
+                sub_queries.append(target_subq)
+
+    return sub_queries if sub_queries else [query]
 
 def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 12) -> List[Dict[str, Any]]:
     """Parallel hybrid search with sub-query decomposition & balanced round-robin interleaving."""
@@ -3157,16 +3197,16 @@ def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]]
         return hybrid_search(user_query, query_vector, top_k=top_k)
 
     branch_results: Dict[str, List[Dict[str, Any]]] = {}
-    slots_per_branch = max(3, top_k // len(sub_queries))
+    slots_per_branch = max(2, min(4, top_k // len(sub_queries) + 1))
 
     for sq in sub_queries:
-        branch_results[sq] = hybrid_search(sq, query_vector=None, top_k=slots_per_branch + 2)
+        branch_results[sq] = hybrid_search(sq, query_vector=None, top_k=slots_per_branch + 1)
 
     # Balanced round-robin interleaving to guarantee multi-topic representation
     aggregated_chunks = []
     seen_ids = set()
 
-    for r_idx in range(slots_per_branch + 2):
+    for r_idx in range(slots_per_branch + 1):
         for sq in sub_queries:
             b_list = branch_results.get(sq, [])
             if r_idx < len(b_list):
@@ -3184,7 +3224,8 @@ def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]]
             seen_ids.add(cid)
             aggregated_chunks.append(dc)
 
-    return aggregated_chunks[:max(top_k, 16)]
+    max_target = max(top_k, min(35, len(sub_queries) * 3))
+    return aggregated_chunks[:max_target]
 
 def validate_citations(answer_text: str, retrieved_chunks: List[Dict[str, Any]]) -> str:
     """Validates that citations reference retrieved chunks and rejects unsupported citation references."""
@@ -4172,7 +4213,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             elif query_class == "complex":
-                RAG_TOP_K      = 12
+                RAG_TOP_K      = 28
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             else:
