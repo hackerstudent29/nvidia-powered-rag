@@ -214,6 +214,16 @@ const ChatHeader = React.memo(function ChatHeader({
 
   return (
     <>
+      {/* Mild top frosted glass backdrop above & across the navbar header */}
+      <div
+        className="fixed top-0 left-0 right-0 h-16 sm:h-20 z-30 pointer-events-none backdrop-blur-[6px] bg-gradient-to-b from-white/70 via-white/30 to-transparent dark:from-[#0b0c0e]/80 dark:via-[#0b0c0e]/35 dark:to-transparent"
+        style={{
+          maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0) 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0) 100%)",
+        }}
+        aria-hidden="true"
+      />
+
       {/* Viewport Dismiss Backdrop */}
       <AnimatePresence>
         {(mobileMenuOpen || fontSizeMenuOpen) && (
