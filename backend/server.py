@@ -109,47 +109,47 @@ MODELS_CATALOG = [
         "id": "auto",
         "name": "Auto (High-Velocity Multi-Model Engine)",
         "provider": "Vercel / NVIDIA NIM",
-        "description": "Auto-selects optimal MoE synthesis engine (GLM-5.3 Flash / Qwen 3.8 / Nemotron)",
+        "description": "Auto-selects optimal synthesis engine (Gemini Flash Lite / Qwen-3 32B / Ling Free)",
         "is_default": True,
-        "supports_reasoning": True
-    },
-    {
-        "id": "zai/glm-5.3-flash",
-        "name": "GLM 5.3 Flash",
-        "provider": "Vercel AI Gateway",
-        "description": "Ultra-efficient 1M context engine with high-precision tabular formatting (50% off)",
-        "is_default": False,
-        "supports_reasoning": True
-    },
-    {
-        "id": "alibaba/qwen3.8-27b",
-        "name": "Alibaba Qwen 3.8 27B",
-        "provider": "Vercel AI Gateway",
-        "description": "Blazing 836 TPS high-throughput engine for long schedules and comprehensive responses",
-        "is_default": False,
-        "supports_reasoning": True
-    },
-    {
-        "id": "deepseek/deepseek-v4.1-flash",
-        "name": "DeepSeek V4.1 Flash",
-        "provider": "Vercel AI Gateway",
-        "description": "Deep MoE reasoning for multi-topic campus inquiries ($0.02/M in)",
-        "is_default": False,
-        "supports_reasoning": True
-    },
-    {
-        "id": "openai/gpt-oss-20b",
-        "name": "OpenAI GPT-OSS 20B",
-        "provider": "Vercel AI Gateway",
-        "description": "Ultra-fast 855 TPS open architecture engine for sub-second responses",
-        "is_default": False,
         "supports_reasoning": True
     },
     {
         "id": "google/gemini-2.5-flash-lite",
         "name": "Google Gemini 2.5 Flash Lite",
         "provider": "Vercel AI Gateway",
-        "description": "Low-latency frontier reasoning with 1M context window",
+        "description": "Frontier low-latency reasoning with 1M context window (413 TPS)",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
+        "id": "alibaba/qwen-3-32b",
+        "name": "Alibaba Qwen-3 32B",
+        "provider": "Vercel AI Gateway",
+        "description": "Ultra-fast 0.2s TTFT low-latency reasoning engine with 128K context",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
+        "id": "inclusionai/ling-3.0-flash-sante-free",
+        "name": "Ling 3.0 Flash (100% Free)",
+        "provider": "Vercel AI Gateway (Free Tier)",
+        "description": "High-speed free tier workhorse with 256K context and 210 TPS",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
+        "id": "openai/gpt-oss-safeguard-20b",
+        "name": "OpenAI GPT-OSS Safeguard 20B",
+        "provider": "Vercel AI Gateway",
+        "description": "Instant 0.2s TTFT open model with safety evaluation and 131K context",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
+        "id": "amazon/nova-lite",
+        "name": "Amazon Nova Lite",
+        "provider": "Vercel AI Gateway",
+        "description": "Fast 0.4s multimodal-ready engine with 300K context ($0.06/M in)",
         "is_default": False,
         "supports_reasoning": True
     }
@@ -190,10 +190,10 @@ UNIVERSAL STRUCTURED OUTPUT GUIDELINES:
 def auto_select_model(query: str) -> str:
     """
     Automatically selects the optimal high-velocity synthesis model:
-    - Primary Engine -> zai/glm-5.3-flash (Vercel AI Gateway, 1M context, 50% off)
-    - Fallback -> alibaba/qwen3.8-27b / nvidia/nemotron-3-super-120b-a12b / google/gemini-2.5-flash-lite
+    - Primary Engine -> google/gemini-2.5-flash-lite (Vercel AI Gateway, 1M context, 413 TPS)
+    - Fallback -> alibaba/qwen-3-32b / inclusionai/ling-3.0-flash-sante-free / nvidia/nemotron-3-super-120b-a12b
     """
-    return "zai/glm-5.3-flash"
+    return "google/gemini-2.5-flash-lite"
 
 def structure_markdown_for_mobile(text: str) -> str:
     """
@@ -377,20 +377,6 @@ MODEL_PRICING = {
         "output_per_1k": 0.00025,
         "cache_per_1k": 0.00002,
     },
-    "alibaba/qwen3.8-27b": {
-        "name": "Alibaba Qwen 3.8 27B",
-        "provider": "Vercel AI Gateway",
-        "input_per_1k": 0.00004,
-        "output_per_1k": 0.00040,
-        "cache_per_1k": 0.00001,
-    },
-    "deepseek/deepseek-v4.1-flash": {
-        "name": "DeepSeek V4.1 Flash",
-        "provider": "Vercel AI Gateway",
-        "input_per_1k": 0.00002,
-        "output_per_1k": 0.00042,
-        "cache_per_1k": 0.0000027,
-    },
     "openai/gpt-oss-20b": {
         "name": "OpenAI GPT-OSS 20B",
         "provider": "Vercel AI Gateway",
@@ -398,11 +384,39 @@ MODEL_PRICING = {
         "output_per_1k": 0.00030,
         "cache_per_1k": 0.00004,
     },
+    "alibaba/qwen-3-32b": {
+        "name": "Alibaba Qwen-3 32B",
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00008,
+        "output_per_1k": 0.00028,
+        "cache_per_1k": 0.00001,
+    },
     "google/gemini-2.5-flash-lite": {
         "name": "Gemini 2.5 Flash Lite",
         "provider": "Vercel AI Gateway",
         "input_per_1k": 0.00010,
         "output_per_1k": 0.00040,
+        "cache_per_1k": 0.00001,
+    },
+    "inclusionai/ling-3.0-flash-sante-free": {
+        "name": "Ling 3.0 Flash (Free)",
+        "provider": "Vercel AI Gateway (Free)",
+        "input_per_1k": 0.0,
+        "output_per_1k": 0.0,
+        "cache_per_1k": 0.0,
+    },
+    "stepfun/step-3.5-flash": {
+        "name": "Step 3.5 Flash",
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00009,
+        "output_per_1k": 0.00030,
+        "cache_per_1k": 0.00002,
+    },
+    "amazon/nova-lite": {
+        "name": "Amazon Nova Lite",
+        "provider": "Vercel AI Gateway",
+        "input_per_1k": 0.00006,
+        "output_per_1k": 0.00024,
         "cache_per_1k": 0.00001,
     },
     "nvidia/nemotron-3-super-120b-a12b": {
@@ -2904,11 +2918,11 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
 
     try:
         if http_client:
-            # Multi-model parallel race across ultra-fast Vercel Gemini and NVIDIA NIM models
+            # Multi-model parallel race across verified fast Vercel models (Gemini Flash Lite, Qwen-3 32B, GPT-OSS Safeguard)
             models_to_try = [
                 ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                ("nvidia/nemotron-3.5-lightning-30b-a3b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
-                ("meta/muse-glimmer-30b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
+                ("alibaba/qwen-3-32b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
+                ("openai/gpt-oss-safeguard-20b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
             ]
 
             async def _fetch_rewrite_model(m_name: str, url: str, hdrs: dict) -> Optional[tuple]:
@@ -3228,8 +3242,8 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
         if client:
             models_to_try = [
                 ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                ("nvidia/nemotron-3.5-lightning-30b-a3b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
-                ("meta/muse-glimmer-30b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
+                ("alibaba/qwen-3-32b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
+                ("openai/gpt-oss-safeguard-20b", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
             ]
 
             async def _fetch_decompose(m_name: str, url: str, hdrs: dict) -> Optional[List[str]]:
@@ -4719,10 +4733,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             candidate_models = [
                 "zai/glm-5.3-flash",
-                "alibaba/qwen3.8-27b",
-                "deepseek/deepseek-v4.1-flash",
-                "nvidia/nemotron-3-super-120b-a12b",
+                "openai/gpt-oss-20b",
+                "alibaba/qwen-3-32b",
                 "google/gemini-2.5-flash-lite",
+                "inclusionai/ling-3.0-flash-sante-free",
+                "nvidia/nemotron-3-super-120b-a12b",
                 "google/gemini-2.5-flash-lite-backup"
             ]
             if model_id and model_id != "auto" and model_id not in candidate_models:
