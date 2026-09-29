@@ -169,7 +169,12 @@ class DomainRouter:
                 if kw in q_lower:
                     scores[domain] += 2
 
-        # Filter out transport if research or academic keywords exist
+        # Detect compound multi-topic queries spanning multiple campus domains
+        active_domains = [d for d, s in scores.items() if s >= 2]
+        if len(active_domains) >= 2:
+            return CampusDomain.GENERAL
+
+        # Filter out transport if research keywords exist
         if scores[CampusDomain.RESEARCH] > 0 and scores[CampusDomain.TRANSPORT] > 0:
             if not any(w in q_lower for w in ["bus to", "route to", "bus timing", "bus schedule"]):
                 scores[CampusDomain.TRANSPORT] = 0
@@ -210,10 +215,10 @@ class DomainRouter:
 
     def is_tool_allowed(self, tool_name: str, domain: CampusDomain) -> bool:
         """
-        Guarantees tool isolation (e.g. RouteFinder can ONLY execute for TRANSPORT domain).
+        Guarantees tool isolation while permitting necessary lookups on compound queries.
         """
         if tool_name == "route_finder":
-            return domain == CampusDomain.TRANSPORT
+            return domain in (CampusDomain.TRANSPORT, CampusDomain.GENERAL)
         return True
 
 
@@ -341,8 +346,12 @@ class CorrectiveRAGFilter:
                 purified.append(c)
             return purified
 
-        # If domain is TRANSPORT, strictly retain transport chunks and purge unrelated academic/NAAC/society chunks
+        # If domain is TRANSPORT, strictly retain transport chunks unless query contains multi-topic keywords
         if domain == CampusDomain.TRANSPORT:
+            q_lower = (query or "").lower()
+            if any(w in q_lower for w in ["hostel", "mess", "canteen", "room", "occupancy", "fee", "admission", "cutoff", "course", "placement", "faculty", "scholarship"]):
+                return chunks
+
             transport_chunks = []
             for c in chunks:
                 cat = (c.get("category") or "").lower()

@@ -189,10 +189,13 @@ UNIVERSAL STRUCTURED OUTPUT GUIDELINES:
 
 def auto_select_model(query: str) -> str:
     """
-    Automatically selects the optimal LLM model powered by NVIDIA NIM (unlimited high-speed quota):
-    - Primary Engine -> meta/muse-glimmer-30b
+    Automatically selects the optimal LLM model with zero-stall failover:
+    - Primary Engine -> nvidia/nemotron-3-ultra-550b-a55b (NVIDIA NIM)
+    - Fallback -> google/gemini-2.5-flash-lite (Vercel AI Gateway)
     """
-    return "meta/muse-glimmer-30b"
+    if os.getenv("NVIDIA_API_KEY"):
+        return "nvidia/nemotron-3-ultra-550b-a55b"
+    return "google/gemini-2.5-flash-lite"
 
 def structure_markdown_for_mobile(text: str) -> str:
     """
@@ -631,8 +634,14 @@ qdrant_client: Optional[QdrantClient] = None
 bm25_index: Optional[BM25Okapi] = None
 bm25_corpus: List[Dict[str, Any]] = []
 verified_resource_catalog: List[Dict[str, Any]] = []
-catalog_by_file: Dict[str, List[Dict[str, Any]]] = {}
 http_client: Optional[httpx.AsyncClient] = None
+
+def get_http_client() -> httpx.AsyncClient:
+    global http_client
+    if http_client is None or http_client.is_closed:
+        http_client = httpx.AsyncClient(timeout=httpx.Timeout(connect=5.0, read=45.0, write=5.0, pool=5.0))
+    return http_client
+
 db_pool: Optional[ThreadedConnectionPool] = None
 
 def get_db_connection():
@@ -1019,7 +1028,8 @@ async def get_query_embedding(query_text: str) -> Optional[List[float]]:
         "input_type": "query"
     }
     try:
-        resp = await http_client.post(url, headers=headers, json=payload, timeout=20.0)
+        client = get_http_client()
+        resp = await client.post(url, headers=headers, json=payload, timeout=20.0)
         if resp.status_code == 200:
             data = resp.json()
             return data["data"][0]["embedding"]
@@ -1065,7 +1075,8 @@ async def rerank_documents_with_nemotron(query_text: str, candidate_chunks: List
     }
 
     try:
-        resp = await http_client.post(url, headers=headers, json=payload, timeout=20.0)
+        client = get_http_client()
+        resp = await client.post(url, headers=headers, json=payload, timeout=20.0)
         if resp.status_code == 200:
             res_data = resp.json()
             rankings = res_data.get("rankings", [])
@@ -2366,29 +2377,17 @@ def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
             {"Authorization": f"Bearer {vercel_backup_key}", "Content-Type": "application/json"},
             "google/gemini-2.5-flash-lite"
         )
-    elif "gemini" in m_clean or "google" in m_clean or "auto" in m_clean or "vercel" in m_clean or not m_clean:
-        return (
-            "https://ai-gateway.vercel.sh/v1/chat/completions",
-            {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
-            "google/gemini-2.5-flash-lite"
-        )
-    elif "mistral" in m_clean:
+    elif "ultra" in m_clean or "550b" in m_clean:
         return (
             f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
-            "mistralai/mistral-nemotron"
+            "nvidia/nemotron-3-ultra-550b-a55b"
         )
-    elif "super" in m_clean or "120b" in m_clean:
+    elif "super" in m_clean or "120b" in m_clean or "nemotron" in m_clean or "nvidia" in m_clean:
         return (
             f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
             "nvidia/nemotron-3-super-120b-a12b"
-        )
-    elif "lightning" in m_clean or "nemotron" in m_clean:
-        return (
-            f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions",
-            {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"},
-            "nvidia/nemotron-3.5-lightning-30b-a3b"
         )
     else:
         return (
@@ -3131,14 +3130,14 @@ def decompose_multi_hop_query(query: str) -> List[str]:
 
     # Check for multi-topic / compound inquiries across distinct campus domains
     topic_map = [
-        (["course", "courses", "programme", "programmes", "intake", "seat", "seats", "degree", "ug", "pg", "b.e", "b.tech"], "msajce undergraduate courses sanctioned intake quota"),
-        (["admission", "admissions", "eligibility", "tnea", "counselling", "apply", "application", "lateral entry"], "msajce admission process eligibility tnea counselling"),
-        (["transport", "bus", "buses", "route", "routes", "commute", "travel", "mtc", "driver"], "msajce transport official college bus routes schedules"),
-        (["hostel", "hostels", "accommodation", "mess", "canteen", "stay", "room", "rooms"], "msajce hostel accommodation facilities mess wardens"),
-        (["placement", "placements", "salary", "package", "recruiter", "recruiters", "companies", "highest package"], "msajce placements top recruiters highest package salary"),
-        (["fee", "fees", "tuition", "cost", "scholarship", "scholarships"], "msajce fee structure tuition scholarship"),
-        (["faculty", "professors", "hod", "teachers", "staff"], "msajce faculty department professors hod"),
-        (["facility", "facilities", "infrastructure", "campus", "sports", "library", "gym", "lab", "labs"], "msajce campus facilities infrastructure library sports")
+        (["course", "courses", "programme", "programmes", "intake", "seat", "seats", "degree", "ug", "pg", "b.e", "b.tech"], "msajce undergraduate courses sanctioned intake quota departments"),
+        (["admission", "admissions", "eligibility", "tnea", "counselling", "apply", "application", "lateral entry"], "msajce admission process eligibility tnea counselling code"),
+        (["transport", "bus", "buses", "route", "routes", "commute", "travel", "mtc", "driver"], "msajce transport official college bus routes departure schedules"),
+        (["hostel", "hostels", "accommodation", "stay", "room", "rooms", "boys hostel", "girls hostel"], "msajce boys hostel girls hostel rooms blocks capacity facilities wifi amenities"),
+        (["mess", "canteen", "food", "dining", "cafeteria"], "msajce hostel mess food dining hall cafeteria timings"),
+        (["placement", "placements", "salary", "package", "recruiter", "recruiters", "companies", "highest package"], "msajce placements top recruiters highest package salary companies"),
+        (["fee", "fees", "tuition", "cost", "scholarship", "scholarships"], "msajce fee structure tuition scholarship concession"),
+        (["facility", "facilities", "infrastructure", "campus", "sports", "library", "gym", "lab", "labs"], "msajce campus facilities infrastructure library sports gymnasium")
     ]
     
     detected_subqueries = []
@@ -3151,32 +3150,41 @@ def decompose_multi_hop_query(query: str) -> List[str]:
 
     return [query]
 
-def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 8) -> List[Dict[str, Any]]:
-    """Parallel hybrid search with sub-query decomposition & balanced candidate pool caps."""
+def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 12) -> List[Dict[str, Any]]:
+    """Parallel hybrid search with sub-query decomposition & balanced round-robin interleaving."""
     sub_queries = decompose_multi_hop_query(user_query)
     if len(sub_queries) == 1:
         return hybrid_search(user_query, query_vector, top_k=top_k)
 
-    aggregated_chunks = []
-    seen_ids = set()
-    slots_per_branch = max(2, top_k // len(sub_queries))
+    branch_results: Dict[str, List[Dict[str, Any]]] = {}
+    slots_per_branch = max(3, top_k // len(sub_queries))
 
     for sq in sub_queries:
-        chunks = hybrid_search(sq, query_vector=None, top_k=slots_per_branch + 1)
-        added_for_branch = 0
-        for c in chunks:
-            cid = c.get("chunk_id")
-            if cid and cid not in seen_ids:
-                seen_ids.add(cid)
-                aggregated_chunks.append(c)
-                added_for_branch += 1
-                if added_for_branch >= slots_per_branch:
-                    break
-        if len(aggregated_chunks) >= 40:
-            break
+        branch_results[sq] = hybrid_search(sq, query_vector=None, top_k=slots_per_branch + 2)
 
-    aggregated_chunks.sort(key=lambda x: x.get("rrf_score", 0.0), reverse=True)
-    return aggregated_chunks[:top_k]
+    # Balanced round-robin interleaving to guarantee multi-topic representation
+    aggregated_chunks = []
+    seen_ids = set()
+
+    for r_idx in range(slots_per_branch + 2):
+        for sq in sub_queries:
+            b_list = branch_results.get(sq, [])
+            if r_idx < len(b_list):
+                c = b_list[r_idx]
+                cid = c.get("chunk_id")
+                if cid and cid not in seen_ids:
+                    seen_ids.add(cid)
+                    aggregated_chunks.append(c)
+
+    # Include direct full user query search to catch primary anchor matches
+    direct_chunks = hybrid_search(user_query, query_vector, top_k=4)
+    for dc in direct_chunks:
+        cid = dc.get("chunk_id")
+        if cid and cid not in seen_ids:
+            seen_ids.add(cid)
+            aggregated_chunks.append(dc)
+
+    return aggregated_chunks[:max(top_k, 16)]
 
 def validate_citations(answer_text: str, retrieved_chunks: List[Dict[str, Any]]) -> str:
     """Validates that citations reference retrieved chunks and rejects unsupported citation references."""
@@ -3234,6 +3242,18 @@ class ThreadSafeMemoryCache:
 
 TIER0_RAM_CACHE = ThreadSafeMemoryCache(capacity=1000)
 
+def is_invalid_cached_response(text: str) -> bool:
+    if not text or len(text.strip()) < 10:
+        return True
+    t_low = text.lower()
+    return any(err in t_low for err in [
+        "momentarily unavailable",
+        "i apologize",
+        "upstream ai model",
+        "temporary outage",
+        "please try your question again in a few seconds"
+    ])
+
 def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
     """Tier 0 RAM + Tier 1 Postgres SHA-256 exact match."""
     if not query or is_contextual_query(query):
@@ -3244,7 +3264,10 @@ def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
     # 1. Check Tier 0 In-Memory Cache (<0.01ms)
     ram_hit = TIER0_RAM_CACHE.get(query_hash)
     if ram_hit:
-        return ram_hit
+        if is_invalid_cached_response(ram_hit.get("response", "")):
+            TIER0_RAM_CACHE.delete(query_hash)
+        else:
+            return ram_hit
 
     # 2. Check Tier 1 Neon DB query_cache
     try:
@@ -3260,12 +3283,21 @@ def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
                 """, (query_hash,))
                 row = cur.fetchone()
                 if row:
+                    ans_text = row["answer_text"]
+                    if is_invalid_cached_response(ans_text):
+                        try:
+                            cur.execute("DELETE FROM query_cache WHERE query_hash = %s;", (query_hash,))
+                            conn.commit()
+                        except Exception:
+                            pass
+                        return None
+
                     cur.execute("UPDATE query_cache SET hit_count = hit_count + 1, last_hit_at = NOW() WHERE query_hash = %s;", (query_hash,))
                     conn.commit()
                     raw_sources = row["source_chunks"]
                     sources = raw_sources if isinstance(raw_sources, list) else json.loads(raw_sources or "[]")
                     cache_entry = {
-                        "response": row["answer_text"],
+                        "response": ans_text,
                         "sources": sources,
                         "reasoning_steps": ["Retrieved verified precision answer from instant cache"],
                         "cached": True,
@@ -3299,12 +3331,21 @@ def check_semantic_cache(query_vector: List[float], threshold: float = 0.95, que
                 """, (embedding_str,))
                 row = cur.fetchone()
                 if row and row["similarity"] >= threshold:
+                    ans_text = row["answer_text"]
+                    if is_invalid_cached_response(ans_text):
+                        try:
+                            cur.execute("DELETE FROM query_cache WHERE query_hash = %s;", (row["query_hash"],))
+                            conn.commit()
+                        except Exception:
+                            pass
+                        return None
+
                     cur.execute("UPDATE query_cache SET hit_count = hit_count + 1, last_hit_at = NOW() WHERE query_hash = %s;", (row["query_hash"],))
                     conn.commit()
                     raw_sources = row["source_chunks"]
                     sources = raw_sources if isinstance(raw_sources, list) else json.loads(raw_sources or "[]")
                     return {
-                        "response": row["answer_text"],
+                        "response": ans_text,
                         "sources": sources,
                         "reasoning_steps": [f"Retrieved from semantic cache (similarity: {row['similarity']:.3f})"],
                         "cached": True,
@@ -3317,6 +3358,17 @@ def check_semantic_cache(query_vector: List[float], threshold: float = 0.95, que
 def save_to_cache(query: str, response: str, sources: List[Dict[str, Any]], reasoning: List[str], latency_ms: int, query_vector: Optional[List[float]] = None):
     """Save synthesized response to query_cache (Tier 0 RAM + Tier 1 Neon DB)."""
     if not query or is_contextual_query(query):
+        return
+    if not response or len(response.strip()) < 10:
+        return
+    resp_lower = response.lower()
+    if any(err_sig in resp_lower for err_sig in [
+        "momentarily unavailable",
+        "i apologize",
+        "upstream ai model",
+        "temporary outage",
+        "please try your question again in a few seconds"
+    ]):
         return
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
@@ -4112,19 +4164,19 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 MAX_TOKENS     = 1000
                 HISTORY_LIMIT  = 0
             elif query_class == "targeted":
-                RAG_TOP_K      = 4
+                RAG_TOP_K      = 6
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             elif query_class == "transport":
-                RAG_TOP_K      = 8      # Retrieve full transport context chunks
+                RAG_TOP_K      = 10      # Retrieve full transport context chunks
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             elif query_class == "complex":
-                RAG_TOP_K      = 8
+                RAG_TOP_K      = 12
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             else:
-                RAG_TOP_K      = 6
+                RAG_TOP_K      = 8
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
 
@@ -4158,9 +4210,19 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 if is_route_finder_allowed and route_finder:
                     matched_route = route_finder.find_route(user_query) or route_finder.find_route(expanded_query)
 
-                is_general_bus_q = (target_domain == CampusDomain.TRANSPORT) and route_finder and (route_finder.is_general_transit_query(user_query) or route_finder.is_general_transit_query(expanded_query))
+                is_general_bus_q = (target_domain in (CampusDomain.TRANSPORT, CampusDomain.GENERAL)) and route_finder and (route_finder.is_general_transit_query(user_query) or route_finder.is_general_transit_query(expanded_query))
 
-                if matched_route:
+                # Check if this query is a compound / multi-topic query asking about more than just transport
+                is_compound_inquiry = bool(re.search(
+                    r'\b(hostel|hostels|mess|canteen|food|room|rooms|occupancy|sharing|ac|non-ac|'
+                    r'admission|admissions|cutoff|cut-off|tnea|fee|fees|tuition|scholarship|scholarships|'
+                    r'course|courses|department|departments|placement|placements|salary|package|'
+                    r'sports|gym|library|faculty|principal|naac|nba|seat|seats|intake|eligibility)\b',
+                    user_query,
+                    re.IGNORECASE
+                ))
+
+                if matched_route and not is_compound_inquiry:
                     route_id = matched_route.get("route_id")
                     route_name = matched_route.get("name")
                     meta = matched_route.get("meta", {})
@@ -4198,7 +4260,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "rrf_score": 1.0
                     }
                     retrieved_chunks = [route_chunk]
-                elif is_general_bus_q and route_finder:
+                elif is_general_bus_q and route_finder and not is_compound_inquiry:
                     fleet_chunk_text = route_finder.get_fleet_overview()
                     retrieved_chunks = [{
                         "chunk_id": "route_finder_fleet_overview",
@@ -4230,6 +4292,43 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             return
 
                     retrieved_chunks = multi_hop_hybrid_search(expanded_query, query_vector, top_k=RAG_TOP_K)
+
+                    # If compound inquiry with transport, inject verified transit overview or matched route
+                    if matched_route:
+                        route_id = matched_route.get("route_id")
+                        route_name = matched_route.get("name")
+                        meta = matched_route.get("meta", {})
+                        stops = matched_route.get("stops", [])
+                        cat_label = "COLLEGE BUS" if matched_route.get("category") == "college" else "PUBLIC BUS"
+                        table_rows = ["| Stop # | Stop Name | Boarding Time |", "| :--- | :--- | :--- |"]
+                        for s_idx, st in enumerate(stops, 1):
+                            s_time = st.get("time") or "Scheduled"
+                            table_rows.append(f"| {s_idx} | {st['name']} | **{s_time}** |")
+                        stops_table = "\n".join(table_rows)
+                        rf_chunk_text = (
+                            f"### VERIFIED OFFICIAL SCHEDULE FOR {cat_label} ROUTE {route_id}: {route_name}\n"
+                            f"- **College Arrival Time**: {meta.get('arrival', '8:00 AM')} at MSAJCEA Campus (Siruseri OMR)\n\n"
+                            f"#### Complete Stop-by-Stop Timings & Boarding Schedule:\n{stops_table}\n"
+                        )
+                        retrieved_chunks.insert(0, {
+                            "chunk_id": f"route_finder_route_{route_id}",
+                            "title": f"Official Bus Schedule: {route_name}",
+                            "source_file": "msajce_transport.md",
+                            "category": "transport",
+                            "page_url": "https://msajce-edu.in/transport",
+                            "content": rf_chunk_text,
+                            "rrf_score": 1.0
+                        })
+                    elif is_general_bus_q and route_finder:
+                        retrieved_chunks.insert(0, {
+                            "chunk_id": "route_finder_fleet_overview",
+                            "title": "Official Transport & Bus Fleet Overview",
+                            "source_file": "msajce_transport.md",
+                            "category": "transport",
+                            "page_url": "https://msajce.edu.in/transport",
+                            "content": route_finder.get_fleet_overview(),
+                            "rrf_score": 1.0
+                        })
 
                     # Exact Patent & Identifier Lookup Booster
                     patent_num_match = re.search(r'\b(\d{6,12}[A-Za-z]?)\b', user_query)
@@ -4362,7 +4461,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             seen_text = set()
             total_ctx_tokens = 0
-            max_ctx_limit = 500 if query_class in ["complex", "transport"] else 350
+            max_ctx_limit = 6000 if query_class in ["complex", "transport"] else 4096
 
             for idx, c in enumerate(retrieved_chunks):
                 raw_c = c.get('content', '')
@@ -4466,12 +4565,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             else:
                 dynamics_instruction = "Fresh topic: Open directly with a context-aware sentence."
 
+            raw_user_message = (req.message or "").strip()
+            prompt_user_question = raw_user_message if (len(raw_user_message.split()) >= 4 and not is_contextual_query(raw_user_message)) else user_query
+
             if query_class == "greeting":
-                messages.append({"role": "user", "content": user_query})
+                messages.append({"role": "user", "content": prompt_user_question})
             else:
                 user_prompt_with_context = (
                     f"Verified MSAJCE Campus Records:\n{context_str}\n\n"
-                    f"User Question: {user_query}\n\n"
+                    f"User Question: {prompt_user_question}\n\n"
                     f"{dynamics_instruction}\n"
                     f"Instructions: Answer accurately using only the verified records above. "
                     f"Dynamically scale the length and depth to match what the user asks: "
@@ -4492,10 +4594,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
 
-            candidate_models = ["google/gemini-2.5-flash-lite", "google/gemini-2.5-flash-lite-backup"]
-            for candidate in [model_id, "mistralai/mistral-nemotron", "nvidia/nemotron-3.5-lightning-30b-a3b", "nvidia/nemotron-3-super-120b-a12b"]:
-                if candidate and candidate not in candidate_models:
-                    candidate_models.append(candidate)
+            candidate_models = [
+                "nvidia/nemotron-3-super-120b-a12b",
+                "nvidia/nemotron-3-ultra-550b-a55b",
+                "google/gemini-2.5-flash-lite",
+                "google/gemini-2.5-flash-lite-backup"
+            ]
+            if model_id and model_id != "auto" and model_id not in candidate_models:
+                candidate_models.insert(0, model_id)
 
             generation_start = time.time()
             collected_response = []
@@ -4525,10 +4631,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "done": False
                     })
 
-                # Generous timeout: 6s connect, 45s read; first token timeout 12s to prevent premature candidate aborts
-                candidate_timeout = httpx.Timeout(connect=6.0, read=45.0, write=6.0, pool=6.0)
+                # Resilient timeout: 5.0s connect, 60.0s read; first token timeout 20.0s to allow deep RAG synthesis
+                candidate_timeout = httpx.Timeout(connect=5.0, read=60.0, write=5.0, pool=5.0)
                 cand_stream_start = time.time()
                 first_token_received = False
+                consecutive_spaces_count = 0
                 cand_chunks = []
                 
                 # Live streaming rolling preamble filter
@@ -4538,15 +4645,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 buffer_flushed = False
 
                 try:
-                    async with http_client.stream("POST", target_url, headers=target_headers, json=llm_payload, timeout=candidate_timeout) as response:
+                    async with get_http_client().stream("POST", target_url, headers=target_headers, json=llm_payload, timeout=candidate_timeout) as response:
                         if response.status_code != 200:
                             err_bytes = await response.aread()
                             print(f"[WARN] Model candidate '{current_cand}' HTTP {response.status_code}: {err_bytes.decode('utf-8', errors='ignore')[:200]}")
                             continue
 
                         async for line in response.aiter_lines():
-                            if not first_token_received and (time.time() - cand_stream_start > 12.0):
-                                print(f"[WARN] Candidate '{current_cand}' took >12s for first token. Triggering failover...")
+                            if not first_token_received and (time.time() - cand_stream_start > 20.0):
+                                print(f"[WARN] Candidate '{current_cand}' took >20s for first token. Triggering failover...")
                                 break
 
                             if not line or not line.startswith("data: "):
@@ -4563,10 +4670,24 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     print(f"[WARN] Model '{current_cand}' stream error chunk: {chunk_json['error']}")
                                     break
                                 delta = chunk_json.get("choices", [{}])[0].get("delta", {})
-                                token_chunk = delta.get("content") or delta.get("reasoning_content") or delta.get("thought") or ""
+                                content_token = delta.get("content")
+                                reasoning_token = delta.get("reasoning_content") or delta.get("thought")
 
+                                if reasoning_token and not content_token:
+                                    continue
+
+                                token_chunk = content_token or ""
                                 if not token_chunk:
                                     continue
+
+                                # Runaway whitespace and repetitive token glitch guard
+                                if token_chunk.strip() == "":
+                                    consecutive_spaces_count += len(token_chunk)
+                                    if consecutive_spaces_count > 60:
+                                        print(f"[WARN] Runaway whitespace detected (>60 chars) from '{current_cand}'. Terminating stream.")
+                                        break
+                                else:
+                                    consecutive_spaces_count = 0
 
                                 if not first_token_received:
                                     first_token_received = True
@@ -4620,10 +4741,12 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         model_id = current_cand
                         break
                     else:
-                        print(f"[WARN] Candidate '{current_cand}' finished without producing content tokens. Trying next model...")
+                        print(f"[WARN] Candidate '{current_cand}' finished without producing content tokens (status={response.status_code}). Trying next model...")
 
                 except Exception as cand_err:
-                    print(f"[WARN] Candidate '{current_cand}' connection exception: {cand_err}. Trying next model...")
+                    import traceback
+                    traceback.print_exc()
+                    print(f"[WARN] Candidate '{current_cand}' connection exception: {type(cand_err)} - {cand_err}. Trying next model...")
                     continue
 
             # Absolute safeguard: if all LLM streams produced zero content tokens, synthesize full text from retrieved context
@@ -4897,6 +5020,46 @@ async def chat_sync_endpoint(req: ChatRequest):
 
     retrieved_chunks = multi_hop_hybrid_search(user_query, query_vector, top_k=top_k_val) if top_k_val > 0 else []
 
+    # RouteFinder injection
+    if route_finder:
+        matched_route = route_finder.find_route(user_query)
+        is_general_bus = route_finder.is_general_transit_query(user_query)
+        if matched_route:
+            route_id = matched_route.get("route_id")
+            route_name = matched_route.get("name")
+            meta = matched_route.get("meta", {})
+            stops = matched_route.get("stops", [])
+            cat_label = "COLLEGE BUS" if matched_route.get("category") == "college" else "PUBLIC BUS"
+            table_rows = ["| Stop # | Stop Name | Boarding Time |", "| :--- | :--- | :--- |"]
+            for s_idx, st in enumerate(stops, 1):
+                s_time = st.get("time") or "Scheduled"
+                table_rows.append(f"| {s_idx} | {st['name']} | **{s_time}** |")
+            stops_table = "\n".join(table_rows)
+            rf_chunk_text = (
+                f"### VERIFIED OFFICIAL SCHEDULE FOR {cat_label} ROUTE {route_id}: {route_name}\n"
+                f"- **College Arrival Time**: {meta.get('arrival', '8:00 AM')} at MSAJCEA Campus (Siruseri OMR)\n\n"
+                f"#### Complete Stop-by-Stop Timings & Boarding Schedule:\n{stops_table}\n"
+            )
+            retrieved_chunks.insert(0, {
+                "chunk_id": f"route_finder_route_{route_id}",
+                "title": f"Official Bus Schedule: {route_name}",
+                "source_file": "msajce_transport.md",
+                "category": "transport",
+                "page_url": "https://msajce-edu.in/transport",
+                "content": rf_chunk_text,
+                "rrf_score": 1.0
+            })
+        elif is_general_bus:
+            retrieved_chunks.insert(0, {
+                "chunk_id": "route_finder_fleet_overview",
+                "title": "Official Transport & Bus Fleet Overview",
+                "source_file": "msajce_transport.md",
+                "category": "transport",
+                "page_url": "https://msajce.edu.in/transport",
+                "content": route_finder.get_fleet_overview(),
+                "rrf_score": 1.0
+            })
+
     # Exact Patent & Identifier Lookup Booster
     patent_num_match = re.search(r'\b(\d{6,12}[A-Za-z]?)\b', user_query)
     is_patent_q = bool(re.search(r'\b(patent|patents|patent\s*no|patent\s*number|inventor|who\s+filed|who\s+published|whose\s+patent)\b', user_query, re.IGNORECASE))
@@ -4994,7 +5157,7 @@ async def chat_sync_endpoint(req: ChatRequest):
 
     answer = None
     models_to_try = [model_id] if model_id and model_id != "auto" else []
-    for m_cand in ["google/gemini-2.5-flash-lite", "meta/muse-glimmer-30b", "mistralai/mistral-nemotron", "nvidia/nemotron-3.5-lightning-30b-a3b"]:
+    for m_cand in ["nvidia/nemotron-3-ultra-550b-a55b", "nvidia/nemotron-3-super-120b-a12b", "google/gemini-2.5-flash-lite", "google/gemini-2.5-flash-lite-backup"]:
         if m_cand not in models_to_try:
             models_to_try.append(m_cand)
 
@@ -5005,7 +5168,7 @@ async def chat_sync_endpoint(req: ChatRequest):
 
             llm_payload["model"] = call_model
             llm_payload["max_tokens"] = call_max_tokens
-            resp = await http_client.post(call_url, headers=call_hdrs, json=llm_payload, timeout=45.0)
+            resp = await get_http_client().post(call_url, headers=call_hdrs, json=llm_payload, timeout=45.0)
             if resp.status_code == 200:
                 data = resp.json()
                 if "choices" in data and isinstance(data["choices"], list) and len(data["choices"]) > 0:
