@@ -377,13 +377,28 @@ export default function ThinkingState({
                     transition={{ duration: 0.18 }}
                     className="flex items-start gap-2 rounded-md px-0.5 py-0.5 text-left transition-colors duration-150"
                   >
-                    {/* Step Checkmark / Active Breathing Indicator */}
+                    {/* Step Checkmark / Active Rotating Circle Loader */}
                     <div className="mt-1 shrink-0 flex items-center justify-center size-3">
                       {isStepActive ? (
-                        <span className="relative flex size-2.5 items-center justify-center">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-zinc-400 dark:bg-zinc-200 opacity-60" />
-                          <span className="relative inline-flex size-1.5 rounded-full bg-zinc-800 dark:bg-zinc-100" />
-                        </span>
+                        <svg
+                          className="animate-spin size-3 text-zinc-400 dark:text-zinc-500 shrink-0"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="9"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                          />
+                          <path
+                            className="opacity-90 fill-current text-zinc-800 dark:text-zinc-100"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
                       ) : (
                         <svg
                           width="12"
@@ -424,10 +439,25 @@ export default function ThinkingState({
 
               {steps.length === 0 && isWorking && (
                 <div className="flex items-center gap-2 px-0.5 py-0.5 text-[12.5px]">
-                  <span className="relative flex size-2.5 items-center justify-center shrink-0">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-zinc-400 dark:bg-zinc-200 opacity-60" />
-                    <span className="relative inline-flex size-1.5 rounded-full bg-zinc-800 dark:bg-zinc-100" />
-                  </span>
+                  <svg
+                    className="animate-spin size-3 text-zinc-400 dark:text-zinc-500 shrink-0"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="9"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    />
+                    <path
+                      className="opacity-90 fill-current text-zinc-800 dark:text-zinc-100"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
                   <span className="animate-thinking-shimmer font-medium">Connecting to campus reasoning engine...</span>
                 </div>
               )}
