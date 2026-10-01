@@ -98,20 +98,23 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         target_domains=["fees", "admission", "general"]
     ),
 
-    # 5. Placements, Internships & Recruiters
+    # 5. Placements, Higher Studies, Internships & Recruiters
     "placements": CategoryMetadata(
         key="placements",
-        label="Placements & Careers",
-        description="Campus placements, top recruiters, salary packages (up to 8.5 LPA), placement cell training.",
+        label="Placements & Higher Studies",
+        description="Campus placements, higher studies abroad, master's degree, top recruiters, salary packages (up to 8.5 LPA), placement cell training.",
         is_allowed=True,
-        jev_criteria="Campus placements, companies recruiting, salary packages, highest package, placement percentage, interview training, career cell, internships.",
+        jev_criteria="Campus placements, higher studies abroad, master's degree, GRE/GATE, companies recruiting, salary packages, highest package, placement percentage, interview training, career cell, internships.",
         keywords=[
             "placement", "placements", "recruit", "recruiter", "recruiters", "salary",
             "package", "highest package", "average package", "lpa", "company", "companies",
             "job", "jobs", "internship", "internships", "training", "career", "career cell",
+            "abroad", "higher studies", "master", "masters", "master's", "ms degree", "ms",
+            "study abroad", "went abroad", "foreign university", "gre", "toefl", "ielts", "gate",
+            "alumni", "higher education", "postgraduate",
             "tcs", "infosys", "wipro", "cognizant", "zoho", "kaar tech"
         ],
-        regex_pattern=r'\b(placements?|recruiters?|salary|packages?|lpa|hiring|internships?|career\s+cell|job\s+offers?)\b',
+        regex_pattern=r'\b(placements?|recruiters?|salary|packages?|lpa|hiring|internships?|career\s+cell|job\s+offers?|higher\s+studies|masters?|abroad|ms|alumni|study\s+abroad)\b',
         target_domains=["placement", "general"]
     ),
 

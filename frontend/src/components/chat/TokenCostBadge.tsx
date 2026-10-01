@@ -17,8 +17,6 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
       ? `${metrics.total_cost_usd.toFixed(6)} USD`
       : `${metrics.total_cost_usd.toFixed(4)} USD`;
 
-  const formattedCostInr = `₹${metrics.total_cost_inr.toFixed(3)}`;
-
   const formattedLatency =
     metrics.latency_ms >= 1000
       ? `${(metrics.latency_ms / 1000).toFixed(1)}s`
@@ -31,13 +29,14 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
         .replace(/^minimax\//i, "")
     : "";
 
-  const questionTokens = metrics.prompt_tokens ?? 0;
+  const queryTokens = metrics.query_tokens ?? 10;
+  const promptInputTokens = metrics.prompt_tokens ?? 0;
   const answerTokens = metrics.completion_tokens ?? 0;
-  const totalTokens = metrics.total_tokens ?? (questionTokens + answerTokens);
+  const totalTokens = metrics.total_tokens ?? (promptInputTokens + answerTokens);
 
   const tooltipText = totalTokens > 0
-    ? `Question: ${questionTokens.toLocaleString()} tokens • Answer: ${answerTokens.toLocaleString()} tokens • Total: ${totalTokens.toLocaleString()} tokens (${formattedLatency})`
-    : `Instant Prebuilt Card • 0 tokens consumed (Free) • Cost: ₹0.000 (${formattedLatency})`;
+    ? `Query: ${queryTokens} tok • RAG Context: ${metrics.context_tokens || 0} tok • Answer: ${answerTokens} tok • Total: ${totalTokens.toLocaleString()} tokens (${formattedLatency})`
+    : `Instant Prebuilt Card • 0 tokens consumed (Free) • (${formattedLatency})`;
 
   return (
     <Tooltip content={tooltipText} position="top">
@@ -115,8 +114,6 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
       ? `${metrics.total_cost_usd.toFixed(6)} USD`
       : `${metrics.total_cost_usd.toFixed(4)} USD`;
 
-  const formattedCostInr = `₹${metrics.total_cost_inr.toFixed(3)}`;
-
   const cleanModelName = metrics.model_name
     ? metrics.model_name
         .replace(/^zai\//i, "")
@@ -124,9 +121,12 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
         .replace(/^minimax\//i, "")
     : "Gemini";
 
-  const questionTokens = metrics.prompt_tokens ?? 0;
+  const queryTokens = metrics.query_tokens ?? 0;
+  const promptInputTokens = metrics.prompt_tokens ?? 0;
   const answerTokens = metrics.completion_tokens ?? 0;
-  const totalTokens = metrics.total_tokens ?? (questionTokens + answerTokens);
+  const contextTokens = metrics.context_tokens ?? 0;
+  const systemTokens = metrics.system_tokens ?? 0;
+  const totalTokens = metrics.total_tokens ?? (promptInputTokens + answerTokens);
 
   return (
     <div className="w-full rounded-2xl bg-surface/90 dark:bg-[#18181b]/90 text-ink dark:text-[#f4f3ee] mt-2 mb-1 p-3.5 border border-black/[0.08] dark:border-white/[0.08] shadow-md backdrop-blur-xl">
@@ -152,20 +152,20 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
 
         {/* 4-Box Token & Performance Breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {/* 1. Question (Prompt) Tokens */}
+          {/* 1. Prompt Input Tokens (With Query + RAG breakdown) */}
           <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
             <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
-              Question Tokens
+              Prompt Input Tokens
             </div>
             <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
-              {questionTokens.toLocaleString()}
+              {promptInputTokens.toLocaleString()}
             </div>
-            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate">
-              {metrics.query_tokens ? `Query: ${metrics.query_tokens} • Prompt: ${questionTokens}` : "Input / Prompt"}
+            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title={`Query: ${queryTokens} tok | Campus RAG: ${contextTokens} tok | System: ${systemTokens} tok`}>
+              Query: {queryTokens} • RAG: {contextTokens}
             </div>
           </div>
 
-          {/* 2. Answer (Completion) Tokens */}
+          {/* 2. Answer Tokens */}
           <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
             <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
               Answer Tokens
@@ -259,9 +259,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
 }
-
