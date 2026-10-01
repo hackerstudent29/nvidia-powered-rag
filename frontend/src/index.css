@@ -237,6 +237,11 @@
 /* ══════════════════════════════════════════════════════════════
    ANIMATIONS
    ══════════════════════════════════════════════════════════════ */
+@keyframes pixel-on {
+  0%, 100% { opacity: 0.12; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
 @keyframes shimmer-text {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }

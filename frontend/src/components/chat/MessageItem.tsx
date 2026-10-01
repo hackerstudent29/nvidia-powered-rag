@@ -1459,18 +1459,6 @@ const MessageItem = React.memo(function MessageItem({
     }
   };
 
-  if (isUser) {
-    return (
-      <div className="flex flex-col items-end my-3 sm:my-4 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-200">
-        <div className="max-w-[85%] sm:max-w-[80%] min-w-0 box-border">
-          <div className="chat-message-content bg-[#E1EED7]/90 dark:bg-[#1C2C28] text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-[#2E6B5E]/25 dark:border-[#10b981]/30 font-medium select-text">
-            {message.content}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const sources = useMemo(() => {
     const raw = message.sources || [];
     const seen = new Set<string>();
@@ -1485,6 +1473,18 @@ const MessageItem = React.memo(function MessageItem({
   const sanitizedMarkdown = useMemo(() => {
     return autoLinkPhoneNumbers(sanitizeMarkdownContent(message.content));
   }, [message.content]);
+
+  if (isUser) {
+    return (
+      <div className="flex flex-col items-end my-3 sm:my-4 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-200">
+        <div className="max-w-[85%] sm:max-w-[80%] min-w-0 box-border">
+          <div className="chat-message-content bg-[#E1EED7]/90 dark:bg-[#1C2C28] text-ink dark:text-[#f4f3ee] px-4 py-2.5 rounded-3xl rounded-br-lg text-[15px] sm:text-base leading-relaxed break-words shadow-xs border border-[#2E6B5E]/25 dark:border-[#10b981]/30 font-medium select-text">
+            {message.content}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Reset document word counter before every render pass
   wordCounterRef.current = 0;
@@ -1717,7 +1717,7 @@ const MessageItem = React.memo(function MessageItem({
                 }
 
                 const targetUrl = rawHref.startsWith("http") ? rawHref : `https://${rawHref}`;
-                const linkCopyValue = (targetUrl !== "https://" && targetUrl !== "https://") ? targetUrl : childrenText;
+                const linkCopyValue = targetUrl !== "https://" ? targetUrl : childrenText;
                 const handlers = createLongPressCopy(linkCopyValue, "Link URL");
 
                 return (

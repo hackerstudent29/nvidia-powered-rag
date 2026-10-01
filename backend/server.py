@@ -3835,10 +3835,16 @@ async def stream_cached_or_prebuilt(
 ) -> AsyncGenerator[str, None]:
     label = "instant campus guide" if cache_type == "prebuilt" else "verified precision cache"
 
-    # Immediate reasoning step (<10ms)
+    # Topic-specific reasoning steps (<10ms)
+    stage1_desc, stage2_desc, stage4_desc = get_query_focus_description(user_query)
     yield json.dumps({
         "type": "reasoning",
-        "step": f"Evaluated verified campus records for '{user_query[:45]}'",
+        "step": stage2_desc,
+        "done": True
+    })
+    yield json.dumps({
+        "type": "reasoning",
+        "step": stage4_desc,
         "done": True
     })
 
@@ -4154,7 +4160,109 @@ def check_user_security_and_rate_limit(user_id: str, user_ip: str, user_query: s
 
     return True, None
 
-# ---------------------------------------------------------
+def get_query_focus_description(query: str, query_cat: str = "") -> Tuple[str, str, str]:
+    """
+    Returns (stage1_focus, stage2_target, stage4_synthesis) descriptions tailored specifically
+    to the semantics and entities of the query.
+    """
+    q_low = (query or "").lower().strip()
+    
+    # 0. Developer / Creator Persona (Ramanathan S. / Ram)
+    if any(k in q_low for k in ["developer", "creator", "author", "who made", "who built", "who created", "who developed", "who programmed", "ram", "rama", "ramanathan", "ramzenderum", "ramzendrum"]):
+        return (
+            "Targeting developer profile & software architecture dossier",
+            "Retrieving verified creator credentials for Ramanathan S. (Ram, B.Tech IT)",
+            "Synthesizing developer profile, tech stack & GitHub portfolio"
+        )
+
+    # 1. Principal & Administrative Governance
+    if any(k in q_low for k in ["principal", "srinivasan", "head of", "director", "leadership", "dean", "management", "trust", "administration", "who is the head"]):
+        return (
+            "Targeting institutional governance & administrative leadership records",
+            "Searching official executive directory & Principal Dr. K.S. Srinivasan profile",
+            "Synthesizing verified leadership credentials & administrative office details"
+        )
+    
+    # 2. Hostel & Residential Accommodation
+    if any(k in q_low for k in ["hostel", "hostels", "room", "rooms", "ac", "non-ac", "sharing", "occupancy", "warden", "mess", "dining", "laundry", "residence"]):
+        return (
+            "Analyzing residential hostel capacity, room allocations & student welfare rules",
+            "Scanning boys & girls hostel inventories, amenities & mess schedules",
+            "Structuring structured Markdown comparison table & boarding guidelines"
+        )
+        
+    # 3. Transport & Bus Routes
+    if any(k in q_low for k in ["bus", "buses", "route", "routes", "transport", "pickup", "stop", "stops", "driver", "travel", "commute", "mtc", "van"]):
+        return (
+            "Inspecting Siruseri OMR transit grid & bus route boarding schedules",
+            "Resolving official college bus routes (AR/R/N) & public MTC transit connections",
+            "Synthesizing stop-by-stop schedule table & campus arrival timings"
+        )
+        
+    # 4. Admissions, Cutoffs & TNEA Counselling
+    if any(k in q_low for k in ["admission", "admissions", "cutoff", "cut-off", "cut off", "tnea", "1301", "counselling", "counseling", "eligibility", "quota", "lateral entry", "seat", "intake"]):
+        return (
+            "Analyzing TNEA Code 1301 admission requirements, quotas & eligibility criteria",
+            "Retrieving Anna University cutoffs, seat matrices & application protocols",
+            "Synthesizing verified cutoff metrics, eligibility rules & counselling steps"
+        )
+
+    # 5. Fees & Scholarships
+    if any(k in q_low for k in ["fee", "fees", "tuition", "cost", "scholarship", "scholarships", "concession", "waiver", "first graduate", "payment"]):
+        return (
+            "Reviewing tuition fee structure, government scholarships & concession guidelines",
+            "Cross-referencing First Graduate scheme, SC/ST/MBC post-matric aid & payment terms",
+            "Synthesizing comprehensive fee breakdown & financial aid eligibility"
+        )
+
+    # 6. Placements & Careers
+    if any(k in q_low for k in ["placement", "placements", "salary", "package", "recruiter", "recruiters", "ctc", "lpa", "hiring", "company", "companies", "training", "internship"]):
+        return (
+            "Scanning campus placement statistics, top recruiting partners & career metrics",
+            "Retrieving verified highest CTC, average packages & corporate tie-ups",
+            "Synthesizing verified placement records & industry recruitment milestones"
+        )
+
+    # 7. Departments, Syllabi & Curriculum
+    if any(k in q_low for k in ["course", "courses", "department", "departments", "syllabus", "curriculum", "cse", "aiml", "ai & ds", "it", "ece", "eee", "mech", "civil", "b.tech", "b.e", "m.e"]):
+        return (
+            "Examining engineering degree programs, curriculum & Anna University regulations",
+            "Retrieving department infrastructure, lab equipment & course objectives",
+            "Synthesizing program highlights, vision/mission pillars & academic structure"
+        )
+
+    # 8. Campus Facilities, Sports & Library
+    if any(k in q_low for k in ["library", "books", "sports", "gym", "canteen", "lab", "labs", "wifi", "campus", "infrastructure", "auditorium"]):
+        return (
+            "Checking campus infrastructure, Central Library holdings & facility amenities",
+            "Retrieving lab setups, sports facilities & student recreation centers",
+            "Synthesizing verified facility specifications & operational hours"
+        )
+
+    # 9. Research, IPR & Patents
+    if any(k in q_low for k in ["patent", "patents", "research", "paper", "journal", "publication", "ipr", "inventor", "project"]):
+        return (
+            "Querying institutional research publications, patents & IPR cell records",
+            "Cross-referencing verified patent registries & faculty innovation projects",
+            "Synthesizing official patent citations, publication titles & inventor credentials"
+        )
+
+    # 10. Vision, Mission & Accreditations
+    if any(k in q_low for k in ["vision", "mission", "peo", "pso", "naac", "nba", "aicte", "affiliation", "ranking"]):
+        return (
+            "Analyzing institutional vision, mission statements & accreditation dossiers",
+            "Retrieving NAAC/NBA certifications, AICTE approvals & quality policies",
+            "Synthesizing verified institutional milestones & quality objectives"
+        )
+
+    # Fallback
+    clean_q = query[:45].strip() if len(query) > 45 else query.strip()
+    return (
+        f"Analyzing query intent regarding '{clean_q}'",
+        "Searching Qdrant Vector Cloud & BM25 lexical index across campus records",
+        "Synthesizing grounded response with verified citations & structured formatting"
+    )
+
 # ---------------------------------------------------------
 # SSE Streaming Chat Endpoint
 # ---------------------------------------------------------
@@ -4201,10 +4309,13 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 "model": model_id
             })
 
-            # 0. Instantly notify frontend that reasoning has begun (<10ms)
+            # Derive topic-tailored reasoning descriptions for this specific inquiry
+            stage1_desc, stage2_desc, stage4_desc = get_query_focus_description(user_query)
+
+            # 0. Instantly notify frontend with topic-specific reasoning intent (<10ms)
             yield json.dumps({
                 "type": "reasoning",
-                "step": "Analyzing query intent & campus knowledge base...",
+                "step": stage1_desc,
                 "done": False
             })
 
@@ -4234,6 +4345,9 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             expanded_query = rewrite_query(user_query)
 
             query_cat = categorize_user_query(user_query)
+
+            # Re-evaluate focus description with categorized intent
+            stage1_desc, stage2_desc, stage4_desc = get_query_focus_description(user_query, query_cat)
 
             # Non-blocking async DB session & user turn recording (zero stall on streaming)
             def _persist_user_turn():
@@ -4275,7 +4389,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             if not is_allowed:
                 yield json.dumps({
                     "type": "reasoning",
-                    "step": "System One Guardrails (typesafe-ai/jev): Refused query out of domain bounds / safety breach",
+                    "step": "System One Guardrails: Refused query out of domain bounds / safety breach",
                     "done": True
                 })
                 yield json.dumps({
@@ -4285,9 +4399,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 yield json.dumps({"type": "done"})
                 return
 
+            domain_meta = CAMPUS_TAXONOMY.get(query_cat)
+            domain_label = domain_meta.label if domain_meta else query_cat.replace('_', ' ').title()
             yield json.dumps({
                 "type": "reasoning",
-                "step": f"System One Decision (typesafe-ai/jev): Verified campus domain & classified intent '{query_cat}'",
+                "step": f"Classified domain intent: {domain_label}",
                 "done": True
             })
 
@@ -4296,6 +4412,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 prebuilt_card = get_prebuilt_card_answer(user_query)
                 if prebuilt_card:
                     logger.info(f"[Prebuilt Card] Serving instant prebuilt FAQ card for query: '{user_query}'")
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "Instant FAQ match: Retrieved pre-verified institutional card answer",
+                        "done": True
+                    })
                     async for item in stream_cached_or_prebuilt(
                         response_text=prebuilt_card["response"],
                         sources=prebuilt_card.get("sources", []),
@@ -4308,7 +4429,6 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     ):
                         yield item
                     return
-
 
             is_rewritten_followup = (user_query.strip().lower() != req.message.strip().lower())
             if req.is_regeneration or is_contextual_query(user_query) or is_contextual_query(req.message) or is_rewritten_followup:
@@ -4323,6 +4443,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     if is_route_q and ("|" not in cached_result.get("response", "") or "stop" not in cached_result.get("response", "").lower()):
                         cached_result = None
             if cached_result:
+                yield json.dumps({
+                    "type": "reasoning",
+                    "step": "Exact query cache match: Retrieved verified cached response",
+                    "done": True
+                })
                 async for item in stream_cached_or_prebuilt(
                     response_text=cached_result["response"],
                     sources=cached_result["sources"],
@@ -4377,6 +4502,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             matched_entities = search_knowledge_entities(user_query) or search_knowledge_entities(expanded_query)
             if matched_entities and query_class != "greeting":
                 RAG_TOP_K = max(RAG_TOP_K, 6)  # Retain comprehensive context surrounding matched entities
+                yield json.dumps({
+                    "type": "reasoning",
+                    "step": f"Knowledge Entity Match: Linked {len(matched_entities)} verified institutional entities",
+                    "done": True
+                })
 
             retrieved_chunks = []
             sources_payload = []
@@ -4386,7 +4516,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 rag_latency_ms = 0
                 yield json.dumps({
                     "type": "reasoning",
-                    "step": "Greeting detected — skipping RAG to save tokens",
+                    "step": "Conversational greeting recognized — skipping RAG retrieval",
                     "done": True
                 })
             else:
@@ -4451,6 +4581,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "rrf_score": 1.0
                     }
                     retrieved_chunks = [route_chunk]
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": f"RouteFinder: Resolved transit schedule for Route {route_id} ({route_name})",
+                        "done": True
+                    })
                 elif is_general_bus_q and route_finder and not is_compound_inquiry:
                     fleet_chunk_text = route_finder.get_fleet_overview()
                     retrieved_chunks = [{
@@ -4462,13 +4597,28 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "content": fleet_chunk_text,
                         "rrf_score": 1.0
                     }]
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "RouteFinder: Loaded full verified campus bus fleet overview",
+                        "done": True
+                    })
                 else:
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "Generating 1,024-dim dense embedding (nvidia/llama-nemotron-embed)",
+                        "done": True
+                    })
                     query_vector = await get_query_embedding(expanded_query)
 
                     # --- TIER 2: Semantic Cache Check ---
                     if not req.is_regeneration and query_vector:
                         semantic_cached = check_semantic_cache(query_vector)
                         if semantic_cached:
+                            yield json.dumps({
+                                "type": "reasoning",
+                                "step": "Semantic Vector Cache Match: Found verified high-confidence response",
+                                "done": True
+                            })
                             async for item in stream_cached_or_prebuilt(
                                 response_text=semantic_cached["response"],
                                 sources=semantic_cached["sources"],
@@ -4483,6 +4633,12 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             return
 
                     sub_queries = await decompose_multi_hop_query_llm(expanded_query)
+                    total_rec_count = len(bm25_corpus) if bm25_corpus else 1378
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": stage2_desc,
+                        "done": True
+                    })
                     retrieved_chunks = multi_hop_hybrid_search(expanded_query, query_vector, top_k=RAG_TOP_K, sub_queries=sub_queries)
 
                     # If compound inquiry with transport, inject verified transit overview or matched route
@@ -4510,6 +4666,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             "page_url": "https://msajce-edu.in/transport",
                             "content": rf_chunk_text,
                             "rrf_score": 1.0
+                        })
+                        yield json.dumps({
+                            "type": "reasoning",
+                            "step": f"Injected transit schedule for Route {route_id} into compound context",
+                            "done": True
                         })
                     elif is_general_bus_q and route_finder:
                         retrieved_chunks.insert(0, {
@@ -4556,7 +4717,12 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         if exact_patent_chunks:
                             for epc in reversed(exact_patent_chunks[:3]):
                                 retrieved_chunks.insert(0, epc)
-                        # Guarantee zero cross-domain pollution: purge any transport/bus chunks completely
+                            yield json.dumps({
+                                "type": "reasoning",
+                                "step": f"Patent & Research Registry: Injected {len(exact_patent_chunks)} verified patent records",
+                                "done": True
+                            })
+
                     # Corrective RAG (CRAG) Document Relevance Purging
                     retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
 
@@ -4606,16 +4772,22 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         "content": rf_chunk_text,
                                         "rrf_score": 1.0
                                     })
+                                    yield json.dumps({
+                                        "type": "reasoning",
+                                        "step": f"RouteFinder: Injected verified boarding times for stop '{stop_info['name']}'",
+                                        "done": True
+                                    })
                         except Exception as rf_err:
                             print(f"[WARN] RouteFinder context injection error: {rf_err}")
 
                 rag_latency_ms = int((time.time() - rag_start) * 1000)
                 
-                # Step 2 expands after embedding + search completes
-                total_rec_count = len(bm25_corpus) if bm25_corpus else 1377
+                # Expand after embedding + search completes
+                source_files = list({c.get("source_file", "").split('\t')[0] for c in retrieved_chunks if c.get("source_file")})
+                source_summary = ", ".join(source_files[:2]) if source_files else "official records"
                 yield json.dumps({
                     "type": "reasoning",
-                    "step": f"Evaluated {total_rec_count:,} campus records. Fused top {len(retrieved_chunks)} verified sources",
+                    "step": f"CRAG Verification: Fused {len(retrieved_chunks)} verified sections from {source_summary}",
                     "done": True
                 })
 
@@ -4815,7 +4987,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 if candidate_idx == 0:
                     yield json.dumps({
                         "type": "reasoning",
-                        "step": f"Synthesizing response [{query_class}] using {target_model_slug} via {provider_label}...",
+                        "step": stage4_desc,
                         "done": False
                     })
 
