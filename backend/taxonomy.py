@@ -284,17 +284,18 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
     "off_topic": CategoryMetadata(
         key="off_topic",
         label="Off-Topic Inquiry",
-        description="Queries unrelated to MSAJCEA or college education (cooking, crypto, political debate, movies, gaming).",
+        description="Queries unrelated to MSAJCE or college education (arbitrary code generation, math problems, cooking, crypto, politics, movies, gaming, general trivia).",
         is_allowed=False,
-        jev_criteria="Clearly unrelated to MSAJCEA, higher education, engineering, or campus life (e.g. recipes, cryptocurrency, politics, external gossip).",
+        jev_criteria="Clearly unrelated to MSAJCE, higher education admissions, engineering degrees, or campus life (e.g. writing arbitrary code/HTML/Python scripts, solving homework/math, recipes, cryptocurrency, politics, external gossip).",
         keywords=[
+            "write code", "html code", "python code", "solve math", "calculate",
             "crypto", "bitcoin", "ethereum", "stock market", "trading",
             "recipe", "how to bake", "cake", "cook", "movie review",
             "who won the match", "president of", "prime minister of", "capital of"
         ],
-        regex_pattern=r'\b(crypto|bitcoin|trading|stock\s+market|recipe\s+for|how\s+to\s+bake|who\s+won\s+the\s+match|capital\s+of\s+[A-Za-z]+)\b',
+        regex_pattern=r'\b(write\s+(?:a\s+)?code|html\s+code|python\s+code|crypto|bitcoin|trading|stock\s+market|recipe\s+for|how\s+to\s+bake|who\s+won\s+the\s+match|capital\s+of\s+[A-Za-z]+)\b',
         target_domains=[],
-        refusal_message="I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA). I can only assist with college admissions, departments, academics, placements, fees, and campus facilities."
+        refusal_message="I am Lorin AI, the official campus assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I am exclusively designed to assist with MSAJCE admissions, academic departments, degree programs, placements, fee structures, bus routes, hostels, and campus facilities. Please let me know if you have any questions about MSAJCE!"
     ),
 
     # 17. Security & Jailbreak Violations (Disallowed - Refused with Safety Policy)
@@ -310,7 +311,7 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         ],
         regex_pattern=r'\b(ignore\s+all\s+previous\s+instructions|ignore\s+previous\s+directives|you\s+are\s+now\s+in\s+dan\s+mode|reveal\s+your\s+system\s+prompt|print\s+system\s+prompt|disregard\s+college\s+policy|act\s+as\s+an\s+unrestricted\s+ai)\b',
         target_domains=[],
-        refusal_message="I cannot comply with that request. I strictly operate under official MSAJCEA campus guidelines."
+        refusal_message="I cannot comply with that request. I strictly operate under official MSAJCE campus guidelines."
     )
 }
 
@@ -341,7 +342,7 @@ def _load_knowledge_entity_aliases() -> Tuple[Set[str], List[str]]:
                     if len(a_clean.split()) > 1:
                         multi_words.append(a_clean)
                     else:
-                        if len(a_clean) >= 3 and a_clean not in {"the", "and", "for", "with", "this", "that"}:
+                        if len(a_clean) >= 3 and a_clean not in {"the", "and", "for", "with", "this", "that", "code", "file", "header", "size", "basic", "text"}:
                             single_words.add(a_clean)
     except Exception:
         pass
@@ -366,14 +367,14 @@ CAMPUS_DOMAIN_TERMS: Set[str] = {
     'btech', 'b.tech', 'be', 'b.e', 'me', 'm.e', 'ug', 'pg', 'curriculum', 'syllabus', 'syllabi',
     'regulation', 'regulations', 'anna university', 'anna univ', 'semester', 'semesters',
     'exam', 'exams', 'grade', 'grades', 'gpa', 'cgpa', 'marks', 'credits', 'arrear', 'arrears',
-    'lab', 'labs', 'laboratories', 'engineering', 'study', 'studies', 'subject', 'subjects',
-    # Engineering Disciplines & Tech
-    'cse', 'it', 'ece', 'eee', 'mech', 'civil', 'cyber', 'cyber security', 'ai', 'ds', 'aids', 'aiml',
-    'csbs', 'vlsi', 'act', 'software', 'hardware', 'coding', 'programming', 'python', 'java', 'web',
-    # Placements, Careers & Skills
+    'lab', 'labs', 'laboratories', 'engineering',
+    # Engineering Disciplines & Programs
+    'cse', 'computer science', 'information technology', 'ece', 'eee', 'mech', 'mechanical', 'civil',
+    'cyber security', 'ai&ds', 'ai&ml', 'csbs', 'vlsi', 'applied electronics', 'structural engineering',
+    # Placements, Careers & Recruiters
     'placement', 'placements', 'recruit', 'recruiter', 'recruiters', 'recruitment', 'salary',
     'package', 'packages', 'lpa', 'hiring', 'interview', 'interviews', 'internship', 'internships',
-    'career', 'careers', 'job', 'jobs', 'skills', 'aptitude', 'tcs', 'infosys', 'wipro', 'cognizant', 'zoho',
+    'career', 'careers', 'tcs', 'infosys', 'wipro', 'cognizant', 'zoho', 'kaar tech',
     # Campus Life, Hostels & Facilities
     'hostel', 'hostels', 'room', 'rooms', 'warden', 'canteen', 'mess', 'food', 'dining',
     'library', 'books', 'delnet', 'ieee', 'bus', 'buses', 'route', 'routes', 'transport', 'driver',
@@ -383,7 +384,7 @@ CAMPUS_DOMAIN_TERMS: Set[str] = {
     # Research, Patents & Accreditations
     'patent', 'patents', 'research', 'copyright', 'copyrights', 'publication', 'publications',
     'paper', 'papers', 'journal', 'journals', 'inventor', 'inventors', 'supervisor', 'supervisors',
-    'phd', 'dhiravidachelvi', 'project', 'projects', 'funding', 'tnscst', 'nba', 'naac', 'aicte', 'accreditation'
+    'phd', 'dhiravidachelvi', 'funded project', 'tnscst', 'nba', 'naac', 'aicte', 'accreditation'
 }
 CAMPUS_DOMAIN_TERMS.update(ENTITY_SINGLE_WORDS)
 
