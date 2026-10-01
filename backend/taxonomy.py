@@ -141,13 +141,14 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         is_allowed=True,
         jev_criteria="College bus routes, pickup points, morning departure times, arrival at campus by 8:00 AM, driver contact numbers, route numbers (AR 3, AR 4, etc.), public MTC buses.",
         keywords=[
-            "bus", "buses", "route", "routes", "transport", "driver", "drivers",
+            "bus", "buses", "route", "routes", "transport", "tranport", "transpot", "driver", "drivers",
             "stops", "pickup", "drop", "boarding", "travel", "commute", "mtc",
             "van", "ar 3", "ar 4", "ar 5", "ar 6", "ar 7", "ar 8", "ar 9", "ar 10", "r 22",
+            "transport officer", "transport convener", "transport incharge", "bus incharge", "santhosh nathan",
             "uthiramerur", "moolakadai", "anna nagar", "icf", "chunambedu", "manjambakkam",
             "ennore", "porur", "nemilichery", "siruseri", "8:00 am"
         ],
-        regex_pattern=r'\b(bus|buses|transport|route|routes|driver|drivers|stops?|boarding|pickup|commute)\b|\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+|MTC\s+\d+[A-Z]*)\b',
+        regex_pattern=r'\b(bus|buses|transport|tranport|transpot|route|routes|driver|drivers|stops?|boarding|pickup|commute|convener|incharge|in-charge|transport\s*officer)\b|\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+|MTC\s+\d+[A-Z]*)\b',
         target_domains=["transport"]
     ),
 
@@ -493,7 +494,7 @@ def fast_classify_intent(query: str) -> Optional[str]:
         return "canteen"
 
     # 8. Transport & Bus Routes
-    if re.search(r'\b(bus|buses|transport|pickup|drop|boarding|commute|route|routes|mtc|driver|drivers|stops?)\b', q_trim, re.IGNORECASE) or re.search(r'\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+)\b', q_trim, re.IGNORECASE):
+    if re.search(r'\b(bus|buses|transport|tranport|transpot|convener|incharge|pickup|drop|boarding|commute|route|routes|mtc|driver|drivers|stops?)\b', q_trim, re.IGNORECASE) or re.search(r'\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+)\b', q_trim, re.IGNORECASE):
         return "transport"
 
     # 9. Admissions & Cutoffs

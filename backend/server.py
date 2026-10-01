@@ -182,7 +182,8 @@ CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
 2. Strict Grounding & Anti-Metadata Rule:
    - Ground 100% of your facts strictly in the provided verified MSAJCE records. Never extrapolate, guess, or invent unrecorded numbers or policies.
    - NEVER quote internal chunk indices, document file names (such as '[8] Msajce Msajcepolicy', 'msajce_policy.md', or 'Record [1]'), or raw version strings in your response. Synthesize the facts directly into natural, authoritative campus advice.
-   - If the user asks about a specific person, faculty member, or term (e.g., "who is [Name]"), verify that the exact individual exists in the provided context. If no record exists for that specific individual or term, state clearly: "No record found for '[Name]' in the verified MSAJCE campus records."
+   - Administrative Roles & Key In-Charges: If the user asks about an administrative role, committee in-charge, or functional authority (e.g., "who is transport officer / convener", "who handles buses", "who is placement officer", "who is admission officer", "who is sports officer / physical director", "who is warden"), map the query to its official institutional equivalent in MSAJCE records (such as Transport Convener Dr. K.P. Santhosh Nathan & Assistant Transport Convener Mr. A. Abdul Gafoor, Training & Placement Officer, Head of Admission, Physical Education Director, Hostel Warden) and provide their verified name, designation, phone number, and official email.
+   - Specific Individual Names: If the user asks about a specific named individual (e.g., "who is John Doe") and that exact person does not exist anywhere in the verified MSAJCE records, state clearly: "No record found for '[Name]' in the verified MSAJCE campus records."
    - STRICTLY DO NOT substitute or default to the Principal (Dr. K.S. Srinivasan) or any other leadership figure unless the user specifically and explicitly asked about the Principal or Head of Institution.
 
 3. Conversational Handling:
@@ -1253,6 +1254,11 @@ ACRONYM_MAP = {
     r'\bporur\b': 'Porur Route AR 10 R21 Route R 22',
     r'\bchrompet\b|\bchromepet\b': 'Chrompet Route AR 10 R21',
     r'\b(usaha|ushaa|usha)\b': 'Ms. S. Usha Assistant Professor English Grievance Redressal Committee Convener Dr. Ushaa Eswaran',
+    r'\b(?:who\s+is\s+)?(?:tran?sport\s+(?:officer|incharge|in-charge|convener|head|manager|in\s*charge|director|desk)|bus\s+(?:officer|incharge|in-charge|convener|head|manager|in\s*charge|coordinator))\b': 'Transport Convener Dr. K.P. Santhosh Nathan 9840886992 Assistant Transport Convener Mr. A. Abdul Gafoor 9940319629 msajce_transport.md',
+    r'\b(?:who\s+is\s+)?(?:placement\s+(?:officer|incharge|in-charge|head|director|manager|lead))\b': 'Placement Head Mr. V. Vigneshwaran 7904117425 Training and Placement Cell Dr. S. Vijayakumar Mr. S.V. Vinodh',
+    r'\b(?:who\s+is\s+)?(?:admission\s+(?:officer|incharge|in-charge|head|convener|director|coordinator|desk))\b': 'Head of Admission Dr. K.P. Santhosh Nathan 9840886992 Admission Officer Mr. A. Abdul Gafoor 9940319629 Other States Coordinator Dr. Vamsi Naga Mohan A 9043358674',
+    r'\b(?:who\s+is\s+)?(?:sports?\s+(?:officer|incharge|in-charge|director|head|convener|in\s*charge))\b': 'Physical Education Director Dr. K.P. Santhosh Nathan 9840886992 Assistant Director Mr. M. Janakiraman',
+    r'\b(?:who\s+is\s+)?(?:hostel\s+(?:warden|incharge|in-charge|manager|head|caretaker))\b': 'Hostel Warden Residential In-charge boys girls hostel Canteen Committee Dr. K.P. Santhosh Nathan Mr. Arun',
     r'\bcourses?\b|\bprograms?\b|\bdegrees?\b|\bug\b|\bpg\b': '12 Undergraduate 2 Postgraduate B.E. B.Tech M.E. degree programs courses offered intake seats msajcea_courses_overview.md CSE IT AI&DS Cyber Security ECE EEE Mechanical Civil AI&ML CSBS VLSI ACT Structural Engineering'
 }
 
@@ -1837,6 +1843,15 @@ The **Girls Hostel** of **Mohamed Sathak A.J. College of Engineering and Archite
             "transport coverage",
             "college bus",
             "bus schedule",
+            "transport officer",
+            "transport convener",
+            "who is transport officer",
+            "who is tranport officer",
+            "who is transport convener",
+            "bus incharge",
+            "transport incharge",
+            "who is bus incharge",
+            "transport head",
             "ar 3",
             "ar 4",
             "ar 5",

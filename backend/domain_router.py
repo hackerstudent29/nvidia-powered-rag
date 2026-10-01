@@ -62,17 +62,18 @@ DOMAIN_DEFINITIONS: Dict[CampusDomain, Dict[str, Any]] = {
     },
     CampusDomain.TRANSPORT: {
         "keywords": [
-            "bus", "buses", "route", "routes", "transport", "driver", "stops", "pickup", "drop",
+            "bus", "buses", "route", "routes", "transport", "tranport", "transpot", "driver", "stops", "pickup", "drop",
             "boarding", "travel", "commute", "mtc", "van", "shuttle", "siruseri", "uthiramerur",
+            "transport officer", "transport convener", "transport incharge", "bus incharge", "convener", "santhosh nathan",
             "koyambedu", "avadi", "chengalpattu", "red hills", "tambaram", "porur", "arrival time",
             "8:00 am", "schedule", "schedules"
         ],
         "regex": re.compile(
-            r'\b(bus|buses|transport|route|routes|driver|drivers|stops?|boarding|pickup|commute|van)\b'
+            r'\b(bus|buses|transport|tranport|transpot|route|routes|driver|drivers|stops?|boarding|pickup|commute|van|convener|incharge|in-charge|transport\s*officer)\b'
             r'|\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+|MTC\s+\d+[A-Z]*)\b',
             re.IGNORECASE
         ),
-        "allowed_categories": {"transport"}
+        "allowed_categories": {"transport", "general", "contact"}
     },
     CampusDomain.ADMISSIONS: {
         "keywords": [
@@ -132,7 +133,7 @@ DOMAIN_DEFINITIONS: Dict[CampusDomain, Dict[str, Any]] = {
             r'\b(principal|director|ramanathan|creator|developer|who\s+(?:made|built|created|developed|programmed|coded)|who\s+is\s+(?:ram|rama|ramanathan|ramzenderum|ramzendrum)|\bram\b|\brama\b|ramzenderum|ramzendrum|hods?|professors?)\b',
             re.IGNORECASE
         ),
-        "allowed_categories": {"faculty", "developer", "general"}
+        "allowed_categories": {"faculty", "developer", "general", "transport", "admissions", "placement", "contact", "sports", "hostel"}
     }
 }
 
