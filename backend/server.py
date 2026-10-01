@@ -686,6 +686,7 @@ qdrant_client: Optional[QdrantClient] = None
 bm25_index: Optional[BM25Okapi] = None
 bm25_corpus: List[Dict[str, Any]] = []
 verified_resource_catalog: List[Dict[str, Any]] = []
+catalog_by_file: Dict[str, List[Dict[str, Any]]] = {}
 http_client: Optional[httpx.AsyncClient] = None
 
 def get_http_client() -> httpx.AsyncClient:
