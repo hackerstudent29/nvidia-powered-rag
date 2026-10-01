@@ -27,7 +27,21 @@ export default {
           }
         },
       fontFamily: {
-        sans: ["Söhne", "Inter", "ui-sans-serif", "system-ui", "-apple-system", "'Segoe UI'", "Roboto", "Helvetica", "Arial", "sans-serif"],
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          "Oxygen",
+          "Ubuntu",
+          "Cantarell",
+          '"OpenAI Sans"',
+          '"Söhne"',
+          "Inter",
+          '"Helvetica Neue"',
+          "Arial",
+          "sans-serif"
+        ],
       },
       animation: {
         "fade-in": "fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",

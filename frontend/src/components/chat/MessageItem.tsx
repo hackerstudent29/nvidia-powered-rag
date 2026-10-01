@@ -1573,53 +1573,53 @@ const MessageItem = React.memo(function MessageItem({
           durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
         />
 
-        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-[1.75] text-[#0d0d0d] dark:text-[#ececec] mt-1 break-words cursor-text select-text font-sans text-[15.5px] sm:text-[16px]">
+        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-[1.6] tracking-[-0.01em] text-[#0d0d0d] dark:text-[#ececec] mt-1 break-words cursor-text select-text font-sans text-[16px]">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => (
-                <p className="mb-4 text-[15.5px] sm:text-[16px] leading-[1.75] text-[#0d0d0d] dark:text-[#ececec] font-normal last:mb-0">
+                <p className="mb-4 text-[16px] leading-[1.6] tracking-[-0.01em] text-[#0d0d0d] dark:text-[#ececec] font-normal last:mb-0">
                   {processHighlightedChildren(children)}
                 </p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc pl-6 my-3.5 space-y-2 text-[15.5px] sm:text-[16px] leading-[1.75] text-[#0d0d0d] dark:text-[#ececec]">
+                <ul className="list-disc pl-6 my-3.5 space-y-2 text-[16px] leading-[1.6] tracking-[-0.01em] text-[#0d0d0d] dark:text-[#ececec]">
                   {children}
                 </ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal pl-6 my-3.5 space-y-2 text-[15.5px] sm:text-[16px] leading-[1.75] text-[#0d0d0d] dark:text-[#ececec]">
+                <ol className="list-decimal pl-6 my-3.5 space-y-2 text-[16px] leading-[1.6] tracking-[-0.01em] text-[#0d0d0d] dark:text-[#ececec]">
                   {children}
                 </ol>
               ),
               li: ({ children }) => (
-                <li className="leading-[1.75] pl-1 text-[#0d0d0d] dark:text-[#ececec]">
+                <li className="leading-[1.6] pl-1 text-[#0d0d0d] dark:text-[#ececec]">
                   {processHighlightedChildren(children)}
                 </li>
               ),
               h1: ({ children }) => (
-                <h1 className="font-semibold tracking-tight text-[22px] sm:text-[24px] mt-6 mb-3 text-[#0d0d0d] dark:text-[#ececec] flex items-center gap-2">
+                <h1 className="font-semibold tracking-[-0.02em] leading-[1.25] text-[26px] sm:text-[28px] mt-6 mb-3 text-[#0d0d0d] dark:text-[#ececec] flex items-center gap-2">
                   {processHighlightedChildren(children)}
                 </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="font-semibold tracking-tight text-[18px] sm:text-[20px] mt-5 mb-2.5 text-[#0d0d0d] dark:text-[#ececec] border-b border-black/[0.06] dark:border-white/[0.08] pb-1.5 flex items-center gap-2">
+                <h2 className="font-semibold tracking-[-0.015em] leading-[1.3] text-[20px] sm:text-[22px] mt-5 mb-2.5 text-[#0d0d0d] dark:text-[#ececec] border-b border-black/[0.06] dark:border-white/[0.08] pb-1.5 flex items-center gap-2">
                   {processHighlightedChildren(children)}
                 </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="font-semibold text-[16px] sm:text-[17px] mt-4 mb-2 text-[#0d0d0d] dark:text-[#ececec]">
+                <h3 className="font-semibold tracking-[-0.01em] leading-[1.35] text-[17px] sm:text-[18px] mt-4 mb-2 text-[#0d0d0d] dark:text-[#ececec]">
                   {processHighlightedChildren(children)}
                 </h3>
               ),
               h4: ({ children }) => (
-                <h4 className="font-semibold text-[15px] sm:text-[15.5px] mt-3 mb-1.5 text-zinc-700 dark:text-zinc-300">
+                <h4 className="font-semibold tracking-[-0.005em] text-[15px] sm:text-[15.5px] mt-3 mb-1.5 text-zinc-700 dark:text-zinc-300">
                   {processHighlightedChildren(children)}
                 </h4>
               ),
               hr: () => null,
               blockquote: ({ children }) => (
-                <blockquote className="border-l-[3px] border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15.5px] text-zinc-700 dark:text-zinc-300 italic leading-[1.75]">
+                <blockquote className="border-l-[3px] border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15.5px] text-zinc-700 dark:text-zinc-300 italic leading-[1.6]">
                   {processHighlightedChildren(children)}
                 </blockquote>
               ),
@@ -1627,7 +1627,7 @@ const MessageItem = React.memo(function MessageItem({
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
                 <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-4 bg-transparent border-none">
-                  <table className="w-full min-w-[560px] border-collapse text-left text-[14px] leading-relaxed bg-transparent">{children}</table>
+                  <table className="w-full min-w-[560px] border-collapse text-left text-[14px] leading-[1.5] tracking-[-0.005em] bg-transparent">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
@@ -1645,7 +1645,7 @@ const MessageItem = React.memo(function MessageItem({
                 </th>
               ),
               td: ({ children }) => (
-                <td className="py-3 px-3.5 align-top leading-relaxed text-[14px] text-[#0d0d0d]/90 dark:text-[#ececec]/90 bg-transparent border-b border-black/[0.06] dark:border-white/[0.06]">
+                <td className="py-2.5 px-3.5 align-top leading-[1.5] text-[14px] text-[#0d0d0d]/90 dark:text-[#ececec]/90 bg-transparent border-b border-black/[0.06] dark:border-white/[0.06]">
                   {processHighlightedChildren(children)}
                 </td>
               ),
