@@ -5,14 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ReasoningStep } from "../../types/chat";
 
 /* ─────────────────────────────────────────────────────────
- * LORIN AI THINKING STATE — Production RAG Thinking Experience
- *
- * Principles:
- *  - Quiet, informative, and alive — gently pulsing ✦ icon
- *  - Truthful representation of pipeline events (2–5 words)
- *  - Zero technical jargon (no Qdrant, embeddings, reranker, tokens)
- *  - Zero internal chain-of-thought monologues
- *  - Smoothly vanishes as soon as response streaming starts (hasContent = true)
+ * LORIN AI THINKING STATE — Old Visual Design + New Words
  * ───────────────────────────────────────────────────────── */
 
 export type StepRow = {
@@ -204,6 +197,9 @@ export function normalizeStepToStage(raw: string): StageInfo | null {
   return { icon: "✦", text: "Reviewing relevant sources…", key: "default_review" };
 }
 
+// 3x3 Pixel Grid loader matrix delays
+const MATRIX_DELAYS = [0, 140, 280, 420, 560, 700, 840, 980, 1120];
+
 /**
  * Timer hook for elapsed time formatting (e.g., "1.2s")
  */
@@ -239,7 +235,12 @@ export default function ThinkingState({
   const elapsed = useElapsedTimer(isWorking, durationSeconds);
   const [startTime] = useState<number>(() => Date.now());
   const [autoStageIdx, setAutoStageIdx] = useState<number>(0);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
+
+  // Automatic state: Expanded ONLY while thinking before answer tokens arrive.
+  // The moment the answer text begins streaming (hasContent = true) or completes, auto-collapse.
+  const autoExpanded = isWorking && !hasContent;
+  const isExpanded = manualExpanded !== null ? manualExpanded : autoExpanded;
 
   // Auto-progression schedule for smooth state updates when SSE steps are waiting
   useEffect(() => {
@@ -248,13 +249,13 @@ export default function ThinkingState({
       const now = Date.now();
       const diff = now - startTime;
       if (diff < 500) {
-        setAutoStageIdx(0); // Understanding
+        setAutoStageIdx(0);
       } else if (diff < 1200) {
-        setAutoStageIdx(1); // Searching
+        setAutoStageIdx(1);
       } else if (diff < 2000) {
-        setAutoStageIdx(2); // Reviewing
+        setAutoStageIdx(2);
       } else {
-        setAutoStageIdx(3); // Preparing
+        setAutoStageIdx(3);
       }
     }, 200);
     return () => clearInterval(interval);
@@ -292,106 +293,168 @@ export default function ThinkingState({
     { icon: "✦", text: "Preparing your answer…", key: "preparing" },
   ];
 
-  // Active current stage to show during thinking
-  const currentStage: StageInfo = useMemo(() => {
-    if (stages.length > 0) {
-      return stages[stages.length - 1];
-    }
-    return defaultStages[Math.min(autoStageIdx, defaultStages.length - 1)];
+  // Active step list to render in expanded timeline
+  const activeStepsList: StageInfo[] = useMemo(() => {
+    if (stages.length > 0) return stages;
+    return defaultStages.slice(0, Math.min(autoStageIdx + 1, defaultStages.length));
   }, [stages, autoStageIdx]);
 
-  // 1. ACTIVE THINKING MODE (Before content streaming begins)
-  // As soon as response streaming starts (hasContent = true), remove active state
-  if (isWorking && !hasContent) {
-    return (
-      <div className="w-full max-w-full my-1.5 select-none font-sans">
-        <div className="flex items-center gap-2 text-[14px] sm:text-[14.5px] font-normal leading-[1.4] text-zinc-500 dark:text-zinc-400 py-1">
-          {/* Pulsing ✦ Icon (Opacity 0.45 ↔ 1, Scale 0.98 ↔ 1.02) */}
-          <motion.span
-            animate={{
-              opacity: [0.45, 1, 0.45],
-              scale: [0.98, 1.02, 0.98],
-            }}
-            transition={{
-              duration: 1.8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="inline-flex items-center justify-center shrink-0 text-[#9E2339] dark:text-[#E11D48] font-medium text-[15px] select-none"
-            aria-hidden="true"
-          >
-            {currentStage.icon}
-          </motion.span>
+  // Active preview text for collapsed bar
+  const activeStepText = useMemo(() => {
+    if (activeStepsList.length === 0) return "Understanding your question…";
+    return activeStepsList[activeStepsList.length - 1].text;
+  }, [activeStepsList]);
 
-          {/* Smooth Transition between 2-5 Word Stage Phrases */}
-          <div className="relative min-w-0 flex-1 overflow-hidden h-[22px] flex items-center">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={currentStage.text}
-                initial={{ opacity: 0, y: 3, filter: "blur(1.5px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -3, filter: "blur(1.5px)" }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="text-[14px] sm:text-[14.5px] font-normal text-zinc-500 dark:text-zinc-400 truncate block tracking-tight"
-              >
-                {currentStage.text}
-              </motion.span>
-            </AnimatePresence>
-          </div>
+  return (
+    <div className="w-full max-w-full my-1.5 select-none font-sans">
+      {/* ── Header / Collapsed Bar (3x3 Grid Loader + Shimmer + Preview + Timer + Chevron) ── */}
+      <button
+        type="button"
+        aria-expanded={isExpanded}
+        onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : autoExpanded))}
+        className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1 transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
+      >
+        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+          {/* 3x3 Pixel Grid Wavefront Loader */}
+          <span aria-hidden className="grid grid-cols-[repeat(3,3.5px)] gap-[1.5px] shrink-0">
+            {MATRIX_DELAYS.map((d, i) => (
+              <span
+                key={i}
+                className="size-[3.5px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px]"
+                style={{
+                  opacity: !isWorking ? 0.35 : 0.15,
+                  animation: !isWorking
+                    ? "none"
+                    : `pixel-on 1400ms ease-in-out ${d}ms infinite`,
+                }}
+              />
+            ))}
+          </span>
+
+          {/* Shimmering State Label */}
+          {isWorking ? (
+            <span
+              className="bg-clip-text text-[13.5px] font-semibold whitespace-nowrap text-transparent shrink-0"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, rgba(158,35,57,0.5) 30%, rgba(225,29,72,1) 50%, rgba(158,35,57,0.5) 70%)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer-text 1.4s linear infinite",
+              }}
+            >
+              Thinking
+            </span>
+          ) : (
+            <span className="text-[13px] font-medium whitespace-nowrap text-zinc-700 dark:text-zinc-200 shrink-0">
+              Thought for {elapsed}
+            </span>
+          )}
+
+          {/* Active Step Preview in Collapsed View (Hidden when Expanded) */}
+          {!isExpanded && (
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+              <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
+              <div className="min-w-0 flex-1 overflow-hidden relative h-[18px] flex items-center">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={isWorking ? activeStepText : (activeStepsList.length > 0 ? `${activeStepsList.length}-done` : "done")}
+                    initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
+                      isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
+                    }`}
+                  >
+                    {isWorking
+                      ? activeStepText
+                      : activeStepsList.length > 0
+                      ? `${activeStepsList.length} verified steps`
+                      : "Verified ground truth"}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    );
-  }
 
-  // 2. COMPLETED MESSAGE MODE (Has Content or Stream Finished)
-  // Render a minimal, quiet "Thought for X.Xs" toggle if historical stages exist
-  if (!isWorking && hasContent && (stages.length > 0 || (typeof durationSeconds === "number" && durationSeconds > 0))) {
-    const verifiedList = stages.length > 0 ? stages : defaultStages.slice(0, 3);
+        {/* Right Side: Live Timer & Chevron */}
+        <div className="flex items-center gap-2 shrink-0 ml-1">
+          {isWorking && (
+            <span className="font-mono text-[12px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
+              {elapsed}
+            </span>
+          )}
 
-    return (
-      <div className="w-full max-w-full my-1 select-none font-sans">
-        <button
-          type="button"
-          aria-expanded={isExpanded}
-          onClick={() => setIsExpanded((prev) => !prev)}
-          className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors duration-150 cursor-pointer focus:outline-none -ml-2"
-        >
-          <span className="text-zinc-400 dark:text-zinc-500 text-[13px]">✦</span>
-          <span>Thought for {elapsed}</span>
           <span
-            className="flex size-3.5 items-center justify-center text-zinc-400 dark:text-zinc-500 transition-transform duration-200"
+            className="flex size-4 items-center justify-center text-zinc-400 dark:text-zinc-500 transition-transform duration-200 opacity-70 group-hover:opacity-100"
             style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-        </button>
+        </div>
+      </button>
 
-        {/* Expandable Verified Milestones */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="overflow-hidden pl-2 border-l border-zinc-200 dark:border-zinc-800 my-1"
-            >
-              <div className="flex flex-col gap-1 py-1">
-                {verifiedList.map((stg, i) => (
-                  <div key={`${stg.key}-${i}`} className="flex items-center gap-2 text-[12.5px] text-zinc-600 dark:text-zinc-400">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">✓</span>
-                    <span>{stg.text.replace("…", "")}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
+      {/* ── Expandable Step-by-Step Reasoner Timeline ── */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden pl-2.5 border-l border-zinc-200 dark:border-zinc-800 my-1 ml-0.5"
+          >
+            <div className="flex flex-col gap-1.5 py-1">
+              {activeStepsList.map((stg, idx) => {
+                const isLast = idx === activeStepsList.length - 1;
+                const isStepActive = isWorking && isLast;
 
-  return null;
+                return (
+                  <motion.div
+                    key={`${stg.key}-${idx}`}
+                    initial={{ opacity: 0, x: -3 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="flex items-center gap-2 text-[12.5px] text-zinc-600 dark:text-zinc-300"
+                  >
+                    {/* Step Icon / Spinner / Checkmark */}
+                    <div className="shrink-0 flex items-center justify-center size-3.5">
+                      {isStepActive ? (
+                        <span
+                          className="size-2.5 rounded-full border-[1.5px] border-[#9E2339] border-t-transparent dark:border-[#E11D48] dark:border-t-transparent block"
+                          style={{ animation: "spin 700ms linear infinite" }}
+                        />
+                      ) : (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-emerald-600 dark:text-emerald-400"
+                        >
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      )}
+                    </div>
+
+                    {/* Step Text (New 2-5 Word Human-Friendly Text) */}
+                    <span className={`leading-snug ${isStepActive ? "font-medium text-zinc-900 dark:text-zinc-100" : "text-zinc-600 dark:text-zinc-300"}`}>
+                      {stg.text.replace("…", "")}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
