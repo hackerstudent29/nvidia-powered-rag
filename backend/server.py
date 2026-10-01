@@ -178,6 +178,7 @@ UNIVERSAL STRUCTURED OUTPUT GUIDELINES:
      * Never artificially force brevity or force excessive length. Deliver exactly what the user asks for with zero omissions.
 
 2. Adaptive Information Architecture:
+   - Mandatory Comparison & Facility Tables: When describing two or more entities or facilities (such as Boys Hostel vs Girls Hostel, AC vs Non-AC rooms, UG vs PG courses, Govt vs Management Quota, Mess Timings & Meals, Transport Routes), NEVER output fragmented or repetitive bullet lists. ALWAYS synthesize a clean, structured Markdown Table (| Parameter / Feature | Option A | Option B | ... |) with direct comparative rows (e.g. Location, Total Blocks, Capacity, Room Types, Sharing/Occupancy, Room Furnishings, Restroom/Attached Amenities, Common Facilities, Study Hours & Extended Timings).
    - Tabular Data (Markdown Tables): Whenever presenting multi-attribute data, program/course listings with intakes, quota allocations (Govt vs Mgmt), fee structures, bus routes with departure schedules/stops, department faculty directories, placement statistics, or comparative matrices, ALWAYS render the data as a clean, complete GitHub-Flavored Markdown (GFM) Table (| Column 1 | Column 2 | ... |). Never compress tabular records into plain generic bullet lists.
    - Multi-Part / Broad Inquiries: If a user asks about multiple topics (e.g. courses & intake + admission + transport + hostel), structure the response into dedicated, logically organized sections using Markdown subheadings (### Section Name) without trailing periods. Apply the optimal structural format (table, ordered list, or key-value items) inside each section.
    - Sequential Workflows: Step-by-step procedures (e.g. TNEA counselling steps, application flow, grievance redressal, lateral entry procedure) must be formatted as Numbered Step-by-Step Lists (1., 2., 3.) with bold phase headings.
@@ -4768,7 +4769,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     f"Dynamically scale the length and depth to match what the user asks: "
                     f"if a quick single-point fact is asked, provide a concise 1-3 line direct answer; "
                     f"if an exhaustive or multi-faceted inquiry is asked, provide the full, comprehensive detail (from 15 to 100+ lines as needed) without omitting facts. "
-                    f"Format tabular, intake, quota, schedule, fee, or comparative data into Markdown Tables (| Col 1 | Col 2 | ... |). "
+                    f"MANDATORY TABLE FORMATTING: Whenever comparing or listing multiple facilities/entities (such as Boys vs Girls Hostel, AC vs Non-AC, courses with intake/eligibility, bus route schedules, fees, mess schedules, daily study/recreation timings), ALWAYS format them into a side-by-side Markdown Table (| Parameter / Feature | Option A | Option B | ... |) with structured rows rather than separate bullet blocks. "
                     f"For multi-part questions, organize into distinct titled sections (### Heading) without trailing periods. "
                     f"Use numbered steps for procedures. Zero emojis."
                 )
