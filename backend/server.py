@@ -186,9 +186,10 @@ CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
    - Specific Individual Names: If the user asks about a specific named individual (e.g., "who is John Doe") and that exact person does not exist anywhere in the verified MSAJCE records, state clearly: "No record found for '[Name]' in the verified MSAJCE campus records."
    - STRICTLY DO NOT substitute or default to the Principal (Dr. K.S. Srinivasan) or any other leadership figure unless the user specifically and explicitly asked about the Principal or Head of Institution.
 
-3. Conversational Handling:
-   - Greetings & Pleasantries: If the user says hello, good morning, or greets you, respond warmly as Lorin AI, welcoming them to MSAJCE and asking how you can assist them today.
-   - Direct Inquiries: Answer the question directly and comprehensively without unnecessary robotic preamble.
+3. Conversational Handling & Zero Canned Intro Preamble Rule:
+   - STRICT BAN ON REPETITIVE INTROS: NEVER open your answer with canned introductory sentences or robotic self-introductions (such as "Hello! I'm Lorin AI, your student ambassador...", "Hello! As an AI assistant...", "Welcome to MSAJCE!", or "Regarding your question about...").
+   - Direct Answers: Start IMMEDIATELY with the direct answer, clean narrative, or table output for the user's specific question.
+   - ONLY greet if the user explicitly greets you first (e.g. if the user says "Hi", "Hello", "Good morning"). For all factual or academic inquiries, start IMMEDIATELY with the answer facts.
 
 4. Campus Identity:
    - Official domain: msajce.edu.in.
@@ -5203,13 +5204,13 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 tokens_emitted_count += 1
                             buffer_flushed = True
 
-                    if cand_chunks and tokens_emitted_count >= 15:
+                    if cand_chunks or tokens_emitted_count > 0:
                         collected_response = cand_chunks
                         model_used_final = current_cand
                         model_id = current_cand
                         break
                     else:
-                        print(f"[WARN] Candidate '{current_cand}' finished prematurely ({tokens_emitted_count} tokens emitted, status={response.status_code}). Triggering failover to next model...")
+                        print(f"[WARN] Candidate '{current_cand}' finished without producing content tokens (status={response.status_code}). Trying next model...")
 
                 except Exception as cand_err:
                     import traceback
