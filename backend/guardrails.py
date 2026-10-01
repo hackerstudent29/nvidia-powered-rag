@@ -149,30 +149,20 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
     if is_conversational_greeting(q_lower):
         return True, None
 
-    # 3. Fast Intent Classification: Recognized campus entities / research / developer (0ms)
-    fast_cat = fast_classify_intent(q_lower)
-    if fast_cat and fast_cat not in ("off_topic", "jailbreak"):
-        return True, None
-
-    # 4. Fast-path Code Generation & Programming Request Interception (0ms)
+    # 3. Fast-path Code Generation & Programming Request Interception (0ms)
     if is_code_or_script_request(q_lower):
         if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum"]):
             return False, CAMPUS_REFUSAL_MESSAGE
 
-    # 5. Defensive Regex Check for Blatant Off-Topic Inquiries (0ms)
-    # Catches explicit banned topics (math, essays, recipes, crypto, trivia, politics)
+    # 4. Explicit Off-Topic Banned Category Check (0ms)
+    # Catches math/physics problem solving, recipes, crypto trading, pop culture/movies, politics
     for pattern in OFF_TOPIC_PATTERNS:
         if re.search(pattern, q_lower):
             # Only allow if explicitly inquiring about college context / curriculum / admissions
             if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum", "course", "courses", "department", "degree"]):
                 return False, CAMPUS_REFUSAL_MESSAGE
 
-    # 6. Fast Domain & Knowledge Entity Whitelist (0ms)
-    # If query contains any verified campus term or knowledge entity alias, permit immediately
-    if is_campus_domain_term_present(q_lower):
-        return True, None
-
-    # 7. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
+    # 5. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
     if jev_evaluator and jev_evaluator.is_enabled:
         try:
             jev_res = jev_evaluator.evaluate_query_sync(user_query, timeout=3.5)
@@ -186,8 +176,8 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
             if matched_meta and matched_meta.is_allowed:
                 return True, None
 
-            # Only refuse if JEV is confident that the query is an active off-topic breach
-            if jev_res.category == "off_topic" and jev_res.confidence >= 0.70 and not jev_res.is_campus_domain:
+            # Only refuse if JEV is 85%+ confident that the query is an active off-topic breach (e.g. math homework/crypto)
+            if jev_res.category == "off_topic" and jev_res.confidence >= 0.85 and not jev_res.is_campus_domain:
                 if not is_campus_domain_term_present(q_lower):
                     refusal = (
                         (matched_meta.refusal_message if matched_meta else None)
@@ -196,8 +186,9 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
                     )
                     return False, refusal
         except Exception:
-            pass  # Fall through defensively to allow benign student inquiries
+            pass  # Fall through defensively to allow student inquiries
 
-    # 8. Non-campus general queries with zero campus tokens:
-    # If query does not mention any campus term and is not a conversational greeting, check if it's a follow-up or off-topic
+    # 6. ARCHITECTURAL DEFAULT-ALLOW (PASS TO RAG):
+    # Any legitimate student question, inquiry, or follow-up passes to RAG search engine.
+    # If no records exist, RAG naturally responds: "I couldn't find verified MSAJCE records regarding..."
     return True, None
