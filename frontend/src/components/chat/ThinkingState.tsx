@@ -267,16 +267,16 @@ export default function ThinkingState({
         type="button"
         aria-expanded={isExpanded}
         onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : isWorking))}
-        className="group -ml-0.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1
+        className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1
           transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
       >
-        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
           {/* 3x3 Pixel Grid Wavefront Loader */}
-          <span aria-hidden className="grid grid-cols-[repeat(3,4.5px)] gap-[2px] shrink-0">
+          <span aria-hidden className="grid grid-cols-[repeat(3,3.5px)] gap-[1.5px] shrink-0">
             {delays.map((d, i) => (
               <span
                 key={i}
-                className={`size-[4.5px] bg-foreground dark:bg-zinc-200 ${round ? "rounded-full" : "rounded-[1px]"}`}
+                className={`size-[3.5px] bg-foreground dark:bg-zinc-200 ${round ? "rounded-full" : "rounded-[1px]"}`}
                 style={{
                   opacity: !isWorking ? 0.35 : d === null ? 0.08 : 0.15,
                   animation:
@@ -364,7 +364,7 @@ export default function ThinkingState({
         }}
       >
         <div className="overflow-hidden">
-          <div className="relative mt-1 ml-[4px] pl-2.5 border-l border-black/10 dark:border-white/10 my-1">
+          <div className="relative mt-1 -ml-0.5 sm:-ml-1 pl-2.5 border-l border-black/10 dark:border-white/10 my-1">
             <div ref={traceRef} className="flex flex-col gap-1 py-1">
               {steps.map((step, idx) => {
                 const isLast = idx === steps.length - 1;

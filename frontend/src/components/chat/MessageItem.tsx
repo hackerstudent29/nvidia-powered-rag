@@ -192,10 +192,19 @@ function sanitizeMarkdownContent(content: string): string {
     const stripped = line.trim();
 
     // Skip table rows, code blocks, or horizontal divider lines
-    if (stripped.startsWith("|") || stripped.startsWith("```") || /^[\-\*\=_]{3,}$/.test(stripped)) {
+    if (stripped.startsWith("|")) {
+      // Normalize malformed HTML line breaks inside table cells to standard <br>
+      line = line.replace(/<br\s*\/?>/gi, "<br>").replace(/&lt;br\s*\/?&gt;/gi, "<br>");
       processedLines.push(line);
       continue;
     }
+    if (stripped.startsWith("```") || /^[\-\*\=_]{3,}$/.test(stripped)) {
+      processedLines.push(line);
+      continue;
+    }
+
+    // Outside table cells, convert raw HTML line breaks to real markdown newlines
+    line = line.replace(/<br\s*\/?>/gi, "\n").replace(/&lt;br\s*\/?&gt;/gi, "\n");
 
     // Normalize leading bullet marker if line starts with bullet
     if (/^\s*[\*\-•–—+]\s+/.test(line)) {
@@ -1524,7 +1533,33 @@ const MessageItem = React.memo(function MessageItem({
   // Reset document word counter before every render pass
   wordCounterRef.current = 0;
 
-  const processHighlightedChildren = (node: React.ReactNode): React.ReactNode => node;
+  const processHighlightedChildren = (node: React.ReactNode, keyPrefix = "fmt"): React.ReactNode => {
+    if (node === null || node === undefined || typeof node === "boolean") return node;
+    if (typeof node === "string") {
+      if (/<br\s*\/?>|&lt;br\s*\/?&gt;/i.test(node)) {
+        const parts = node.split(/(<br\s*\/?>|&lt;br\s*\/?&gt;)/gi);
+        return parts.map((part, idx) => {
+          if (/<br\s*\/?>|&lt;br\s*\/?&gt;/i.test(part)) {
+            return <br key={`${keyPrefix}-br-${idx}`} className="my-0.5" />;
+          }
+          return part;
+        });
+      }
+      return node;
+    }
+    if (Array.isArray(node)) {
+      return node.map((child, idx) => processHighlightedChildren(child, `${keyPrefix}-${idx}`));
+    }
+    if (React.isValidElement(node)) {
+      const element = node as React.ReactElement<any>;
+      if (element.props && element.props.children) {
+        return React.cloneElement(element, {
+          children: processHighlightedChildren(element.props.children, `${keyPrefix}-el`),
+        });
+      }
+    }
+    return node;
+  };
 
   return (
     <div ref={messageRef} className={`flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300${selectionToolbar ? " selection-has-toolbar" : ""}`}>
@@ -1861,7 +1896,7 @@ const MessageItem = React.memo(function MessageItem({
             {sanitizedMarkdown}
           </ReactMarkdown>
 
-          {message.is_streaming && (
+          {message.is_streaming && sanitizedMarkdown.trim().length > 0 && (
             <span
               className="ml-1 inline-block h-3.5 w-1 translate-y-0.5 rounded-full bg-accent animate-pulse"
             />

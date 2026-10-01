@@ -199,7 +199,11 @@ CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
 5. Clickable Markdown Links, Emails & Phone Numbers:
    - Always format email addresses as clickable markdown links: `[email@msajce.edu.in](mailto:email@msajce.edu.in)`. NEVER wrap emails in code backticks (`...`).
    - Always format telephone and mobile numbers as clickable markdown links: `[044-27470025](tel:04427470025)` or `[+91 99401 23456](tel:+919940123456)`. NEVER wrap phone numbers in code backticks.
-   - Always format URLs and website addresses as clickable markdown links: `[msajce.edu.in](https://msajce.edu.in)`."""
+   - Always format URLs and website addresses as clickable markdown links: `[msajce.edu.in](https://msajce.edu.in)`.
+
+6. Clean Output Formatting:
+   - Never output raw unformatted HTML tags like `<div>`, `<span>`, or raw unescaped code blocks unless explicitly requested.
+   - In Markdown tables, keep each row concise, well-structured, and easy to read."""
 
 def auto_select_model(query: str) -> str:
     """
