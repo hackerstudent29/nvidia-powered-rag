@@ -201,6 +201,7 @@ CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
    - Always format email addresses as clickable markdown links: `[email@msajce.edu.in](mailto:email@msajce.edu.in)`. NEVER wrap emails in code backticks (`...`).
    - Always format telephone and mobile numbers as clickable markdown links: `[044-27470025](tel:04427470025)` or `[+91 99401 23456](tel:+919940123456)`. NEVER wrap phone numbers in code backticks.
    - Always format URLs and website addresses as clickable markdown links: `[msajce.edu.in](https://msajce.edu.in)`.
+   - STRICT PROGRAM LINK RESTRICTION: DO NOT create, infer, or inject markdown URL links for academic program names or department acronyms (e.g. NEVER output `[CSE](https://msajce.edu.in/cse)`, `[AI & ML](https://msajce.edu.in/ai-ml)`, or `[CSBS](https://msajce.edu.in/csbs)`). Program and department names MUST ALWAYS be plain text or bold text (e.g. **CSE**, **AI & ML**, **CSBS**, **IT**). ONLY format clickable links for emails, telephone/mobile numbers, and explicit URLs that actually exist in the verified dataset.
 
 6. Clean Output Formatting:
    - Never output raw unformatted HTML tags like `<div>`, `<span>`, or raw unescaped code blocks unless explicitly requested.
@@ -2644,6 +2645,14 @@ def sanitize_response_text(text: str) -> str:
     text = re.sub(r'msajcea\.ac\.in', 'msajce.edu.in', text, flags=re.IGNORECASE)
     text = re.sub(r'@msajcea\.in', '@msajce.edu.in', text, flags=re.IGNORECASE)
     text = re.sub(r'\bMSAJCEA\b', 'MSAJCE', text)
+
+    # Strip non-existent/inferred department URL links: [DeptName](https://msajce.edu.in/dept) -> **DeptName**
+    text = re.sub(
+        r'\[([^\]]+)\]\(https?://msajce\.edu\.in/(?:cse|it|ai-ds|ai-ml|csbs|ece|eee|mech|civil|cyber|aids|aiml|hostel|transport|library|courses|admissions?)/?\)',
+        r'**\1**',
+        text,
+        flags=re.IGNORECASE
+    )
 
     # Strip standalone divider lines or lines with only dashes/dots/bullets (e.g. ---, ***, - -, • •)
     text = re.sub(r'^\s*(?:[\*\-•–—+_]\s*){2,}$', '', text, flags=re.MULTILINE)
