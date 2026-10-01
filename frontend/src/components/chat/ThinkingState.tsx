@@ -307,7 +307,7 @@ export default function ThinkingState({
 
   return (
     <div className="w-full max-w-full my-1.5 select-none font-sans">
-      {/* ── Header / Collapsed Bar (3x3 Grid Loader + Shimmer + Preview + Timer + Chevron) ── */}
+      {/* ── Header / Collapsed Bar (3x3 Grid Loader + Shimmer + Left Timer + Preview + Chevron) ── */}
       <button
         type="button"
         aria-expanded={isExpanded}
@@ -315,14 +315,14 @@ export default function ThinkingState({
         className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1 transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-          {/* 3x3 Pixel Grid Wavefront Loader */}
+          {/* 3x3 Pixel Grid Wavefront Loader (Visible & Sharp) */}
           <span aria-hidden className="grid grid-cols-[repeat(3,3.5px)] gap-[1.5px] shrink-0">
             {MATRIX_DELAYS.map((d, i) => (
               <span
                 key={i}
                 className="size-[3.5px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px]"
                 style={{
-                  opacity: !isWorking ? 0.35 : 0.15,
+                  opacity: !isWorking ? 0.85 : 0.15,
                   animation: !isWorking
                     ? "none"
                     : `pixel-on 1400ms ease-in-out ${d}ms infinite`,
@@ -331,19 +331,24 @@ export default function ThinkingState({
             ))}
           </span>
 
-          {/* Shimmering State Label */}
+          {/* Shimmering State Label + Live Timer ON THE LEFT */}
           {isWorking ? (
-            <span
-              className="bg-clip-text text-[13.5px] font-semibold whitespace-nowrap text-transparent shrink-0"
-              style={{
-                backgroundImage:
-                  "linear-gradient(90deg, rgba(158,35,57,0.5) 30%, rgba(225,29,72,1) 50%, rgba(158,35,57,0.5) 70%)",
-                backgroundSize: "200% 100%",
-                animation: "shimmer-text 1.4s linear infinite",
-              }}
-            >
-              Thinking
-            </span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span
+                className="bg-clip-text text-[13.5px] font-semibold whitespace-nowrap text-transparent"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg, rgba(158,35,57,0.5) 30%, rgba(225,29,72,1) 50%, rgba(158,35,57,0.5) 70%)",
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer-text 1.4s linear infinite",
+                }}
+              >
+                Thinking
+              </span>
+              <span className="font-mono text-[12.5px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
+                {elapsed}
+              </span>
+            </div>
           ) : (
             <span className="text-[13px] font-medium whitespace-nowrap text-zinc-700 dark:text-zinc-200 shrink-0">
               Thought for {elapsed}
@@ -369,7 +374,7 @@ export default function ThinkingState({
                     {isWorking
                       ? activeStepText
                       : activeStepsList.length > 0
-                      ? `${activeStepsList.length} verified steps`
+                      ? `${activeStepsList.length} verified step${activeStepsList.length === 1 ? "" : "s"}`
                       : "Verified ground truth"}
                   </motion.span>
                 </AnimatePresence>
@@ -378,14 +383,8 @@ export default function ThinkingState({
           )}
         </div>
 
-        {/* Right Side: Live Timer & Chevron */}
-        <div className="flex items-center gap-2 shrink-0 ml-1">
-          {isWorking && (
-            <span className="font-mono text-[12px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
-              {elapsed}
-            </span>
-          )}
-
+        {/* Right Side: ONLY Chevron */}
+        <div className="flex items-center shrink-0 ml-1">
           <span
             className="flex size-4 items-center justify-center text-zinc-400 dark:text-zinc-500 transition-transform duration-200 opacity-70 group-hover:opacity-100"
             style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
