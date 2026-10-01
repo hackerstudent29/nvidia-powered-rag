@@ -165,23 +165,29 @@ MODELS_CATALOG = [
     }
 ]
 
-LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai.
+LORIN_SYSTEM_PROMPT = """You are Lorin AI, the official student ambassador and intelligent campus assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai.
 
-CORE PRINCIPLES:
-1. Strict Grounding:
-   - Ground 100% of your answers strictly in the provided verified MSAJCE records. Never extrapolate, guess, or invent unrecorded facts. If a specific detail is not recorded, state it cleanly.
-
-2. Information Architecture & Formatting:
-   - Comparative & Multi-Entity Overviews: When presenting two or more parallel facilities, options, schedules, fee structures, or intake matrices, ALWAYS synthesize the comparison into a clean, structured Markdown Table (| Parameter / Feature | Option A | Option B | ... |) rather than separate repeating text blocks.
-   - Point-by-Point Attribute Inquiries: When asked for specific items (such as Vision, Mission, PEOs, PSOs, eligibility criteria, rules, or key policies), open directly with a titled section (### Title) and present each item as a distinct, bold-labeled bullet point (- **Item / Pillar**: Fact) with critical keywords and takeaways prominently highlighted.
-   - Sequential Workflows: Format step-by-step procedures (e.g. admission steps, counselling, lateral entry) as numbered lists (1., 2., 3.) with bold phase headers.
-   - Targeted Direct Facts: For quick single-point questions, provide a concise 1-2 line direct answer with bold highlights.
-
-3. Tone & Typography:
-   - Professional, authoritative, and direct tone.
-   - Zero emojis and zero pictograms across all answers.
+CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
+1. Friendly, Helpful & Human Tone:
+   - Communicate in a natural, warm, and professional conversational tone, like an expert campus advisor.
+   - Avoid cold, robotic data dumps. Open with a clear, helpful context sentence that directly addresses the user's intent.
+   - Structure information cleanly with readable Markdown:
+     - Use structured Markdown Tables (| Parameter / Feature | Detail |) for multi-attribute comparisons, fee structures, bus routes, or schedules.
+     - Use bold-labeled bullet points (- **Feature**: Detail) with critical keywords prominently highlighted.
+     - Use numbered lists (1., 2., 3.) for procedures, counselling steps, or workflows.
+   - Conclude naturally with a friendly, relevant offer to help further (e.g., offering related admission steps, transport routes, or hostel rules).
+   - STRICT CONSTRAINT: Zero emojis and zero pictograms across all answers.
    - Section headings (### Heading) must not have trailing periods.
-   - Open answers immediately with the relevant facts; avoid canned stock greetings or filler phrases.
+
+2. Strict Grounding & Anti-Metadata Rule:
+   - Ground 100% of your facts strictly in the provided verified MSAJCE records. Never extrapolate, guess, or invent unrecorded numbers or policies.
+   - NEVER quote internal chunk indices, document file names (such as '[8] Msajce Msajcepolicy', 'msajce_policy.md', or 'Record [1]'), or raw version strings in your response. Synthesize the facts directly into natural, authoritative campus advice.
+   - If the user asks about a specific person, faculty member, or term (e.g., "who is [Name]"), verify that the exact individual exists in the provided context. If no record exists for that specific individual or term, state clearly: "No record found for '[Name]' in the verified MSAJCE campus records."
+   - STRICTLY DO NOT substitute or default to the Principal (Dr. K.S. Srinivasan) or any other leadership figure unless the user specifically and explicitly asked about the Principal or Head of Institution.
+
+3. Conversational Handling:
+   - Greetings & Pleasantries: If the user says hello, good morning, or greets you, respond warmly as Lorin AI, welcoming them to MSAJCE and asking how you can assist them today.
+   - Direct Inquiries: Answer the question directly and comprehensively without unnecessary robotic preamble.
 
 4. Campus Identity:
    - Official domain: msajce.edu.in.
@@ -1237,6 +1243,7 @@ ACRONYM_MAP = {
     r'\bsholinganalur\b|\bsholinganallur\b': 'Sholinganallur Route AR 4 Route AR 5 Route AR 8 Route AR 9',
     r'\bporur\b': 'Porur Route AR 10 R21 Route R 22',
     r'\bchrompet\b|\bchromepet\b': 'Chrompet Route AR 10 R21',
+    r'\b(usaha|ushaa|usha)\b': 'Ms. S. Usha Assistant Professor English Grievance Redressal Committee Convener Dr. Ushaa Eswaran',
     r'\bcourses?\b|\bprograms?\b|\bdegrees?\b|\bug\b|\bpg\b': '12 Undergraduate 2 Postgraduate B.E. B.Tech M.E. degree programs courses offered intake seats msajcea_courses_overview.md CSE IT AI&DS Cyber Security ECE EEE Mechanical Civil AI&ML CSBS VLSI ACT Structural Engineering'
 }
 
@@ -2314,7 +2321,7 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     q_clean = query.strip().lower()
 
     # 0. Conversational greeting check (0ms instant response)
-    if re.match(r'^(?:hi|hello|hey|hola|namaste|vanakkam|good\s+(?:morning|afternoon|evening|day)|greetings)[\s!.,?]*$', q_clean):
+    if re.match(r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|assalamu\s+alaikum|sup|yo|howdy|(?:good|gud|gd)\s+(?:morning|afternoon|evening|day|mrng|mng|aftn|evng|nite|night)|greetings|gm|ga|ge|gn|morning|afternoon|evening)(?:\s+(?:there|lorin|bot|assistant|sir|all|everyone|ai|bro|buddy))?[\s!.,?]*$', q_clean) or q_clean in ["hi", "hello", "hey", "good morning", "gud morning", "good afternoon", "gud afternoon", "good evening", "gud evening", "gm", "ga", "ge", "gn", "morning", "evening", "afternoon"]:
         return PREBUILT_CARD_ANSWERS.get("greeting")
 
     # Developer questions ("who is ram", "who created you")
@@ -2904,9 +2911,8 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
     if not q_trim:
         return current_query
 
-    # Standalone Protection: Explicitly preserve standalone patent numbers or creator queries
-    if is_standalone_or_protected_query(q_trim):
-        print(f"[QUERY REWRITER] Bypassing rewriter for standalone protected query: '{normalized_q}'")
+    # Standalone Fast-Path: If query is already a clear standalone question without pronouns, return instantly in 0ms
+    if is_standalone_or_protected_query(q_trim) or (not is_contextual_query(q_trim) and not _PRONOUN_TRIGGERS.search(q_trim) and len(q_trim.split()) >= 3):
         return normalized_q
 
     # Fetch last 10 messages (up to 5 dialogue pairs) from current active session
@@ -3110,11 +3116,16 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
     reranked_results = nemotron_rerank(expanded_query, results, top_k=top_k)
     return reranked_results
 
-GREETING_WORDS = {"hello", "hi", "hey", "howdy", "sup", "namaste", "vanakkam"}
+GREETING_WORDS = {
+    "hello", "hi", "hey", "howdy", "sup", "namaste", "vanakkam", "salam", "yo", "hola",
+    "gm", "ga", "ge", "gn", "helo", "hii", "hiii", "heyy", "heyyy"
+}
 GREETING_PHRASES = [
-    "good morning", "good evening", "good afternoon", "what's up",
-    "who are you", "what are you", "introduce yourself", "your name",
-    "what can you do", "help me", "how are you", "nice to meet"
+    "good morning", "good evening", "good afternoon", "good day", "good night",
+    "gud morning", "gud evening", "gud afternoon", "gud day", "gud night",
+    "gd morning", "gd afternoon", "gd evening", "gd mrng", "gud mrng", "gd aftn", "gud aftn",
+    "what's up", "who are you", "what are you", "introduce yourself", "your name",
+    "what can you do", "help me", "how are you", "how r u", "nice to meet", "assalamu alaikum"
 ]
 
 TARGETED_FACTOID_PATTERNS = [
@@ -3136,6 +3147,12 @@ def classify_query(query: str) -> str:
     word_count = len(q.split())
     q_words = set(re.findall(r'\b[a-z0-9]+\b', q))
 
+    # 1. Greeting check: short conversational openers take top priority
+    is_greeting_word = any(w in GREETING_WORDS for w in q_words)
+    is_greeting_phrase = any(phrase in q for phrase in GREETING_PHRASES)
+    if (is_greeting_word and word_count <= 4) or is_greeting_phrase or re.match(r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|sup|yo|howdy|(?:good|gud|gd)\s+(?:morning|afternoon|evening|day|mrng|mng|aftn|evng|nite|night)|greetings|gm|ga|ge|gn)', q):
+        return "greeting"
+
     # Prevent academic, patent, faculty, or admission queries from ever being classified as transport
     is_non_transport = bool(re.search(r'\b(patent|patents|research|paper|publication|inventor|copyright|isbn|cutoff|admissions?|fees?|syllabus|curriculum|faculty|hod|principal|placement)\b', q))
 
@@ -3154,13 +3171,6 @@ def classify_query(query: str) -> str:
     # Targeted single-entity factoid questions (driver, phone, email, specific bus route, principal)
     if any(tf in q for tf in TARGETED_FACTOID_PATTERNS) and not any(b in q for b in ["all routes", "all buses", "full list", "entire schedule", "compare", "versus"]):
         return "targeted"
-
-    # Greeting check: exact token match for short words (e.g. "hi") so substring "which" isn't misclassified
-    is_greeting_word = any(w in GREETING_WORDS for w in q_words)
-    is_greeting_phrase = any(phrase in q for phrase in GREETING_PHRASES)
-
-    if word_count <= 5 and (is_greeting_word or is_greeting_phrase):
-        return "greeting"
 
     complex_triggers = ["compare", "versus", "vs", "difference", "both", "explain in detail",
                         "elaborate", "regulation", "syllabus", "accreditation"]
@@ -4335,6 +4345,29 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 yield json.dumps({"type": "done"})
                 return
 
+            # 0.1 Fast-Path Instant FAQ Card & Greeting Matcher (<5ms, 0 tokens, 0 LLM calls)
+            if not req.is_regeneration:
+                prebuilt_card = get_prebuilt_card_answer(user_query)
+                if prebuilt_card:
+                    logger.info(f"[Prebuilt Card] Fast-path serving instant prebuilt card for: '{user_query}'")
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "Instant institutional match: Retrieved verified campus card answer",
+                        "done": True
+                    })
+                    async for item in stream_cached_or_prebuilt(
+                        response_text=prebuilt_card["response"],
+                        sources=prebuilt_card.get("sources", []),
+                        user_query=user_query,
+                        session_id=session_id,
+                        model_id=model_id,
+                        start_time=start_time,
+                        cache_type="prebuilt",
+                        user_id=user_id
+                    ):
+                        yield item
+                    return
+
             # 1.1 Multi-Model Parallel Preprocessing (Concurrent Query Rewriter + Guardrails)
             task_rewrite = asyncio.create_task(resolve_pronouns_llm(user_query, session_id))
             task_guardrails = asyncio.create_task(asyncio.to_thread(check_guardrails, user_query))
@@ -4821,7 +4854,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 entity_lines = []
                 for ent in matched_entities:
                     ctx = ent.get('surrounding_context') or ent['value']
-                    entity_lines.append(f"[VERIFIED KNOWLEDGE ENTITY - {ent['entity_name']} (Source: {ent.get('source_file', 'msajce_campus_records.md')})]:\n{ent['value']}\n[SURROUNDING CONTEXT]: {ctx[:350]}")
+                    entity_lines.append(f"[Verified Entity: {ent['entity_name']}]:\n{ent['value']}\nContext: {ctx[:350]}")
                 context_blocks.append("=== VERIFIED KNOWLEDGE BASE ENTITIES ===\n" + "\n\n".join(entity_lines) + "\n")
 
             seen_text = set()
@@ -4829,8 +4862,14 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             max_ctx_limit = 6000 if query_class in ["complex", "transport"] else 4096
 
             for idx, c in enumerate(retrieved_chunks):
-                raw_c = c.get('content', '')
+                raw_c = c.get('content') or c.get('text') or c.get('raw_text') or ''
                 clean_c = sanitize_response_text(raw_c)
+                clean_c = re.sub(r'^(?:#{1,4}\s*)?Document:.*?(?:\n|$)', '', clean_c, flags=re.MULTILINE | re.IGNORECASE)
+                clean_c = re.sub(r'^(?:#{1,4}\s*)?Section:.*?(?:\n|$)', '', clean_c, flags=re.MULTILINE | re.IGNORECASE)
+                clean_c = re.sub(r'^(?:#{1,4}\s*)?Version:.*?(?:\n|$)', '', clean_c, flags=re.MULTILINE | re.IGNORECASE)
+                clean_c = re.sub(r'<!--\s*ent_\d+\s*-->', '', clean_c)
+                clean_c = clean_c.strip()
+
                 c_hash = hashlib.md5(clean_c.encode('utf-8')).hexdigest()
                 if c_hash in seen_text:
                     continue
@@ -4840,7 +4879,10 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 if total_ctx_tokens + tok_count > max_ctx_limit and idx >= 1:
                     break
 
-                context_blocks.append(f"[{idx+1}] {c['title']}:\n{clean_c}")
+                topic_name = c.get('topic_title') or c.get('title') or "Campus Record"
+                sec_name = c.get('section_title')
+                display_title = f"{topic_name} — {sec_name}" if sec_name and sec_name.lower() not in topic_name.lower() else topic_name
+                context_blocks.append(f"### Verified Record: {display_title}\n{clean_c}")
                 total_ctx_tokens += tok_count
 
             context_str = "\n\n".join(context_blocks)
@@ -4998,11 +5040,12 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 consecutive_spaces_count = 0
                 cand_chunks = []
                 
-                # Live streaming rolling preamble filter
+                # Live streaming rolling preamble filter & reasoning stream buffer
                 in_think_block = False
                 initial_buffer = []
                 initial_buffer_chars = 0
                 buffer_flushed = False
+                reasoning_stream_buffer = ""
 
                 try:
                     async with get_http_client().stream("POST", target_url, headers=target_headers, json=llm_payload, timeout=candidate_timeout) as response:
@@ -5012,8 +5055,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             continue
 
                         async for line in response.aiter_lines():
-                            if not first_token_received and (time.time() - cand_stream_start > 20.0):
-                                print(f"[WARN] Candidate '{current_cand}' took >20s for first token. Triggering failover...")
+                            if not first_token_received and (time.time() - cand_stream_start > 12.0):
+                                print(f"[WARN] Candidate '{current_cand}' took >12s for first token. Triggering failover...")
                                 break
 
                             if not line or not line.startswith("data: "):
@@ -5033,10 +5076,41 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 content_token = delta.get("content")
                                 reasoning_token = delta.get("reasoning_content") or delta.get("thought")
 
-                                if reasoning_token and not content_token:
+                                # Handle dynamic live reasoning tokens from MoE models (Nemotron / DeepSeek / Gemini)
+                                if reasoning_token:
+                                    if not first_token_received:
+                                        first_token_received = True
+                                        if not ttft_recorded:
+                                            ttft_recorded = True
+                                            ttft_ms = int((time.time() - start_time) * 1000)
+
+                                    reasoning_stream_buffer += reasoning_token
+                                    new_steps, reasoning_stream_buffer = parse_complete_reasoning_steps(reasoning_stream_buffer)
+                                    for step in new_steps:
+                                        if step and step not in reasoning_steps:
+                                            reasoning_steps.append(step)
+                                            yield json.dumps({
+                                                "type": "reasoning",
+                                                "step": step,
+                                                "done": True
+                                            })
+
+                                if not content_token:
                                     continue
 
-                                token_chunk = content_token or ""
+                                # Flush any remaining reasoning buffer when content stream starts
+                                if reasoning_stream_buffer:
+                                    flushed_step = flush_reasoning_step(reasoning_stream_buffer)
+                                    if flushed_step and flushed_step not in reasoning_steps:
+                                        reasoning_steps.append(flushed_step)
+                                        yield json.dumps({
+                                            "type": "reasoning",
+                                            "step": flushed_step,
+                                            "done": True
+                                        })
+                                    reasoning_stream_buffer = ""
+
+                                token_chunk = content_token
                                 if not token_chunk:
                                     continue
 
@@ -5080,20 +5154,33 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         buffer_flushed = True
                                         initial_buffer = []
                                 else:
-                                    # True real-time live pass-through token streaming!
-                                    yield json.dumps({"type": "token", "token": token_chunk})
-                                    tokens_emitted_count += 1
+                                    # True real-time live pass-through token streaming with emoji stripping!
+                                    clean_live_tok = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\u203c\u2049\u2700-\u27bf\U00010000-\U0010ffff]', '', token_chunk)
+                                    if clean_live_tok:
+                                        yield json.dumps({"type": "token", "token": clean_live_tok})
+                                        tokens_emitted_count += 1
                             except Exception:
                                 continue
 
-                    # Flush any remaining buffer if stream ended quickly
-                    if not buffer_flushed and initial_buffer:
-                        buffered_text = "".join(initial_buffer)
-                        cleaned_initial = sanitize_response_text(buffered_text)
-                        if cleaned_initial:
-                            yield json.dumps({"type": "token", "token": cleaned_initial})
-                            tokens_emitted_count += 1
-                        buffer_flushed = True
+                        # Flush any remaining buffer if stream ended quickly
+                        if reasoning_stream_buffer:
+                            flushed_step = flush_reasoning_step(reasoning_stream_buffer)
+                            if flushed_step and flushed_step not in reasoning_steps:
+                                reasoning_steps.append(flushed_step)
+                                yield json.dumps({
+                                    "type": "reasoning",
+                                    "step": flushed_step,
+                                    "done": True
+                                })
+                            reasoning_stream_buffer = ""
+
+                        if not buffer_flushed and initial_buffer:
+                            buffered_text = "".join(initial_buffer)
+                            cleaned_initial = sanitize_response_text(buffered_text)
+                            if cleaned_initial:
+                                yield json.dumps({"type": "token", "token": cleaned_initial})
+                                tokens_emitted_count += 1
+                            buffer_flushed = True
 
                     if cand_chunks:
                         collected_response = cand_chunks
@@ -5335,6 +5422,32 @@ async def chat_sync_endpoint(req: ChatRequest):
             "model": model_id,
             "token_metrics": cached_metrics,
             "suggestions": generate_follow_up_suggestions(user_query, cached["response"])
+        })
+
+    # Check prebuilt FAQ card or greeting
+    prebuilt_card = get_prebuilt_card_answer(user_query)
+    if prebuilt_card:
+        card_metrics = compute_token_metrics(
+            user_query=user_query,
+            system_prompt="Lorin AI prebuilt card system prompt",
+            retrieved_chunks=prebuilt_card.get("sources", []),
+            history_messages=[],
+            full_answer=prebuilt_card["response"],
+            model_id=model_id,
+            latency_ms=10,
+            ttft_ms=5,
+            cached=True
+        )
+        return JSONResponse({
+            "response": prebuilt_card["response"],
+            "sources": prebuilt_card.get("sources", []),
+            "reasoning_steps": ["Instant institutional match: Retrieved verified campus card answer"],
+            "cached": True,
+            "latency_ms": 10,
+            "session_id": session_id,
+            "model": model_id,
+            "token_metrics": card_metrics,
+            "suggestions": generate_follow_up_suggestions(user_query, prebuilt_card["response"])
         })
 
     asst_msg_id = f"msg_{int(time.time()*1000)}_a"

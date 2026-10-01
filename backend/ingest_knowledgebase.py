@@ -31,6 +31,7 @@ else:
 DATASET_DIR = os.path.join(BASE_DIR, "Dataset")
 PAGES_LINK_FILE = os.path.join(DATASET_DIR, "links folder", "pageslink.md")
 BM25_OUTPUT_FILE = os.path.join(BACKEND_DIR, "data", "bm25_chunks.json")
+RESOURCE_JSON_FILE = os.path.join(BACKEND_DIR, "data", "resource_links.json")
 
 QDRANT_URL = os.getenv("QDRANT_URL", "https://f8d4bd17-9f0d-4eb0-a31a-d7dba639e65f.eu-central-1-0.aws.cloud.qdrant.io")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIiwic3ViamVjdCI6ImFwaS1rZXk6ZmE4NDk4YTEtN2MxMC00YWFkLTg1OWQtYWJjNzBjZmNmZmY1In0.fYu0yy9w122-6znkMvB24baqvZjOLaHhUkuPyuKpYeM")
@@ -44,18 +45,24 @@ def load_page_links():
     mapping = {}
     if os.path.exists(PAGES_LINK_FILE):
         with open(PAGES_LINK_FILE, "r", encoding="utf-8", errors="ignore") as f:
-            content = f.read()
-        
-        # Regex to match document name, page name, and URL
-        lines = [line.strip() for line in content.splitlines() if line.strip()]
-        for i in range(len(lines)):
-            if lines[i].endswith(".md"):
-                doc_name = lines[i]
-                topic_title = lines[i+1] if i+1 < len(lines) else doc_name
-                url = lines[i+2] if i+2 < len(lines) and ("http" in lines[i+2] or ".in" in lines[i+2] or ".app" in lines[i+2]) else ""
-                if not url.startswith("http") and url:
+            lines = [l.strip() for l in f if l.strip()]
+        for i, l in enumerate(lines):
+            if l.endswith(".md"):
+                fn = l.lower().strip()
+                norm_fn = fn.replace("msajcea_", "msajce_").replace("msajceapolicy", "msajcepolicy")
+                topic = lines[i+1].split("\t")[0].strip() if i+1 < len(lines) else ""
+                url = ""
+                if i+1 < len(lines) and "\t" in lines[i+1]:
+                    url = lines[i+1].split("\t")[1].strip()
+                elif i+2 < len(lines) and (".in" in lines[i+2] or ".dev" in lines[i+2] or "http" in lines[i+2]):
+                    url = lines[i+2].strip()
+                if url and not url.startswith("http"):
                     url = "https://" + url
-                mapping[doc_name] = {"topic_title": topic_title, "url": url}
+                
+                info = {"topic_title": topic, "url": url}
+                mapping[fn] = info
+                mapping[norm_fn] = info
+                mapping[norm_fn.replace("msajce_", "msajcea_")] = info
     return mapping
 
 
@@ -72,29 +79,32 @@ STOP_WORDS = {
     "document", "section", "version", "page", "file", "msajce", "msajcea"
 }
 
+def clean_content(text: str) -> str:
+    """Removes internal comment markers and normalizes excess whitespace."""
+    text = re.sub(r'<!--\s*ent_\d+\s*-->', '', text)
+    text = re.sub(r'\r\n', '\n', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
 def extract_entities(raw_text: str) -> list:
     entities = set()
 
-    # 1. HTML Comment Entity Markers (e.g. <!--ent_033-->)
-    html_ents = re.findall(r'<!--\s*(ent_\d+)\s*-->', raw_text)
-    entities.update(html_ents)
-
-    # 2. Names with titles (Dr., Mr., Mrs., Prof., Er.)
+    # 1. Names with titles (Dr., Mr., Mrs., Prof., Er.)
     title_names = re.findall(r'\b(?:Dr\.|Mr\.|Mrs\.|Ms\.|Prof\.|Er\.)\s+[A-Z][a-zA-Z\.]*(?:\s+[A-Z][a-zA-Z\.]*)+', raw_text)
     entities.update([n.strip() for n in title_names])
 
-    # 3. Capitalized Proper Noun Phrases (e.g. "Mohamed Sathak A.J. College of Engineering and Architecture", "Sportasy")
+    # 2. Capitalized Proper Noun Phrases (e.g. "Mohamed Sathak A.J. College of Engineering", "SIPCOT IT Park")
     proper_nouns = re.findall(r'\b[A-Z][a-zA-Z0-9\.]*(?:\s+[A-Z][a-zA-Z0-9\.]*){1,5}\b', raw_text)
     for pn in proper_nouns:
         pn_clean = pn.strip(" .,:-_()")
         if len(pn_clean) >= 3 and not pn_clean.startswith("#") and pn_clean.lower() not in STOP_WORDS:
             entities.add(pn_clean)
 
-    # 4. Route Numbers, Course Codes, Regulation Codes
+    # 3. Route Numbers, Course Codes, Regulation Codes
     codes = re.findall(r'\b(?:Route\s+\w+|AR\s*\d+|R\s*\d+|N/3|CS\d{4}|EC\d{4}|IT\d{4}|EE\d{4}|ME\d{4}|TNEA\s*\d+|NAAC\s*A\+?|AICTE|ANNA\s*UNIVERSITY)\b', raw_text, re.IGNORECASE)
     entities.update([c.strip() for c in codes])
 
-    # 5. Email addresses & Phone numbers
+    # 4. Email addresses & Phone numbers
     emails = re.findall(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', raw_text)
     entities.update(emails)
     phones = re.findall(r'\b\d{5}\s*\d{5}\b|\b\d{10}\b', raw_text)
@@ -136,105 +146,150 @@ def extract_keywords(topic_title: str, section_title: str, category: str, raw_te
     return keywords[:20]
 
 
-def chunk_markdown(file_path: str, filename: str, doc_info: dict, max_chunk_chars: int = 650, overlap: int = 100):
+def hierarchical_chunk_markdown(file_path: str, filename: str, doc_info: dict, max_chunk_chars: int = 750):
+    """
+    Semantic Hierarchical Chunker:
+    - Maintains document hierarchy (Document Title -> Major Section -> Sub-section).
+    - Preserves tables intact without breaking rows or schema.
+    - Prevents empty or micro dangling chunks.
+    - Attaches full hierarchical context to every chunk for optimal dense & sparse retrieval.
+    """
     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-        text = f.read()
+        raw_text = f.read()
 
-    # Split by section headers (h1 to h4)
-    sections = re.split(r'(?=\n#{1,4}\s)', text)
-    chunks = []
-    chunk_index = 0
+    topic_title = doc_info.get("topic_title") or filename.replace(".md", "").replace("_", " ").title()
+    page_url = doc_info.get("url") or "https://msajce-edu.in"
 
-    topic_title = doc_info.get("topic_title", filename.replace(".md", "").replace("_", " ").title())
-    page_url = doc_info.get("url", "https://msajce-edu.in")
-
-    # Determine category
+    # Category classification
     category = "general"
-    if any(k in filename for k in ["cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs"]):
+    fn_low = filename.lower()
+    if any(k in fn_low for k in ["cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs", "science_and_humanities"]):
         category = "department"
-    elif any(k in filename for k in ["admission", "tnea", "cutoff", "courses"]):
+    elif any(k in fn_low for k in ["admission", "tnea", "cutoff", "courses"]):
         category = "admission"
-    elif any(k in filename for k in ["hostel", "mess", "food"]):
+    elif any(k in fn_low for k in ["hostel", "mess", "food", "dining"]):
         category = "hostel"
-    elif any(k in filename for k in ["placement", "company", "sipcot"]):
+    elif any(k in fn_low for k in ["placement", "company", "sipcot", "recruiter"]):
         category = "placement"
-    elif any(k in filename for k in ["transport", "bus"]):
+    elif any(k in fn_low for k in ["transport", "bus", "route"]):
         category = "transport"
-    elif any(k in filename for k in ["policy", "antiragging", "grievance", "iqac", "naac"]):
+    elif any(k in fn_low for k in ["policy", "antiragging", "grievance", "iqac", "naac", "governing", "committee", "cell", "council"]):
         category = "governance"
+    elif any(k in fn_low for k in ["sports", "library", "clubs", "social", "ebsb"]):
+        category = "campus_life"
 
-    for sec in sections:
-        sec = sec.strip()
-        if not sec:
+    lines = raw_text.split("\n")
+    current_h1 = topic_title
+    current_h2 = ""
+    current_h3 = ""
+    
+    sections = [] # (h1, h2, h3, body)
+    current_lines = []
+
+    for line in lines:
+        h1_m = re.match(r'^#\s+(.+)', line)
+        h2_m = re.match(r'^##\s+(.+)', line)
+        h3_m = re.match(r'^###\s+(.+)', line)
+
+        if h1_m:
+            if current_lines:
+                sections.append((current_h1, current_h2, current_h3, "\n".join(current_lines)))
+                current_lines = []
+            current_h1 = h1_m.group(1).strip()
+            current_h2 = ""
+            current_h3 = ""
+        elif h2_m:
+            if current_lines:
+                sections.append((current_h1, current_h2, current_h3, "\n".join(current_lines)))
+                current_lines = []
+            current_h2 = h2_m.group(1).strip()
+            current_h3 = ""
+        elif h3_m:
+            if current_lines:
+                sections.append((current_h1, current_h2, current_h3, "\n".join(current_lines)))
+                current_lines = []
+            current_h3 = h3_m.group(1).strip()
+        else:
+            current_lines.append(line)
+
+    if current_lines:
+        sections.append((current_h1, current_h2, current_h3, "\n".join(current_lines)))
+
+    chunks = []
+    chunk_idx = 0
+    clean_base_id = filename.replace(".md", "")
+
+    for h1, h2, h3, body in sections:
+        body_clean = clean_content(body)
+        if not body_clean or len(body_clean) < 15:
             continue
-        
-        # Extract section title if exists
-        header_match = re.match(r'^(#{1,4})\s+(.+)', sec)
-        section_title = header_match.group(2).strip() if header_match else topic_title
 
-        # Check if section contains a markdown table
-        has_table = "|" in sec and "-|-" in sec or ("\n|" in sec and "|\n" in sec)
+        sec_parts = [p for p in [h1, h2, h3] if p and p != topic_title]
+        sec_title = " — ".join(sec_parts) if sec_parts else topic_title
 
-        if len(sec) <= max_chunk_chars or has_table:
-            # If section contains table or is within limit, keep intact to preserve tabular schema
-            chunk_index += 1
+        has_table = "|" in body_clean and ("-|-" in body_clean or "\n|" in body_clean)
+
+        if len(body_clean) <= max_chunk_chars or has_table:
+            chunk_idx += 1
+            structured_text = f"{topic_title} — {sec_title}\n\n{body_clean}"
             chunks.append({
-                "chunk_id": f"{filename.replace('.md', '')}_{chunk_index:03d}",
+                "chunk_id": f"{clean_base_id}_{chunk_idx:03d}",
                 "source_file": filename,
                 "topic_title": topic_title,
-                "section_title": section_title,
+                "section_title": sec_title,
                 "page_url": page_url,
                 "category": category,
-                "keywords": extract_keywords(topic_title, section_title, category, sec),
-                "entities": extract_entities(sec),
+                "keywords": extract_keywords(topic_title, sec_title, category, body_clean),
+                "entities": extract_entities(body_clean),
                 "document_version": "2026-27",
                 "is_current": True,
-                "text": f"### Document: {topic_title} | Section: {section_title} | Version: 2026-27\n{sec}",
-                "raw_text": sec
+                "text": structured_text,
+                "raw_text": body_clean
             })
         else:
-            # Subdivide large non-table section by paragraphs
-            paragraphs = sec.split("\n\n")
-            current_chunk = ""
-            for p in paragraphs:
-                p = p.strip()
-                if not p:
-                    continue
-                if len(current_chunk) + len(p) + 2 <= max_chunk_chars:
-                    current_chunk += ("\n\n" + p if current_chunk else p)
+            paras = [p.strip() for p in body_clean.split("\n\n") if p.strip()]
+            cur_buf = []
+            cur_len = 0
+            for p in paras:
+                if cur_len + len(p) + 2 <= max_chunk_chars:
+                    cur_buf.append(p)
+                    cur_len += len(p) + 2
                 else:
-                    if current_chunk:
-                        chunk_index += 1
+                    if cur_buf:
+                        chunk_idx += 1
+                        p_body = "\n\n".join(cur_buf)
                         chunks.append({
-                            "chunk_id": f"{filename.replace('.md', '')}_{chunk_index:03d}",
+                            "chunk_id": f"{clean_base_id}_{chunk_idx:03d}",
                             "source_file": filename,
                             "topic_title": topic_title,
-                            "section_title": section_title,
+                            "section_title": sec_title,
                             "page_url": page_url,
                             "category": category,
-                            "keywords": extract_keywords(topic_title, section_title, category, current_chunk),
-                            "entities": extract_entities(current_chunk),
+                            "keywords": extract_keywords(topic_title, sec_title, category, p_body),
+                            "entities": extract_entities(p_body),
                             "document_version": "2026-27",
                             "is_current": True,
-                            "text": f"### Document: {topic_title} | Section: {section_title} | Version: 2026-27\n{current_chunk}",
-                            "raw_text": current_chunk
+                            "text": f"{topic_title} — {sec_title}\n\n{p_body}",
+                            "raw_text": p_body
                         })
-                    current_chunk = p
-            if current_chunk:
-                chunk_index += 1
+                    cur_buf = [p]
+                    cur_len = len(p)
+            if cur_buf:
+                chunk_idx += 1
+                p_body = "\n\n".join(cur_buf)
                 chunks.append({
-                    "chunk_id": f"{filename.replace('.md', '')}_{chunk_index:03d}",
+                    "chunk_id": f"{clean_base_id}_{chunk_idx:03d}",
                     "source_file": filename,
                     "topic_title": topic_title,
-                    "section_title": section_title,
+                    "section_title": sec_title,
                     "page_url": page_url,
                     "category": category,
-                    "keywords": extract_keywords(topic_title, section_title, category, current_chunk),
-                    "entities": extract_entities(current_chunk),
+                    "keywords": extract_keywords(topic_title, sec_title, category, p_body),
+                    "entities": extract_entities(p_body),
                     "document_version": "2026-27",
                     "is_current": True,
-                    "text": f"### Document: {topic_title} | Section: {section_title} | Version: 2026-27\n{current_chunk}",
-                    "raw_text": current_chunk
+                    "text": f"{topic_title} — {sec_title}\n\n{p_body}",
+                    "raw_text": p_body
                 })
 
     return chunks
@@ -282,20 +337,16 @@ def get_nvidia_embeddings(texts, batch_size=100):
                 backoff *= 2
         
         if not success:
-            print(f"  [ERROR] DLQ: Failed to generate embeddings for batch starting at index {i}. Appending dummy vectors to avoid crashing.", flush=True)
-            # Dead letter queue fallback: use zero vectors so ingestion completes, flag for reprocessing
+            print(f"  [ERROR] DLQ: Failed to generate embeddings for batch starting at index {i}. Appending dummy vectors.", flush=True)
             all_embeddings.extend([[0.0] * 2048 for _ in range(len(batch))])
             failed_chunks.extend(batch)
             
     if failed_chunks:
-        with open(os.path.join(BACKEND_DIR, "data", "dlq_failed_embeddings.json"), "w") as f:
+        with open(os.path.join(BACKEND_DIR, "data", "dlq_failed_embeddings.json"), "w", encoding="utf-8") as f:
             json.dump(failed_chunks, f)
             
     return all_embeddings
 
-
-
-RESOURCE_JSON_FILE = os.path.join(BACKEND_DIR, "data", "resource_links.json")
 
 def chunk_resources():
     chunks = []
@@ -310,11 +361,10 @@ def chunk_resources():
         
         chunk_idx = 0
         for page_title, items in grouped.items():
-            # Group into batches of 8 items per chunk for optimal retrieval density
             for batch_i in range(0, len(items), 8):
                 batch_items = items[batch_i:batch_i+8]
                 chunk_idx += 1
-                lines = [f"### Document: {page_title} | Section: Verified Resource Downloads & Media | Version: 2026-27"]
+                lines = [f"{page_title} — Verified Resource Downloads & Media"]
                 for it in batch_items:
                     rtype = it.get("resource_type", "link").upper()
                     title = it.get("title", "Resource").replace("\n", " ").strip()
@@ -342,7 +392,6 @@ def chunk_resources():
 
 
 def validate_chunk_schema(chunks):
-    """Validate schema of generated chunks."""
     valid_chunks = []
     invalid_chunks = []
     required_keys = ["chunk_id", "source_file", "topic_title", "page_url", "text"]
@@ -358,14 +407,15 @@ def validate_chunk_schema(chunks):
             invalid_chunks.append(c)
     return valid_chunks, invalid_chunks
 
+
 def main():
     print("=" * 70, flush=True)
-    print("🚀 LORIN AI - HIGH PRECISION KNOWLEDGE INGESTION PIPELINE", flush=True)
+    print("🚀 LORIN AI - HIGH-PRECISION SEMANTIC KNOWLEDGE INGESTION PIPELINE", flush=True)
     print("=" * 70, flush=True)
 
     # 1. Load links mapping
     page_links = load_page_links()
-    print(f"Loaded page links mapping for {len(page_links)} documents.", flush=True)
+    print(f"Loaded page links mapping for {len(page_links)} document variants.", flush=True)
 
     # 2. Find all markdown files in Dataset
     md_files = glob.glob(os.path.join(DATASET_DIR, "*.md"))
@@ -375,7 +425,7 @@ def main():
     for file_path in md_files:
         filename = os.path.basename(file_path)
         doc_info = page_links.get(filename, {})
-        chunks = chunk_markdown(file_path, filename, doc_info)
+        chunks = hierarchical_chunk_markdown(file_path, filename, doc_info)
         all_chunks.extend(chunks)
 
     # 3. Add Verified Resource Chunks
@@ -405,33 +455,27 @@ def main():
     for cat, count in sorted(category_counts.items(), key=lambda x: x[1], reverse=True):
         print(f"  - {cat}: {count} chunks")
     print("-------------------------------------------\n")
-    
-    if invalid_chunks:
-        invalid_dlq = os.path.join(BACKEND_DIR, "data", "invalid_chunks_dlq.json")
-        with open(invalid_dlq, "w", encoding="utf-8") as f:
-            json.dump(invalid_chunks, f, indent=2, ensure_ascii=False)
-        print(f"Saved {len(invalid_chunks)} invalid chunks to {invalid_dlq}")
 
-    # 3. Save BM25 Artifact
+    # 4. Save BM25 Artifact
     os.makedirs(os.path.dirname(BM25_OUTPUT_FILE), exist_ok=True)
     with open(BM25_OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(all_chunks, f, indent=2, ensure_ascii=False)
-    print(f"Saved local BM25 chunks repository -> {BM25_OUTPUT_FILE}", flush=True)
+    print(f"✅ Saved clean BM25 chunks repository -> {BM25_OUTPUT_FILE}", flush=True)
 
-    # 4. Generate NVIDIA NeMo 2048-dim Dense Embeddings
+    # 5. Generate NVIDIA NeMo 2048-dim Dense Embeddings
     print(f"\nComputing 2048-dim NVIDIA NeMo embeddings using '{NVIDIA_EMBED_MODEL}'...", flush=True)
     texts_to_embed = [c["text"] for c in all_chunks]
     embeddings = get_nvidia_embeddings(texts_to_embed, batch_size=100)
     print(f"Successfully generated {len(embeddings)} dense embeddings (dim={len(embeddings[0])})!", flush=True)
 
-    # 5. Connect and Upsert into Qdrant
+    # 6. Connect and Upsert into Qdrant Cloud
     print(f"\nConnecting to Qdrant Cloud -> Collection '{COLLECTION_NAME}'...", flush=True)
     client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY, timeout=60)
 
     # Wipe and recreate collection for a completely fresh ingestion
     collections = [c.name for c in client.get_collections().collections]
     if COLLECTION_NAME in collections:
-        print(f"🧹 Wiping existing Qdrant collection '{COLLECTION_NAME}' for a fresh start...", flush=True)
+        print(f"🧹 Wiping existing Qdrant collection '{COLLECTION_NAME}' for fresh ingestion...", flush=True)
         client.delete_collection(collection_name=COLLECTION_NAME)
         time.sleep(2)
 
@@ -466,7 +510,7 @@ def main():
             )
         )
 
-    # Upsert in batch_size=50 with 60s timeout to avoid write timeouts
+    # Upsert in batch_size=50 with retry to ensure stability
     print(f"Upserting {len(points)} points into Qdrant Cloud in batches...", flush=True)
     batch_size = 50
     max_retries = 3
@@ -482,12 +526,12 @@ def main():
                     print(f"  ❌ Failed after {max_retries} attempts: {e}", flush=True)
                     raise
                 wait = 2 ** attempt
-                print(f"  ⚠️  Attempt {attempt} failed ({e}), retrying in {wait}s...", flush=True)
+                print(f"  ⚠️ Attempt {attempt} failed ({e}), retrying in {wait}s...", flush=True)
                 time.sleep(wait)
 
     col_info = client.get_collection(COLLECTION_NAME)
     print("\n" + "=" * 70, flush=True)
-    print(f"✅ INGESTION COMPLETE! Collection '{COLLECTION_NAME}' Points: {col_info.points_count}", flush=True)
+    print(f"✅ HIGH-PRECISION INGESTION COMPLETE! Collection '{COLLECTION_NAME}' Points: {col_info.points_count}", flush=True)
     print("=" * 70 + "\n", flush=True)
 
 

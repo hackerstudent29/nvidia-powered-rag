@@ -43,7 +43,7 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
             "who are you", "what can you do", "help me", "help", "thanks",
             "thank you", "bye", "goodbye"
         ],
-        regex_pattern=r'^(?:hi|hello|hey|hola|namaste|vanakkam|good\s+(?:morning|afternoon|evening|day)|greetings)(?:\s+(?:there|bot|lorin|assistant|all))?[\s!.,?]*$|^(?:who\s+are\s+you|what\s+is\s+your\s+name|what\s+can\s+you\s+do|how\s+can\s+you\s+help|help\s*me|help|how\s+are\s+you|how\s+r\s+u|thank\s+you|thanks|thank\s+u|bye|goodbye|ok|okay)[\s!.,?]*$',
+        regex_pattern=r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|assalamu\s+alaikum|sup|yo|howdy|(?:good|gud|gd)\s+(?:morning|afternoon|evening|day|mrng|mng|aftn|evng|nite|night)|greetings|gm|ga|ge|gn|morning|afternoon|evening)(?:\s+(?:there|bot|lorin|assistant|sir|all|everyone|ai|bro|buddy))?[\s!.,?]*$|^(?:who\s+are\s+you|what\s+is\s+your\s+name|what\s+can\s+you\s+do|how\s+can\s+you\s+help|help\s*me|help|how\s+are\s+you|how\s+r\s+u|thank\s+you|thanks|thank\s+u|bye|goodbye|ok|okay)[\s!.,?]*$',
         target_domains=["general"]
     ),
 
@@ -483,5 +483,41 @@ def fast_classify_intent(query: str) -> Optional[str]:
     # 5. Principal / Leadership
     if re.search(r'\b(principal|dr\.?\s*k\.?s\.?\s*srinivasan)\b', q_trim, re.IGNORECASE):
         return "governance"
+
+    # 6. Hostel & Living
+    if re.search(r'\b(hostel|hostels|boys\s+hostel|girls\s+hostel|warden|wardens|room\s+types|room\s+capacity|sharing|non-ac|hostellers)\b', q_trim, re.IGNORECASE):
+        return "hostel"
+
+    # 7. Dining Mess & Canteen
+    if re.search(r'\b(mess|canteen|dining|cafeteria|food\s+menu|meal\s+timings?)\b', q_trim, re.IGNORECASE):
+        return "canteen"
+
+    # 8. Transport & Bus Routes
+    if re.search(r'\b(bus|buses|transport|pickup|drop|boarding|commute|route|routes|mtc|driver|drivers|stops?)\b', q_trim, re.IGNORECASE) or re.search(r'\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+)\b', q_trim, re.IGNORECASE):
+        return "transport"
+
+    # 9. Admissions & Cutoffs
+    if re.search(r'\b(admission|admissions|cutoff|cut-off|cut\s+off|tnea|1301|counselling|counseling|eligibility|lateral\s+entry|seat\s+matrix|intake)\b', q_trim, re.IGNORECASE):
+        return "admissions"
+
+    # 10. Placements & Careers
+    if re.search(r'\b(placement|placements|recruiter|recruiters|salary|package|packages|lpa|hiring|internship|internships|highest\s+package)\b', q_trim, re.IGNORECASE):
+        return "placements"
+
+    # 11. Fees & Scholarships
+    if re.search(r'\b(fee|fees|tuition|scholarship|scholarships|first\s+graduate|concession|waiver)\b', q_trim, re.IGNORECASE):
+        return "fees"
+
+    # 12. Academics & Departments
+    if re.search(r'\b(courses?|departments?|branch|branches|curriculum|syllabus|anna\s+university|cse|it\s+dept|ece|eee|mech|civil|ai&ds|cyber|b\.?tech|b\.?e)\b', q_trim, re.IGNORECASE):
+        return "academics"
+
+    # 13. Campus Facilities & Infrastructure
+    if re.search(r'\b(library|central\s+library|delnet|ieee|labs?|laboratories|ios\s+lab|auditorium|smart\s+classrooms?|campus\s+infrastructure|facilities)\b', q_trim, re.IGNORECASE):
+        return "infrastructure"
+
+    # 14. Sports & Athletics
+    if re.search(r'\b(sports|games|cricket|football|basketball|volleyball|gym|gymnasium|badminton|physical\s+education)\b', q_trim, re.IGNORECASE):
+        return "sports"
 
     return None
