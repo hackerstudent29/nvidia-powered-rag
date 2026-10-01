@@ -4566,8 +4566,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     # Corrective RAG (CRAG) Document Relevance Purging
                     retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
 
-                    # RouteFinder Stop Lookup Injection (strictly enabled for TRANSPORT domain only)
-                    is_transport_context = (target_domain == CampusDomain.TRANSPORT) and is_route_finder_allowed
+                    # RouteFinder Stop Lookup Injection (strictly enabled for TRANSPORT and GENERAL domains)
+                    is_transport_context = (target_domain in (CampusDomain.TRANSPORT, CampusDomain.GENERAL)) and is_route_finder_allowed
                     if route_finder and is_transport_context:
                         try:
                             stop_info, _ = route_finder.find_stop(user_query)
@@ -4588,14 +4588,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         seen_routes.add(clean_id)
                                         clean_name = re.sub(r'_(onward|return)', '', b['route_name'], flags=re.IGNORECASE)
                                         is_college = (b['category'] == "college")
+                                        stop_label = b.get("stop_name", stop_info["name"])
                                         if is_college:
                                             college_buses_count += 1
                                             meta_info = b.get("meta", {})
                                             driver_str = f" | Driver: {meta_info.get('driver')} (Phone: {meta_info.get('contact')})" if meta_info.get('driver') else ""
-                                            lines.append(f"- [DEDICATED COLLEGE BUS] **Route {clean_id}** ({clean_name}): Boarding time at {stop_info['name']}: **{b['time_at_stop'] or 'Scheduled'}** | Scheduled Arrival at MSAJCE Campus (Siruseri OMR): **8:00 AM**{driver_str}")
+                                            lines.append(f"- [DEDICATED COLLEGE BUS] **Route {clean_id}** ({clean_name}): Boarding at **{stop_label}**: **{b['time_at_stop'] or 'Scheduled'}** | Scheduled Arrival at MSAJCE Campus (Siruseri OMR): **8:00 AM**{driver_str}")
                                         else:
                                             public_buses_count += 1
-                                            time_info = f"Boarding time at {stop_info['name']}: **{b['time_at_stop']}**" if b['time_at_stop'] else "Frequent public transit service (Every 5–15 mins)"
+                                            time_info = f"Boarding at **{stop_label}**: **{b['time_at_stop']}**" if b['time_at_stop'] else "Frequent public transit service (Every 5–15 mins)"
                                             lines.append(f"- [PUBLIC MTC BUS (CITY TRANSIT)] **Route {clean_id}** ({clean_name}): {time_info} | Direct Public MTC City Bus connecting to Siruseri IT Park / MSAJCE Main Gate (NOT an official college bus).")
 
                                     if college_buses_count == 0 and public_buses_count > 0:

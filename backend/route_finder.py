@@ -54,19 +54,37 @@ class RouteFinder:
 
         # alias -> stop_id, for O(1) exact/alias lookups
         self._alias_index = {}
+        # Pass 1: Primary names, stop_id, and explicit aliases
         for sid, s in self.stops.items():
+            self._alias_index[_norm(sid)] = sid
             labels = [s["name"]] + s.get("aliases", [])
             for label in labels:
                 self._alias_index[_norm(label)] = sid
+
+        # Pass 2: Parenthetical and delimiter split aliases (if not colliding with primary)
+        for sid, s in self.stops.items():
+            labels = [s["name"]] + s.get("aliases", [])
+            for label in labels:
                 # Add parenthetical-stripped version (e.g. "Ashok Pillar (Ashok Nagar)" -> "Ashok Pillar")
                 clean_label = re.sub(r'\s*\([^)]*\)', '', label).strip()
                 if clean_label and clean_label != label:
-                    self._alias_index[_norm(clean_label)] = sid
-                # Add parenthetical content itself (e.g. "CMBT (Koyambedu)" -> "Koyambedu", "Ashok Pillar (Ashok Nagar)" -> "Ashok Nagar")
+                    k = _norm(clean_label)
+                    if k not in self._alias_index:
+                        self._alias_index[k] = sid
+                # Add parenthetical content itself (e.g. "CMBT (Koyambedu)" -> "Koyambedu")
                 for pm in re.findall(r'\(([^)]+)\)', label):
                     pm_clean = pm.strip()
                     if pm_clean and len(pm_clean) >= 3:
-                        self._alias_index[_norm(pm_clean)] = sid
+                        k = _norm(pm_clean)
+                        if k not in self._alias_index:
+                            self._alias_index[k] = sid
+                # Add delimiter split parts (e.g. "Kathipara Junction / Guindy" -> "Guindy")
+                for part in re.split(r'[/&,]', label):
+                    clean_p = part.strip()
+                    if clean_p and len(clean_p) >= 3:
+                        k = _norm(clean_p)
+                        if k not in self._alias_index:
+                            self._alias_index[k] = sid
 
         # stop_id -> list of (route, index_in_route) for reverse lookups
         self._stop_to_routes = {}
@@ -315,28 +333,41 @@ class RouteFinder:
         return [route for route, _ in self._stop_to_routes.get(stop_id, [])]
 
     def buses_from(self, stop_id: str):
-        """Departure info at a stop, across every route serving it (deduplicated by base bus)."""
+        """Departure info at a stop, across every route serving it (including nearby sub-stops in the same locality)."""
         out = []
         seen_buses = set()
-        for route, idx in self._stop_to_routes.get(stop_id, []):
-            st = route["stops"][idx]
-            raw_id = route["route_id"]
-            clean_route_id = re.sub(r'_(onward|return)$', '', raw_id, flags=re.IGNORECASE)
-            clean_name = re.sub(r'_(onward|return)', '', route["name"], flags=re.IGNORECASE)
+        
+        # Include canonical stop and any related sub-stops in the same locality
+        target_stop_ids = [stop_id]
+        base_prefix = re.sub(r'_(vijayanagar|checkpost|bypass|junction|bus_stand|stand|railway_station|rly_stn|station|depot|signal|gate|tollgate|bridge|subway|temple|hospital)$', '', stop_id, flags=re.IGNORECASE)
+        for sid in self.stops.keys():
+            if sid != stop_id:
+                if sid.startswith(f"{base_prefix}_") or sid.startswith(f"{stop_id}_") or (len(base_prefix) >= 5 and base_prefix in sid):
+                    target_stop_ids.append(sid)
 
-            # Deduplicate onward and return legs into a single bus entry per stop
-            if clean_route_id in seen_buses:
-                continue
-            seen_buses.add(clean_route_id)
+        for sid in target_stop_ids:
+            for route, idx in self._stop_to_routes.get(sid, []):
+                st = route["stops"][idx]
+                raw_id = route["route_id"]
+                clean_route_id = re.sub(r'_(onward|return)$', '', raw_id, flags=re.IGNORECASE)
+                clean_name = re.sub(r'_(onward|return)', '', route["name"], flags=re.IGNORECASE)
 
-            out.append({
-                "route_id": clean_route_id,
-                "route_name": clean_name,
-                "category": route["category"],
-                "time_at_stop": st.get("time"),
-                "meta": route.get("meta", {}),
-            })
-        out.sort(key=lambda x: (x["time_at_stop"] is None, x["time_at_stop"] or ""))
+                # Deduplicate onward and return legs into a single bus entry per stop
+                bus_key = f"{clean_route_id}_{st.get('name')}"
+                if bus_key in seen_buses:
+                    continue
+                seen_buses.add(bus_key)
+
+                out.append({
+                    "route_id": clean_route_id,
+                    "route_name": clean_name,
+                    "category": route["category"],
+                    "stop_name": st.get("name", self.stops.get(sid, {}).get("name", stop_id)),
+                    "time_at_stop": st.get("time"),
+                    "meta": route.get("meta", {}),
+                })
+        # Prioritize college buses first, then sort by boarding time
+        out.sort(key=lambda x: (0 if x["category"] == "college" else 1, x["time_at_stop"] is None, x["time_at_stop"] or ""))
         return out
 
     def college_route_between(self, origin_query: str, dest_query: str = None):

@@ -124,8 +124,8 @@ DOMAIN_DEFINITIONS: Dict[CampusDomain, Dict[str, Any]] = {
     },
     CampusDomain.PEOPLE: {
         "keywords": [
-            "principal", "director", "dr. k.s. srinivasan", "srinivasan", "ramanathan", "ram", "rama",
-            "creator", "developer", "who made", "who built", "who created", "who is ram", "who is rama",
+            "principal", "director", "dr. k.s. srinivasan", "srinivasan", "ramanathan",
+            "creator", "developer", "who made", "who created", "who built", "who is ram", "who is rama",
             "who is ramanathan", "ramzenderum", "ramzendrum", "hod", "faculty", "prof", "professor", "dean"
         ],
         "regex": re.compile(
@@ -153,7 +153,7 @@ class DomainRouter:
             return CampusDomain.RESEARCH
 
         # 2. Check Developer / Principal personas
-        if any(w in q_lower for w in ["who made", "who created", "who built", "who is ram", "who is rama", "who is ramanathan", "developer", "ramanathan", "ramzenderum", "ramzendrum"]) or re.search(r'\b(ram|rama)\b', q_lower):
+        if any(w in q_lower for w in ["who made", "who created", "who built", "who is ram", "who is rama", "who is ramanathan", "developer", "ramanathan", "ramzenderum", "ramzendrum"]) or re.search(r'\b(ram\s+ramanathan|ramanathan)\b', q_lower):
             return CampusDomain.PEOPLE
         if "principal" in q_lower:
             return CampusDomain.PEOPLE
@@ -166,12 +166,19 @@ class DomainRouter:
             matches = len(regex.findall(q_lower))
             scores[domain] += matches * 3
             for kw in keywords:
-                if kw in q_lower:
-                    scores[domain] += 2
+                if len(kw) <= 4:
+                    if re.search(r'\b' + re.escape(kw) + r'\b', q_lower):
+                        scores[domain] += 2
+                else:
+                    if kw in q_lower:
+                        scores[domain] += 2
 
         # Detect compound multi-topic queries spanning multiple campus domains
         active_domains = [d for d, s in scores.items() if s >= 2]
         if len(active_domains) >= 2:
+            # If transport is clearly dominant, stay in transport
+            if scores[CampusDomain.TRANSPORT] >= 5 and scores[CampusDomain.TRANSPORT] > max(scores[d] for d in active_domains if d != CampusDomain.TRANSPORT):
+                return CampusDomain.TRANSPORT
             return CampusDomain.GENERAL
 
         # Filter out transport if research keywords exist
