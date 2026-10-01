@@ -1568,83 +1568,84 @@ const MessageItem = React.memo(function MessageItem({
         <ThinkingState
           variant="Steps"
           isLiveStreaming={message.is_streaming}
+          hasContent={sanitizedMarkdown.trim().length > 0}
           liveSteps={message.reasoning_steps}
           durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
         />
 
-        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-relaxed text-ink mt-1 break-words cursor-text select-text">
+        <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-[1.75] text-[#0d0d0d] dark:text-[#ececec] mt-1 break-words cursor-text select-text font-sans text-[15.5px] sm:text-[16px]">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => (
-                <p className="mb-3.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200 font-normal last:mb-0">
+                <p className="mb-4 text-[15.5px] sm:text-[16px] leading-[1.75] text-[#0d0d0d] dark:text-[#ececec] font-normal last:mb-0">
                   {processHighlightedChildren(children)}
                 </p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc pl-5 my-3 space-y-1.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
+                <ul className="list-disc pl-6 my-3.5 space-y-2 text-[15.5px] sm:text-[16px] leading-[1.75] text-[#0d0d0d] dark:text-[#ececec]">
                   {children}
                 </ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal pl-5 my-3 space-y-1.5 text-[15px] sm:text-[15.5px] leading-7 text-ink dark:text-zinc-200">
+                <ol className="list-decimal pl-6 my-3.5 space-y-2 text-[15.5px] sm:text-[16px] leading-[1.75] text-[#0d0d0d] dark:text-[#ececec]">
                   {children}
                 </ol>
               ),
               li: ({ children }) => (
-                <li className="leading-7 pl-0.5">
+                <li className="leading-[1.75] pl-1 text-[#0d0d0d] dark:text-[#ececec]">
                   {processHighlightedChildren(children)}
                 </li>
               ),
               h1: ({ children }) => (
-                <h1 className="font-bold tracking-tight text-xl sm:text-2xl mt-6 mb-3 text-ink dark:text-white flex items-center gap-2">
+                <h1 className="font-semibold tracking-tight text-[22px] sm:text-[24px] mt-6 mb-3 text-[#0d0d0d] dark:text-[#ececec] flex items-center gap-2">
                   {processHighlightedChildren(children)}
                 </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="font-bold tracking-tight text-lg sm:text-xl mt-5 mb-2.5 text-ink dark:text-white border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5 flex items-center gap-2">
+                <h2 className="font-semibold tracking-tight text-[18px] sm:text-[20px] mt-5 mb-2.5 text-[#0d0d0d] dark:text-[#ececec] border-b border-black/[0.06] dark:border-white/[0.08] pb-1.5 flex items-center gap-2">
                   {processHighlightedChildren(children)}
                 </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="font-semibold text-base sm:text-lg mt-4 mb-2 text-ink dark:text-zinc-100">
+                <h3 className="font-semibold text-[16px] sm:text-[17px] mt-4 mb-2 text-[#0d0d0d] dark:text-[#ececec]">
                   {processHighlightedChildren(children)}
                 </h3>
               ),
               h4: ({ children }) => (
-                <h4 className="font-semibold text-sm sm:text-base mt-3 mb-1.5 text-ink-2 dark:text-zinc-300">
+                <h4 className="font-semibold text-[15px] sm:text-[15.5px] mt-3 mb-1.5 text-zinc-700 dark:text-zinc-300">
                   {processHighlightedChildren(children)}
                 </h4>
               ),
               hr: () => null,
               blockquote: ({ children }) => (
-                <blockquote className="border-l-3 border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15px] text-ink-2 dark:text-zinc-300 italic">
+                <blockquote className="border-l-[3px] border-emerald-500/70 dark:border-emerald-400 pl-4 py-0.5 my-3.5 text-[15.5px] text-zinc-700 dark:text-zinc-300 italic leading-[1.75]">
                   {processHighlightedChildren(children)}
                 </blockquote>
               ),
-              strong: ({ children }) => <strong className="font-semibold text-ink dark:text-white">{processHighlightedChildren(children)}</strong>,
+              strong: ({ children }) => <strong className="font-semibold text-[#0d0d0d] dark:text-[#ececec]">{processHighlightedChildren(children)}</strong>,
               em: ({ children }) => <em className="italic">{processHighlightedChildren(children)}</em>,
               table: ({ children }) => (
-                <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-5 bg-transparent border-none">
-                  <table className="w-full min-w-[640px] border-separate border-spacing-0 text-left text-[14px] sm:text-[14.5px] leading-relaxed bg-transparent">{children}</table>
+                <div className="w-full max-w-full overflow-x-auto scrollbar-thin my-4 bg-transparent border-none">
+                  <table className="w-full min-w-[560px] border-collapse text-left text-[14px] leading-relaxed bg-transparent">{children}</table>
                 </div>
               ),
               thead: ({ children }) => (
-                <thead className="bg-[#2E6B5E]/[0.08] dark:bg-emerald-500/[0.12]">{children}</thead>
+                <thead className="bg-black/[0.03] dark:bg-white/[0.04] border-b border-black/10 dark:border-white/10">{children}</thead>
               ),
               tbody: ({ children }) => (
                 <tbody className="divide-y divide-black/[0.06] dark:divide-white/[0.06] bg-transparent">{children}</tbody>
               ),
               tr: ({ children }) => (
-                <tr className="hover:bg-[#2E6B5E]/[0.03] dark:hover:bg-emerald-500/[0.04] transition-colors bg-transparent">{children}</tr>
+                <tr className="hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors bg-transparent">{children}</tr>
               ),
               th: ({ children }) => (
-                <th className="py-2.5 px-4 font-bold text-[12.5px] text-[#1e3a34] dark:text-emerald-400 uppercase tracking-wider whitespace-nowrap text-left select-none bg-[#2E6B5E]/[0.08] dark:bg-emerald-500/[0.12] border-b-2 border-[#2E6B5E]/20 dark:border-emerald-500/25 first:rounded-l-lg last:rounded-r-lg">
+                <th className="py-2.5 px-3.5 font-semibold text-[13px] text-[#0d0d0d] dark:text-[#ececec] uppercase tracking-wider whitespace-nowrap text-left select-none border-b border-black/10 dark:border-white/10">
                   {processHighlightedChildren(children)}
                 </th>
               ),
               td: ({ children }) => (
-                <td className="py-3.5 px-4 align-top leading-relaxed text-[13.5px] sm:text-[14px] text-ink/90 dark:text-zinc-300 bg-transparent border-b border-black/[0.06] dark:border-white/[0.06]">
+                <td className="py-3 px-3.5 align-top leading-relaxed text-[14px] text-[#0d0d0d]/90 dark:text-[#ececec]/90 bg-transparent border-b border-black/[0.06] dark:border-white/[0.06]">
                   {processHighlightedChildren(children)}
                 </td>
               ),

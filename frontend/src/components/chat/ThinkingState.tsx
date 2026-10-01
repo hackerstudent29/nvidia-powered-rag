@@ -51,6 +51,7 @@ export type StepRow = {
 export interface ThinkingStateProps {
   variant?: string;
   isLiveStreaming?: boolean;
+  hasContent?: boolean;
   liveSteps?: (string | ReasoningStep | StepRow)[];
   durationSeconds?: number;
 }
@@ -180,6 +181,7 @@ function useElapsedTimer(active: boolean, initialSeconds?: number) {
 export default function ThinkingState({
   variant = "Drive",
   isLiveStreaming = false,
+  hasContent = false,
   liveSteps,
   durationSeconds,
 }: ThinkingStateProps) {
@@ -229,10 +231,10 @@ export default function ThinkingState({
   const patternKey = PATTERNS[variant] ? variant : "Drive";
   const { delays, dur, round } = PATTERNS[patternKey] ?? PATTERNS.Drive;
 
-  // Manual expanded state: null means default (expanded while streaming, collapsed when complete)
+  // Manual expanded state: null means follow automatic mode
   const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
 
-  // Reset expansion state when message regenerates
+  // Reset expansion state when message starts fresh streaming generation
   const prevStreamingRef = useRef(isLiveStreaming);
   useEffect(() => {
     if (isLiveStreaming && !prevStreamingRef.current) {
@@ -241,7 +243,10 @@ export default function ThinkingState({
     prevStreamingRef.current = isLiveStreaming;
   }, [isLiveStreaming]);
 
-  const isExpanded = manualExpanded !== null ? manualExpanded : isWorking;
+  // Automatic state: Expanded ONLY while thinking before answer tokens arrive.
+  // The moment the answer text begins streaming (hasContent = true) or completes, auto-collapse.
+  const autoExpanded = isWorking && !hasContent;
+  const isExpanded = manualExpanded !== null ? manualExpanded : autoExpanded;
 
   const traceRef = useRef<HTMLDivElement>(null);
   const [lineHeight, setLineHeight] = useState(0);
@@ -266,7 +271,7 @@ export default function ThinkingState({
       <button
         type="button"
         aria-expanded={isExpanded}
-        onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : isWorking))}
+        onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : autoExpanded))}
         className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1
           transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
       >
