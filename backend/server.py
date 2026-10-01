@@ -2985,7 +2985,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
         if c:
             filtered.append(row)
 
-    if not filtered or len(filtered) < 1:
+    if not filtered or len(filtered) < 1 or (not is_contextual_query(normalized_q) and len(normalized_q.split()) >= 3):
         return resolve_pronouns(normalized_q, session_id)
 
     MAX_HISTORY_CHARS = 3000
@@ -5026,17 +5026,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
             candidate_models = [
-                # 1. Primary Engine: NVIDIA NIM Infrastructure
-                "nvidia/nemotron-3-super-120b-a12b",
-                # 2. Secondary Engine: Vercel AI Gateway
+                # 1. Primary Engine: Ultra Low Latency Vercel AI Gateway (~300ms TTFT)
                 "google/gemini-2.5-flash-lite",
-                # 3. Tertiary Engine: OpenRouter Multi-Cloud Infrastructure (Free Tier)
-                "nvidia/nemotron-3-super-120b-a12b:free",
-                # 4. Failover 1: Vercel Low-Latency Engine
+                # 2. Secondary Engine: NVIDIA NIM Flagship
+                "nvidia/nemotron-3-super-120b-a12b",
+                # 3. Failover: Vercel Low-Latency Engine
                 "alibaba/qwen-3-32b",
-                # 5. Failover 2: OpenRouter Ultra MoE Engine
+                # 4. OpenRouter Free Infrastructure
+                "nvidia/nemotron-3-super-120b-a12b:free",
                 "nvidia/nemotron-3-ultra-550b-a55b:free",
-                # 6. Failover 3: Vercel Free Workhorse
                 "inclusionai/ling-3.0-flash-sante-free"
             ]
             if model_id and model_id != "auto" and model_id not in candidate_models:
@@ -5076,8 +5074,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "done": False
                     })
 
-                # Resilient timeout: 5.0s connect, 60.0s read; first token timeout 20.0s to allow deep RAG synthesis
-                candidate_timeout = httpx.Timeout(connect=5.0, read=60.0, write=5.0, pool=5.0)
+                # Resilient timeout: 2.5s connect, 45.0s read; first token timeout 3.0s for sub-second failover
+                candidate_timeout = httpx.Timeout(connect=2.5, read=45.0, write=5.0, pool=5.0)
                 cand_stream_start = time.time()
                 first_token_received = False
                 consecutive_spaces_count = 0
@@ -5098,8 +5096,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             continue
 
                         async for line in response.aiter_lines():
-                            if not first_token_received and (time.time() - cand_stream_start > 12.0):
-                                print(f"[WARN] Candidate '{current_cand}' took >12s for first token. Triggering failover...")
+                            if not first_token_received and (time.time() - cand_stream_start > 3.0):
+                                print(f"[WARN] Candidate '{current_cand}' took >3s for first token. Triggering instant failover...")
                                 break
 
                             if not line or not line.startswith("data: "):
@@ -5205,13 +5203,13 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 tokens_emitted_count += 1
                             buffer_flushed = True
 
-                    if cand_chunks:
+                    if cand_chunks and tokens_emitted_count >= 15:
                         collected_response = cand_chunks
                         model_used_final = current_cand
                         model_id = current_cand
                         break
                     else:
-                        print(f"[WARN] Candidate '{current_cand}' finished without producing content tokens (status={response.status_code}). Trying next model...")
+                        print(f"[WARN] Candidate '{current_cand}' finished prematurely ({tokens_emitted_count} tokens emitted, status={response.status_code}). Triggering failover to next model...")
 
                 except Exception as cand_err:
                     import traceback
