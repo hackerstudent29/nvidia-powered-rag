@@ -4,15 +4,39 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ReasoningStep } from "../../types/chat";
 
 /* ─────────────────────────────────────────────────────────
- * LORIN AI — PREMIUM REASONING & THINKING STATE
+ * 21ST.DEV LOADING STATE — Pixel-grid wavefront loader &
+ * background reasoning trace for Lorin AI (ChatGPT-style)
  *
- * Provides real-time background reasoning visualization:
- * - Collapsed view shows live active step preview + elapsed timer
- * - Expandable trace with vertical timeline of verified thoughts
- * - Automatic reset and live animation on regeneration / new turns
- * - Responsive for mobile, tablet, and desktop screens
- * - Strictly zero emojis across all elements
+ * Variants:
+ *   Drive  — square cells, chevron wavefront driving right;
+ *            the 650ms cycle keeps two fronts in flight
+ *   Dots   — circular cells
+ *   Orbit  — comet perimeter loop
+ *   Steps  — square cells with live dynamic reasoning trace
  * ───────────────────────────────────────────────────────── */
+
+const chevron = Array.from({ length: 9 }, (_, i) => {
+  const r = Math.floor(i / 3),
+    c = i % 3;
+  return (c + Math.abs(r - 1)) * 90;
+});
+
+const ORBIT_ORDER = [0, 1, 2, 5, 8, 7, 6, 3];
+const orbit = Array.from({ length: 9 }, (_, i) => {
+  const k = ORBIT_ORDER.indexOf(i);
+  return k === -1 ? null : k * 110;
+});
+
+const PATTERNS: Record<
+  string,
+  { delays: (number | null)[]; dur: number; round: boolean }
+> = {
+  Drive: { delays: chevron, dur: 650, round: false },
+  Dots: { delays: chevron, dur: 650, round: true },
+  Orbit: { delays: orbit, dur: 950, round: false },
+  Steps: { delays: chevron, dur: 650, round: false },
+  Reasoning: { delays: chevron, dur: 650, round: false },
+};
 
 export type StepRow = {
   primary: string;
@@ -28,25 +52,21 @@ export interface ThinkingStateProps {
   isLiveStreaming?: boolean;
   liveSteps?: (string | ReasoningStep | StepRow)[];
   durationSeconds?: number;
-  modelName?: string;
 }
 
 /**
- * Precise elapsed timer hook that resets cleanly on streaming state changes.
+ * Accurate elapsed timer hook with live millisecond precision that resets on streaming changes.
  */
 function useElapsedTimer(active: boolean, initialSeconds?: number) {
   const [elapsedTenths, setElapsedTenths] = useState(0);
-  const activeRef = useRef(active);
 
   useEffect(() => {
-    activeRef.current = active;
-    if (active) {
-      setElapsedTenths(0);
-      const timer = setInterval(() => {
-        setElapsedTenths((prev) => prev + 1);
-      }, 100);
-      return () => clearInterval(timer);
-    }
+    if (!active) return;
+    setElapsedTenths(0);
+    const timer = setInterval(() => {
+      setElapsedTenths((prev) => prev + 1);
+    }, 100);
+    return () => clearInterval(timer);
   }, [active]);
 
   if (!active && typeof initialSeconds === "number" && initialSeconds > 0) {
@@ -60,13 +80,15 @@ function useElapsedTimer(active: boolean, initialSeconds?: number) {
 }
 
 export default function ThinkingState({
-  variant = "Steps",
+  variant = "Drive",
   isLiveStreaming = false,
   liveSteps,
   durationSeconds,
-  modelName,
 }: ThinkingStateProps) {
-  // Normalize raw incoming live steps into clean step rows
+  const isWorking = !!isLiveStreaming;
+  const elapsed = useElapsedTimer(isWorking, durationSeconds);
+
+  // Parse and normalize live steps
   const steps: StepRow[] = React.useMemo(() => {
     if (!Array.isArray(liveSteps) || liveSteps.length === 0) return [];
     return liveSteps
@@ -91,17 +113,19 @@ export default function ThinkingState({
   }, [liveSteps]);
 
   const hasSteps = steps.length > 0;
-  const isWorking = !!isLiveStreaming;
-  const elapsed = useElapsedTimer(isWorking, durationSeconds);
+  const hasDuration = typeof durationSeconds === "number" && durationSeconds > 0;
 
-  // Manual expanded state: null means auto (expanded while streaming, collapsed when done)
+  // Selected pixel-grid pattern
+  const patternKey = PATTERNS[variant] ? variant : "Drive";
+  const { delays, dur, round } = PATTERNS[patternKey] ?? PATTERNS.Drive;
+
+  // Manual expanded state: null means default (expanded while streaming, collapsed when complete)
   const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
 
-  // Auto-expand on new streaming session or regeneration
+  // Reset expansion state when message regenerates
   const prevStreamingRef = useRef(isLiveStreaming);
   useEffect(() => {
     if (isLiveStreaming && !prevStreamingRef.current) {
-      // Stream just started / message regenerating: reset manual override to auto-expand
       setManualExpanded(null);
     }
     prevStreamingRef.current = isLiveStreaming;
@@ -118,84 +142,92 @@ export default function ThinkingState({
     }
   }, [isExpanded, steps.length, isWorking]);
 
-  // Do not render empty box if there are no steps and not working
-  if (!isWorking && !hasSteps && (!durationSeconds || durationSeconds <= 0)) {
+  // Do not render if not streaming, no steps, and no duration
+  if (!isWorking && !hasSteps && !hasDuration) {
     return null;
   }
 
-  // Active step for collapsed preview
-  const activeStepText = hasSteps ? steps[steps.length - 1].primary : "Initializing reasoning engine...";
+  // Active step description for collapsed view preview
+  const activeStepText = hasSteps ? steps[steps.length - 1].primary : "Analyzing campus records...";
 
   return (
-    <div className="flex w-full max-w-full sm:max-w-xl md:max-w-2xl flex-col my-1.5 select-none font-sans transition-all duration-200">
-      {/* ── Collapsed / Header Bar ── */}
+    <div className="flex w-full max-w-full sm:max-w-xl md:max-w-2xl flex-col my-1 select-none font-sans transition-all duration-200">
+      {/* ── Header / Collapsed Bar ── */}
       <button
         type="button"
         aria-expanded={isExpanded}
         onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : isWorking))}
-        className="group -mx-1 flex w-full items-center justify-between rounded-lg px-2 py-1.5
-          transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
+        className="group -mx-1.5 flex w-full items-center justify-between rounded-lg px-2 py-1
+          transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
       >
-        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-          {/* Animated Status Indicator */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+          {/* 3x3 Pixel Grid Wavefront Loader */}
+          <span aria-hidden className="grid grid-cols-[repeat(3,4.5px)] gap-[2px] shrink-0">
+            {delays.map((d, i) => (
+              <span
+                key={i}
+                className={`size-[4.5px] bg-foreground dark:bg-zinc-200 ${round ? "rounded-full" : "rounded-[1px]"}`}
+                style={{
+                  opacity: !isWorking ? 0.35 : d === null ? 0.08 : 0.15,
+                  animation:
+                    !isWorking || d === null
+                      ? "none"
+                      : `pixel-on ${dur}ms ease-in-out ${d}ms infinite`,
+                }}
+              />
+            ))}
+          </span>
+
+          {/* Shimmering State Label */}
           {isWorking ? (
-            <span className="relative flex size-3.5 shrink-0 items-center justify-center">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/40 opacity-75" />
-              <span className="relative inline-flex size-2 rounded-full bg-primary" />
+            <span
+              className="bg-clip-text text-[13px] font-medium whitespace-nowrap text-transparent shrink-0"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, rgba(120,120,120,0.4) 30%, rgba(30,30,30,0.95) 50%, rgba(120,120,120,0.4) 70%)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer-text 1.4s linear infinite",
+              }}
+            >
+              Thinking
             </span>
           ) : (
-            <span className="flex size-3.5 shrink-0 items-center justify-center text-primary dark:text-[#E11D48]">
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-              </svg>
+            <span className="text-[13px] font-medium whitespace-nowrap text-ink dark:text-zinc-200 shrink-0">
+              Thought for {elapsed}
             </span>
           )}
 
-          {/* Primary State Label */}
-          <span className="text-[12.5px] sm:text-[13px] font-semibold text-foreground dark:text-zinc-200 shrink-0">
-            {isWorking ? "Thinking" : `Thought for ${elapsed}`}
-          </span>
-
-          {/* Collapsed Step Preview: Displays active background action in real-time */}
+          {/* Active Step Preview in Collapsed View */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
             <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
             {isWorking ? (
               <span
-                className="text-[12px] sm:text-[12.5px] truncate font-medium text-zinc-600 dark:text-zinc-300 animate-pulse"
+                className="text-[12px] sm:text-[12.5px] truncate font-normal text-zinc-500 dark:text-zinc-400"
                 title={activeStepText}
               >
                 {activeStepText}
               </span>
             ) : (
-              <span className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate">
-                {steps.length > 0 ? `${steps.length} steps completed` : "Verified response"}
+              <span className="text-[12px] text-zinc-400 dark:text-zinc-500 truncate">
+                {steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth"}
               </span>
             )}
           </div>
         </div>
 
-        {/* Right Action: Live Timer / Step Count & Chevron */}
-        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+        {/* Right Info: Live Timer (when working) & Chevron */}
+        <div className="flex items-center gap-2 shrink-0 ml-1">
           {isWorking && (
-            <span className="font-mono text-[11.5px] sm:text-[12px] text-primary dark:text-[#E11D48] tabular-nums font-semibold px-1.5 py-0.5 rounded bg-primary/10 dark:bg-primary/20">
+            <span className="font-mono text-[12px] text-ink-3 dark:text-zinc-400 tabular-nums font-normal">
               {elapsed}
             </span>
           )}
 
           <span
-            className="flex size-5 items-center justify-center rounded text-zinc-400 dark:text-zinc-500 transition-transform duration-200 group-hover:text-foreground"
+            className="flex size-4 items-center justify-center text-ink-3 dark:text-zinc-400 transition-transform duration-200 opacity-60 group-hover:opacity-100"
             style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
@@ -211,8 +243,8 @@ export default function ThinkingState({
         }}
       >
         <div className="overflow-hidden">
-          <div className="relative mt-1 ml-1.5 pl-4 border-l border-black/10 dark:border-white/10 my-1">
-            <div ref={traceRef} className="flex flex-col gap-1.5 py-1">
+          <div className="relative mt-1 ml-[7px] pl-3.5 border-l border-line dark:border-white/10 my-1">
+            <div ref={traceRef} className="flex flex-col gap-1 py-1">
               {steps.map((step, idx) => {
                 const isLast = idx === steps.length - 1;
                 const isStepActive = isWorking && isLast;
@@ -220,48 +252,45 @@ export default function ThinkingState({
                 return (
                   <div
                     key={idx}
-                    className="flex items-start gap-2.5 rounded-md px-1.5 py-1 text-left transition-colors duration-150 hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
+                    className="flex items-start gap-2 rounded-md px-1 py-0.5 text-left transition-colors duration-150"
                   >
-                    {/* Step Icon */}
-                    <div className="mt-0.5 shrink-0">
+                    {/* Step Checkmark / Spinner */}
+                    <div className="mt-1 shrink-0">
                       {isStepActive ? (
-                        <span className="flex size-3.5 items-center justify-center">
-                          <span
-                            className="size-3 rounded-full border-[1.5px] border-primary/30 border-t-primary dark:border-primary/40 dark:border-t-primary"
-                            style={{ animation: "spin 650ms linear infinite" }}
-                          />
-                        </span>
+                        <span
+                          className="size-2.5 rounded-full border-[1.5px] border-line-strong border-t-ink-2 dark:border-white/30 dark:border-t-white block"
+                          style={{ animation: "spin 700ms linear infinite" }}
+                        />
                       ) : (
-                        <span className="flex size-3.5 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                          <svg
-                            width="10"
-                            height="10"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
-                        </span>
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-emerald-600 dark:text-emerald-400"
+                        >
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
                       )}
                     </div>
 
-                    {/* Step Text & Optional Secondary Info */}
+                    {/* Step Text */}
                     <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-2">
                       <span
-                        className={`text-[12px] sm:text-[12.5px] leading-relaxed break-words ${
+                        className={`text-[12.5px] leading-relaxed break-words ${
                           isStepActive
-                            ? "font-medium text-foreground dark:text-zinc-100"
-                            : "text-zinc-600 dark:text-zinc-300"
+                            ? "font-medium text-ink dark:text-zinc-100"
+                            : "text-ink-2 dark:text-zinc-300"
                         }`}
                       >
                         {step.primary}
                       </span>
                       {step.secondary && (
-                        <span className="shrink-0 text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
+                        <span className="shrink-0 text-[11px] font-mono text-ink-3 dark:text-zinc-400">
                           {step.secondary}
                         </span>
                       )}
@@ -271,12 +300,12 @@ export default function ThinkingState({
               })}
 
               {steps.length === 0 && isWorking && (
-                <div className="flex items-center gap-2 px-1.5 py-1 text-[12px] text-zinc-500 dark:text-zinc-400">
+                <div className="flex items-center gap-2 px-1 py-0.5 text-[12px] text-ink-3 dark:text-zinc-400">
                   <span
-                    className="size-3 shrink-0 rounded-full border-[1.5px] border-primary/30 border-t-primary"
-                    style={{ animation: "spin 650ms linear infinite" }}
+                    className="size-2.5 rounded-full border-[1.5px] border-line-strong border-t-ink-2 block"
+                    style={{ animation: "spin 700ms linear infinite" }}
                   />
-                  <span>Initializing campus reasoning pipeline...</span>
+                  <span>Connecting to campus reasoning engine...</span>
                 </div>
               )}
             </div>

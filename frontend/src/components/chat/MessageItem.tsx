@@ -1493,32 +1493,8 @@ const MessageItem = React.memo(function MessageItem({
 
   return (
     <div ref={messageRef} className={`flex flex-col mt-2 mb-2 sm:mb-3 w-full max-w-full min-w-0 box-border overflow-hidden animate-in fade-in duration-300${selectionToolbar ? " selection-has-toolbar" : ""}`}>
-      <div className="flex items-center gap-2.5 mb-2 shrink-0">
-        <div className="shrink-0 flex items-center justify-center">
-          <JellyBlobMascot
-            emotion={
-              message.is_streaming
-                ? "hmm"
-                : feedbackRating === -1
-                ? "sad"
-                : feedbackRating === 1
-                ? "love"
-                : "happy"
-            }
-            size={46}
-            interactive={true}
-          />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs sm:text-sm font-bold text-ink">Lorin AI</span>
-          <span className="rounded-full bg-[#E1EED7] dark:bg-[#2E6B5E]/50 px-1.5 py-0.2 text-[9px] font-semibold text-[#2E6B5E] dark:text-[#E1EED7]">
-            MSAJCE
-          </span>
-        </div>
-      </div>
-
-      {/* AI message body — symmetric pl-0 sm:pl-7 and pr-0 sm:pr-2 */}
-      <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 sm:pl-7 pr-0 sm:pr-2 overflow-hidden">
+      {/* AI message body — clean ChatGPT style, directly showing ThinkingState and response */}
+      <div className="w-full max-w-full min-w-0 box-border text-ink pl-0 pr-0 overflow-hidden">
         <ThinkingState
           variant="Steps"
           isLiveStreaming={message.is_streaming}

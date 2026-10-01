@@ -890,3 +890,38 @@ textarea, input {
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   21ST.DEV PIXEL-GRID LOADER & SHIMMER KEYFRAMES
+   ══════════════════════════════════════════════════════════════ */
+@keyframes pixel-on {
+  0%, 100% {
+    opacity: 0.12;
+    transform: scale(0.90);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes shimmer-text {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
