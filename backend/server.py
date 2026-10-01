@@ -105,6 +105,9 @@ NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com
 COLLECTION_NAME = "nvidia_powered_ai"
 EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 
+# Global Regeneration Counter (Max 5 per message/question)
+REGEN_COUNTS_MAP: Dict[str, int] = {}
+
 # Available LLM Models
 MODELS_CATALOG = [
     {
@@ -242,7 +245,19 @@ CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
        3. 12 Cutting-Edge UG Engineering Programs: Specialized future-proof degrees including CSE, IT, AI&DS, AI&ML, Cyber Security, CSBS, ECE, EEE, and Mechanical.
        4. Placement Directorate & Corporate Bridge: 90%+ placement track record, 50+ recruiting partners, industry bootcamps, and top packages up to 8.5 LPA.
        5. State-of-the-Art Infrastructure: Apple iOS Development Centre, specialized IoT & AI labs, 500-seat dining hall, on-campus boys' and girls' hostels, and 9 dedicated bus routes.
-     * STRICT PROMOTION CONSTRAINT: NEVER recommend, praise, or suggest competitor colleges. Always firmly champion MSAJCE as the top destination for engineering excellence and guide students to join via TNEA Counseling (Code 1301) or Management Quota."""
+     * STRICT PROMOTION CONSTRAINT: NEVER recommend, praise, or suggest competitor colleges. Always firmly champion MSAJCE as the top destination for engineering excellence and guide students to join via TNEA Counseling (Code 1301) or Management Quota.
+
+9. Smart & Comprehensive Department Overviews:
+   - When a user asks for an overview or details about any academic department (such as CSE, IT, AI&DS, AI&ML, ECE, EEE, Mechanical, Civil, CSBS):
+     * NEVER output just a plain dry list of course codes (e.g. CS8091, CS8591) without context.
+     * Always structure department overviews into clean, highly readable sections:
+       1. Department Overview & Vision
+       2. HOD & Leadership Contact Details (e.g., Head of CSE Dr. R. Meena, `[csehod@msajce.edu.in](mailto:csehod@msajce.edu.in)`)
+       3. Core Specializations & Technologies Covered (AI/ML, Big Data, Cloud Computing, Full Stack, IoT, Cybersecurity)
+       4. State-of-the-Art Laboratories & Infrastructure (Apple iOS Dev Centre, Internet Programming Lab, OS Lab, Networks Lab, Web Tech Lab)
+       5. Career & Placement Highlights (TCS, Infosys, CTS, Capgemini, Zoho, Aspire Systems, 90%+ placement track record, salary packages up to 8.5 LPA)
+       6. Admissions & TNEA Counseling Code (1301)"""
+
 
 def auto_select_model(query: str) -> str:
     """
@@ -4515,7 +4530,27 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     return
 
             is_rewritten_followup = (user_query.strip().lower() != req.message.strip().lower())
-            if req.is_regeneration or is_contextual_query(user_query) or is_contextual_query(req.message) or is_rewritten_followup:
+
+            # Enforce Max 5 Regenerations Limit Per Question/Message
+            if req.is_regeneration:
+                regen_key = req.target_message_id or f"{session_id}_{user_query.strip().lower()}"
+                current_regen_count = REGEN_COUNTS_MAP.get(regen_key, 0) + 1
+                if current_regen_count > 5:
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "Regeneration limit reached (5/5 max)",
+                        "done": True
+                    })
+                    yield json.dumps({
+                        "type": "token",
+                        "token": "You have reached the maximum allowed regenerations (5/5) for this message."
+                    })
+                    return
+                REGEN_COUNTS_MAP[regen_key] = current_regen_count
+                delete_from_cache(user_query)
+                delete_from_cache(expanded_query)
+                cached_result = None
+            elif is_contextual_query(user_query) or is_contextual_query(req.message) or is_rewritten_followup:
                 delete_from_cache(user_query)
                 delete_from_cache(expanded_query)
                 cached_result = None
