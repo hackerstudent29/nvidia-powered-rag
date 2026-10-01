@@ -58,29 +58,38 @@ def is_code_or_script_request(q_lower: str) -> bool:
     """
     0ms Typo-Tolerant Code & Programming Request Interceptor.
     Catches arbitrary coding, script generation, debugging, syntax, and programming queries.
+    Permits conceptual career guidance, course selection, technology comparisons, and learning roadmaps.
     """
     if not q_lower:
         return False
 
+    # Exclude career guidance, course selection, and comparative technology questions
+    if any(k in q_lower for k in [
+        "syllabus", "curriculum", "regulation", "department", "admission", "cutoff",
+        "fee", "fees", "degree", "branch", "course", "courses", "career", "careers",
+        "job", "jobs", "placement", "placements", "college", "colleges", "future", "choose", "choosing",
+        "which is better", "should i learn", "scope", "demand", "salary", "package", "recruiters", "companies"
+    ]):
+        # Only block if explicitly asking to generate/write actual code snippets
+        if not re.search(r'\b(?:write|generate|give\s+me|create|debug|fix)\s+(?:a\s+|some\s+)?(?:code|program|script|snippet)\b', q_lower):
+            return False
+
     # Language and tech tokens including common student typos (python, pyhton, py, java, js, cpp, c++, html, etc.)
     lang_tokens = r'(?:py(?:thon|hton)?|java(?:script)?|js|ts|typescript|c(?:\+\+|pp|#)?|html|css|sql|php|react|angular|vue|django|flask|spring|ruby|rust|golang|go|swift|kotlin|r\b|matlab)'
-    action_tokens = r'(?:write|give|generate|create|provide|show|build|debug|fix|explain|teach|run|print|send|make|code|program|sample|example|basic|simple)'
+    action_tokens = r'(?:write|give|generate|create|provide|show|build|debug|fix|explain|teach|run|print|send|make|type)\s+(?:me\s+)?(?:a\s+|the\s+|some\s+)?'
     code_noun_tokens = r'(?:code|codes|coding|program|programs|programming|script|scripts|snippet|snippets|syntax|function|functions|algorithm|algorithms|loop|loops|class|classes|file|files|tags?|headers?|backend|frontend)'
 
-    # 1. Action + optional filler words (up to 5 words) + language/code token (e.g., "write a pyhton code", "give me basic html", "create a function")
-    if re.search(rf'\b{action_tokens}\b(?:\s+\w+){{0,5}}\s+\b(?:{lang_tokens}|{code_noun_tokens})\b', q_lower):
-        if not any(k in q_lower for k in ["syllabus", "curriculum", "regulation", "department", "admission", "cutoff", "fee", "fees", "degree", "branch"]):
-            return True
+    # 1. Action + optional filler words (up to 4 words) + language/code token (e.g., "write a pyhton code", "give me basic html", "create a function")
+    if re.search(rf'\b{action_tokens}(?:\w+\s+){{0,4}}\b(?:{lang_tokens}|{code_noun_tokens})\b', q_lower):
+        return True
 
     # 2. Language + code noun (e.g. "python code", "pyhton code", "html file", "js script", "c++ program")
     if re.search(rf'\b{lang_tokens}\s+{code_noun_tokens}\b', q_lower):
-        if not any(k in q_lower for k in ["syllabus", "curriculum", "regulation", "department", "admission", "cutoff", "fee", "fees", "degree", "branch"]):
-            return True
+        return True
 
     # 3. Direct code noun requests (e.g. "code for reverse string", "program to add numbers", "script to scrape")
     if re.search(rf'\b(?:code|program|script|algorithm|function)\s+(?:for|to|that|which|of|in)\b', q_lower):
-        if not any(k in q_lower for k in ["admission", "fee", "hostel", "bus", "transport", "placement", "syllabus"]):
-            return True
+        return True
 
     # 4. Code snippets or raw syntax keywords
     if re.search(r'\b(?:print\s*\(|console\.log|system\.out\.println|#include\s*<|def\s+\w+\s*\(|public\s+static\s+void|<!doctype|<html|<head|<body|<h[1-6]>)\b', q_lower):
