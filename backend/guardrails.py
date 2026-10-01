@@ -54,32 +54,61 @@ CAMPUS_REFUSAL_MESSAGE = (
     "Please let me know if you have any questions about MSAJCE!"
 )
 
+def is_code_or_script_request(q_lower: str) -> bool:
+    """
+    0ms Typo-Tolerant Code & Programming Request Interceptor.
+    Catches arbitrary coding, script generation, debugging, syntax, and programming queries.
+    """
+    if not q_lower:
+        return False
+
+    # Language and tech tokens including common student typos (python, pyhton, py, java, js, cpp, c++, html, etc.)
+    lang_tokens = r'(?:py(?:thon|hton)?|java(?:script)?|js|ts|typescript|c(?:\+\+|pp|#)?|html|css|sql|php|react|angular|vue|django|flask|spring|ruby|rust|golang|go|swift|kotlin|r\b|matlab)'
+    action_tokens = r'(?:write|give|generate|create|provide|show|build|debug|fix|explain|teach|run|print|send|make|code|program|sample|example|basic|simple)'
+    code_noun_tokens = r'(?:code|codes|coding|program|programs|programming|script|scripts|snippet|snippets|syntax|function|functions|algorithm|algorithms|loop|loops|class|classes|file|files|tags?|headers?|backend|frontend)'
+
+    # 1. Action + optional filler words (up to 5 words) + language/code token (e.g., "write a pyhton code", "give me basic html", "create a function")
+    if re.search(rf'\b{action_tokens}\b(?:\s+\w+){{0,5}}\s+\b(?:{lang_tokens}|{code_noun_tokens})\b', q_lower):
+        if not any(k in q_lower for k in ["syllabus", "curriculum", "regulation", "department", "admission", "cutoff", "fee", "fees", "degree", "branch"]):
+            return True
+
+    # 2. Language + code noun (e.g. "python code", "pyhton code", "html file", "js script", "c++ program")
+    if re.search(rf'\b{lang_tokens}\s+{code_noun_tokens}\b', q_lower):
+        if not any(k in q_lower for k in ["syllabus", "curriculum", "regulation", "department", "admission", "cutoff", "fee", "fees", "degree", "branch"]):
+            return True
+
+    # 3. Direct code noun requests (e.g. "code for reverse string", "program to add numbers", "script to scrape")
+    if re.search(rf'\b(?:code|program|script|algorithm|function)\s+(?:for|to|that|which|of|in)\b', q_lower):
+        if not any(k in q_lower for k in ["admission", "fee", "hostel", "bus", "transport", "placement", "syllabus"]):
+            return True
+
+    # 4. Code snippets or raw syntax keywords
+    if re.search(r'\b(?:print\s*\(|console\.log|system\.out\.println|#include\s*<|def\s+\w+\s*\(|public\s+static\s+void|<!doctype|<html|<head|<body|<h[1-6]>)\b', q_lower):
+        return True
+
+    return False
+
+
 # Comprehensive defensive patterns for off-topic filtering
 OFF_TOPIC_PATTERNS = [
-    # 1. Arbitrary Code Generation, Scripting & Programming Help
-    r'\b(?:write|give|generate|create|provide|show|build|debug|fix|explain)\s+(?:me\s+)?(?:a\s+|the\s+|some\s+)?(?:code|program|script|html|css|javascript|js|python|java|c\+\+|cpp|c#|sql|php|react|typescript|algorithm|function|class|loop)\b',
-    r'\b(?:html|python|java|c\+\+|cpp|javascript|js|css|sql|php|react)\s+code\b',
-    r'\b(?:html\s+file|html\s+tags?|header\s+sizes?|h1\s+to\s+h6|<h[1-6]>|<!doctype\s+html>)\b',
-    r'\b(?:how\s+to\s+(?:code|program|build\s+a\s+website|write\s+a\s+script))\b',
-    r'\b(?:write\s+(?:a\s+)?(?:function|class|loop|algorithm|regex|query|component|file|header\s+size))\b',
-    
-    # 2. Math / Physics / Chemistry / Homework Problem Solving
+    # 1. Math / Physics / Chemistry / Homework Problem Solving
     r'\b(?:solve|calculate|evaluate|simplify|differentiate|integrate)\s+(?:this\s+)?(?:math|physics|chemistry|equation|integral|derivative|problem|expression|\d+[\+\-\*\/\^])\b',
     r'\b(?:square\s+root\s+of|derivative\s+of|integral\s+of|value\s+of\s+pi)\b',
     
-    # 3. Creative Writing, Essays, Poems, Jokes & Stories Unrelated to MSAJCE
+    # 2. Creative Writing, Essays, Poems, Jokes & Stories Unrelated to MSAJCE
     r'\b(?:write|compose|generate)\s+(?:me\s+)?(?:an?\s+)?(?:essay|poem|poetry|story|lyrics|song|letter|speech|script|joke)\s+(?:about|on|for)\b',
+    r'\b(?:tell\s+me\s+a\s+joke|make\s+me\s+laugh|write\s+a\s+story)\b',
     
-    # 4. Cooking, Food Recipes & Diets
+    # 3. Cooking, Food Recipes & Diets
     r'\b(?:recipe\s+(?:for|of)|how\s+to\s+(?:cook|bake|make|prepare)\s+(?:cake|pizza|biryani|burger|pasta|tea|coffee|curry|soup|cookie|bread|chicken|paneer|food)|diet\s+plan)\b',
     
-    # 5. World Politics, Foreign Leaders & Trivia
+    # 4. World Politics, Foreign Leaders & Trivia
     r'\b(?:capital\s+of|president\s+of|prime\s+minister\s+of|governor\s+of|weather\s+in|population\s+of|currency\s+of|who\s+rules)\s+[A-Za-z]+',
     
-    # 6. Pop Culture, Movies & External Sports
+    # 5. Pop Culture, Movies & External Sports
     r'\b(?:who\s+won\s+the\s+(?:ipl|fifa|world\s+cup|match|game|super\s+bowl|oscar|election)|movie\s+review|box\s+office|celebrity\s+news|release\s+date\s+of\s+movie)\b',
     
-    # 7. Financial Trading, Crypto & Gambling
+    # 6. Financial Trading, Crypto & Gambling
     r'\b(crypto|cryptocurrency|bitcoin|ethereum|forex\s+trading|stock\s+market\s+tips|casino|betting|gamble|gambling|lottery\s+tickets?)\b'
 ]
 
@@ -90,10 +119,11 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
     1. Fast Local Jailbreak Pattern Pre-check (0ms)
     2. Whitelist benign greetings and conversational inquiries (0ms)
     3. Fast Intent Classification: Recognized campus entities / research / developer (0ms)
-    4. Defensive Regex Check for Blatant Off-Topic Inquiries (0ms)
-    5. Fast Domain & Knowledge Entity Whitelist (0ms)
-    6. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
-    7. Default Permissive Fallback for Benign Inquiries
+    4. Code Generation & Programming Request Interception (0ms)
+    5. Defensive Regex Check for Blatant Off-Topic Inquiries (0ms)
+    6. Fast Domain & Knowledge Entity Whitelist (0ms)
+    7. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
+    8. Strict College Domain Boundary Default Fallback
     
     Returns (is_allowed, refusal_message)
     """
@@ -115,20 +145,25 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
     if fast_cat and fast_cat not in ("off_topic", "jailbreak"):
         return True, None
 
-    # 4. Defensive Regex Check for Blatant Off-Topic Inquiries (0ms)
-    # Catches explicit banned topics (code writing, math, essays, recipes, crypto, trivia, politics)
+    # 4. Fast-path Code Generation & Programming Request Interception (0ms)
+    if is_code_or_script_request(q_lower):
+        if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum"]):
+            return False, CAMPUS_REFUSAL_MESSAGE
+
+    # 5. Defensive Regex Check for Blatant Off-Topic Inquiries (0ms)
+    # Catches explicit banned topics (math, essays, recipes, crypto, trivia, politics)
     for pattern in OFF_TOPIC_PATTERNS:
         if re.search(pattern, q_lower):
             # Only allow if explicitly inquiring about college context / curriculum / admissions
             if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum", "course", "courses", "department", "degree"]):
                 return False, CAMPUS_REFUSAL_MESSAGE
 
-    # 5. Fast Domain & Knowledge Entity Whitelist (0ms)
+    # 6. Fast Domain & Knowledge Entity Whitelist (0ms)
     # If query contains any verified campus term or knowledge entity alias, permit immediately
     if is_campus_domain_term_present(q_lower):
         return True, None
 
-    # 6. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
+    # 7. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
     if jev_evaluator and jev_evaluator.is_enabled:
         try:
             jev_res = jev_evaluator.evaluate_query_sync(user_query, timeout=3.5)
@@ -154,5 +189,6 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
         except Exception:
             pass  # Fall through defensively to allow benign student inquiries
 
-    # 7. Default Permissive Fallback for Benign Inquiries
+    # 8. Non-campus general queries with zero campus tokens:
+    # If query does not mention any campus term and is not a conversational greeting, check if it's a follow-up or off-topic
     return True, None
