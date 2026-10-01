@@ -1056,14 +1056,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div
-      className="sticky bottom-0 z-20 pb-5 sm:pb-1 pt-1.5 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full"
+      className="sticky bottom-0 z-20 pb-5 sm:pb-1 pt-1.5 bg-gradient-to-t from-[#F7F6ED] dark:from-[#0b0c0e] via-[#F7F6ED]/95 dark:via-[#0b0c0e]/95 to-transparent w-full px-3 sm:px-6"
       style={{
         paddingBottom: (isMobile || isMobileViewport)
           ? "max(28px, calc(28px + var(--keyboard-offset, 0px)))"
           : "8px"
       }}
     >
-      <div className="mx-auto max-w-4xl w-full min-w-0 px-3 sm:px-6 box-border">
+      <div className="mx-auto max-w-4xl w-full min-w-0 box-border">
         {/* Rate Limit Alert Banner Tab */}
         <AnimatePresence>
           {rateLimitInfo && rateLimitInfo.isLimited && rateLimitInfo.untilTimestamp > Date.now() && secondsLeft > 0 && (
@@ -1162,13 +1162,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           )
         )}
 
-        {/* ── Prompt Input Container (Maintains full lengthy width in idle state) ── */}
+        {/* ── Prompt Input Container (Maintains full lengthy width in idle state matching message column) ── */}
         <div
           ref={internalContainerRef}
           onBlur={handleBlur}
           className="relative flex flex-col w-full mx-auto"
           style={{
-            maxWidth: 672,
+            maxWidth: "100%",
             transition: isSmoothResize
               ? "max-width 0.15s ease-out"
               : "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
@@ -1513,7 +1513,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.3 }}
-                className="text-[10px] text-ink-3/80 dark:text-[#b1ada1]/80 font-medium text-center truncate max-w-2xl px-2"
+                className="text-[10px] text-ink-3/80 dark:text-[#b1ada1]/80 font-medium text-center truncate max-w-4xl w-full px-2"
               >
                 {DISCLAIMER_SENTENCES[disclaimerIdx]}
               </motion.p>
