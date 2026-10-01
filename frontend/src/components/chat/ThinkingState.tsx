@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ReasoningStep } from "../../types/chat";
 
 /* ─────────────────────────────────────────────────────────
@@ -55,6 +56,103 @@ export interface ThinkingStateProps {
 }
 
 /**
+ * Normalizes and broadens granular reasoning sentences into broad, high-level, human-friendly milestones.
+ * Eliminates verbose internal scratchpad monologues and redundant micro-steps.
+ */
+function broadenReasoningStep(raw: string): string | null {
+  const s = raw.trim();
+  if (!s) return null;
+  const lower = s.toLowerCase();
+
+  // 1. Filter out internal model monologue / raw intermediate scratchpad lines
+  if (
+    lower.startsWith("okay,") ||
+    lower.startsWith("let me") ||
+    lower.startsWith("looking at") ||
+    lower.startsWith("this states") ||
+    lower.startsWith("she also") ||
+    lower.startsWith("he also") ||
+    lower.startsWith("her contacts") ||
+    lower.startsWith("his contacts") ||
+    lower.startsWith("in this section") ||
+    lower.startsWith("the user asks") ||
+    lower.startsWith("the user is asking") ||
+    lower.startsWith("first,") ||
+    lower.startsWith("next,") ||
+    lower.startsWith("based on the verified") ||
+    lower.startsWith("we can see") ||
+    lower.startsWith("note:") ||
+    lower.includes("let me scan") ||
+    lower.includes("let's check") ||
+    lower.includes("scan through the knowledge") ||
+    lower.includes("verified entity:")
+  ) {
+    return null;
+  }
+
+  // 2. Broaden technical pipeline steps into concise human milestones
+  if (
+    lower.includes("query intent") ||
+    lower.includes("analyzing inquiry") ||
+    lower.includes("targeting developer") ||
+    lower.includes("targeting institutional") ||
+    lower.includes("analyzing query")
+  ) {
+    return s.length > 55 ? "Analyzing inquiry & intent" : s;
+  }
+  if (lower.includes("classified domain intent") || lower.includes("classifying domain")) {
+    return s.replace(/^Classified domain intent:\s*/i, "Domain intent: ");
+  }
+  if (lower.includes("knowledge entity match") || (lower.includes("linked") && lower.includes("entities"))) {
+    return "Matched verified institutional entities";
+  }
+  if (
+    lower.includes("dense embedding") ||
+    lower.includes("llama-nemotron-embed") ||
+    lower.includes("generating 1,024-dim")
+  ) {
+    return "Generating semantic query embedding";
+  }
+  if (
+    lower.includes("qdrant vector") ||
+    lower.includes("bm25 lexical") ||
+    lower.includes("searching official") ||
+    lower.includes("scanning campus records") ||
+    lower.includes("retrieving verified")
+  ) {
+    return "Searching campus knowledge base & vector records";
+  }
+  if (
+    lower.includes("crac verification") ||
+    lower.includes("fused") ||
+    lower.includes("cross-referencing") ||
+    lower.includes("cross-verifying")
+  ) {
+    return "Cross-verifying relevant campus documents & policies";
+  }
+  if (
+    lower.includes("synthesizing") ||
+    lower.includes("formulating grounded") ||
+    lower.includes("structuring")
+  ) {
+    return "Synthesizing verified grounded response";
+  }
+  if (lower.includes("routefinder")) {
+    return s;
+  }
+  if (lower.includes("patent & research")) {
+    return "Checking verified patent & research records";
+  }
+  if (lower.includes("cache match") || lower.includes("cached response") || lower.includes("prebuilt")) {
+    return "Retrieved verified response from campus cache";
+  }
+
+  // If already reasonably concise (< 60 chars), keep it
+  if (s.length <= 60) return s;
+  return s.slice(0, 57) + "...";
+}
+
+/**
  * Accurate elapsed timer hook with live millisecond precision that resets on streaming changes.
  */
 function useElapsedTimer(active: boolean, initialSeconds?: number) {
@@ -88,28 +186,40 @@ export default function ThinkingState({
   const isWorking = !!isLiveStreaming;
   const elapsed = useElapsedTimer(isWorking, durationSeconds);
 
-  // Parse and normalize live steps
+  // Parse, broaden, and deduplicate live steps into concise broad milestones
   const steps: StepRow[] = React.useMemo(() => {
     if (!Array.isArray(liveSteps) || liveSteps.length === 0) return [];
-    return liveSteps
-      .map((item) => {
-        if (typeof item === "string") {
-          return { primary: item.trim() };
-        }
-        if (typeof item === "object" && item !== null) {
-          const stepObj = item as any;
-          return {
-            primary: (stepObj.primary || stepObj.step || "").trim(),
-            secondary: stepObj.secondary,
-            mono: stepObj.mono,
-            add: stepObj.add,
-            del: stepObj.del,
-            href: stepObj.href,
-          };
-        }
-        return { primary: "" };
-      })
-      .filter((r) => r.primary.length > 0);
+    
+    const broadList: StepRow[] = [];
+    const seen = new Set<string>();
+
+    for (const item of liveSteps) {
+      let rawText = "";
+      let secondary: string | undefined;
+
+      if (typeof item === "string") {
+        rawText = item;
+      } else if (typeof item === "object" && item !== null) {
+        const stepObj = item as any;
+        rawText = stepObj.primary || stepObj.step || "";
+        secondary = stepObj.secondary;
+      }
+
+      const broadened = broadenReasoningStep(rawText);
+      if (broadened && !seen.has(broadened.toLowerCase())) {
+        seen.add(broadened.toLowerCase());
+        broadList.push({
+          primary: broadened,
+          secondary,
+        });
+      }
+    }
+
+    // Cap to at most 5 high-level milestones for clean broad display
+    if (broadList.length > 5) {
+      return broadList.slice(-5);
+    }
+    return broadList;
   }, [liveSteps]);
 
   const hasSteps = steps.length > 0;
@@ -152,15 +262,15 @@ export default function ThinkingState({
 
   return (
     <div className="flex w-full max-w-full sm:max-w-xl md:max-w-2xl flex-col my-1 select-none font-sans transition-all duration-200">
-      {/* ── Header / Collapsed Bar ── */}
+      {/* ── Header / Collapsed Bar (Flush left aligned) ── */}
       <button
         type="button"
         aria-expanded={isExpanded}
         onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : isWorking))}
-        className="group -mx-1.5 flex w-full items-center justify-between rounded-lg px-2 py-1
+        className="group -ml-0.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1
           transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
       >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
           {/* 3x3 Pixel Grid Wavefront Loader */}
           <span aria-hidden className="grid grid-cols-[repeat(3,4.5px)] gap-[2px] shrink-0">
             {delays.map((d, i) => (
@@ -197,21 +307,30 @@ export default function ThinkingState({
             </span>
           )}
 
-          {/* Active Step Preview in Collapsed View */}
+          {/* Animated Active Step Preview in Collapsed View with smooth line transition */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
             <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
-            {isWorking ? (
-              <span
-                className="text-[12px] sm:text-[12.5px] truncate font-normal text-zinc-500 dark:text-zinc-400"
-                title={activeStepText}
-              >
-                {activeStepText}
-              </span>
-            ) : (
-              <span className="text-[12px] text-zinc-400 dark:text-zinc-500 truncate">
-                {steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth"}
-              </span>
-            )}
+            <div className="min-w-0 flex-1 overflow-hidden relative h-[18px] flex items-center">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length}-done` : "done")}
+                  initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
+                    isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
+                  }`}
+                  title={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth")}
+                >
+                  {isWorking
+                    ? activeStepText
+                    : steps.length > 0
+                    ? `${steps.length} steps verified`
+                    : "Verified ground truth"}
+                </motion.span>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -234,7 +353,7 @@ export default function ThinkingState({
         </div>
       </button>
 
-      {/* ── Expandable Step-by-Step Reasoner ── */}
+      {/* ── Expandable Broad Step-by-Step Reasoner ── */}
       <div
         className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
         style={{
@@ -243,16 +362,19 @@ export default function ThinkingState({
         }}
       >
         <div className="overflow-hidden">
-          <div className="relative mt-1 ml-[7px] pl-3.5 border-l border-line dark:border-white/10 my-1">
+          <div className="relative mt-1 ml-[4px] pl-2.5 border-l border-black/10 dark:border-white/10 my-1">
             <div ref={traceRef} className="flex flex-col gap-1 py-1">
               {steps.map((step, idx) => {
                 const isLast = idx === steps.length - 1;
                 const isStepActive = isWorking && isLast;
 
                 return (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-2 rounded-md px-1 py-0.5 text-left transition-colors duration-150"
+                  <motion.div
+                    key={`${step.primary}-${idx}`}
+                    initial={{ opacity: 0, x: -3 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.18 }}
+                    className="flex items-start gap-2 rounded-md px-0.5 py-0.5 text-left transition-colors duration-150"
                   >
                     {/* Step Checkmark / Spinner */}
                     <div className="mt-1 shrink-0">
@@ -295,12 +417,12 @@ export default function ThinkingState({
                         </span>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
 
               {steps.length === 0 && isWorking && (
-                <div className="flex items-center gap-2 px-1 py-0.5 text-[12px] text-ink-3 dark:text-zinc-400">
+                <div className="flex items-center gap-2 px-0.5 py-0.5 text-[12px] text-ink-3 dark:text-zinc-400">
                   <span
                     className="size-2.5 rounded-full border-[1.5px] border-line-strong border-t-ink-2 block"
                     style={{ animation: "spin 700ms linear infinite" }}

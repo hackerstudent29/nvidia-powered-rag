@@ -5084,31 +5084,20 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                             ttft_recorded = True
                                             ttft_ms = int((time.time() - start_time) * 1000)
 
-                                    reasoning_stream_buffer += reasoning_token
-                                    new_steps, reasoning_stream_buffer = parse_complete_reasoning_steps(reasoning_stream_buffer)
-                                    for step in new_steps:
-                                        if step and step not in reasoning_steps:
-                                            reasoning_steps.append(step)
-                                            yield json.dumps({
-                                                "type": "reasoning",
-                                                "step": step,
-                                                "done": True
-                                            })
+                                    broad_synth_step = "Formulating grounded response from verified records"
+                                    if broad_synth_step not in reasoning_steps:
+                                        reasoning_steps.append(broad_synth_step)
+                                        yield json.dumps({
+                                            "type": "reasoning",
+                                            "step": broad_synth_step,
+                                            "done": True
+                                        })
 
                                 if not content_token:
                                     continue
 
-                                # Flush any remaining reasoning buffer when content stream starts
-                                if reasoning_stream_buffer:
-                                    flushed_step = flush_reasoning_step(reasoning_stream_buffer)
-                                    if flushed_step and flushed_step not in reasoning_steps:
-                                        reasoning_steps.append(flushed_step)
-                                        yield json.dumps({
-                                            "type": "reasoning",
-                                            "step": flushed_step,
-                                            "done": True
-                                        })
-                                    reasoning_stream_buffer = ""
+                                # Clear any remaining reasoning buffer when content stream starts
+                                reasoning_stream_buffer = ""
 
                                 token_chunk = content_token
                                 if not token_chunk:
@@ -5162,17 +5151,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             except Exception:
                                 continue
 
-                        # Flush any remaining buffer if stream ended quickly
-                        if reasoning_stream_buffer:
-                            flushed_step = flush_reasoning_step(reasoning_stream_buffer)
-                            if flushed_step and flushed_step not in reasoning_steps:
-                                reasoning_steps.append(flushed_step)
-                                yield json.dumps({
-                                    "type": "reasoning",
-                                    "step": flushed_step,
-                                    "done": True
-                                })
-                            reasoning_stream_buffer = ""
+                        # Clear reasoning stream buffer
+                        reasoning_stream_buffer = ""
 
                         if not buffer_flushed and initial_buffer:
                             buffered_text = "".join(initial_buffer)
