@@ -817,12 +817,36 @@ function extractRawTextFromNode(node: React.ReactNode): string {
   return "";
 }
 
-function autoLinkPhoneNumbers(content: string): string {
+function autoLinkAllEntities(content: string): string {
   if (!content) return "";
   let text = content;
-  // Match Indian landlines (+91 44 2747 4222, 044-27474222, 044 2747 4222), mobiles (+91 9789970304), toll free
-  return text.replace(
-    /(?<!\[[^\]]*)(?<!href=["'])(?<!tel:)(\+91[\s\-]?(?:\d{2,4})[\s\-]?\d{3,4}[\s\-]?\d{3,4}|\b0\d{2,4}[\s\-]?\d{6,8}\b|\b[6-9]\d{9}\b)/g,
+
+  // 1. Unwrap backticks around email addresses: `foo@bar.com` -> [foo@bar.com](mailto:foo@bar.com)
+  text = text.replace(/`([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})`/g, "[$1](mailto:$1)");
+
+  // 2. Unwrap backticks around phone numbers: `044-27470025` -> [044-27470025](tel:+914427470025)
+  text = text.replace(/`(\+?91[\s\-]?(?:\d{2,4})[\s\-]?\d{3,4}[\s\-]?\d{3,4}|0\d{2,4}[\s\-]?\d{6,8}|[6-9]\d{9})`/g, (_m, num) => {
+    const cleanNum = num.replace(/[^\d+]/g, "");
+    const formattedNum = cleanNum.startsWith("+")
+      ? cleanNum
+      : cleanNum.startsWith("0")
+      ? `+91${cleanNum.slice(1)}`
+      : `+91${cleanNum}`;
+    return `[${num}](tel:${formattedNum})`;
+  });
+
+  // 3. Unwrap backticks around URLs: `https://msajce.edu.in` -> [https://msajce.edu.in](https://msajce.edu.in)
+  text = text.replace(/`(https?:\/\/[^\s`]+|www\.[^\s`]+|msajce\.edu\.in[^\s`]*)`/g, "[$1]($1)");
+
+  // 4. Auto-link plain email addresses: (not already preceded by [ or mailto:)
+  text = text.replace(
+    /(?<!\[[^\]]*)(?<!href=["'])(?<!mailto:)\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b(?![^\[]*\])/g,
+    "[$1](mailto:$1)"
+  );
+
+  // 5. Auto-link Indian landlines & mobile numbers
+  text = text.replace(
+    /(?<!\[[^\]]*)(?<!href=["'])(?<!tel:)(\+91[\s\-]?(?:\d{2,4})[\s\-]?\d{3,4}[\s\-]?\d{3,4}|\b0\d{2,4}[\s\-]?\d{6,8}\b|\b[6-9]\d{9}\b)(?![^\[]*\])/g,
     (match) => {
       const cleanNum = match.replace(/[^\d+]/g, "");
       const formattedNum = cleanNum.startsWith("+")
@@ -833,6 +857,17 @@ function autoLinkPhoneNumbers(content: string): string {
       return `[${match}](tel:${formattedNum})`;
     }
   );
+
+  // 6. Auto-link raw web URLs (e.g. https://... or www.... or msajce.edu.in)
+  text = text.replace(
+    /(?<!\[[^\]]*)(?<!href=["'])(?<!https?:\/\/)\b(https?:\/\/[^\s\)\],]+|www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[^\s\)\],]*|msajce\.edu\.in(?:\/[^\s\)\],]*)?)\b(?![^\[]*\])/gi,
+    (_m, url) => {
+      const href = url.startsWith("http") ? url : `https://${url}`;
+      return `[${url}](${href})`;
+    }
+  );
+
+  return text;
 }
 
 function formatTimestampWithSeconds(ts?: string | Date): string {
@@ -1471,7 +1506,7 @@ const MessageItem = React.memo(function MessageItem({
   }, [message.sources]);
 
   const sanitizedMarkdown = useMemo(() => {
-    return autoLinkPhoneNumbers(sanitizeMarkdownContent(message.content));
+    return autoLinkAllEntities(sanitizeMarkdownContent(message.content));
   }, [message.content]);
 
   if (isUser) {
@@ -1661,7 +1696,7 @@ const MessageItem = React.memo(function MessageItem({
                       href={cleanTel}
                       {...handlers}
                       className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
-                      title="Tap to call on default phone app | Long press to copy"
+                      title="Tap to call on phone app | Long press to copy"
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0 text-emerald-600 dark:text-emerald-400">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -1751,10 +1786,70 @@ const MessageItem = React.memo(function MessageItem({
                     </div>
                   );
                 }
-                const codeString = String(children).replace(/\n$/, "");
+                const codeString = String(children).replace(/\n$/, "").trim();
                 if (match || codeString.includes("\n")) {
                   return <CodeBlock language={lang} code={codeString} />;
                 }
+
+                // Check if inline code snippet is an email address
+                const isEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(codeString);
+                if (isEmail) {
+                  return (
+                    <a
+                      href={`mailto:${codeString}`}
+                      className="relative z-10 cursor-pointer font-semibold text-[#2E6B5E] dark:text-[#34D399] underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap bg-emerald-500/10 dark:bg-emerald-500/15 px-2 py-0.5 rounded-md border border-emerald-500/20"
+                      title="Tap to open Email"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>{codeString}</span>
+                    </a>
+                  );
+                }
+
+                // Check if inline code snippet is a phone number
+                const isPhone = /^(\+91[\s\-]?(?:\d{2,4})[\s\-]?\d{3,4}[\s\-]?\d{3,4}|0\d{2,4}[\s\-]?\d{6,8}|[6-9]\d{9})$/.test(codeString);
+                if (isPhone) {
+                  const cleanDigits = codeString.replace(/[^\d+]/g, "");
+                  const cleanTel = `tel:${cleanDigits.startsWith("+") ? cleanDigits : cleanDigits.startsWith("0") ? `+91${cleanDigits.slice(1)}` : `+91${cleanDigits}`}`;
+                  return (
+                    <a
+                      href={cleanTel}
+                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap bg-emerald-500/10 dark:bg-emerald-500/15 px-2 py-0.5 rounded-md border border-emerald-500/20"
+                      title="Tap to call"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                      <span>{codeString}</span>
+                    </a>
+                  );
+                }
+
+                // Check if inline code snippet is a URL
+                const isUrl = /^(https?:\/\/[^\s]+|www\.[^\s]+|msajce\.edu\.in[^\s]*)$/.test(codeString);
+                if (isUrl) {
+                  const targetUrl = codeString.startsWith("http") ? codeString : `https://${codeString}`;
+                  return (
+                    <a
+                      href={targetUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap bg-emerald-500/10 dark:bg-emerald-500/15 px-2 py-0.5 rounded-md border border-emerald-500/20"
+                      title="Tap to open link"
+                    >
+                      <span>{codeString}</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline ml-0.5">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  );
+                }
+
                 return (
                   <code className="rounded bg-black/[0.06] dark:bg-white/[0.08] px-1.5 py-0.5 font-mono text-[13px] text-emerald-700 dark:text-emerald-400 font-medium" {...props}>
                     {children}

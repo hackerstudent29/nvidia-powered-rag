@@ -27,7 +27,7 @@ export default {
           }
         },
       fontFamily: {
-        sans: ["'Plus Jakarta Sans'", "Inter", "system-ui", "sans-serif"],
+        sans: ["Söhne", "Inter", "ui-sans-serif", "system-ui", "-apple-system", "'Segoe UI'", "Roboto", "Helvetica", "Arial", "sans-serif"],
       },
       animation: {
         "fade-in": "fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",

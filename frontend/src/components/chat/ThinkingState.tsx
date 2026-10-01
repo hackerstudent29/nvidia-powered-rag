@@ -307,31 +307,33 @@ export default function ThinkingState({
             </span>
           )}
 
-          {/* Animated Active Step Preview in Collapsed View with smooth line transition */}
-          <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-            <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
-            <div className="min-w-0 flex-1 overflow-hidden relative h-[18px] flex items-center">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length}-done` : "done")}
-                  initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                  className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
-                    isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
-                  }`}
-                  title={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth")}
-                >
-                  {isWorking
-                    ? activeStepText
-                    : steps.length > 0
-                    ? `${steps.length} steps verified`
-                    : "Verified ground truth"}
-                </motion.span>
-              </AnimatePresence>
+          {/* Animated Active Step Preview in Collapsed View (Hidden when Expanded) */}
+          {!isExpanded && (
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
+              <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
+              <div className="min-w-0 flex-1 overflow-hidden relative h-[18px] flex items-center">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length}-done` : "done")}
+                    initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
+                      isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
+                    }`}
+                    title={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth")}
+                  >
+                    {isWorking
+                      ? activeStepText
+                      : steps.length > 0
+                      ? `${steps.length} steps verified`
+                      : "Verified ground truth"}
+                  </motion.span>
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Info: Live Timer (when working) & Chevron */}
