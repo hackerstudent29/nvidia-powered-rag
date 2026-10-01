@@ -245,6 +245,16 @@
 /* ══════════════════════════════════════════════════════════════
    ANIMATIONS
    ══════════════════════════════════════════════════════════════ */
+:root {
+  --shimmer-dim: rgba(113, 113, 122, 0.45);
+  --shimmer-bright: rgba(18, 18, 20, 1);
+}
+
+.dark {
+  --shimmer-dim: rgba(161, 161, 170, 0.35);
+  --shimmer-bright: rgba(255, 255, 255, 1);
+}
+
 @keyframes pixel-on {
   0%, 100% { opacity: 0.12; transform: scale(0.92); }
   50% { opacity: 1; transform: scale(1.08); }
@@ -253,6 +263,21 @@
 @keyframes shimmer-text {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
+}
+
+.animate-thinking-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--shimmer-dim) 0%,
+    var(--shimmer-bright) 50%,
+    var(--shimmer-dim) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shimmer-text 1.8s ease-in-out infinite;
 }
 
 @keyframes fade-in {

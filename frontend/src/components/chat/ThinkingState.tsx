@@ -295,19 +295,11 @@ export default function ThinkingState({
 
           {/* Shimmering State Label */}
           {isWorking ? (
-            <span
-              className="bg-clip-text text-[13px] font-medium whitespace-nowrap text-transparent shrink-0"
-              style={{
-                backgroundImage:
-                  "linear-gradient(90deg, rgba(120,120,120,0.4) 30%, rgba(30,30,30,0.95) 50%, rgba(120,120,120,0.4) 70%)",
-                backgroundSize: "200% 100%",
-                animation: "shimmer-text 1.4s linear infinite",
-              }}
-            >
+            <span className="animate-thinking-shimmer text-[13px] font-medium whitespace-nowrap shrink-0">
               Thinking
             </span>
           ) : (
-            <span className="text-[13px] font-medium whitespace-nowrap text-ink dark:text-zinc-200 shrink-0">
+            <span className="text-[13px] font-medium whitespace-nowrap text-zinc-700 dark:text-zinc-200 shrink-0">
               Thought for {elapsed}
             </span>
           )}
@@ -324,8 +316,10 @@ export default function ThinkingState({
                     animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
                     transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                    className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
-                      isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
+                    className={`text-[12px] sm:text-[12.5px] truncate block ${
+                      isWorking
+                        ? "animate-thinking-shimmer font-medium"
+                        : "text-zinc-500 dark:text-zinc-400 font-normal"
                     }`}
                     title={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth")}
                   >
@@ -344,13 +338,13 @@ export default function ThinkingState({
         {/* Right Info: Live Timer (when working) & Chevron */}
         <div className="flex items-center gap-2 shrink-0 ml-1">
           {isWorking && (
-            <span className="font-mono text-[12px] text-ink-3 dark:text-zinc-400 tabular-nums font-normal">
+            <span className="font-mono text-[12px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
               {elapsed}
             </span>
           )}
 
           <span
-            className="flex size-4 items-center justify-center text-ink-3 dark:text-zinc-400 transition-transform duration-200 opacity-60 group-hover:opacity-100"
+            className="flex size-4 items-center justify-center text-zinc-500 dark:text-zinc-400 transition-transform duration-200 opacity-60 group-hover:opacity-100"
             style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -383,13 +377,13 @@ export default function ThinkingState({
                     transition={{ duration: 0.18 }}
                     className="flex items-start gap-2 rounded-md px-0.5 py-0.5 text-left transition-colors duration-150"
                   >
-                    {/* Step Checkmark / Spinner */}
-                    <div className="mt-1 shrink-0">
+                    {/* Step Checkmark / Active Breathing Indicator */}
+                    <div className="mt-1 shrink-0 flex items-center justify-center size-3">
                       {isStepActive ? (
-                        <span
-                          className="size-2.5 rounded-full border-[1.5px] border-line-strong border-t-ink-2 dark:border-white/30 dark:border-t-white block"
-                          style={{ animation: "spin 700ms linear infinite" }}
-                        />
+                        <span className="relative flex size-2.5 items-center justify-center">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-zinc-400 dark:bg-zinc-200 opacity-60" />
+                          <span className="relative inline-flex size-1.5 rounded-full bg-zinc-800 dark:bg-zinc-100" />
+                        </span>
                       ) : (
                         <svg
                           width="12"
@@ -400,26 +394,26 @@ export default function ThinkingState({
                           strokeWidth="2.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className="text-emerald-600 dark:text-emerald-400"
+                          className="text-emerald-600 dark:text-emerald-400 shrink-0"
                         >
                           <path d="M20 6L9 17l-5-5" />
                         </svg>
                       )}
                     </div>
 
-                    {/* Step Text */}
+                    {/* Step Text with Lively Shimmer Animation */}
                     <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-2">
                       <span
-                        className={`text-[12.5px] leading-relaxed break-words ${
+                        className={`text-[12.5px] leading-relaxed break-words transition-all duration-200 ${
                           isStepActive
-                            ? "font-medium text-ink dark:text-zinc-100"
-                            : "text-ink-2 dark:text-zinc-300"
+                            ? "font-medium animate-thinking-shimmer"
+                            : "text-zinc-600 dark:text-zinc-300"
                         }`}
                       >
                         {step.primary}
                       </span>
                       {step.secondary && (
-                        <span className="shrink-0 text-[11px] font-mono text-ink-3 dark:text-zinc-400">
+                        <span className="shrink-0 text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
                           {step.secondary}
                         </span>
                       )}
@@ -429,12 +423,12 @@ export default function ThinkingState({
               })}
 
               {steps.length === 0 && isWorking && (
-                <div className="flex items-center gap-2 px-0.5 py-0.5 text-[12px] text-ink-3 dark:text-zinc-400">
-                  <span
-                    className="size-2.5 rounded-full border-[1.5px] border-line-strong border-t-ink-2 block"
-                    style={{ animation: "spin 700ms linear infinite" }}
-                  />
-                  <span>Connecting to campus reasoning engine...</span>
+                <div className="flex items-center gap-2 px-0.5 py-0.5 text-[12.5px]">
+                  <span className="relative flex size-2.5 items-center justify-center shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-zinc-400 dark:bg-zinc-200 opacity-60" />
+                    <span className="relative inline-flex size-1.5 rounded-full bg-zinc-800 dark:bg-zinc-100" />
+                  </span>
+                  <span className="animate-thinking-shimmer font-medium">Connecting to campus reasoning engine...</span>
                 </div>
               )}
             </div>
