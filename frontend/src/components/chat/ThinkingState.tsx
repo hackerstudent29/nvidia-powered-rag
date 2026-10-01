@@ -1,43 +1,19 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReasoningStep } from "../../types/chat";
 
 /* ─────────────────────────────────────────────────────────
- * 21ST.DEV LOADING STATE — Pixel-grid wavefront loader &
- * background reasoning trace for Lorin AI (ChatGPT-style)
+ * LORIN AI THINKING STATE — Production RAG Thinking Experience
  *
- * Variants:
- *   Drive  — square cells, chevron wavefront driving right;
- *            the 650ms cycle keeps two fronts in flight
- *   Dots   — circular cells
- *   Orbit  — comet perimeter loop
- *   Steps  — square cells with live dynamic reasoning trace
+ * Principles:
+ *  - Quiet, informative, and alive — gently pulsing ✦ icon
+ *  - Truthful representation of pipeline events (2–5 words)
+ *  - Zero technical jargon (no Qdrant, embeddings, reranker, tokens)
+ *  - Zero internal chain-of-thought monologues
+ *  - Smoothly vanishes as soon as response streaming starts (hasContent = true)
  * ───────────────────────────────────────────────────────── */
-
-const chevron = Array.from({ length: 9 }, (_, i) => {
-  const r = Math.floor(i / 3),
-    c = i % 3;
-  return (c + Math.abs(r - 1)) * 90;
-});
-
-const ORBIT_ORDER = [0, 1, 2, 5, 8, 7, 6, 3];
-const orbit = Array.from({ length: 9 }, (_, i) => {
-  const k = ORBIT_ORDER.indexOf(i);
-  return k === -1 ? null : k * 110;
-});
-
-const PATTERNS: Record<
-  string,
-  { delays: (number | null)[]; dur: number; round: boolean }
-> = {
-  Drive: { delays: chevron, dur: 650, round: false },
-  Dots: { delays: chevron, dur: 650, round: true },
-  Orbit: { delays: orbit, dur: 950, round: false },
-  Steps: { delays: chevron, dur: 650, round: false },
-  Reasoning: { delays: chevron, dur: 650, round: false },
-};
 
 export type StepRow = {
   primary: string;
@@ -56,16 +32,22 @@ export interface ThinkingStateProps {
   durationSeconds?: number;
 }
 
+export interface StageInfo {
+  icon: string;
+  text: string;
+  key: string;
+}
+
 /**
- * Normalizes and broadens granular reasoning sentences into broad, high-level, human-friendly milestones.
- * Eliminates verbose internal scratchpad monologues and redundant micro-steps.
+ * Normalizes raw pipeline steps into clean, human-friendly 2–5 word status phrases.
+ * Strictly eliminates internal model monologues and technical jargon.
  */
-function broadenReasoningStep(raw: string): string | null {
+export function normalizeStepToStage(raw: string): StageInfo | null {
   const s = raw.trim();
   if (!s) return null;
   const lower = s.toLowerCase();
 
-  // 1. Filter out internal model monologue / raw intermediate scratchpad lines
+  // Filter out internal model monologues or scratchpad sentences
   if (
     lower.startsWith("okay,") ||
     lower.startsWith("let me") ||
@@ -85,76 +67,145 @@ function broadenReasoningStep(raw: string): string | null {
     lower.startsWith("note:") ||
     lower.includes("let me scan") ||
     lower.includes("let's check") ||
-    lower.includes("scan through the knowledge") ||
-    lower.includes("verified entity:")
+    lower.includes("scan through the knowledge")
   ) {
     return null;
   }
 
-  // 2. Broaden technical pipeline steps into concise human milestones
+  // 1. Initial / Understanding stage
   if (
-    lower.includes("query intent") ||
+    lower.includes("understanding") ||
+    lower.includes("interpreting") ||
     lower.includes("analyzing inquiry") ||
-    lower.includes("targeting developer") ||
-    lower.includes("targeting institutional") ||
-    lower.includes("analyzing query")
+    lower.includes("analyzing query") ||
+    lower.includes("intent") ||
+    lower.includes("classifying") ||
+    lower.includes("starting")
   ) {
-    return s.length > 55 ? "Analyzing inquiry & intent" : s;
-  }
-  if (lower.includes("classified domain intent") || lower.includes("classifying domain")) {
-    return s.replace(/^Classified domain intent:\s*/i, "Domain intent: ");
-  }
-  if (lower.includes("knowledge entity match") || (lower.includes("linked") && lower.includes("entities"))) {
-    return "Matched verified institutional entities";
-  }
-  if (
-    lower.includes("dense embedding") ||
-    lower.includes("llama-nemotron-embed") ||
-    lower.includes("generating 1,024-dim")
-  ) {
-    return "Generating semantic query embedding";
-  }
-  if (
-    lower.includes("qdrant vector") ||
-    lower.includes("bm25 lexical") ||
-    lower.includes("searching official") ||
-    lower.includes("scanning campus records") ||
-    lower.includes("retrieving verified")
-  ) {
-    return "Searching campus knowledge base & vector records";
-  }
-  if (
-    lower.includes("crac verification") ||
-    lower.includes("fused") ||
-    lower.includes("cross-referencing") ||
-    lower.includes("cross-verifying")
-  ) {
-    return "Cross-verifying relevant campus documents & policies";
-  }
-  if (
-    lower.includes("synthesizing") ||
-    lower.includes("formulating grounded") ||
-    lower.includes("structuring")
-  ) {
-    return "Synthesizing verified grounded response";
-  }
-  if (lower.includes("routefinder")) {
-    return s;
-  }
-  if (lower.includes("patent & research")) {
-    return "Checking verified patent & research records";
-  }
-  if (lower.includes("cache match") || lower.includes("cached response") || lower.includes("prebuilt")) {
-    return "Retrieved verified response from campus cache";
+    return { icon: "✦", text: "Understanding your question…", key: "understanding" };
   }
 
-  // If already reasonably concise (< 60 chars), keep it
-  if (s.length <= 60) return s;
-  return s.slice(0, 57) + "...";
+  // 2. Planning stage
+  if (
+    lower.includes("planning") ||
+    lower.includes("breaking this") ||
+    lower.includes("multi-step") ||
+    lower.includes("parts") ||
+    lower.includes("figuring out")
+  ) {
+    return { icon: "✦", text: "Breaking this into a few parts…", key: "planning" };
+  }
+
+  // 3. Document / PDF processing
+  if (
+    lower.includes("document") ||
+    lower.includes("pdf") ||
+    lower.includes("reading the") ||
+    lower.includes("looking through the document")
+  ) {
+    return { icon: "✦", text: "Reading the relevant document…", key: "document" };
+  }
+
+  // 4. Searching multiple sources
+  if (
+    lower.includes("across relevant sources") ||
+    lower.includes("checking multiple sources") ||
+    lower.includes("multiple collections")
+  ) {
+    return { icon: "✦", text: "Searching across relevant sources…", key: "search_multi" };
+  }
+
+  // 5. Searching knowledge base / Retrieval
+  if (
+    lower.includes("searching") ||
+    lower.includes("looking through") ||
+    lower.includes("retrieving") ||
+    lower.includes("qdrant") ||
+    lower.includes("vector") ||
+    lower.includes("bm25") ||
+    lower.includes("scanning campus") ||
+    lower.includes("knowledge base")
+  ) {
+    return { icon: "🔍", text: "Searching relevant information…", key: "searching" };
+  }
+
+  // 6. Found relevant information / counts
+  if (lower.includes("found")) {
+    const numMatch = lower.match(/found\s+(\d+)\s+relevant/);
+    if (numMatch) {
+      return { icon: "✦", text: `Found ${numMatch[1]} relevant sources…`, key: "found" };
+    }
+    return { icon: "✦", text: "Found relevant information…", key: "found" };
+  }
+
+  // 7. Reranking / Checking relevance
+  if (
+    lower.includes("rerank") ||
+    lower.includes("cross-encoder") ||
+    lower.includes("most relevant") ||
+    lower.includes("checking which information") ||
+    lower.includes("narrowing down")
+  ) {
+    return { icon: "✦", text: "Checking which information is most relevant…", key: "reranking" };
+  }
+
+  // 8. Reviewing sources
+  if (
+    lower.includes("reviewing") ||
+    lower.includes("evaluating") ||
+    lower.includes("checking the most relevant")
+  ) {
+    return { icon: "✦", text: "Reviewing relevant sources…", key: "reviewing" };
+  }
+
+  // 9. Cross-checking / Verification
+  if (
+    lower.includes("cross-checking") ||
+    lower.includes("comparing") ||
+    lower.includes("verifying details") ||
+    lower.includes("checking answer against")
+  ) {
+    return { icon: "✦", text: "Cross-checking the information…", key: "cross_checking" };
+  }
+
+  // 10. Specific details (dates, fees, hostel, transport, etc.)
+  if (
+    lower.includes("details") ||
+    lower.includes("fees") ||
+    lower.includes("hostel") ||
+    lower.includes("transport") ||
+    lower.includes("location") ||
+    lower.includes("dates")
+  ) {
+    return { icon: "✦", text: "Looking for the specific details…", key: "checking_details" };
+  }
+
+  // 11. Structured records
+  if (lower.includes("records") || lower.includes("structured")) {
+    return { icon: "✦", text: "Checking available records…", key: "structured_records" };
+  }
+
+  // 12. Preparing answer / formulating response
+  if (
+    lower.includes("preparing") ||
+    lower.includes("putting everything together") ||
+    lower.includes("writing the answer") ||
+    lower.includes("synthesizing") ||
+    lower.includes("formulating")
+  ) {
+    return { icon: "✦", text: "Preparing your answer…", key: "preparing" };
+  }
+
+  // Fallback for short custom steps: check if <= 40 chars
+  if (s.length <= 40) {
+    return { icon: "✦", text: s.endsWith("…") ? s : `${s}…`, key: "custom" };
+  }
+
+  return { icon: "✦", text: "Reviewing relevant sources…", key: "default_review" };
 }
 
 /**
- * Accurate elapsed timer hook with live millisecond precision that resets on streaming changes.
+ * Timer hook for elapsed time formatting (e.g., "1.2s")
  */
 function useElapsedTimer(active: boolean, initialSeconds?: number) {
   const [elapsedTenths, setElapsedTenths] = useState(0);
@@ -179,7 +230,6 @@ function useElapsedTimer(active: boolean, initialSeconds?: number) {
 }
 
 export default function ThinkingState({
-  variant = "Drive",
   isLiveStreaming = false,
   hasContent = false,
   liveSteps,
@@ -187,284 +237,161 @@ export default function ThinkingState({
 }: ThinkingStateProps) {
   const isWorking = !!isLiveStreaming;
   const elapsed = useElapsedTimer(isWorking, durationSeconds);
+  const [startTime] = useState<number>(() => Date.now());
+  const [autoStageIdx, setAutoStageIdx] = useState<number>(0);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  // Parse, broaden, and deduplicate live steps into concise broad milestones
-  const steps: StepRow[] = React.useMemo(() => {
+  // Auto-progression schedule for smooth state updates when SSE steps are waiting
+  useEffect(() => {
+    if (!isWorking || hasContent) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = now - startTime;
+      if (diff < 500) {
+        setAutoStageIdx(0); // Understanding
+      } else if (diff < 1200) {
+        setAutoStageIdx(1); // Searching
+      } else if (diff < 2000) {
+        setAutoStageIdx(2); // Reviewing
+      } else {
+        setAutoStageIdx(3); // Preparing
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [isWorking, hasContent, startTime]);
+
+  // Extract clean normalized stages from liveSteps
+  const stages: StageInfo[] = useMemo(() => {
     if (!Array.isArray(liveSteps) || liveSteps.length === 0) return [];
-    
-    const broadList: StepRow[] = [];
+
+    const list: StageInfo[] = [];
     const seen = new Set<string>();
 
     for (const item of liveSteps) {
       let rawText = "";
-      let secondary: string | undefined;
-
       if (typeof item === "string") {
         rawText = item;
       } else if (typeof item === "object" && item !== null) {
-        const stepObj = item as any;
-        rawText = stepObj.primary || stepObj.step || "";
-        secondary = stepObj.secondary;
+        rawText = (item as any).primary || (item as any).step || "";
       }
 
-      const broadened = broadenReasoningStep(rawText);
-      if (broadened && !seen.has(broadened.toLowerCase())) {
-        seen.add(broadened.toLowerCase());
-        broadList.push({
-          primary: broadened,
-          secondary,
-        });
+      const normalized = normalizeStepToStage(rawText);
+      if (normalized && !seen.has(normalized.text)) {
+        seen.add(normalized.text);
+        list.push(normalized);
       }
     }
-
-    // Cap to at most 5 high-level milestones for clean broad display
-    if (broadList.length > 5) {
-      return broadList.slice(-5);
-    }
-    return broadList;
+    return list;
   }, [liveSteps]);
 
-  const hasSteps = steps.length > 0;
-  const hasDuration = typeof durationSeconds === "number" && durationSeconds > 0;
+  // Default stage sequence when no live steps sent yet
+  const defaultStages: StageInfo[] = [
+    { icon: "✦", text: "Understanding your question…", key: "understanding" },
+    { icon: "🔍", text: "Searching relevant information…", key: "searching" },
+    { icon: "✦", text: "Reviewing relevant sources…", key: "reviewing" },
+    { icon: "✦", text: "Preparing your answer…", key: "preparing" },
+  ];
 
-  // Selected pixel-grid pattern
-  const patternKey = PATTERNS[variant] ? variant : "Drive";
-  const { delays, dur, round } = PATTERNS[patternKey] ?? PATTERNS.Drive;
-
-  // Manual expanded state: null means follow automatic mode
-  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
-
-  // Reset expansion state when message starts fresh streaming generation
-  const prevStreamingRef = useRef(isLiveStreaming);
-  useEffect(() => {
-    if (isLiveStreaming && !prevStreamingRef.current) {
-      setManualExpanded(null);
+  // Active current stage to show during thinking
+  const currentStage: StageInfo = useMemo(() => {
+    if (stages.length > 0) {
+      return stages[stages.length - 1];
     }
-    prevStreamingRef.current = isLiveStreaming;
-  }, [isLiveStreaming]);
+    return defaultStages[Math.min(autoStageIdx, defaultStages.length - 1)];
+  }, [stages, autoStageIdx]);
 
-  // Automatic state: Expanded ONLY while thinking before answer tokens arrive.
-  // The moment the answer text begins streaming (hasContent = true) or completes, auto-collapse.
-  const autoExpanded = isWorking && !hasContent;
-  const isExpanded = manualExpanded !== null ? manualExpanded : autoExpanded;
-
-  const traceRef = useRef<HTMLDivElement>(null);
-  const [lineHeight, setLineHeight] = useState(0);
-
-  useLayoutEffect(() => {
-    if (traceRef.current) {
-      setLineHeight(traceRef.current.offsetHeight);
-    }
-  }, [isExpanded, steps.length, isWorking]);
-
-  // Do not render if not streaming, no steps, and no duration
-  if (!isWorking && !hasSteps && !hasDuration) {
-    return null;
-  }
-
-  // Active step description for collapsed view preview
-  const activeStepText = hasSteps ? steps[steps.length - 1].primary : "Analyzing campus records...";
-
-  return (
-    <div className="flex w-full max-w-full sm:max-w-xl md:max-w-2xl flex-col my-1 select-none font-sans transition-all duration-200">
-      {/* ── Header / Collapsed Bar (Flush left aligned) ── */}
-      <button
-        type="button"
-        aria-expanded={isExpanded}
-        onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : autoExpanded))}
-        className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1
-          transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
-      >
-        <div className="flex items-center gap-1.5 min-w-0 flex-1 pr-2">
-          {/* 3x3 Pixel Grid Wavefront Loader */}
-          <span aria-hidden className="grid grid-cols-[repeat(3,3.5px)] gap-[1.5px] shrink-0">
-            {delays.map((d, i) => (
-              <span
-                key={i}
-                className={`size-[3.5px] bg-foreground dark:bg-zinc-200 ${round ? "rounded-full" : "rounded-[1px]"}`}
-                style={{
-                  opacity: !isWorking ? 0.35 : d === null ? 0.08 : 0.15,
-                  animation:
-                    !isWorking || d === null
-                      ? "none"
-                      : `pixel-on ${dur}ms ease-in-out ${d}ms infinite`,
-                }}
-              />
-            ))}
-          </span>
-
-          {/* Shimmering State Label */}
-          {isWorking ? (
-            <span className="animate-thinking-shimmer text-[13px] font-medium whitespace-nowrap shrink-0">
-              Thinking
-            </span>
-          ) : (
-            <span className="text-[13px] font-medium whitespace-nowrap text-zinc-700 dark:text-zinc-200 shrink-0">
-              Thought for {elapsed}
-            </span>
-          )}
-
-          {/* Animated Active Step Preview in Collapsed View (Hidden when Expanded) */}
-          {!isExpanded && (
-            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-              <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
-              <div className="min-w-0 flex-1 overflow-hidden relative h-[18px] flex items-center">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length}-done` : "done")}
-                    initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                    className={`text-[12px] sm:text-[12.5px] truncate block ${
-                      isWorking
-                        ? "animate-thinking-shimmer font-medium"
-                        : "text-zinc-500 dark:text-zinc-400 font-normal"
-                    }`}
-                    title={isWorking ? activeStepText : (steps.length > 0 ? `${steps.length} steps verified` : "Verified ground truth")}
-                  >
-                    {isWorking
-                      ? activeStepText
-                      : steps.length > 0
-                      ? `${steps.length} steps verified`
-                      : "Verified ground truth"}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Info: Live Timer (when working) & Chevron */}
-        <div className="flex items-center gap-2 shrink-0 ml-1">
-          {isWorking && (
-            <span className="font-mono text-[12px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
-              {elapsed}
-            </span>
-          )}
-
-          <span
-            className="flex size-4 items-center justify-center text-zinc-500 dark:text-zinc-400 transition-transform duration-200 opacity-60 group-hover:opacity-100"
-            style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
+  // 1. ACTIVE THINKING MODE (Before content streaming begins)
+  // As soon as response streaming starts (hasContent = true), remove active state
+  if (isWorking && !hasContent) {
+    return (
+      <div className="w-full max-w-full my-1.5 select-none font-sans">
+        <div className="flex items-center gap-2 text-[14px] sm:text-[14.5px] font-normal leading-[1.4] text-zinc-500 dark:text-zinc-400 py-1">
+          {/* Pulsing ✦ Icon (Opacity 0.45 ↔ 1, Scale 0.98 ↔ 1.02) */}
+          <motion.span
+            animate={{
+              opacity: [0.45, 1, 0.45],
+              scale: [0.98, 1.02, 0.98],
+            }}
+            transition={{
+              duration: 1.8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="inline-flex items-center justify-center shrink-0 text-[#9E2339] dark:text-[#E11D48] font-medium text-[15px] select-none"
+            aria-hidden="true"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-        </div>
-      </button>
+            {currentStage.icon}
+          </motion.span>
 
-      {/* ── Expandable Broad Step-by-Step Reasoner ── */}
-      <div
-        className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
-        style={{
-          gridTemplateRows: isExpanded ? "1fr" : "0fr",
-          opacity: isExpanded ? 1 : 0,
-        }}
-      >
-        <div className="overflow-hidden">
-          <div className="relative mt-1 -ml-0.5 sm:-ml-1 pl-2.5 border-l border-black/10 dark:border-white/10 my-1">
-            <div ref={traceRef} className="flex flex-col gap-1 py-1">
-              {steps.map((step, idx) => {
-                const isLast = idx === steps.length - 1;
-                const isStepActive = isWorking && isLast;
-
-                return (
-                  <motion.div
-                    key={`${step.primary}-${idx}`}
-                    initial={{ opacity: 0, x: -3 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.18 }}
-                    className="flex items-start gap-2 rounded-md px-0.5 py-0.5 text-left transition-colors duration-150"
-                  >
-                    {/* Step Checkmark / Active Rotating Circle Loader */}
-                    <div className="mt-1 shrink-0 flex items-center justify-center size-3">
-                      {isStepActive ? (
-                        <svg
-                          className="animate-spin size-3 text-zinc-400 dark:text-zinc-500 shrink-0"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="9"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                          />
-                          <path
-                            className="opacity-90 fill-current text-zinc-800 dark:text-zinc-100"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-emerald-600 dark:text-emerald-400 shrink-0"
-                        >
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                      )}
-                    </div>
-
-                    {/* Step Text with Lively Shimmer Animation */}
-                    <div className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-2">
-                      <span
-                        className={`text-[12.5px] leading-relaxed break-words transition-all duration-200 ${
-                          isStepActive
-                            ? "font-medium animate-thinking-shimmer"
-                            : "text-zinc-600 dark:text-zinc-300"
-                        }`}
-                      >
-                        {step.primary}
-                      </span>
-                      {step.secondary && (
-                        <span className="shrink-0 text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
-                          {step.secondary}
-                        </span>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-
-              {steps.length === 0 && isWorking && (
-                <div className="flex items-center gap-2 px-0.5 py-0.5 text-[12.5px]">
-                  <svg
-                    className="animate-spin size-3 text-zinc-400 dark:text-zinc-500 shrink-0"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="9"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                    />
-                    <path
-                      className="opacity-90 fill-current text-zinc-800 dark:text-zinc-100"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span className="animate-thinking-shimmer font-medium">Connecting to campus reasoning engine...</span>
-                </div>
-              )}
-            </div>
+          {/* Smooth Transition between 2-5 Word Stage Phrases */}
+          <div className="relative min-w-0 flex-1 overflow-hidden h-[22px] flex items-center">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={currentStage.text}
+                initial={{ opacity: 0, y: 3, filter: "blur(1.5px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -3, filter: "blur(1.5px)" }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="text-[14px] sm:text-[14.5px] font-normal text-zinc-500 dark:text-zinc-400 truncate block tracking-tight"
+              >
+                {currentStage.text}
+              </motion.span>
+            </AnimatePresence>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // 2. COMPLETED MESSAGE MODE (Has Content or Stream Finished)
+  // Render a minimal, quiet "Thought for X.Xs" toggle if historical stages exist
+  if (!isWorking && hasContent && (stages.length > 0 || (typeof durationSeconds === "number" && durationSeconds > 0))) {
+    const verifiedList = stages.length > 0 ? stages : defaultStages.slice(0, 3);
+
+    return (
+      <div className="w-full max-w-full my-1 select-none font-sans">
+        <button
+          type="button"
+          aria-expanded={isExpanded}
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors duration-150 cursor-pointer focus:outline-none -ml-2"
+        >
+          <span className="text-zinc-400 dark:text-zinc-500 text-[13px]">✦</span>
+          <span>Thought for {elapsed}</span>
+          <span
+            className="flex size-3.5 items-center justify-center text-zinc-400 dark:text-zinc-500 transition-transform duration-200"
+            style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+        </button>
+
+        {/* Expandable Verified Milestones */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden pl-2 border-l border-zinc-200 dark:border-zinc-800 my-1"
+            >
+              <div className="flex flex-col gap-1 py-1">
+                {verifiedList.map((stg, i) => (
+                  <div key={`${stg.key}-${i}`} className="flex items-center gap-2 text-[12.5px] text-zinc-600 dark:text-zinc-400">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">✓</span>
+                    <span>{stg.text.replace("…", "")}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  return null;
 }
