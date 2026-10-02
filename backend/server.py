@@ -3166,7 +3166,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
 
     return resolve_pronouns(normalized_q, session_id)
 
-def nemotron_rerank(query: str, candidates: List[Dict[str, Any]], top_k: int = 6) -> List[Dict[str, Any]]:
+def nemotron_rerank(query: str, candidates: List[Dict[str, Any]], top_k: int = 10) -> List[Dict[str, Any]]:
     """Scores and re-orders hybrid candidates using Nemotron neural reranking logic."""
     if not candidates:
         return []
@@ -3179,7 +3179,7 @@ def nemotron_rerank(query: str, candidates: List[Dict[str, Any]], top_k: int = 6
     candidates.sort(key=lambda x: x.get("rerank_score", 0.0), reverse=True)
     return candidates[:top_k]
 
-def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 6) -> List[Dict[str, Any]]:
+def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 10) -> List[Dict[str, Any]]:
     """
     Reciprocal Rank Fusion (RRF k=60) combining Qdrant Dense Vector search and BM25 Sparse search,
     enhanced with Query Rewriting & Nemotron Neural Reranking.
@@ -3194,7 +3194,7 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
             query_res = qdrant_client.query_points(
                 collection_name=COLLECTION_NAME,
                 query=query_vector,
-                limit=25
+                limit=40
             )
             dense_results = query_res.points
             for rank, hit in enumerate(dense_results):
@@ -3219,7 +3219,7 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
         try:
             tokens = tokenize_text(expanded_query)
             bm25_scores = bm25_index.get_scores(tokens)
-            top_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:25]
+            top_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:40]
             for rank, idx in enumerate(top_indices):
                 score = bm25_scores[idx]
                 if score <= 0:
@@ -3406,7 +3406,7 @@ def decompose_multi_hop_query(query: str) -> List[str]:
         (r'\b(hostel|hostels|rooms?|occupancy|boys\s+hostel|girls\s+hostel)\b', "msajce boys girls hostel facilities rooms blocks capacity wifi"),
         (r'\b(transport|bus|buses|routes?|stops?|commute|driver)\b', "msajce transport official college bus routes schedules"),
         (r'\b(placement|placements|salary|package|recruiters?|companies)\b', "msajce placements top recruiters highest package salary"),
-        (r'\b(fee|fees|tuition|scholarship|scholarships|concession)\b', "msajce fee structure tuition scholarship concession"),
+        (r'\b(fee|fees|tuition|scholarship|scholarships|concession|alumni|alumnus|grant|sponsorship)\b', "msajce alumni scholarship contribution sponsorship details breakdown"),
         (r'\b(mess|canteen|food|dining|cafeteria)\b', "msajce mess food canteen dining hall timings"),
         (r'\b(admission|admissions|cutoff|cut-off|tnea|counselling|apply|application|lateral\s+entry)\b', "msajce admission process eligibility tnea counselling code")
     ]
@@ -3504,7 +3504,7 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
     # Seamless fallback to deterministic regex clause decomposer
     return decompose_multi_hop_query(q_clean)
 
-def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 12, sub_queries: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 15, sub_queries: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Parallel hybrid search with sub-query decomposition & balanced round-robin interleaving."""
     active_sub_queries = sub_queries if (sub_queries and len(sub_queries) >= 1) else decompose_multi_hop_query(user_query)
     if len(active_sub_queries) == 1:
@@ -3531,14 +3531,14 @@ def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]]
                     aggregated_chunks.append(c)
 
     # Include direct full user query search to catch primary anchor matches
-    direct_chunks = hybrid_search(user_query, query_vector, top_k=4)
+    direct_chunks = hybrid_search(user_query, query_vector, top_k=8)
     for dc in direct_chunks:
         cid = dc.get("chunk_id")
         if cid and cid not in seen_ids:
             seen_ids.add(cid)
             aggregated_chunks.append(dc)
 
-    max_target = max(top_k, min(35, len(active_sub_queries) * 3))
+    max_target = max(top_k, min(45, len(active_sub_queries) * 4))
     return aggregated_chunks[:max_target]
 
 def validate_citations(answer_text: str, retrieved_chunks: List[Dict[str, Any]]) -> str:
@@ -4720,19 +4720,19 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 MAX_TOKENS     = 1000
                 HISTORY_LIMIT  = 0
             elif query_class == "targeted":
-                RAG_TOP_K      = 5
+                RAG_TOP_K      = 10
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 3
             elif query_class == "transport":
-                RAG_TOP_K      = 8      # Retrieve full transport context chunks
+                RAG_TOP_K      = 12      # Retrieve full transport context chunks
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             elif query_class == "complex":
-                RAG_TOP_K      = 12
+                RAG_TOP_K      = 15
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 4
             else:
-                RAG_TOP_K      = 5
+                RAG_TOP_K      = 10
                 MAX_TOKENS     = 4096
                 HISTORY_LIMIT  = 3
 
@@ -4741,7 +4741,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             # 3. Fast Knowledge Entity DB Lookup
             matched_entities = search_knowledge_entities(user_query) or search_knowledge_entities(expanded_query)
             if matched_entities and query_class != "greeting":
-                RAG_TOP_K = max(RAG_TOP_K, 5)  # Retain comprehensive context surrounding matched entities
+                RAG_TOP_K = max(RAG_TOP_K, 10)  # Retain comprehensive context surrounding matched entities
                 yield json.dumps({
                     "type": "reasoning",
                     "step": f"Knowledge Entity Match: Linked {len(matched_entities)} verified institutional entities",
@@ -5139,7 +5139,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             seen_text = set()
             total_ctx_tokens = 0
-            max_ctx_limit = 3500 if query_class in ["complex", "transport"] else 2200
+            max_ctx_limit = 6000 if query_class in ["complex", "transport"] else 4000
 
             for idx, c in enumerate(retrieved_chunks):
                 raw_c = c.get('content') or c.get('text') or c.get('raw_text') or ''
