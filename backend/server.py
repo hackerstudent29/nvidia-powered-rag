@@ -2737,42 +2737,22 @@ _PRONOUN_TRIGGERS = re.compile(
 
 def is_contextual_query(query: str) -> bool:
     """
-    Returns True if the query is an affirmative, continuation, or referential query
-    that depends on conversation context and should NEVER be globally cached.
+    Universal Production RAG Contextual Query Detector.
+    Returns True if the query is a follow-up, referential, fragment, or short query
+    that depends on conversation context and should never be globally cached.
     """
     if not query:
         return False
     q_norm = normalize_query_typos(query.strip())
 
-    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm):
-        return True
-    if _PRONOUN_TRIGGERS.search(q_norm):
-        return True
-    if re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details|anyother|any\s+other|who\s+else|what\s+else|others?|anyone\s+else)$', q_norm, re.IGNORECASE):
-        return True
-        
-    # Direct Prepositional & Fragment Starters (e.g., "for eee, and ece depts?", "what about cse?", "and for mech?")
-    if re.match(r'^(?:for|what\s+about|how\s+about|and\s+for|what\s+of|and|in|about|with|for\s+the|also\s+for)\b', q_norm, re.IGNORECASE):
+    # Affirmation & Pronoun Triggers
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm) or _PRONOUN_TRIGGERS.search(q_norm):
         return True
 
-    # Generalized Action-Verb Prefix & Short Followup Fallback (<= 10 words)
+    # Any query <= 12 words that is not an explicit standalone numeric lookup is contextually evaluated
     words = q_norm.split()
-    if len(words) <= 10:
-        first_word = words[0].lower()
-        action_starters = {
-            "ok", "okay", "yes", "yeah", "sure", "give", "show", "tell", "get", "provide", 
-            "full", "all", "complete", "details", "detail", "share", "send", "more", "what", "where", "who", "how", "and", "for", "in", "about"
-        }
-        has_fragment_keyword = bool(re.search(
-            r'\b(eee|ece|cse|it|mech|civil|aids|ai\s*&?\s*ds|ai\s*&?\s*ml|cyber|csbs|hostel|boys|girls|mess|canteen|fees|cutoff|cut-off|placements?|recruiters?|companies|packages?|salary|syllabus|faculty|hod|depts?|departments?|branch|branches)\b',
-            q_norm, re.IGNORECASE
-        ))
-        has_standalone_action = bool(re.search(
-            r'\b(where\s+is|who\s+is\s+dr|who\s+is\s+prof|how\s+to\s+reach|location|address|contact\s+number|phone\s+number|email\s+address|principal|vision|mission)\b',
-            q_norm, re.IGNORECASE
-        ))
-        if first_word in action_starters or (has_fragment_keyword and not has_standalone_action):
-            return True
+    if len(words) <= 12 and not is_standalone_or_protected_query(q_norm):
+        return True
 
     return False
 
@@ -2990,8 +2970,8 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
     if not q_trim:
         return current_query
 
-    # Standalone Fast-Path: If query is already a clear standalone question without pronouns, return instantly in 0ms
-    if is_standalone_or_protected_query(q_trim) or (not is_contextual_query(q_trim) and not _PRONOUN_TRIGGERS.search(q_trim)):
+    # Standalone Fast-Path: Protect exact numeric IDs and broad multi-sentence queries from history pollution
+    if is_standalone_or_protected_query(q_trim):
         return normalized_q
 
     # Fetch last 10 messages (up to 5 dialogue pairs) from current active session
