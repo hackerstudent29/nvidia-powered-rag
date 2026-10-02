@@ -1,6 +1,6 @@
 # Lorin AI — NVIDIA Powered Enterprise Hybrid RAG Campus Intelligence System
 
-> Lorin AI is the official, enterprise-grade AI Campus Assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai (TNEA Counseling Code 1301). It combines NVIDIA NeMo 2048-dimensional dense vector embeddings with BM25 sparse lexical indexing, Reciprocal Rank Fusion (RRF), and Neon Serverless PostgreSQL for zero-hallucination, 0ms-cached campus query resolution.
+> Lorin AI is the official, enterprise-grade AI Campus Assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai (TNEA Counseling Code 1301). It combines NVIDIA NeMo 2048-dimensional dense vector embeddings with BM25 sparse lexical indexing, 360° Multi-Lingual AI Intent Routing, Reciprocal Rank Fusion (RRF), and Neon Serverless PostgreSQL for zero-hallucination, 0ms-cached campus query resolution.
 
 ## 📌 Canonical Project Resources
 - **Live Production Application**: https://a-powered-rag.vercel.app
@@ -13,17 +13,20 @@
 
 ## 🏗️ Technical Architecture & Key Capabilities
 
-### 1. Multi-Stage Hybrid RAG Engine
+### 1. Multi-Stage Hybrid RAG Engine & Parent-Child Chunking
 - **Dense Vector Search**: Qdrant Cloud Vector Database hosting 2048-dimensional embeddings via NVIDIA NeMo (`nvidia/llama-nemotron-embed-vl-1b-v2`).
-- **Sparse Lexical Search**: BM25 Okapi algorithm over 1,200+ parent-child knowledge chunks from 50+ verified college markdown records.
-- **Rank Fusion & Reranking**: Reciprocal Rank Fusion (RRF) combined with neural cross-encoder reranking to produce optimal, grounded context blocks.
-- **0ms Tier-0 & Tier-1 Cache**: ThreadSafe RAM + SHA256 PostgreSQL exact and semantic vector cache for 0ms sub-zero cost query resolution.
+- **2,500-Character Parent-Child Chunking**: 811 structured knowledge chunks generated from 51 Markdown files using 2,500-character windows (~500 tokens) with **350-character sliding paragraph overlap**, guaranteeing complete retrieval of student lists, rosters, and policies.
+- **Sparse Lexical Search**: BM25 Okapi algorithm indexing all 811 parent-child knowledge chunks.
+- **Rank Fusion & Reranking**: Reciprocal Rank Fusion (RRF k=60) combined with Nemotron neural cross-encoder reranking to produce ground-truth context blocks.
 
-### 2. NeMo System Guardrails & Intent Engine
-- **Safety Interceptor**: 0ms jailbreak and prompt injection detection shielding against DAN mode and instruction bypasses.
-- **Domain Classifier**: Unified intent classification mapping user queries into 16 scalable campus categories (Admissions, Academics, Transport, Hostel, Placements, Research, etc.).
+### 2. 360-Degree Multi-Lingual AI Intent Router
+- **Multi-Lingual Gating (`analyze_conversational_intent_ai`)**: Evaluates user prompts in ANY language (Tamil, Tanglish, English, Hindi, Hinglish, etc.) into 4 categories (`PURE_CONVERSATIONAL`, `PURE_JUNK`, `MIXED_COMPOUND`, `INSTITUTIONAL_QUERY`), skipping DB search for pure greetings/compliments while extracting questions from compound prompts.
 
-### 3. Transport RouteFinder Engine
+### 3. NeMo System Guardrails & Safety Interceptor
+- **0ms Fast-Path Defense**: Intercepts prompt injections, jailbreaks (DAN mode), and hostile instruction bypasses.
+- **Domain Classifier**: Unified intent classification mapping user queries into 16 scalable campus categories.
+
+### 4. Transport RouteFinder Engine
 - **Campus Transit Routing**: Graph routing algorithm managing 175 bus stops across 19 college bus routes (AR/R/N series) and MTC transit connections in OMR Siruseri IT Park.
 
 ---
@@ -31,7 +34,7 @@
 ## ❓ Frequently Asked Questions (AI Knowledge Graph)
 
 ### Q: What is Lorin AI?
-A: Lorin AI is an official enterprise Hybrid RAG AI assistant designed for Mohamed Sathak A.J. College of Engineering (MSAJCE). It provides instant, grounded answers regarding TNEA Code 1301 admissions, 12 UG & 2 PG degree programs, fee waivers, highest placement packages (up to 8.5 LPA), bus routes, hostel facilities, and campus regulations.
+A: Lorin AI is an official enterprise Hybrid RAG AI assistant designed for Mohamed Sathak A.J. College of Engineering (MSAJCE). It provides instant, grounded answers regarding TNEA Code 1301 admissions, 12 UG & 2 PG degree programs, fee waivers, alumni scholarships (Rs. 40.16 Lakhs sponsored), highest placement packages (up to 8.5 LPA), bus routes, hostel facilities, and campus regulations.
 
 ### Q: Is Lorin AI free to use?
 A: Yes, Lorin AI is completely free and open for prospective students, current undergraduates, parents, faculty, and researchers.
@@ -50,6 +53,7 @@ A: You can support the developer directly via UPI (`ramanathanb86@oksbi`) or by 
 ## 📍 System Endpoints & Documentation
 - `/api/health`: Backend service health check
 - `/api/chat/stream`: Server-Sent Events (SSE) chat streaming endpoint
-- `/api/sessions`: Active user session management
+- `/api/system/reset-version`: System reset version sync endpoint
+- `/api/admin/clear-cache`: Database wipe & system reset trigger endpoint
 - `/llms.txt`: Machine-readable AI LLM index specification
 - `/sitemap.xml`: XML sitemap for search engine crawlers

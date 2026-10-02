@@ -18,7 +18,7 @@
 
 ## 📌 Project Overview
 
-**Lorin AI** is an enterprise-grade campus intelligence platform built for **Mohamed Sathak A.J. College of Engineering (MSAJCE)**, Chennai. It combines 2048-dimensional **NVIDIA NeMo vector embeddings**, **Qdrant Vector Database**, **BM25 Okapi sparse lexical indexing**, **Reciprocal Rank Fusion (RRF)**, and **Neon Serverless PostgreSQL** to deliver zero-hallucination, 0ms-cached responses for TNEA Code 1301 admissions, degree programs, fee structures, campus bus routes, hostels, and placement packages.
+**Lorin AI** is an enterprise-grade campus intelligence platform built for **Mohamed Sathak A.J. College of Engineering (MSAJCE)**, Chennai. It combines 2048-dimensional **NVIDIA NeMo vector embeddings**, **Qdrant Vector Database**, **BM25 Okapi sparse lexical indexing**, **Reciprocal Rank Fusion (RRF)**, **360° Multi-Lingual AI Intent Routing**, and **Neon Serverless PostgreSQL** to deliver zero-hallucination, 0ms-cached responses for TNEA Code 1301 admissions, degree programs, fee structures, alumni scholarships, campus bus routes, hostels, and placement packages.
 
 ---
 
@@ -30,26 +30,33 @@
 
 ---
 
-## ✨ Key System Features
+## ✨ Key System Features & Enterprise Innovations
 
-### 🔍 1. Multi-Stage Hybrid RAG Engine
+### 🔍 1. Multi-Stage Hybrid RAG Engine & Parent-Child Chunking
 - **Dense Vector Search**: Powered by Qdrant Cloud vector collection with 2048-d NVIDIA NeMo embeddings (`nvidia/llama-nemotron-embed-vl-1b-v2`).
-- **Sparse Lexical Search**: BM25 Okapi algorithm indexing 1,200+ parent-child knowledge chunks from 50+ official campus records.
-- **Reciprocal Rank Fusion (RRF)**: Merges dense vector scores with sparse BM25 ranks to produce ground-truth context blocks.
+- **2,500-Character Parent-Child Window**: 811 structured knowledge chunks generated from 51 Markdown files using a 2,500-character chunk window (~500 tokens) with **350-character sliding paragraph overlap**, preventing list fragmentation or loss of student rosters.
+- **Sparse Lexical Search**: BM25 Okapi algorithm indexing all 811 parent-child knowledge chunks.
+- **Reciprocal Rank Fusion (RRF k=60)**: Merges dense vector scores with sparse BM25 ranks to produce ground-truth context blocks.
 
-### ⚡ 2. Sub-Zero Latency & Dual-Tier Cache
+### 🌐 2. 360-Degree Multi-Lingual AI Intent & Domain Router
+- **Multi-Lingual Gating (`analyze_conversational_intent_ai`)**: Fast AI classification race (<150ms) evaluating user prompts in ANY language (Tamil, Tanglish, English, Hindi, Hinglish, Spanish, etc.) across 4 categories:
+  - `PURE_CONVERSATIONAL`: Greetings, gratitude, and compliments (*"Nandri"*, *"Thank you so much"*, *"Super bot"*). **Skips database search completely (0ms DB latency)**.
+  - `PURE_JUNK`: Keyboard smashes or noise (*"asdfghjkl"*). **Bypasses vector search & provides polite guidance**.
+  - `MIXED_COMPOUND`: Greeting/compliment + campus question (*"Hi Lorin! Super bot! What is the CSE cutoff?"*). Extracts target question for vector search while preserving warm conversational greeting acknowledgment.
+  - `INSTITUTIONAL_QUERY`: Direct campus inquiry triggering standard vector search.
+
+### ⚡ 3. Sub-Zero Latency & Automatic System Reset Sync
 - **Tier-0 Memory Cache**: ThreadSafe in-memory RAM cache (<0.01ms latency).
 - **Tier-1 PostgreSQL Cache**: Persistent SHA-256 exact match and vector semantic cache stored in Neon Serverless PostgreSQL.
+- **Automatic System Reset Sync**: Executing `python clear_cache.py` updates backend `system_reset_version.txt`, automatically instructing frontend client browsers to purge local storage (`lorin_user_profile`, `lorin_cached_messages`, `lorin_sessions`).
+- **Hard Reset UI Action**: Dedicated **"Hard Reset & Clear All Data"** button in Settings Modal.
 
-### 🛡️ 3. Safety Interceptor & NeMo Guardrails
+### 🛡️ 4. Safety Interceptor & NeMo Guardrails
 - **0ms Fast-Path Defense**: Intercepts prompt injections, jailbreaks (DAN mode), and hostile instruction bypasses.
 - **Unified 16-Category Intent Taxonomy**: Automatically routes user queries to specialized domains (Admissions, Academics, Transport, Hostels, Placements, Research, etc.).
 
-### 🚌 4. Transport RouteFinder Engine
+### 🚌 5. Transport RouteFinder Engine
 - **Campus Transit Routing**: Graph routing algorithm managing 175 bus stops across 19 official college bus routes (AR/R/N series) and public MTC transit connections in Siruseri OMR IT Park.
-
-### 📊 5. Real-Time Token & Latency Observability
-- Transparent badge metrics displaying prompt tokens, completion tokens, time-to-first-token (TTFT), execution latency, and step-by-step reasoning progress.
 
 ---
 
@@ -65,15 +72,18 @@ graph TD
     Tier0 -->|Miss| Guardrails[🛡️ Guardrails & Safety Interceptor]
     
     Guardrails -->|Blocked| Refusal[Return Refusal Notice]
-    Guardrails -->|Safe| HybridRAG[🔍 Multi-Stage Hybrid RAG Engine]
+    Guardrails -->|Safe| IntentRouter[🌐 360° Multi-Lingual AI Intent Router]
+    
+    IntentRouter -->|Pure Greeting / Junk| DirectConv[Warm ChatGPT Response - 0ms DB Latency]
+    IntentRouter -->|Compound / Inquiry| HybridRAG[🔍 Multi-Stage Hybrid RAG Engine]
     
     HybridRAG -->|Dense Search| Qdrant[(🔴 Qdrant Vector DB - 2048d NeMo)]
-    HybridRAG -->|Sparse Search| BM25[(📄 BM25 Okapi Index - 1200+ Chunks)]
+    HybridRAG -->|Sparse Search| BM25[(📄 BM25 Okapi Index - 811 Parent-Child Chunks)]
     
     Qdrant --> RRF[🔀 Reciprocal Rank Fusion RRF]
     BM25 --> RRF
     
-    RRF --> Reranker[🎯 Cross-Encoder Reranker]
+    RRF --> Reranker[🎯 Nemotron Neural Cross-Encoder Reranker]
     Reranker --> LLMSynthesis[🤖 NVIDIA NIM / Vercel AI Engine]
     
     LLMSynthesis --> NeonDB[(🐘 Neon Serverless PostgreSQL Cache & Logs)]
