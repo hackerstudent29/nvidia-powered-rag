@@ -72,9 +72,22 @@ except ImportError:
     from backend.domain_router import domain_router, topic_shift_detector, crag_filter, CampusDomain, TopicRelation
 
 try:
-    from taxonomy import fast_classify_intent, CAMPUS_TAXONOMY
+    from backend.app.services.redis_service import (
+        get_redis_client, get_cached_session_history,
+        set_cached_session_history, append_cached_session_message
+    )
+    from backend.app.services.database import DBContext, get_db_connection, release_db_connection
+    from backend.app.services.query_rewriter import resolve_pronouns_llm, is_contextual_query, pre_normalize_department_acronyms
 except ImportError:
-    from backend.taxonomy import fast_classify_intent, CAMPUS_TAXONOMY
+    try:
+        from app.services.redis_service import (
+            get_redis_client, get_cached_session_history,
+            set_cached_session_history, append_cached_session_message
+        )
+        from app.services.database import DBContext, get_db_connection, release_db_connection
+        from app.services.query_rewriter import resolve_pronouns_llm, is_contextual_query, pre_normalize_department_acronyms
+    except Exception:
+        pass
 
 
 # Load environment variables
@@ -4476,6 +4489,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         VALUES (%s, %s, 'user', %s, %s);
                                     """, (user_msg_id, session_id, user_query, query_cat))
                                 conn.commit()
+                                append_cached_session_message(session_id, "user", raw_user_message)
                 except Exception as e:
                     print(f"[WARN] Async user message save error: {e}")
 
@@ -5504,6 +5518,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         json.dumps(reasoning_steps) if reasoning_steps else '[]'
                                     ))
                                 conn.commit()
+                                append_cached_session_message(session_id, "assistant", structured_answer)
                 except Exception as e:
                     print(f"[WARN] Message persistence error: {e}")
 
