@@ -3317,9 +3317,13 @@ def classify_query(query: str) -> str:
     if any(tf in q for tf in TARGETED_FACTOID_PATTERNS) and not any(b in q for b in ["all routes", "all buses", "full list", "entire schedule", "compare", "versus"]):
         return "targeted"
 
-    complex_triggers = ["compare", "versus", "vs", "difference", "both", "explain in detail",
-                        "elaborate", "regulation", "syllabus", "accreditation"]
-    if any(t in q for t in complex_triggers) or word_count > 20:
+    complex_triggers = [
+        "compare", "versus", "vs", "difference", "both", "explain in detail",
+        "elaborate", "regulation", "syllabus", "accreditation", "list", "benefitted",
+        "benefited", "beneficiaries", "names", "who are all", "all students",
+        "scholarships", "donated", "contributors", "contributed", "sponsorship"
+    ]
+    if any(t in q for t in complex_triggers) or word_count > 15:
         return "complex"
 
     return "simple"

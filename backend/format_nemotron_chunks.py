@@ -47,6 +47,7 @@ def format_nemotron_chunk(chunk_data: dict) -> dict:
         "source_file": chunk_data.get("source_file", "msajcea_records.md"),
         "topic_title": doc_title,
         "section_title": section_name,
+        "parent_section_id": chunk_data.get("parent_section_id"),
         "document_version": version,
         "page_url": page_url,
         "category": chunk_data.get("category", "general"),
