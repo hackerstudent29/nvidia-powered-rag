@@ -201,26 +201,54 @@ export function normalizeStepToStage(raw: string): StageInfo | null {
 const MATRIX_DELAYS = [0, 140, 280, 420, 560, 700, 840, 980, 1120];
 
 /**
- * Timer hook for elapsed time formatting (e.g., "1.2s")
+ * Timer hook for elapsed time formatting (e.g., "1.2s").
+ * Freezes timer increment as soon as answer content starts streaming (`freeze = true`).
  */
-function useElapsedTimer(active: boolean, initialSeconds?: number) {
+function useElapsedTimer(active: boolean, freeze: boolean, initialSeconds?: number) {
   const [elapsedTenths, setElapsedTenths] = useState(0);
+  const frozenRef = useRef<number | null>(null);
+  const lastCapturedRef = useRef<number>(0);
 
   useEffect(() => {
-    if (!active) return;
-    setElapsedTenths(0);
-    const timer = setInterval(() => {
-      setElapsedTenths((prev) => prev + 1);
-    }, 100);
-    return () => clearInterval(timer);
-  }, [active]);
+    if (!active) {
+      setElapsedTenths(0);
+      frozenRef.current = null;
+      lastCapturedRef.current = 0;
+      return;
+    }
 
-  if (!active && typeof initialSeconds === "number" && initialSeconds > 0) {
-    if (initialSeconds < 60) return `${initialSeconds.toFixed(1)}s`;
-    return `${Math.floor(initialSeconds / 60)}m ${(initialSeconds % 60).toFixed(1)}s`;
+    if (freeze) {
+      if (frozenRef.current === null) {
+        frozenRef.current = elapsedTenths;
+        lastCapturedRef.current = elapsedTenths;
+      }
+      return;
+    }
+
+    frozenRef.current = null;
+    const timer = setInterval(() => {
+      setElapsedTenths((prev) => {
+        const next = prev + 1;
+        lastCapturedRef.current = next;
+        return next;
+      });
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [active, freeze]);
+
+  if (!active) {
+    if (typeof initialSeconds === "number" && initialSeconds > 0) {
+      if (initialSeconds < 60) return `${initialSeconds.toFixed(1)}s`;
+      return `${Math.floor(initialSeconds / 60)}m ${(initialSeconds % 60).toFixed(1)}s`;
+    }
+    const finalSecs = (frozenRef.current !== null ? frozenRef.current : lastCapturedRef.current) / 10;
+    if (finalSecs < 60) return `${finalSecs.toFixed(1)}s`;
+    return `${Math.floor(finalSecs / 60)}m ${(finalSecs % 60).toFixed(1)}s`;
   }
 
-  const seconds = elapsedTenths / 10;
+  const tenthsToUse = (freeze && frozenRef.current !== null) ? frozenRef.current : elapsedTenths;
+  const seconds = tenthsToUse / 10;
   if (seconds < 60) return `${seconds.toFixed(1)}s`;
   return `${Math.floor(seconds / 60)}m ${(seconds % 60).toFixed(1)}s`;
 }
@@ -232,7 +260,8 @@ export default function ThinkingState({
   durationSeconds,
 }: ThinkingStateProps) {
   const isWorking = !!isLiveStreaming;
-  const elapsed = useElapsedTimer(isWorking, durationSeconds);
+  const shouldFreeze = isWorking && hasContent;
+  const elapsed = useElapsedTimer(isWorking, shouldFreeze, durationSeconds);
   const [startTime] = useState<number>(() => Date.now());
   const [autoStageIdx, setAutoStageIdx] = useState<number>(0);
   const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
@@ -307,104 +336,100 @@ export default function ThinkingState({
 
   return (
     <div className="w-full max-w-full my-1.5 select-none font-sans">
-      {/* ── Header / Collapsed Bar (3x3 Grid Loader + Shimmer + Left Timer + Preview + Chevron) ── */}
+      {/* ── Header / Collapsed Bar (Compact Inline Grid + Label + Preview + Adjacent Chevron) ── */}
       <button
         type="button"
         aria-expanded={isExpanded}
         onClick={() => setManualExpanded((prev) => !(prev !== null ? prev : autoExpanded))}
-        className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1 transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
+        className="group inline-flex items-center gap-2 max-w-full rounded-md px-1 py-1 transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none -ml-1"
       >
-        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-          {/* 3x3 Pixel Grid Wavefront Loader (Exact 3 Columns x 3 Rows = 9 Dots) */}
-          <span
-            aria-hidden
-            className="shrink-0 items-center justify-center"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 3.5px)",
-              gridTemplateRows: "repeat(3, 3.5px)",
-              gap: "1.5px",
-              width: "13.5px",
-              height: "13.5px",
-            }}
-          >
-            {MATRIX_DELAYS.map((d, i) => (
-              <span
-                key={i}
-                className="size-[3.5px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px] block"
-                style={{
-                  opacity: !isWorking ? 0.85 : 0.15,
-                  animation: !isWorking
-                    ? "none"
-                    : `pixel-on 1400ms ease-in-out ${d}ms infinite`,
-                }}
-              />
-            ))}
-          </span>
+        {/* 3x3 Pixel Grid Wavefront Loader */}
+        <span
+          aria-hidden
+          className="shrink-0 flex items-center justify-center"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 4px)",
+            gridTemplateRows: "repeat(3, 4px)",
+            gap: "1.5px",
+            width: "15px",
+            height: "15px",
+          }}
+        >
+          {MATRIX_DELAYS.map((d, i) => (
+            <span
+              key={i}
+              className="size-[4px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px] block"
+              style={{
+                opacity: !isWorking ? 0.9 : 0.35,
+                animation: !isWorking
+                  ? "none"
+                  : `pixel-on 1400ms ease-in-out ${d}ms infinite`,
+              }}
+            />
+          ))}
+        </span>
 
-          {/* Shimmering State Label + Live Timer ON THE LEFT */}
-          {isWorking ? (
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span
-                className="bg-clip-text text-[13.5px] font-semibold whitespace-nowrap text-transparent"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(90deg, rgba(158,35,57,0.5) 30%, rgba(225,29,72,1) 50%, rgba(158,35,57,0.5) 70%)",
-                  backgroundSize: "200% 100%",
-                  animation: "shimmer-text 1.4s linear infinite",
-                }}
-              >
-                Thinking
-              </span>
-              <span className="font-mono text-[12.5px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
-                {elapsed}
-              </span>
-            </div>
-          ) : (
-            <span className="text-[13px] font-medium whitespace-nowrap text-zinc-700 dark:text-zinc-200 shrink-0">
-              Thought for {elapsed}
+        {/* Shimmering State Label + Live Timer ON THE LEFT */}
+        {isWorking ? (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span
+              className="bg-clip-text text-[13.5px] font-semibold whitespace-nowrap text-transparent"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, rgba(158,35,57,0.5) 30%, rgba(225,29,72,1) 50%, rgba(158,35,57,0.5) 70%)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer-text 1.4s linear infinite",
+              }}
+            >
+              Thinking
             </span>
-          )}
-
-          {/* Active Step Preview in Collapsed View (Hidden when Expanded) */}
-          {!isExpanded && (
-            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-              <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
-              <div className="min-w-0 flex-1 overflow-hidden relative h-[18px] flex items-center">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={isWorking ? activeStepText : (activeStepsList.length > 0 ? `${activeStepsList.length}-done` : "done")}
-                    initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                    className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
-                      isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
-                    }`}
-                  >
-                    {isWorking
-                      ? activeStepText
-                      : activeStepsList.length > 0
-                      ? `${activeStepsList.length} verified step${activeStepsList.length === 1 ? "" : "s"}`
-                      : "Verified ground truth"}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Side: ONLY Chevron */}
-        <div className="flex items-center shrink-0 ml-1">
-          <span
-            className="flex size-4 items-center justify-center text-zinc-400 dark:text-zinc-500 transition-transform duration-200 opacity-70 group-hover:opacity-100"
-            style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <span className="font-mono text-[12.5px] text-zinc-500 dark:text-zinc-400 tabular-nums font-normal">
+              {elapsed}
+            </span>
+          </div>
+        ) : (
+          <span className="text-[13px] font-medium whitespace-nowrap text-zinc-700 dark:text-zinc-200 shrink-0">
+            Thought for {elapsed}
           </span>
-        </div>
+        )}
+
+        {/* Active Step Preview in Collapsed View */}
+        {!isExpanded && (
+          <div className="flex items-center gap-1.5 min-w-0 max-w-xs sm:max-w-md overflow-hidden">
+            <span className="text-zinc-400 dark:text-zinc-500 text-xs shrink-0">•</span>
+            <div className="min-w-0 overflow-hidden relative h-[18px] flex items-center">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={isWorking ? activeStepText : (activeStepsList.length > 0 ? `${activeStepsList.length}-done` : "done")}
+                  initial={{ opacity: 0, y: 4, filter: "blur(2px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -4, filter: "blur(2px)" }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  className={`text-[12px] sm:text-[12.5px] truncate font-normal block ${
+                    isWorking ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-400 dark:text-zinc-500"
+                  }`}
+                >
+                  {isWorking
+                    ? activeStepText
+                    : activeStepsList.length > 0
+                    ? `${activeStepsList.length} verified step${activeStepsList.length === 1 ? "" : "s"}`
+                    : "Verified ground truth"}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
+
+        {/* Chevron Arrow Placed Directly Next to the Thinking Text */}
+        <span
+          className="flex size-4 items-center justify-center text-zinc-400 dark:text-zinc-500 transition-transform duration-200 opacity-70 group-hover:opacity-100 shrink-0 ml-0.5"
+          style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
       </button>
 
       {/* ── Expandable Step-by-Step Reasoner Timeline ── */}

@@ -144,7 +144,7 @@ const HeroGreeting = React.memo(function HeroGreeting({
         {/* Ambient glow backing */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[110px] rounded-full blur-[80px] opacity-25 dark:opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse, #2E6B5E 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(ellipse, #9E2339 0%, transparent 70%)" }}
         />
 
         {/* Hello, [Mascot] [firstName]. structure centered across all screen sizes */}
@@ -203,16 +203,16 @@ const HeroGreeting = React.memo(function HeroGreeting({
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 450, damping: 25 }}
             onClick={() => handleCardClick(card.q)}
-            className="group flex flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-2.5 min-[420px]:p-3 sm:p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#2E6B5E] dark:hover:border-[#10b981] hover:shadow-md cursor-pointer w-full min-h-[74px] sm:min-h-[100px]"
+            className="group flex flex-col justify-between items-start text-left rounded-xl sm:rounded-2xl p-2.5 min-[420px]:p-3 sm:p-4 bg-white dark:bg-[#14151a] border border-black/[0.08] dark:border-white/[0.08] shadow-xs hover:border-[#9E2339] dark:hover:border-[#E11D48] hover:shadow-md cursor-pointer w-full min-h-[74px] sm:min-h-[100px]"
           >
             <div className="flex items-center gap-2 sm:gap-3 w-full">
               {/* Icon Pill Container */}
-              <div className="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-[#E1EED7]/80 dark:bg-[#2E6B5E]/25 border border-[#2E6B5E]/20 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] group-hover:bg-[#2E6B5E] group-hover:text-white dark:group-hover:bg-[#10b981] dark:group-hover:text-zinc-950 transition-all duration-150 shadow-xs shrink-0">
+              <div className="size-7 sm:size-9 rounded-lg sm:rounded-xl bg-[#9E2339]/10 dark:bg-[#E11D48]/20 border border-[#9E2339]/20 dark:border-[#E11D48]/30 flex items-center justify-center text-[#9E2339] dark:text-[#E11D48] group-hover:bg-[#9E2339] group-hover:text-white dark:group-hover:bg-[#E11D48] dark:group-hover:text-white transition-all duration-150 shadow-xs shrink-0">
                 {card.icon}
               </div>
 
               {/* Title */}
-              <p className="text-[12px] sm:text-[14px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#2E6B5E] dark:group-hover:text-[#10b981] transition-colors duration-150">
+              <p className="text-[12px] sm:text-[14px] font-bold text-ink dark:text-[#f4f3ee] leading-tight line-clamp-1 group-hover:text-[#9E2339] dark:group-hover:text-[#E11D48] transition-colors duration-150">
                 {card.title}
               </p>
             </div>

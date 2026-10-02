@@ -1570,7 +1570,7 @@ const MessageItem = React.memo(function MessageItem({
           isLiveStreaming={message.is_streaming}
           hasContent={sanitizedMarkdown.trim().length > 0}
           liveSteps={message.reasoning_steps}
-          durationSeconds={message.latency_ms ? message.latency_ms / 1000 : undefined}
+          durationSeconds={message.ttft_ms ? message.ttft_ms / 1000 : (message.latency_ms ? message.latency_ms / 1000 : undefined)}
         />
 
         <div onDoubleClick={handleCopy} className="chat-message-content prose-clean w-full max-w-full min-w-0 box-border leading-[1.6] tracking-[-0.01em] text-[#0d0d0d] dark:text-[#ececec] mt-1 break-words cursor-text select-text font-sans text-[16px]">
@@ -1728,17 +1728,18 @@ const MessageItem = React.memo(function MessageItem({
                   const handlers = createLongPressCopy(phoneCopyText, "Phone Number");
 
                   return (
-                    <a
-                      href={cleanTel}
-                      {...handlers}
-                      className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
-                      title="Tap to call on phone app | Long press to copy"
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0 text-emerald-600 dark:text-emerald-400">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                      </svg>
-                      <span className="whitespace-nowrap">{processHighlightedChildren(children)}</span>
-                    </a>
+                    <Tooltip content={`Call ${cleanDigits}`} position="top">
+                      <a
+                        href={cleanTel}
+                        {...handlers}
+                        className="relative z-10 cursor-pointer font-semibold text-emerald-700 dark:text-emerald-400 underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0 text-emerald-600 dark:text-emerald-400">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
+                        <span className="whitespace-nowrap">{processHighlightedChildren(children)}</span>
+                      </a>
+                    </Tooltip>
                   );
                 }
 
@@ -1748,18 +1749,19 @@ const MessageItem = React.memo(function MessageItem({
                   const handlers = createLongPressCopy(targetEmail, "Email Address");
 
                   return (
-                    <a
-                      href={cleanMail}
-                      {...handlers}
-                      className="relative z-10 cursor-pointer font-semibold text-[#2E6B5E] dark:text-[#34D399] underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
-                      title="Tap to open Email client | Long press to copy"
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
-                        <rect width="20" height="16" x="2" y="4" rx="2" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                      </svg>
-                      <span className="whitespace-nowrap">{processHighlightedChildren(children)}</span>
-                    </a>
+                    <Tooltip content={`Email ${targetEmail.trim()}`} position="top">
+                      <a
+                        href={cleanMail}
+                        {...handlers}
+                        className="relative z-10 cursor-pointer font-semibold text-[#2E6B5E] dark:text-[#34D399] underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-1 select-text whitespace-nowrap shrink-0"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline shrink-0">
+                          <rect width="20" height="16" x="2" y="4" rx="2" />
+                          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <span className="whitespace-nowrap">{processHighlightedChildren(children)}</span>
+                      </a>
+                    </Tooltip>
                   );
                 }
 
@@ -1768,21 +1770,22 @@ const MessageItem = React.memo(function MessageItem({
                 const handlers = createLongPressCopy(linkCopyValue, "Link URL");
 
                 return (
-                  <a
-                    href={targetUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    {...handlers}
-                    className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-0.5 select-text"
-                    title="Tap to open link | Long press to copy"
-                  >
-                    {processHighlightedChildren(children)}
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline ml-0.5">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
-                  </a>
+                  <Tooltip content={`Open ${targetUrl}`} position="top">
+                    <a
+                      href={targetUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      {...handlers}
+                      className="relative z-10 cursor-pointer font-semibold text-accent underline underline-offset-2 hover:opacity-80 transition-opacity inline-flex items-center gap-0.5 select-text"
+                    >
+                      {processHighlightedChildren(children)}
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="inline ml-0.5">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                      </svg>
+                    </a>
+                  </Tooltip>
                 );
               },
               img: ({ src, alt }) => (
@@ -2344,10 +2347,10 @@ const MessageItem = React.memo(function MessageItem({
         />
       )}
 
-      {/* Single Side Toast Notification */}
+      {/* Single Side Action Popup Toast */}
       {toastMsg && typeof document !== "undefined" && createPortal(
-        <div className="fixed bottom-20 right-4 sm:right-8 z-[9999] flex items-center gap-2.5 rounded-xl bg-[#121214]/95 text-zinc-100 px-4 py-2.5 text-[12px] font-sans font-semibold shadow-2xl backdrop-blur-xl border border-[#9E2339]/40 dark:border-emerald-500/40 animate-in fade-in slide-in-from-right-4 duration-200 select-none pointer-events-none">
-          <span className="size-2 rounded-full bg-[#9E2339] dark:bg-emerald-400 animate-pulse shrink-0" />
+        <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 rounded-md bg-[#18181b] text-zinc-100 px-3 py-1.5 text-[11.5px] font-sans font-semibold shadow-2xl backdrop-blur-md border border-zinc-700/60 animate-in fade-in slide-in-from-right-4 duration-200 select-none pointer-events-none">
+          <span className="size-1.5 rounded-full bg-[#9E2339] dark:bg-[#E11D48] animate-pulse shrink-0" />
           <span>{toastMsg}</span>
         </div>,
         document.body

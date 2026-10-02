@@ -131,7 +131,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                 <JellyBlobMascot emotion={modalMascotEmotion} size={58} interactive={true} />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold font-oswald uppercase tracking-tight text-[#2E6B5E] dark:text-[#10b981] whitespace-nowrap">
+                <h2 className="text-lg sm:text-xl font-bold font-oswald uppercase tracking-tight text-[#9E2339] dark:text-[#E11D48] whitespace-nowrap">
                   Student Profile Setup
                 </h2>
                 <p className="text-[11.5px] font-libre text-slate-600 dark:text-[#b1ada1] leading-snug truncate">
@@ -145,8 +145,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               {/* 1. Name Input */}
               <div className="space-y-1">
                 <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-700 dark:text-[#e4e4e7]">
-                  <User className="h-3.5 w-3.5 text-[#2E6B5E] dark:text-emerald-400" />
-                  <span>Your Name <span className="text-[#2E6B5E] dark:text-emerald-400">*</span></span>
+                  <User className="h-3.5 w-3.5 text-[#9E2339] dark:text-[#E11D48]" />
+                  <span>Your Name <span className="text-[#9E2339] dark:text-[#E11D48]">*</span></span>
                 </label>
                 <input
                   type="text"
@@ -168,8 +168,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               {/* 2. Age Input */}
               <div className="space-y-1">
                 <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-700 dark:text-[#e4e4e7]">
-                  <Calendar className="h-3.5 w-3.5 text-[#2E6B5E] dark:text-emerald-400" />
-                  <span>Your Age <span className="text-[#2E6B5E] dark:text-emerald-400">*</span></span>
+                  <Calendar className="h-3.5 w-3.5 text-[#9E2339] dark:text-[#E11D48]" />
+                  <span>Your Age <span className="text-[#9E2339] dark:text-[#E11D48]">*</span></span>
                 </label>
                 <input
                   type="number"
@@ -193,8 +193,8 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
               {/* 3. Category Selector */}
               <div className="space-y-1 relative" ref={dropdownRef}>
                 <label className="flex items-center gap-1.5 text-[11.5px] font-semibold text-slate-700 dark:text-[#e4e4e7]">
-                  <HelpCircle className="h-3.5 w-3.5 text-[#2E6B5E] dark:text-emerald-400" />
-                  <span>Primary Interest / Category <span className="text-[#2E6B5E] dark:text-emerald-400">*</span></span>
+                  <HelpCircle className="h-3.5 w-3.5 text-[#9E2339] dark:text-[#E11D48]" />
+                  <span>Primary Interest / Category <span className="text-[#9E2339] dark:text-[#E11D48]">*</span></span>
                 </label>
 
                 {/* Custom Trigger Button */}
@@ -204,9 +204,9 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                   className="flex w-full items-center justify-between rounded-2xl bg-[#F0F0EF] dark:bg-[#18181b] px-4 py-3 text-xs text-[#1A1C1C] dark:text-white transition-colors hover:bg-[#EBEBEA] dark:hover:bg-[#202024] cursor-pointer border-none"
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
-                    <span className="font-bold text-[#2E6B5E] dark:text-[#34d399] truncate">{selectedCategoryObj.label}</span>
+                    <span className="font-bold text-[#9E2339] dark:text-[#E11D48] truncate">{selectedCategoryObj.label}</span>
                   </div>
-                  <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#2E6B5E] dark:text-[#34d399]' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 dark:text-zinc-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#9E2339] dark:text-[#E11D48]' : ''}`} />
                 </button>
 
                 {/* Animated Options Menu */}
@@ -233,7 +233,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                             }}
                             className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs transition-colors cursor-pointer border-none ${
                               isSelected
-                                ? 'bg-[#2E6B5E]/10 text-[#2E6B5E] dark:bg-emerald-500/15 dark:text-[#34d399] font-bold'
+                                ? 'bg-[#9E2339]/10 text-[#9E2339] dark:bg-[#E11D48]/20 dark:text-[#E11D48] font-bold'
                                 : 'text-slate-800 dark:text-zinc-200 hover:bg-[#F0F0EF] dark:hover:bg-white/5'
                             }`}
                           >
@@ -241,7 +241,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                               <span className="font-semibold text-[11.5px]">{cat.label}</span>
                               <span className="text-[10px] text-slate-500 dark:text-zinc-400 truncate font-normal">{cat.desc}</span>
                             </div>
-                            {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-[#2E6B5E] dark:text-emerald-400" />}
+                            {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-[#9E2339] dark:text-[#E11D48]" />}
                           </motion.button>
                         );
                       })}
@@ -250,7 +250,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                 </AnimatePresence>
 
                 {/* Selected category description preview */}
-                <p className="text-[10.5px] text-slate-500 dark:text-emerald-400/90 italic pl-1 pt-0.5">
+                <p className="text-[10.5px] text-slate-500 dark:text-[#E11D48]/90 italic pl-1 pt-0.5">
                   ↳ {selectedCategoryObj.desc}
                 </p>
               </div>
@@ -262,7 +262,7 @@ export default function UserOnboardingModal({ isOpen, onSaveProfile, onClose, in
                   whileTap={{ scale: 0.97 }}
                   transition={{ type: "spring", stiffness: 450, damping: 22 }}
                   type="submit"
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2E6B5E] hover:bg-[#24544a] text-white dark:bg-[#10b981] dark:hover:bg-[#059669] dark:text-zinc-950 px-5 py-3.5 text-xs font-bold transition-colors cursor-pointer border-none"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#9E2339] hover:bg-[#861E30] text-white dark:bg-[#E11D48] dark:hover:bg-[#BE123C] dark:text-white px-5 py-3.5 text-xs font-bold transition-colors cursor-pointer border-none shadow-md"
                 >
                   <span>Save & Start Assistant</span>
                   <ArrowRight className="h-4 w-4" />

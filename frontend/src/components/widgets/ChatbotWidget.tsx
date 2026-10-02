@@ -216,10 +216,10 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.75, y: 8 }}
                 transition={{ type: "spring", stiffness: 400, damping: 24 }}
-                className="relative px-3.5 pt-2 pb-4 rounded-t-2xl bg-gradient-to-b from-[#2E6B5E] via-[#24544a] to-[#1a3d36] dark:from-[#10b981] dark:via-[#059669] dark:to-[#047857] border-t-2 border-x-2 border-white/30 dark:border-white/25 shadow-[0_-6px_22px_rgba(46,107,94,0.35)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.7)] backdrop-blur-md flex flex-col items-center justify-center select-none"
+                className="relative px-3.5 pt-2 pb-4 rounded-t-2xl bg-gradient-to-b from-[#9E2339] via-[#861E30] to-[#671422] dark:from-[#E11D48] dark:via-[#BE123C] dark:to-[#9F1239] border-t-2 border-x-2 border-white/30 dark:border-white/25 shadow-[0_-6px_22px_rgba(158,35,57,0.35)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.7)] backdrop-blur-md flex flex-col items-center justify-center select-none"
               >
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse shadow-[0_0_8px_rgba(110,231,183,0.9)]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
                   <span className="text-[9px] font-heading font-black uppercase tracking-wider text-white/95 leading-none">
                     CLOSE
                   </span>
@@ -245,7 +245,7 @@ export const ChatbotWidget: FC<ChatbotWidgetProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.75, y: 8 }}
                 transition={{ type: "spring", stiffness: 400, damping: 24 }}
-                className="relative px-4 pt-1.5 pb-3 rounded-t-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-[#1E1E24] dark:via-[#18181B] dark:to-[#0F0F12] border-t-2 border-x-2 border-[#2E6B5E]/40 dark:border-[#10b981]/50 shadow-[0_-6px_22px_rgba(46,107,94,0.18)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.6)] backdrop-blur-md flex items-center justify-center transition-colors"
+                className="relative px-4 pt-1.5 pb-3 rounded-t-2xl bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-[#1E1E24] dark:via-[#18181B] dark:to-[#0F0F12] border-t-2 border-x-2 border-[#9E2339]/40 dark:border-[#E11D48]/50 shadow-[0_-6px_22px_rgba(158,35,57,0.18)] dark:shadow-[0_-6px_25px_rgba(0,0,0,0.6)] backdrop-blur-md flex items-center justify-center transition-colors"
               >
                 <JellyBlobMascot emotion="wave" size={60} interactive={true} />
               </motion.div>

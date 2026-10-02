@@ -293,6 +293,11 @@ class TopicShiftDetector:
         if self.REFERENTIAL_START_PATTERNS.match(q_lower):
             return TopicRelation.FOLLOW_UP
 
+        # Rule 4.5: Anaphoric / Referential Determiners & Pronouns anywhere in query (e.g. "give me the full route of that bus")
+        if re.search(r'\b(that\s+bus|this\s+bus|that\s+route|this\s+route|full\s+route|entire\s+route|that|this|it|its|his|him|her|hers|them|their|the\s+same|above|mentioned)\b', q_lower):
+            if not re.search(r'\b(patent|cutoff|tnea|admissions?|how\s+many\s+buses)\b', q_lower):
+                return TopicRelation.FOLLOW_UP
+
         # Rule 5: Jev AI Model Topic Shift Evaluation (probabilistic System One discourse gate)
         if last_assistant_snippet and jev_evaluator and jev_evaluator.is_enabled:
             try:

@@ -83,7 +83,7 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
             </span>
           </span>
         ) : (
-          <span className="tabular-nums font-mono text-emerald-600 dark:text-emerald-400 font-semibold shrink-0 whitespace-nowrap">
+          <span className="tabular-nums font-mono text-[#9E2339] dark:text-[#E11D48] font-semibold shrink-0 whitespace-nowrap">
             0 tokens (Free)
           </span>
         )}
@@ -135,7 +135,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
         {/* Header Bar */}
         <div className="flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
           <div className="flex items-center gap-2">
-            <div className="size-6 rounded-lg bg-[#E1EED7] dark:bg-[#2E6B5E]/30 border border-[#2E6B5E]/30 dark:border-[#10b981]/30 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] shadow-sm shrink-0">
+            <div className="size-6 rounded-lg bg-[#9E2339]/15 dark:bg-[#E11D48]/20 border border-[#9E2339]/30 dark:border-[#E11D48]/30 flex items-center justify-center text-[#9E2339] dark:text-[#E11D48] shadow-sm shrink-0">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
@@ -144,8 +144,8 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
               Token Usage & Performance Telemetry
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-[11px] text-[#9E2339] dark:text-[#E11D48] font-medium">
+            <span className="size-1.5 rounded-full bg-[#9E2339] dark:bg-[#E11D48] animate-pulse" />
             <span>Verified Grounded</span>
           </div>
         </div>
@@ -157,7 +157,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
             <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
               Prompt Input Tokens
             </div>
-            <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
+            <div className="text-[14px] font-bold font-mono text-[#9E2339] dark:text-[#E11D48] mt-0.5">
               {promptInputTokens.toLocaleString()}
             </div>
             <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title={`Query: ${queryTokens} tok | Campus RAG: ${contextTokens} tok | System: ${systemTokens} tok`}>
@@ -170,7 +170,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
             <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
               Answer Tokens
             </div>
-            <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
+            <div className="text-[14px] font-bold font-mono text-[#9E2339] dark:text-[#E11D48] mt-0.5">
               {answerTokens.toLocaleString()}
             </div>
             <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate">
@@ -227,7 +227,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
                   key={step.step_number}
                   className="grid grid-cols-12 gap-2 px-3 py-2 text-[11px] items-center hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
                 >
-                  <div className="col-span-1 font-mono font-bold text-[#2E6B5E] dark:text-[#10b981]">
+                  <div className="col-span-1 font-mono font-bold text-[#9E2339] dark:text-[#E11D48]">
                     {step.step_number}
                   </div>
                   <div className="col-span-5 min-w-0 pr-1">
@@ -240,14 +240,14 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
                   </div>
                   <div className="col-span-3 text-right font-mono">
                     {step.total_tokens > 0 ? (
-                      <span className="font-bold text-[#2E6B5E] dark:text-[#10b981]">
+                      <span className="font-bold text-[#9E2339] dark:text-[#E11D48]">
                         {step.total_tokens.toLocaleString()}{" "}
                         <span className="text-[9.5px] font-normal text-ink-3 dark:text-[#b1ada1]">
                           tok {step.output_tokens > 0 ? `(${step.input_tokens} in / ${step.output_tokens} out)` : ""}
                         </span>
                       </span>
                     ) : (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">0 tok (Free)</span>
+                      <span className="text-[#9E2339] dark:text-[#E11D48] font-semibold text-[10px]">0 tok (Free)</span>
                     )}
                   </div>
                   <div className="col-span-3 text-right font-mono text-ink dark:text-[#f4f3ee]">

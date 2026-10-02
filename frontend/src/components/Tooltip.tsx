@@ -20,11 +20,16 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
   const updatePosition = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
-    
-    setCoords({
-      x: rect.left + rect.width / 2,
-      y: position === 'top' ? rect.top - 8 : rect.bottom + 8
-    });
+    const vw = typeof window !== "undefined" ? window.innerWidth : 360;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 600;
+
+    const rawX = rect.left + rect.width / 2;
+    const clampedX = Math.max(16, Math.min(vw - 16, rawX));
+    const clampedY = position === 'top' 
+      ? Math.max(8, rect.top - 8) 
+      : Math.min(vh - 8, rect.bottom + 8);
+
+    setCoords({ x: clampedX, y: clampedY });
   };
 
   const isTouchScreen = () => {
@@ -108,9 +113,9 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
                 className={`
                   relative -translate-x-1/2 
                   ${position === 'top' ? '-translate-y-full' : 'translate-y-0'}
-                  px-2.5 py-1.5 text-[11px] font-semibold tracking-wide
-                  bg-[#2E6B5E] text-white dark:bg-[#D0E7E1] dark:text-[#1a3832]
-                  rounded-md shadow-md whitespace-nowrap
+                  px-2.5 py-1.5 text-[11.5px] font-semibold tracking-wide font-sans
+                  bg-[#9E2339] text-white dark:bg-[#18181b] dark:text-zinc-100
+                  border border-[#9E2339]/20 dark:border-[#E11D48]/50 rounded-md shadow-xl whitespace-nowrap backdrop-blur-md max-w-[85vw] truncate
                   ${className}
                 `}
               >
@@ -119,7 +124,7 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
                   className={`
                     absolute left-1/2 -translate-x-1/2 w-0 h-0
                     border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent
-                    ${position === 'top' ? 'top-full border-t-[5px] border-t-[#2E6B5E] dark:border-t-[#D0E7E1]' : 'bottom-full border-b-[5px] border-b-[#2E6B5E] dark:border-b-[#D0E7E1]'}
+                    ${position === 'top' ? 'top-full border-t-[5px] border-t-[#9E2339] dark:border-t-[#18181b]' : 'bottom-full border-b-[5px] border-b-[#9E2339] dark:border-b-[#18181b]'}
                   `} 
                 />
               </div>

@@ -620,10 +620,13 @@ export function useChat() {
 
     const userQueryText = prevUserMsg.content;
 
-    // Reset target assistant message in-place in UI state (DO NOT append a new user message!)
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === targetAsst!.id
+    // Reset target assistant message in-place in UI state and trim all subsequent messages (ChatGPT behavior)
+    setMessages((prev) => {
+      const idx = prev.findIndex((msg) => msg.id === targetAsst!.id);
+      if (idx === -1) return prev;
+      const truncated = prev.slice(0, idx + 1);
+      return truncated.map((msg, i) =>
+        i === idx
           ? {
               ...msg,
               content: "",
@@ -632,10 +635,12 @@ export function useChat() {
               reasoning_steps: [],
               token_metrics: undefined,
               resource_attachments: undefined,
+              latency_ms: undefined,
+              ttft_ms: undefined,
             }
           : msg
-      )
-    );
+      );
+    });
     setIsStreaming(true);
 
     const abortController = new AbortController();

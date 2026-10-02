@@ -14,6 +14,26 @@ export default defineConfig(({ mode }) => ({
   define: {
     __API_URL__: JSON.stringify(process.env.VITE_API_URL || ''),
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('katex')) {
+              return 'vendor-markdown';
+            }
+            if (id.includes('framer-motion') || id.includes('lucide-react')) {
+              return 'vendor-ui';
+            }
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-core';
+            }
+          }
+        }
+      }
+    }
+  },
   server: {
     port: 3000,
     open: false,

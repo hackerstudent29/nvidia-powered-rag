@@ -268,7 +268,24 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         target_domains=["developer", "general"]
     ),
 
-    # 15. General Campus & Academic Guidance
+    # 15. Institutional Overview & About MSAJCE
+    "institutional_overview": CategoryMetadata(
+        key="institutional_overview",
+        label="Institutional Overview & About MSAJCE",
+        description="High-level overview of Mohamed Sathak A.J. College of Engineering (MSAJCE), history, vision, mission, accreditation, location in SIPCOT IT Park Siruseri, and campus highlights.",
+        is_allowed=True,
+        jev_criteria="General inquiry about Mohamed Sathak A.J. College of Engineering (MSAJCE), overview of the college, about MSAJCE, background, establishment, location, or why to join.",
+        keywords=[
+            "about", "overview", "college overview", "tell me about your college",
+            "tell me about college", "tell me abt ur college", "about msajce", "about msajcea",
+            "what is msajce", "tell me about mohamed sathak", "college info", "about the college",
+            "why join msajce", "why choose msajce", "college background", "institution"
+        ],
+        regex_pattern=r'\b(about\s+(?:the\s+)?college|about\s+msajce|about\s+msajcea|tell\s+me\s+ab?o?u?t\s+(?:your\s+|ur\s+)?college|overview\s+of\s+(?:the\s+)?college|what\s+is\s+msajce|why\s+join\s+msajce|why\s+choose\s+msajce)\b',
+        target_domains=["about", "general"]
+    ),
+
+    # 16. General Campus & Academic Guidance
     "general": CategoryMetadata(
         key="general",
         label="General Campus & Academic Guidance",
@@ -283,7 +300,7 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         target_domains=["general"]
     ),
 
-    # 16. Off-Topic Inquiries (Disallowed - Refused with College Boundary)
+    # 17. Off-Topic Inquiries (Disallowed - Refused with College Boundary)
     "off_topic": CategoryMetadata(
         key="off_topic",
         label="Off-Topic Inquiry",
@@ -301,7 +318,7 @@ CAMPUS_TAXONOMY: Dict[str, CategoryMetadata] = {
         refusal_message="I am Lorin AI, the official campus assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I am exclusively designed to assist with MSAJCE admissions, academic departments, degree programs, placements, fee structures, bus routes, hostels, and campus facilities. Please let me know if you have any questions about MSAJCE!"
     ),
 
-    # 17. Security & Jailbreak Violations (Disallowed - Refused with Safety Policy)
+    # 18. Security & Jailbreak Violations (Disallowed - Refused with Safety Policy)
     "jailbreak": CategoryMetadata(
         key="jailbreak",
         label="Security Policy Violation",
@@ -474,6 +491,10 @@ def fast_classify_intent(query: str) -> Optional[str]:
     # 2. Jailbreak Pre-check
     if is_jailbreak_attempt(q_trim):
         return "jailbreak"
+
+    # 2.5 Institutional Overview / About College
+    if re.search(r'\b(about\s+(?:the\s+)?college|about\s+msajce|about\s+msajcea|tell\s+me\s+ab?o?u?t\s+(?:your\s+|ur\s+)?college|overview\s+of\s+(?:the\s+)?college|what\s+is\s+msajce|why\s+join\s+msajce|why\s+choose\s+msajce|college\s+overview)\b', q_lower, re.IGNORECASE):
+        return "institutional_overview"
 
     # 3. High-priority exact patent / research identification
     if re.search(r'\b(patent|patents|patent\s*no|patent\s*number|inventors?)\b', q_trim, re.IGNORECASE) or (

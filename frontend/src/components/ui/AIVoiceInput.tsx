@@ -106,15 +106,15 @@ export function AIVoiceInput({
         {/* Animated Outer Pulse Ring */}
         <div className="relative flex items-center justify-center">
           {submitted && (
-            <span className="absolute size-20 rounded-2xl bg-emerald-500/20 dark:bg-[#10b981]/25 animate-ping pointer-events-none" />
+            <span className="absolute size-20 rounded-2xl bg-[#9E2339]/20 dark:bg-[#E11D48]/25 animate-ping pointer-events-none" />
           )}
 
           <button
             className={cn(
               "group relative w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg cursor-pointer border",
               submitted
-                ? "bg-emerald-600 dark:bg-[#10b981] text-white dark:text-zinc-950 border-emerald-400 dark:border-[#10b981] shadow-emerald-500/30 scale-105"
-                : "bg-black/[0.04] dark:bg-white/[0.08] hover:bg-emerald-500/10 dark:hover:bg-[#10b981]/20 border-black/10 dark:border-white/10 hover:border-emerald-500/40 text-ink dark:text-[#f4f3ee]"
+                ? "bg-[#9E2339] dark:bg-[#E11D48] text-white border-[#9E2339] dark:border-[#E11D48] shadow-[#9E2339]/30 scale-105"
+                : "bg-black/[0.04] dark:bg-white/[0.08] hover:bg-[#9E2339]/10 dark:hover:bg-[#E11D48]/20 border-black/10 dark:border-white/10 hover:border-[#9E2339]/40 text-ink dark:text-[#f4f3ee]"
             )}
             type="button"
             onClick={handleClick}
@@ -133,7 +133,7 @@ export function AIVoiceInput({
           className={cn(
             "font-mono text-sm font-semibold tracking-wider transition-all duration-300",
             submitted
-              ? "text-emerald-600 dark:text-[#10b981] scale-105"
+              ? "text-[#9E2339] dark:text-[#E11D48] scale-105"
               : "text-black/40 dark:text-white/40"
           )}
         >
@@ -153,7 +153,7 @@ export function AIVoiceInput({
                 className={cn(
                   "w-0.5 rounded-full transition-all duration-200",
                   submitted
-                    ? "bg-emerald-500 dark:bg-[#10b981] shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                    ? "bg-[#9E2339] dark:bg-[#E11D48] shadow-[0_0_6px_rgba(158,35,57,0.5)]"
                     : "bg-black/15 dark:bg-white/15 h-1"
                 )}
                 style={{
@@ -201,7 +201,7 @@ export function AIVoiceInputDemo() {
             {recordings.map((rec, i) => (
               <span
                 key={i}
-                className="px-2.5 py-1 rounded-lg text-xs font-mono bg-emerald-500/10 text-emerald-600 dark:text-[#10b981] border border-emerald-500/20"
+                className="px-2.5 py-1 rounded-lg text-xs font-mono bg-[#9E2339]/10 text-[#9E2339] dark:text-[#E11D48] border border-[#9E2339]/20"
               >
                 {rec.duration}s ({rec.timestamp.toLocaleTimeString()})
               </span>

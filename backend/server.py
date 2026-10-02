@@ -33,6 +33,7 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 import websockets
 from fastapi import FastAPI, Request, HTTPException, Query, Depends, Header, WebSocket, WebSocketDisconnect
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
@@ -256,7 +257,23 @@ CONVERSATION & RESPONSE STYLE (ChatGPT-Style Friendly, Clear & Responsive):
        3. Core Specializations & Technologies Covered (AI/ML, Big Data, Cloud Computing, Full Stack, IoT, Cybersecurity)
        4. State-of-the-Art Laboratories & Infrastructure (Apple iOS Dev Centre, Internet Programming Lab, OS Lab, Networks Lab, Web Tech Lab)
        5. Career & Placement Highlights (TCS, Infosys, CTS, Capgemini, Zoho, Aspire Systems, 90%+ placement track record, salary packages up to 8.5 LPA)
-       6. Admissions & TNEA Counseling Code (1301)"""
+       6. Admissions & TNEA Counseling Code (1301)
+
+10. Executive Institutional College Overviews (About MSAJCE / College Overview):
+   - When a user asks for a general overview of the college, an introduction to MSAJCE, or "tell me about your college":
+     * NEVER clutter general college overviews with niche secondary policy documents (such as IPR revenue sharing rules, fine arts/photography club details, code of conduct downloads, or YouTube channel links) unless the user explicitly asks for them.
+     * Always structure general college overviews into executive institutional pillars:
+       1. Institutional Profile & Affiliation: Mohamed Sathak A.J. College of Engineering (MSAJCE), established in 2001 under Mohamed Sathak Trust, AICTE approved, affiliated to Anna University Chennai, and NAAC 'A+' accredited (TNEA Code: 1301).
+       2. Strategic Location Advantage: Sprawling 70-acre green campus located directly inside SIPCOT IT Park, Siruseri, OMR, Chennai (Asia's 2nd largest IT park), surrounded by 100+ multinational tech giants (TCS, Infosys, CTS, Cognizant, Wipro, HCL).
+       3. Academic Degree Programs: 12 cutting-edge UG engineering programs (CSE, IT, AI & DS, AI & ML, Cyber Security, CSBS, ECE, EEE, Mechanical, Civil) and M.E. PG programs.
+       4. Placement Directorate & Corporate Connect: Robust placement record (up to 8.5 LPA packages) with corporate recruitment, internship bootcamps, and foreign language training (English, German, Japanese).
+       5. Campus Infrastructure & Facilities: Specialized technology centres (Apple iOS Dev Centre), central library, separate on-campus boys' and girls' hostels, 500-seat central dining hall, and 9 dedicated college bus routes spanning Chennai.
+
+11. Multi-Question & Multi-Topic Prompt Handling:
+   - When the user asks a multi-part or compound question (e.g., combining a person/faculty lookup, a bus stop/destination inquiry, and a specific bus route in a single prompt):
+     * You MUST address EVERY sub-question in a clear, distinct, and dedicated sub-heading or numbered list item.
+     * Keep details 100% strictly isolated to their respective sub-question.
+     * NEVER blend, confuse, or cross-contaminate attributes (e.g., NEVER attribute the driver, route number, or path of one bus to a different requested stop or location unless explicitly verified in the context)."""
 
 
 def auto_select_model(query: str) -> str:
@@ -2736,30 +2753,103 @@ _FOLLOWUP_AFFIRMATION_PATTERNS = re.compile(
     re.IGNORECASE
 )
 
+import difflib
+
+# Domain Vocabulary for Algorithmic Fuzzy Typo Normalization
+_DOMAIN_CORPUS_VOCAB = {
+    "college", "route", "routes", "bus", "buses", "driver", "drivers", "schedule", "timings",
+    "timing", "stop", "stops", "hostel", "mess", "canteen", "fees", "fee", "admission", "admissions",
+    "department", "dept", "placement", "placements", "principal", "facility", "facilities",
+    "contact", "details", "number", "phone", "course", "courses", "syllabus", "eligibility",
+    "scholarship", "scholarships", "attendance", "circular", "events", "sports", "library",
+    "location", "address", "map", "distance", "fare", "ticket", "pickup", "drop"
+}
+
+def normalize_query_typos(query: str) -> str:
+    """
+    General, distance-based typo normalization.
+    Uses difflib edit-distance matching against domain vocabulary so we don't have to add typos one by one.
+    """
+    if not query:
+        return query
+    
+    static_fixes = {
+        "colege": "college",
+        "collge": "college",
+        "clg": "college",
+        "rot": "route",
+        "rout": "route",
+        "roat": "route",
+        "drivr": "driver",
+        "drivar": "driver",
+        "scdule": "schedule",
+        "timng": "timing",
+        "timngs": "timings",
+    }
+    
+    words = query.split()
+    normalized_words = []
+    for w in words:
+        w_clean = re.sub(r'^[^\w]+|[^\w]+$', '', w).lower()
+        if not w_clean:
+            normalized_words.append(w)
+            continue
+        
+        if w_clean in static_fixes:
+            rep = static_fixes[w_clean]
+            normalized_words.append(w.lower().replace(w_clean, rep))
+            continue
+            
+        if len(w_clean) >= 4 and w_clean not in _DOMAIN_CORPUS_VOCAB:
+            matches = difflib.get_close_matches(w_clean, list(_DOMAIN_CORPUS_VOCAB), n=1, cutoff=0.78)
+            if matches:
+                normalized_words.append(w.lower().replace(w_clean, matches[0]))
+                continue
+                
+        normalized_words.append(w)
+        
+    return " ".join(normalized_words)
+
 # Pronoun / referential patterns that indicate the user is referring to something from a prior turn
 _PRONOUN_TRIGGERS = re.compile(
     r'\b(the same|above mentioned|given above|those details|these details)\b'
     r'|\b(any\s*other|anyother|anyone\s+else|who\s+else|what\s+else|which\s+other|who\s+other|what\s+other|how\s+about\s+other|how\s+about\s+the\s+other|are\s+there\s+any\s+other|is\s+there\s+any\s+other|any\s+more|more\s+names?|other\s+students?|other\s+faculty|other\s+members?|other\s+recipients?|other\s+candidates?|more\s+recipients?)\b'
     r'|\b(who\s+are\s+they|who\s+are\s+the\s+others|what\s+are\s+the\s+others|list\s+others|list\s+more|show\s+more|give\s+more)\b'
-    r'|\b(full route|complete route|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt that|who is he|who is she|more info|further details|that briefly|this briefly)\b'
+    r'|\b(full route|complete route|route fully|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt that|who is he|who is she|more info|further details|that briefly|this briefly)\b'
     r'|\bwhat (is|are|about) (that|them|those|him|her|it)\b'
     r'|\b(its|their|his|her) (route|routes|stops?|driver|contact|timings?|details?|fees?|profile|designation|department|qualification|sports|facilities|facility)\b'
-    r'|\b(this|that)\s+(bus|route|dept|department|driver|course|subject|hostel|stop|schedule|contact|fee|syllabus|program|branch|faculty|person|professor|sports|facility|facilities)\b',
+    r'|\b(give|show|tell|send|get|provide|list)\b.*?\b(that|this|it|them|those|these)\b'
+    r'|\b(this|that|the|those|these)\b(?:[\w\s]{0,25})\b(bus|buses|route|routes|dept|department|driver|drivers|course|subject|hostel|stop|stops|schedule|contact|fee|fees|syllabus|program|branch|faculty|person|professor|sports|facility|facilities)\b',
     re.IGNORECASE
 )
 
 def is_contextual_query(query: str) -> bool:
     """
-    Returns True if the query is an affirmative, continuation, or short referential query
-    that depends entirely on conversation context and should NEVER be globally cached.
+    Returns True if the query is an affirmative, continuation, or referential query
+    that depends on conversation context and should NEVER be globally cached.
     """
     if not query:
         return False
-    q = query.strip()
-    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q):
+    q_norm = normalize_query_typos(query.strip())
+
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm):
         return True
-    if len(q.split()) <= 6 and (_PRONOUN_TRIGGERS.search(q) or re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details|anyother|any\s+other|who\s+else|what\s+else|others?|anyone\s+else)$', q, re.IGNORECASE)):
+    if _PRONOUN_TRIGGERS.search(q_norm):
         return True
+    if re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details|anyother|any\s+other|who\s+else|what\s+else|others?|anyone\s+else)$', q_norm, re.IGNORECASE):
+        return True
+        
+    # Generalized Action-Verb Prefix & Short Followup Fallback (<= 10 words)
+    words = q_norm.split()
+    if len(words) <= 10:
+        first_word = words[0].lower()
+        action_starters = {
+            "ok", "okay", "yes", "yeah", "sure", "give", "show", "tell", "get", "provide", 
+            "full", "all", "complete", "details", "detail", "share", "send", "more", "what", "where", "who", "how", "and"
+        }
+        if first_word in action_starters:
+            if len(words) <= 6 or any(w.lower() in {"this", "that", "it", "them", "those", "these", "same", "other", "others", "route", "bus", "driver", "fully", "full"} for w in words):
+                return True
     return False
 
 _ASSISTANT_OFFER_PATTERNS = [
@@ -2826,11 +2916,11 @@ _ENTITY_PATTERNS = [
     (re.compile(r'\b(?:Dr|Mr|Mrs|Ms|Prof)\.\s+(?:[A-Z]\.){0,3}\s*[A-Z][a-zA-Z\-]+\b'), '{}'),
     # Capitalized Person names (e.g. "Sethuraman", "Weslin", "Ramanathan", "Jaffar", "Ravindran")
     (re.compile(r'\b(Sethuraman|Weslin|Ramanathan|Jaffar|Ravindran)\b', re.IGNORECASE), '{}'),
-    # Bus route numbers — strictly requires AR/R/MTC or explicit Route prefix (prevents raw numbers like token counts 152/175/500 from matching)
-    (re.compile(r'\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+|MTC\s+\d+[A-Z]*)\b', re.IGNORECASE), 'bus route {}'),
+    # Bus route numbers — strictly requires AR/R/N/MTC or explicit Route prefix (prevents raw numbers like token counts 152/175/500 from matching)
+    (re.compile(r'\b(?:Route\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+|N\d{1,2}|MTC\s+\d+[A-Z]*)\b', re.IGNORECASE), 'bus route {}'),
     (re.compile(r'\b(?:Route\s+)(\d{1,3}[A-Z]*)\b', re.IGNORECASE), 'bus route {}'),
     # Bus route names in parens e.g. "(Also called R21)"
-    (re.compile(r'\((?:also called\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+)\)', re.IGNORECASE), 'bus route {}'),
+    (re.compile(r'\((?:also called\s+)?(AR[\s\-]?\d+|R[\s\-]?\d+|N\d{1,2})\)', re.IGNORECASE), 'bus route {}'),
     # Sports & Games
     (re.compile(r'\b(sports|games|gym|gymnasium|yoga|football|basketball|cricket|kabaddi|volleyball|table tennis|chess|carrom|kho kho)\b', re.IGNORECASE), '{} facilities'),
     # Department names
@@ -2871,7 +2961,7 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
     """
     Regex-based fallback helper: extracts entities from history context and replaces vague pronouns or affirmations.
     """
-    normalized_q = pre_normalize_department_acronyms(current_query)
+    normalized_q = normalize_query_typos(pre_normalize_department_acronyms(current_query))
 
     # Protect standalone queries (patents, codes, explicit questions) from history pollution
     if is_standalone_or_protected_query(normalized_q):
@@ -2938,9 +3028,9 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
         print(f"[REGEX AFFIRMATION RESOLVER] '{current_query}' -> '{resolved_entity}'")
         return resolved_entity
 
-    # Safety: Do not inject a person's name into a clear course/department query
+    # Safety: Do not inject a person's name into a clear course/department/transit query
     is_person = bool(re.search(r'\b(?:Dr|Mr|Mrs|Ms|Prof)\b', resolved_entity, re.IGNORECASE))
-    if is_person and re.search(r'\b(cutoff|cut-off|cut off|counselling|tnea|admissions?|courses?|syllabus|fees?)\b', normalized_q, re.IGNORECASE):
+    if is_person and re.search(r'\b(bus|buses|route|routes|cutoff|cut-off|cut off|counselling|tnea|admissions?|courses?|syllabus|fees?)\b', normalized_q, re.IGNORECASE):
         return normalized_q
 
     rewritten = normalized_q
@@ -2950,7 +3040,7 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
         rewritten, flags=re.IGNORECASE
     )
     rewritten = re.sub(
-        r'\b(this|that|the same|above|mentioned)\s+(bus|route|dept|department|driver|course|subject|hostel|stop|schedule|contact|number|fee|syllabus|program|branch|faculty|person|professor|sports|facility|facilities)\b',
+        r'\b(this|that|the same|above|mentioned)\s+(?:[\w\s]{0,25})?\b(bus|buses|route|routes|dept|department|driver|drivers|course|subject|hostel|stop|stops|schedule|contact|number|fee|syllabus|program|branch|faculty|person|professor|sports|facility|facilities)\b',
         resolved_entity,
         rewritten, flags=re.IGNORECASE
     )
@@ -2959,9 +3049,8 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
         f"about {resolved_entity}",
         rewritten, flags=re.IGNORECASE
     )
-    if rewritten.strip().lower() == normalized_q.strip().lower():
-        # NEVER blindly append resolved entity if substitution didn't match!
-        return normalized_q
+    if rewritten.strip().lower() == normalized_q.strip().lower() and resolved_entity:
+        rewritten = f"{normalized_q} for {resolved_entity}"
 
     print(f"[REGEX PRONOUN RESOLVER] '{current_query}' → '{rewritten}' (entity: {resolved_entity})")
     return rewritten
@@ -2978,7 +3067,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
         return current_query
 
     # Standalone Fast-Path: If query is already a clear standalone question without pronouns, return instantly in 0ms
-    if is_standalone_or_protected_query(q_trim) or (not is_contextual_query(q_trim) and not _PRONOUN_TRIGGERS.search(q_trim) and len(q_trim.split()) >= 3):
+    if is_standalone_or_protected_query(q_trim) or (not is_contextual_query(q_trim) and not _PRONOUN_TRIGGERS.search(q_trim)):
         return normalized_q
 
     # Fetch last 10 messages (up to 5 dialogue pairs) from current active session
@@ -3008,7 +3097,7 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
         if c:
             filtered.append(row)
 
-    if not filtered or len(filtered) < 1 or (not is_contextual_query(normalized_q) and len(normalized_q.split()) >= 3):
+    if not filtered or len(filtered) < 1:
         return resolve_pronouns(normalized_q, session_id)
 
     MAX_HISTORY_CHARS = 3000
@@ -3278,13 +3367,22 @@ def decompose_multi_hop_query(query: str) -> List[str]:
         return sub_queries[:4]
 
     # 1. Structural Sentence & Clause Splitting
-    raw_splits = re.split(r'[\?\n;]+', q_clean)
-    clauses = [s.strip() for s in raw_splits if len(s.strip().split()) >= 3]
+    raw_splits = re.split(r'[\?\n;\!]+', q_clean)
+    split_pattern = r'(?:,\s*(?:and\s+)?|\.\s+|\s+also\s+|\s+then\s+|\s+and\s+)(?=(?:what|which|how|where|who|tell\s+me|compare|give|is\s+there|are\s+there|what\s+are|what\s+is|what\s+does|how\s+does|how\s+many|can\s+you)\b)'
+    
+    clauses = []
+    for raw in raw_splits:
+        raw_trimmed = raw.strip()
+        if not raw_trimmed:
+            continue
+        parts = re.split(split_pattern, raw_trimmed, flags=re.IGNORECASE)
+        for p in parts:
+            p_clean = p.strip(' ,.?\n')
+            if len(p_clean.split()) >= 2:
+                clauses.append(p_clean)
 
-    if len(clauses) <= 1:
-        split_pattern = r'(?:,\s*(?:and\s+)?|\.\s+|\s+also\s+|\s+then\s+|\s+and\s+)(?=(?:what|which|how|where|who|tell\s+me|compare|give|is\s+there|are\s+there|what\s+are|what\s+is|what\s+does|how\s+does|how\s+many|can\s+you)\b)'
-        parts = re.split(split_pattern, q_clean, flags=re.IGNORECASE)
-        clauses = [p.strip(' ,.?\n') for p in parts if len(p.strip().split()) >= 3]
+    if not clauses:
+        clauses = [q_clean]
 
     sub_queries = []
     seen_normalized = set()
@@ -4549,6 +4647,38 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 REGEN_COUNTS_MAP[regen_key] = current_regen_count
                 delete_from_cache(user_query)
                 delete_from_cache(expanded_query)
+                delete_from_cache(req.message)
+
+                # Truncate subsequent messages from DB and cache (ChatGPT branch behavior)
+                if req.target_message_id:
+                    try:
+                        with DBContext() as conn:
+                            if conn:
+                                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                                    cur.execute(
+                                        "SELECT created_at FROM chat_messages WHERE message_id = %s AND session_id = %s;",
+                                        (req.target_message_id, session_id)
+                                    )
+                                    t_row = cur.fetchone()
+                                    if t_row and t_row.get("created_at"):
+                                        t_time = t_row["created_at"]
+                                        cur.execute(
+                                            "SELECT content FROM chat_messages WHERE session_id = %s AND created_at > %s;",
+                                            (session_id, t_time)
+                                        )
+                                        subseq_rows = cur.fetchall()
+                                        for s_row in subseq_rows:
+                                            if s_row.get("content"):
+                                                delete_from_cache(s_row["content"])
+                                        cur.execute(
+                                            "DELETE FROM chat_messages WHERE session_id = %s AND created_at > %s;",
+                                            (session_id, t_time)
+                                        )
+                                        conn.commit()
+                                        logger.info(f"[Regen Truncation] Purged {len(subseq_rows)} subsequent messages after '{req.target_message_id}'")
+                    except Exception as tr_err:
+                        print(f"[WARN] Error truncating subsequent messages on regeneration: {tr_err}")
+
                 cached_result = None
             elif is_contextual_query(user_query) or is_contextual_query(req.message) or is_rewritten_followup:
                 delete_from_cache(user_query)
@@ -4652,17 +4782,30 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
                 is_general_bus_q = (target_domain in (CampusDomain.TRANSPORT, CampusDomain.GENERAL)) and route_finder and (route_finder.is_general_transit_query(user_query) or route_finder.is_general_transit_query(expanded_query))
 
+                # Extract sub-clauses and multi-question intent
+                sub_clauses = [c.strip() for c in re.split(r'[\?\;\.\!]|(?:\b(?:and|also|plus|with)\b)', user_query) if len(c.strip()) > 3]
+
+                is_multi_question = (
+                    len(sub_clauses) > 1 or
+                    "?" in user_query or
+                    user_query.count("who") > 1 or
+                    user_query.count("which") > 1 or
+                    user_query.count("what") > 1 or
+                    bool(re.search(r'\b(who|which|what|where|how|when)\b.*\b(who|which|what|where|how|when)\b', user_query, re.IGNORECASE))
+                )
+
                 # Check if this query is a compound / multi-topic query asking about more than just transport
-                is_compound_inquiry = bool(re.search(
+                is_compound_inquiry = is_multi_question or bool(re.search(
                     r'\b(hostel|hostels|mess|canteen|food|room|rooms|occupancy|sharing|ac|non-ac|'
                     r'admission|admissions|cutoff|cut-off|tnea|fee|fees|tuition|scholarship|scholarships|'
                     r'course|courses|department|departments|placement|placements|salary|package|'
-                    r'sports|gym|library|faculty|principal|naac|nba|seat|seats|intake|eligibility)\b',
+                    r'sports|gym|library|faculty|principal|dean|director|prof|professor|srinivasan|'
+                    r'naac|nba|seat|seats|intake|eligibility)\b',
                     user_query,
                     re.IGNORECASE
                 ))
 
-                if matched_route and not is_compound_inquiry:
+                if matched_route and not is_compound_inquiry and not is_multi_question:
                     route_id = matched_route.get("route_id")
                     route_name = matched_route.get("name")
                     meta = matched_route.get("meta", {})
@@ -4705,7 +4848,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "step": f"RouteFinder: Resolved transit schedule for Route {route_id} ({route_name})",
                         "done": True
                     })
-                elif is_general_bus_q and route_finder and not is_compound_inquiry:
+                elif is_general_bus_q and route_finder and not is_compound_inquiry and not is_multi_question:
                     fleet_chunk_text = route_finder.get_fleet_overview()
                     retrieved_chunks = [{
                         "chunk_id": "route_finder_fleet_overview",
@@ -4751,7 +4894,12 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                 yield item
                             return
 
-                    sub_queries = await decompose_multi_hop_query_llm(expanded_query)
+                    # Sub-Query Decomposition: Automatic decomposition for multi-question & compound queries
+                    if is_multi_question or is_compound_inquiry or (query_class == "complex" and len(expanded_query.split()) > 10):
+                        sub_queries = decompose_multi_hop_query(expanded_query)
+                    else:
+                        sub_queries = None
+
                     total_rec_count = len(bm25_corpus) if bm25_corpus else 1378
                     yield json.dumps({
                         "type": "reasoning",
@@ -4760,47 +4908,60 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     })
                     retrieved_chunks = multi_hop_hybrid_search(expanded_query, query_vector, top_k=RAG_TOP_K, sub_queries=sub_queries)
 
-                    # If compound inquiry with transport, inject verified transit overview or matched route
-                    if matched_route:
-                        route_id = matched_route.get("route_id")
-                        route_name = matched_route.get("name")
-                        meta = matched_route.get("meta", {})
-                        stops = matched_route.get("stops", [])
-                        cat_label = "COLLEGE BUS" if matched_route.get("category") == "college" else "PUBLIC BUS"
-                        table_rows = ["| Stop # | Stop Name | Boarding Time |", "| :--- | :--- | :--- |"]
-                        for s_idx, st in enumerate(stops, 1):
-                            s_time = st.get("time") or "Scheduled"
-                            table_rows.append(f"| {s_idx} | {st['name']} | **{s_time}** |")
-                        stops_table = "\n".join(table_rows)
-                        rf_chunk_text = (
-                            f"### VERIFIED OFFICIAL SCHEDULE FOR {cat_label} ROUTE {route_id}: {route_name}\n"
-                            f"- **College Arrival Time**: {meta.get('arrival', '8:00 AM')} at MSAJCEA Campus (Siruseri OMR)\n\n"
-                            f"#### Complete Stop-by-Stop Timings & Boarding Schedule:\n{stops_table}\n"
-                        )
-                        retrieved_chunks.insert(0, {
-                            "chunk_id": f"route_finder_route_{route_id}",
-                            "title": f"Official Bus Schedule: {route_name}",
-                            "source_file": "msajce_transport.md",
-                            "category": "transport",
-                            "page_url": "https://msajce-edu.in/transport",
-                            "content": rf_chunk_text,
-                            "rrf_score": 1.0
-                        })
-                        yield json.dumps({
-                            "type": "reasoning",
-                            "step": f"Injected transit schedule for Route {route_id} into compound context",
-                            "done": True
-                        })
-                    elif is_general_bus_q and route_finder:
-                        retrieved_chunks.insert(0, {
-                            "chunk_id": "route_finder_fleet_overview",
-                            "title": "Official Transport & Bus Fleet Overview",
-                            "source_file": "msajce_transport.md",
-                            "category": "transport",
-                            "page_url": "https://msajce.edu.in/transport",
-                            "content": route_finder.get_fleet_overview(),
-                            "rrf_score": 1.0
-                        })
+                    # If compound inquiry with transport or multi-question, inject verified transit overview and any matched sub-clause routes/stops
+                    if route_finder:
+                        found_routes = []
+                        for sc in sub_clauses + [user_query, expanded_query]:
+                            r = route_finder.find_route(sc)
+                            if r and r not in found_routes:
+                                found_routes.append(r)
+                        
+                        for r_item in found_routes:
+                            r_id = r_item.get("route_id")
+                            r_name = r_item.get("name")
+                            meta = r_item.get("meta", {})
+                            stops = r_item.get("stops", [])
+                            cat_label = "COLLEGE BUS" if r_item.get("category") == "college" else "PUBLIC BUS"
+                            table_rows = ["| Stop # | Stop Name | Boarding Time |", "| :--- | :--- | :--- |"]
+                            for s_idx, st in enumerate(stops, 1):
+                                s_time = st.get("time") or "Scheduled"
+                                table_rows.append(f"| {s_idx} | {st['name']} | **{s_time}** |")
+                            stops_table = "\n".join(table_rows)
+                            driver_line = f"- **Driver Name**: {meta.get('driver', 'Transport Office')}" if meta.get('driver') else ""
+                            contact_line = f"- **Driver Contact**: {meta.get('contact', 'Campus Helpdesk: 044-27470025')}" if meta.get('contact') else ""
+                            rf_chunk_text = (
+                                f"### VERIFIED OFFICIAL SCHEDULE FOR {cat_label} ROUTE {r_id}: {r_name}\n"
+                                f"{driver_line}\n"
+                                f"{contact_line}\n"
+                                f"- **College Arrival Time**: {meta.get('arrival', '8:00 AM')} at MSAJCEA Campus (Siruseri OMR)\n\n"
+                                f"#### Complete Stop-by-Stop Timings & Boarding Schedule:\n{stops_table}\n"
+                            )
+                            retrieved_chunks.insert(0, {
+                                "chunk_id": f"route_finder_route_{r_id}",
+                                "title": f"Official Bus Schedule: {r_name}",
+                                "source_file": "msajce_transport.md",
+                                "category": "transport",
+                                "page_url": "https://msajce-edu.in/transport",
+                                "content": rf_chunk_text,
+                                "rrf_score": 1.0
+                            })
+
+                        is_any_transit = any(route_finder.is_general_transit_query(sc) or "bus" in sc.lower() or "velachery" in sc.lower() for sc in sub_clauses + [user_query])
+                        if is_any_transit or is_general_bus_q:
+                            retrieved_chunks.insert(0, {
+                                "chunk_id": "route_finder_fleet_overview",
+                                "title": "Official Transport & Bus Fleet Overview",
+                                "source_file": "msajce_transport.md",
+                                "category": "transport",
+                                "page_url": "https://msajce.edu.in/transport",
+                                "content": route_finder.get_fleet_overview(),
+                                "rrf_score": 1.0
+                            })
+                            yield json.dumps({
+                                "type": "reasoning",
+                                "step": "Injected full campus bus fleet overview into compound context",
+                                "done": True
+                            })
 
                     # Exact Patent & Identifier Lookup Booster
                     patent_num_match = re.search(r'\b(\d{6,12}[A-Za-z]?)\b', user_query)
@@ -4839,6 +5000,40 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             yield json.dumps({
                                 "type": "reasoning",
                                 "step": f"Patent & Research Registry: Injected {len(exact_patent_chunks)} verified patent records",
+                                "done": True
+                            })
+
+                    # Institutional Overview Canonical Document Booster
+                    is_overview_q = (query_cat == "institutional_overview") or bool(re.search(
+                        r'\b(about\s+(?:the\s+)?college|about\s+msajce|about\s+msajcea|tell\s+me\s+ab?o?u?t\s+(?:your\s+|ur\s+)?college|overview\s+of\s+(?:the\s+)?college|what\s+is\s+msajce|why\s+join\s+msajce|why\s+choose\s+msajce|college\s+overview)\b',
+                        user_query,
+                        re.IGNORECASE
+                    ))
+
+                    if is_overview_q:
+                        overview_chunks = []
+                        if bm25_corpus:
+                            for doc in bm25_corpus:
+                                doc_file = (doc.get("source_file") or "").lower()
+                                if any(f in doc_file for f in ["msajce_about.md", "msajce_ourhistory.md", "msajce_courses_overview.md", "msajce_placement.md", "msajce_principal.md"]):
+                                    overview_chunks.append({
+                                        "chunk_id": f"overview_chunk_{doc.get('chunk_id', 0)}",
+                                        "title": doc.get("topic_title") or doc.get("title") or "MSAJCE Official Institutional Overview",
+                                        "source_file": doc.get("source_file", "msajce_about.md"),
+                                        "category": "institutional_overview",
+                                        "page_url": "https://msajce.edu.in/about",
+                                        "content": doc.get("text") or doc.get("content", ""),
+                                        "rrf_score": 2.5
+                                    })
+                        if overview_chunks:
+                            filtered_chunks = [
+                                c for c in retrieved_chunks
+                                if not any(banned in (c.get("source_file") or "").lower() for banned in ["msajcepolicy.md", "clubssocieties.md", "naac.md", "ebsb.md", "nirf.md", "womensempowermentcell.md"])
+                            ]
+                            retrieved_chunks = overview_chunks[:4] + filtered_chunks
+                            yield json.dumps({
+                                "type": "reasoning",
+                                "step": f"Institutional Overview Engine: Loaded {len(overview_chunks[:4])} canonical overview records",
                                 "done": True
                             })
 
@@ -5094,10 +5289,22 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 effective_max_tokens = max(MAX_TOKENS, 4096)
                 cand_messages = list(messages)
 
+                if req.is_regeneration:
+                    cand_messages.append({
+                        "role": "user",
+                        "content": (
+                            f"[REGENERATION REQUEST]: Please provide a FRESH, NEWLY SYNTHESIZED answer for this question: '{prompt_user_question}'. "
+                            f"Use varied phrasing, fresh sentence structures, and distinct structural presentation while maintaining 100% factual accuracy."
+                        )
+                    })
+                    cand_temperature = 0.85
+                else:
+                    cand_temperature = 0.20
+
                 llm_payload = {
                     "model": target_model_slug,
                     "messages": cand_messages,
-                    "temperature": 0.20,
+                    "temperature": cand_temperature,
                     "max_tokens": effective_max_tokens,
                     "stream": True,
                     "stream_options": {"include_usage": True}
@@ -7898,6 +8105,31 @@ async def reset_user_cache(request: Request):
         raise HTTPException(status_code=500, detail=f"Reset failed: {str(e)}")
     finally:
         release_db_connection(conn)
+
+
+@app.post("/api/admin/reload-dataset")
+async def admin_reload_dataset(credentials: HTTPBasicCredentials = Depends(HTTPBasic())):
+    """Admin endpoint to hot-reload BM25 indices, Knowledge Entities, and dataset caches in RAM without server restart."""
+    if credentials.username != ADMIN_USERNAME or credentials.password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    try:
+        load_entities_index()
+        load_route_finder()
+        init_rag_resources()
+        return JSONResponse({
+            "success": True,
+            "message": "Dataset indices, BM25 corpus, RouteFinder, and Knowledge Entities hot-reloaded successfully into memory!",
+            "reloaded": [
+                "BM25 Corpus & Index",
+                "Knowledge Entities Index",
+                "Transport RouteFinder Schedules",
+                "Ground Truth Resource Catalog"
+            ]
+        })
+    except Exception as e:
+        logger.error(f"[ADMIN] Dataset reload error: {e}")
+        raise HTTPException(status_code=500, detail=f"Dataset reload failed: {str(e)}")
 
 
 if __name__ == "__main__":

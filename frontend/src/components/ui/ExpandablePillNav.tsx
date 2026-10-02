@@ -56,7 +56,7 @@ export const ExpandablePillNav: React.FC<ExpandablePillNavProps> = ({
             className={cn(
               "flex items-center gap-0 px-3 py-2 rounded-full transition-all duration-200 relative h-9 min-w-[38px] cursor-pointer overflow-hidden",
               isActive
-                ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md"
+                ? "bg-[#9E2339] text-white dark:bg-[#E11D48] dark:text-white font-bold shadow-md"
                 : "bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-hover dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-[#f4f3ee]"
             )}
             aria-label={item.label}

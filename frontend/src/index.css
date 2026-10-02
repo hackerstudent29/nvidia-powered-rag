@@ -124,7 +124,7 @@
     --hover-2: rgba(0, 0, 0, 0.08);
 
     /* Accent & semantic */
-    --accent: #2E6B5E;
+    --accent: #9E2339;
     --orange: #D97706;
     --green:  #059669;
     --red:    #DC2626;
@@ -145,8 +145,8 @@
      ══════════════════════════════════════════════════════════════ */
   .dark {
     /* ── Dark Surfaces (Ultra-clean obsidian & charcoal) ── */
-    --canvas:      #0b0c0e;   /* Deepest obsidian dark canvas */
-    --surface:     #14151a;   /* Clean elevated card & panel background */
+    --canvas:      #121214;   /* Deepest obsidian dark canvas */
+    --surface:     #18181b;   /* Clean elevated card & panel background */
     --inset:       #1c1d24;   /* Inset containers, inputs, code blocks */
 
     /* ── Borders & Dividers (Subtle, non-glaring) ── */
@@ -163,7 +163,7 @@
     --hover-2: rgba(244, 243, 238, 0.10);
 
     /* ── Brand Accents ── */
-    --accent: #10b981;   /* Luminous MSAJCEA emerald green */
+    --accent: #E11D48;   /* Luminous MSAJCEA Radiant Crimson */
     --orange: #f97316;
     --green:  #10b981;
     --red:    #ef4444;
@@ -495,8 +495,8 @@ textarea, input {
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.02);
 }
 .glass-floating-input:focus-within {
-  border-color: #2E6B5E;
-  box-shadow: 0 0 0 4px rgba(46, 107, 94, 0.14), 0 14px 40px -6px rgba(46, 107, 94, 0.1);
+  border-color: #9E2339;
+  box-shadow: 0 0 0 4px rgba(158, 35, 57, 0.14), 0 14px 40px -6px rgba(158, 35, 57, 0.1);
 }
 
 /* Dark mode input — warm dark glass */
@@ -509,9 +509,9 @@ textarea, input {
     inset 0 1px 0 rgba(244, 243, 238, 0.04);
 }
 .dark .glass-floating-input:focus-within {
-  border-color: #4ade80;
+  border-color: #E11D48;
   box-shadow:
-    0 0 0 3px rgba(74, 222, 128, 0.15),
+    0 0 0 3px rgba(225, 29, 72, 0.15),
     0 16px 48px -8px rgba(0, 0, 0, 0.7);
 }
 
