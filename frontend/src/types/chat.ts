@@ -77,6 +77,7 @@ export interface Message {
   model?: string;
   tokens_used?: number;
   latency_ms?: number;
+  ttft_ms?: number;
   sources?: SourceItem[];
   resource_attachments?: ResourceAttachment[];
   reasoning_steps?: string[] | ReasoningStep[];

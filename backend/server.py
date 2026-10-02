@@ -72,6 +72,34 @@ except ImportError:
     from backend.domain_router import domain_router, topic_shift_detector, crag_filter, CampusDomain, TopicRelation
 
 try:
+    from taxonomy import (
+        CAMPUS_TAXONOMY,
+        fast_classify_intent,
+        is_jailbreak_attempt,
+        is_conversational_greeting,
+        is_campus_domain_term_present,
+        get_all_categories
+    )
+except ImportError:
+    try:
+        from backend.taxonomy import (
+            CAMPUS_TAXONOMY,
+            fast_classify_intent,
+            is_jailbreak_attempt,
+            is_conversational_greeting,
+            is_campus_domain_term_present,
+            get_all_categories
+        )
+    except ImportError:
+        CAMPUS_TAXONOMY = {}
+        fast_classify_intent = lambda q: None
+        is_jailbreak_attempt = lambda q: False
+        is_conversational_greeting = lambda q: False
+        is_campus_domain_term_present = lambda q: False
+        get_all_categories = lambda: {}
+
+
+try:
     from backend.app.services.redis_service import (
         get_redis_client, get_cached_session_history,
         set_cached_session_history, append_cached_session_message
@@ -6068,36 +6096,42 @@ async def get_session_history(session_id: str):
                 """, (session_id,))
                 rows = cur.fetchall()
                 messages = []
-                for r in rows:
-                    sources = r["citations"] if isinstance(r["citations"], list) else json.loads(r["citations"] or "[]")
-                    token_metrics = r["token_usage"] if isinstance(r["token_usage"], dict) else json.loads(r["token_usage"] or "{}")
-                    suggestions = r["suggestions"] if isinstance(r["suggestions"], list) else json.loads(r["suggestions"] or "[]")
-                    r_steps = r.get("reasoning_steps")
-                    if isinstance(r_steps, list):
-                        msg_reasoning = r_steps
-                    elif isinstance(r_steps, str) and r_steps.strip():
+                def _safe_json(val, fallback):
+                    if isinstance(val, (dict, list)):
+                        return val
+                    if isinstance(val, str) and val.strip():
                         try:
-                            msg_reasoning = json.loads(r_steps)
+                            return json.loads(val)
                         except Exception:
-                            msg_reasoning = []
-                    else:
-                        msg_reasoning = []
+                            pass
+                    return fallback
+
+                for r in rows:
+                    sources = _safe_json(r.get("citations"), [])
+                    token_metrics = _safe_json(r.get("token_usage"), None)
+                    suggestions = _safe_json(r.get("suggestions"), [])
+                    msg_reasoning = _safe_json(r.get("reasoning_steps"), [])
                     
+                    created_at_val = r.get("created_at")
+                    created_at_str = created_at_val.isoformat() if hasattr(created_at_val, "isoformat") else (str(created_at_val) if created_at_val else None)
+
                     messages.append({
-                        "id": r["message_id"],
-                        "role": r["role"],
-                        "content": r["content"],
-                        "model": r["model_used"],
-                        "latency_ms": r["latency_ms"],
+                        "id": r.get("message_id", f"msg_{int(time.time()*1000)}"),
+                        "role": r.get("role", "assistant"),
+                        "content": r.get("content", ""),
+                        "model": r.get("model_used"),
+                        "latency_ms": r.get("latency_ms", 0),
                         "sources": sources,
-                        "token_metrics": token_metrics if token_metrics else None,
+                        "token_metrics": token_metrics,
                         "suggestions": suggestions,
                         "reasoning_steps": msg_reasoning,
-                        "created_at": r["created_at"].isoformat() if r["created_at"] else None
+                        "created_at": created_at_str
                     })
                 return JSONResponse(messages)
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        logger.error(f"[get_session_history] Non-fatal error retrieving session {session_id}: {e}")
+        return JSONResponse([])
+
 
 @app.delete("/api/sessions/{session_id}")
 async def delete_session(session_id: str):
