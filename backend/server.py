@@ -655,6 +655,7 @@ def compute_token_metrics(
         "embedding_tokens": embed_tokens,
         "context_tokens": context_tokens,
         "system_tokens": system_tokens,
+        "history_tokens": history_tokens,
         "total_tokens": total_tokens,
         "total_cost_usd": round(total_cost_usd, 6),
         "total_cost_inr": round(total_cost_inr, 4),

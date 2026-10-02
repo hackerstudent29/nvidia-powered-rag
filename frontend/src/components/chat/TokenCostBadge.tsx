@@ -76,7 +76,7 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
         {totalTokens > 0 ? (
           <span className="tabular-nums font-mono text-ink font-medium shrink-0 whitespace-nowrap">
             <span className="inline sm:hidden">
-              {totalTokens >= 1000 ? `${(totalTokens / 1000).toFixed(1)}k` : totalTokens} tok
+              {totalTokens.toLocaleString()} tok
             </span>
             <span className="hidden sm:inline">
               {totalTokens.toLocaleString()} tokens
@@ -122,11 +122,20 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
     : "Gemini";
 
   const queryTokens = metrics.query_tokens ?? 0;
+  const historyTokens = metrics.history_tokens ?? 0;
   const promptInputTokens = metrics.prompt_tokens ?? 0;
   const answerTokens = metrics.completion_tokens ?? 0;
   const contextTokens = metrics.context_tokens ?? 0;
-  const systemTokens = metrics.system_tokens ?? 0;
+  const systemTokens = metrics.system_tokens ?? 732;
   const totalTokens = metrics.total_tokens ?? (promptInputTokens + answerTokens);
+
+  const queryHistTokens = queryTokens + historyTokens;
+
+  // Percentage calculations
+  const sysPct = totalTokens > 0 ? Math.min(100, Math.round((systemTokens / totalTokens) * 100)) : 0;
+  const ragPct = totalTokens > 0 ? Math.min(100, Math.round((contextTokens / totalTokens) * 100)) : 0;
+  const qhPct = totalTokens > 0 ? Math.min(100, Math.round((queryHistTokens / totalTokens) * 100)) : 0;
+  const ansPct = totalTokens > 0 ? Math.min(100, Math.round((answerTokens / totalTokens) * 100)) : 0;
 
   return (
     <div className="w-full rounded-2xl bg-surface/90 dark:bg-[#18181b]/90 text-ink dark:text-[#f4f3ee] mt-2 mb-1 p-3.5 border border-black/[0.08] dark:border-white/[0.08] shadow-md backdrop-blur-xl">
@@ -140,8 +149,13 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </svg>
             </div>
-            <div className="text-[12px] font-bold text-ink dark:text-[#f4f3ee]">
-              Token Usage & Performance Telemetry
+            <div>
+              <div className="text-[12px] font-bold text-ink dark:text-[#f4f3ee]">
+                Detailed Token Usage Breakdown
+              </div>
+              <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] font-mono">
+                {totalTokens.toLocaleString()} tokens completely used for this response
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-[#2E6B5E] dark:text-[#10b981] font-medium">
@@ -150,35 +164,65 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
           </div>
         </div>
 
-        {/* 4-Box Token & Performance Breakdown */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {/* 1. Prompt Input Tokens (With Query + RAG breakdown) */}
+        {/* Component-Wise Itemized Token Usage Breakdown */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {/* 1. System Prompt */}
           <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
-            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
-              Prompt Input Tokens
+            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider flex items-center justify-between">
+              <span>System Prompt</span>
+              <span className="text-[9px] text-[#2E6B5E] dark:text-[#10b981] font-mono">{sysPct}%</span>
             </div>
             <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
-              {promptInputTokens.toLocaleString()}
+              {systemTokens.toLocaleString()}
             </div>
-            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title={`Query: ${queryTokens} tok | Campus RAG: ${contextTokens} tok | System: ${systemTokens} tok`}>
-              Query: {queryTokens} • RAG: {contextTokens}
+            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title="System rules & identity">
+              Rules & Guardrails
             </div>
           </div>
 
-          {/* 2. Answer Tokens */}
+          {/* 2. RAG Context */}
           <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
-            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
-              Answer Tokens
+            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider flex items-center justify-between">
+              <span>Campus RAG</span>
+              <span className="text-[9px] text-[#2E6B5E] dark:text-[#10b981] font-mono">{ragPct}%</span>
+            </div>
+            <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
+              {contextTokens.toLocaleString()}
+            </div>
+            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title="Retrieved dataset records">
+              Fetched Chunks
+            </div>
+          </div>
+
+          {/* 3. Query & History */}
+          <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
+            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider flex items-center justify-between">
+              <span>Query & History</span>
+              <span className="text-[9px] text-[#2E6B5E] dark:text-[#10b981] font-mono">{qhPct}%</span>
+            </div>
+            <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
+              {queryHistTokens.toLocaleString()}
+            </div>
+            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title="User input & turn memory">
+              Input + History
+            </div>
+          </div>
+
+          {/* 4. Answer Output */}
+          <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
+            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider flex items-center justify-between">
+              <span>LLM Answer</span>
+              <span className="text-[9px] text-[#2E6B5E] dark:text-[#10b981] font-mono">{ansPct}%</span>
             </div>
             <div className="text-[14px] font-bold font-mono text-[#2E6B5E] dark:text-[#10b981] mt-0.5">
               {answerTokens.toLocaleString()}
             </div>
-            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate">
-              Generated response
+            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate" title="Generated response">
+              Output Tokens
             </div>
           </div>
 
-          {/* 3. Total Tokens & Speed */}
+          {/* 5. Total Usage */}
           <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
             <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
               Total Tokens
@@ -187,20 +231,7 @@ export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
               {totalTokens.toLocaleString()}
             </div>
             <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] mt-0.5 truncate">
-              {metrics.tokens_per_sec > 0 ? `${metrics.tokens_per_sec} tok/s speed` : "Total usage"}
-            </div>
-          </div>
-
-          {/* 4. Model & Latency */}
-          <div className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.06]">
-            <div className="text-[9px] uppercase font-bold text-ink-3 dark:text-[#b1ada1] tracking-wider">
-              Model & Latency
-            </div>
-            <div className="text-[13px] font-bold text-ink dark:text-[#f4f3ee] truncate mt-0.5">
-              {cleanModelName}
-            </div>
-            <div className="text-[10px] text-ink-3 dark:text-[#b1ada1] font-mono mt-0.5 truncate">
-              {metrics.latency_ms}ms • {formattedCostUsd}
+              {metrics.tokens_per_sec > 0 ? `${metrics.tokens_per_sec} tok/s` : cleanModelName}
             </div>
           </div>
         </div>

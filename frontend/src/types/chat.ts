@@ -41,6 +41,7 @@ export interface TokenMetrics {
   query_tokens?: number;
   context_tokens?: number;
   system_tokens?: number;
+  history_tokens?: number;
   completion_tokens: number;
   embedding_tokens: number;
   total_tokens: number;
