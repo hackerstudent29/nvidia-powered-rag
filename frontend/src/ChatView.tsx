@@ -103,18 +103,26 @@ export default function App({ initialSettingsOpen = false }: { initialSettingsOp
     setIsOnboardingOpen(false);
   };
 
-  // Automatic clean reset: purges stale user profile & cached messages so user starts fresh
+  // Automatic clean reset: checks backend reset-version and purges stale user profile & cached messages
   useEffect(() => {
-    const RESET_VERSION = "lorin_clean_reset_fresh_v2";
-    if (localStorage.getItem(RESET_VERSION) !== "true") {
-      localStorage.removeItem("lorin_user_profile");
-      localStorage.removeItem("lorin_cached_messages");
-      localStorage.removeItem("lorin_rate_limit_info");
-      localStorage.removeItem("lorin_session_id");
-      localStorage.removeItem("lorin_sessions");
-      localStorage.setItem(RESET_VERSION, "true");
-      setUserProfile(null);
-    }
+    fetch("/api/system/reset-version")
+      .then((res) => res.json())
+      .then((data) => {
+        const serverVer = data.reset_version || "v1";
+        const localVer = localStorage.getItem("lorin_last_server_reset");
+        if (localVer !== serverVer) {
+          localStorage.removeItem("lorin_user_profile");
+          localStorage.removeItem("lorin_user_id");
+          localStorage.removeItem("lorin_cached_messages");
+          localStorage.removeItem("lorin_rate_limit_info");
+          localStorage.removeItem("lorin_session_id");
+          localStorage.removeItem("lorin_sessions");
+          localStorage.setItem("lorin_last_server_reset", serverVer);
+          setUserProfile(null);
+          setIsOnboardingOpen(true);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Single source of truth for mobile/touch layout state + keyboard offset

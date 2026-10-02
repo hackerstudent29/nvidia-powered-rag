@@ -12,7 +12,8 @@ import {
   Cpu,
   UserCheck,
   Zap,
-  Save
+  Save,
+  RotateCcw
 } from "lucide-react";
 
 interface SettingsModalProps {
@@ -336,11 +337,25 @@ export default function SettingsModal({
         })}
       </div>
 
-      {/* Footer — Save Option Button */}
-      <div className="pt-3 border-t border-line dark:border-white/[0.06] flex items-center justify-between">
-        <span className="text-[10px] text-ink-3 dark:text-zinc-400 font-mono truncate mr-2">
-          Selected: <strong className="text-ink dark:text-zinc-200">{selectedVoice}</strong>
-        </span>
+      {/* Hard Reset & Clear All Data Action */}
+      <div className="pt-3 border-t border-line dark:border-white/[0.06] flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={async () => {
+            if (window.confirm("⚠️ Perform full hard reset? This will clear all database history, local user profiles, and session cache.")) {
+              try {
+                await fetch("/api/admin/clear-cache", { method: "POST" });
+              } catch (e) {}
+              localStorage.clear();
+              window.location.reload();
+            }
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 dark:hover:bg-rose-500/30 border border-rose-500/30 transition-all cursor-pointer"
+          title="Wipe database sessions & reset user profile"
+        >
+          <RotateCcw className="size-3.5" />
+          <span>Hard Reset & Clear All</span>
+        </button>
 
         <button
           type="button"

@@ -107,6 +107,16 @@ def main():
                     cur.execute(f"DELETE FROM {tbl};")
                 conn.commit()
 
+        # Update system reset timestamp marker so frontend automatically purges local storage
+        reset_ver_path = os.path.join(os.path.dirname(__file__), "..", "backend", "data", "system_reset_version.txt")
+        try:
+            import time
+            os.makedirs(os.path.dirname(reset_ver_path), exist_ok=True)
+            with open(reset_ver_path, "w", encoding="utf-8") as rf:
+                rf.write(str(int(time.time())))
+        except Exception as file_err:
+            print(f"[WARN] Could not update reset version marker: {file_err}")
+
         # 4. Fetch AFTER User metrics
         after_users = 0
         after_ips = 0

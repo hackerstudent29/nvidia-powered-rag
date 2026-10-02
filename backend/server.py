@@ -7578,6 +7578,60 @@ async def get_admin_history(request: Request, limit: int = 100):
         return {"error": str(e)}
 
 
+@app.get("/api/system/reset-version")
+async def get_system_reset_version():
+    reset_ver_path = os.path.join(os.path.dirname(__file__), "data", "system_reset_version.txt")
+    if os.path.exists(reset_ver_path):
+        try:
+            with open(reset_ver_path, "r", encoding="utf-8") as f:
+                ver = f.read().strip()
+                if ver:
+                    return {"reset_version": ver}
+        except Exception:
+            pass
+    return {"reset_version": "v1"}
+
+
+@app.post("/api/admin/clear-cache")
+async def clear_system_cache():
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        target_tables = [
+            "message_feedback", "correction_candidates", "chat_messages",
+            "chat_sessions", "query_cache", "user_security_bans",
+            "security_attack_logs", "user_request_counters"
+        ]
+        try:
+            cur.execute("SET lock_timeout = '3s';")
+            cur.execute(f"TRUNCATE TABLE {', '.join(target_tables)} CASCADE;")
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            cur.execute("SET lock_timeout = '10s';")
+            for tbl in target_tables:
+                try:
+                    cur.execute(f"DELETE FROM {tbl};")
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"[WARN] Database clear cache error: {e}")
+
+    new_epoch = str(int(time.time()))
+    reset_ver_path = os.path.join(os.path.dirname(__file__), "data", "system_reset_version.txt")
+    try:
+        os.makedirs(os.path.dirname(reset_ver_path), exist_ok=True)
+        with open(reset_ver_path, "w", encoding="utf-8") as f:
+            f.write(new_epoch)
+    except Exception as file_err:
+        print(f"[WARN] Failed to write reset version: {file_err}")
+
+    return {"status": "success", "reset_version": new_epoch}
+
+
 @app.get("/api/admin/metrics")
 async def get_admin_metrics(request: Request):
     authenticate_admin_request(request)
