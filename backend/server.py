@@ -218,7 +218,12 @@ STYLE & FORMATTING:
 1. Tone: Warm, human, professional campus advisor. Direct & responsive (ChatGPT-style).
 2. Format: Structured Markdown tables (| Parameter | Detail |) for comparisons, fees, bus routes. Bold bullets (- **Feature**: Detail). Numbered lists for steps/procedures. No trailing periods on headings. Zero emojis or pictograms.
 3. Anti-Metadata: Ground 100% in verified MSAJCE records. Never extrapolate or invent facts. NEVER quote internal chunk indices, document filenames (e.g. '[8]', 'msajce_policy.md'), or raw versions.
-4. Administrative In-Charges: Map role queries to official campus contacts (Transport Convener Dr. K.P. Santhosh Nathan, Asst. Transport Convener Mr. A. Abdul Gafoor, Placement Officer, Admission Head, Physical Director, Warden) with name, title, phone, email. If a named individual is not in records, state clearly: "No record found for '[Name]' in verified MSAJCE campus records." NEVER default to Principal Dr. K.S. Srinivasan unless specifically asked.
+4. Administrative In-Charges & Faculty: Map role queries strictly to official campus contacts with name, title, phone, and email.
+   - Head of Admission: Dedicated Member of the Academic Advisory Committee responsible for managing the admission process. (Helpline: +91 9940004500 / +91 9444103328, Direct: 9940319629 / 9840886992, Email: admission@msajce-edu.in).
+   - Other States Admission Coordinator: Dr. Vamsi Naga Mohan A (cse.vamsi@msajce-edu.in, +91 9043358674 / +91 9502687344).
+   - Principal: Dr. K.S. Srinivasan (TNSCST member).
+   - Transport Convener: Dr. K.P. Santhosh Nathan (+91 9940319629).
+   STRICT RULE: NEVER mix up or cross-contaminate phone numbers, emails, or names between different faculty members. NEVER attribute Dr. Vamsi's phone (+91 9043358674) or email (cse.vamsi@msajce-edu.in) to Dr. Srinivasan or Manager Accounts. If asked about dedicated admission committee members, state clearly that the Head of Admission is a dedicated Member of the Academic Advisory Committee at MSAJCE. If a named individual is not in records, state clearly: "No record found for '[Name]' in verified MSAJCE campus records."
 5. Zero Canned Intros: START IMMEDIATELY with the direct answer or table. NEVER open with "Hello! I'm Lorin AI...", "As an AI...", or "Welcome to MSAJCE!". Greet ONLY if user explicitly greets first ("Hi", "Hello").
 6. Identity & Links: Official website msajce.edu.in. Google Maps: [Mohamed Sathak A.J. College of Engineering on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA). Distinguish college buses (AR/R/N) from public MTC buses. Acknowledge Ramanathan S. (Ram) only if asked who built Lorin AI. NEVER output PDF links or fake URLs. Allowed links: Google Maps, verified GitHub/Portfolios, msajce.edu.in, contact email (mailto:), phone (tel:).
 
@@ -2379,6 +2384,7 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     if is_contextual_query(query):
         return None
     q_clean = query.strip().lower()
+    q_clean_norm = re.sub(r'^(?:msajce|msajcea|college|the|a|an)\s+', '', q_clean).strip()
 
     # 0. Conversational greeting check (0ms instant response)
     if re.match(r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|assalamu\s+alaikum|sup|yo|howdy|(?:good|gud|gd)\s+(?:morning|afternoon|evening|day|mrng|mng|aftn|evng|nite|night)|greetings|gm|ga|ge|gn|morning|afternoon|evening)(?:\s+(?:there|lorin|bot|assistant|sir|all|everyone|ai|bro|buddy))?[\s!.,?]*$', q_clean) or q_clean in ["hi", "hello", "hey", "good morning", "gud morning", "good afternoon", "gud afternoon", "good evening", "gud evening", "gm", "ga", "ge", "gn", "morning", "evening", "afternoon"]:
@@ -2393,7 +2399,7 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
         "ram portfolio", "zendrum", "ramzenderum", "ramzendrum", "who is zendrum", "zendrum profile",
         "tell abt developer", "tell about developer", "tell abt him", "tell about him", "hackerstudent29"
     ]
-    if any(k in q_clean for k in dev_triggers) or q_clean in ["developer", "creator", "ramanathan", "zendrum", "ramzenderum", "ramzendrum"]:
+    if any(k in q_clean or k in q_clean_norm for k in dev_triggers) or q_clean in ["developer", "creator", "ramanathan", "zendrum", "ramzenderum", "ramzendrum"]:
         return PREBUILT_CARD_ANSWERS.get("developer")
 
     # Dedicated Admission Member & Contact Inquiries (0ms instant response)
@@ -2403,7 +2409,7 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
         "who is responsible for admissions", "who handles admissions", "head of admission",
         "admission officer", "admission helpline", "admission contact number", "admission contact person"
     ]
-    if any(k in q_clean for k in admission_member_triggers):
+    if any(k in q_clean or k in q_clean_norm for k in admission_member_triggers):
         return PREBUILT_CARD_ANSWERS.get("admission")
 
     # College Location & Google Maps Navigation link (0ms instant response)
