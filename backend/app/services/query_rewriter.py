@@ -49,30 +49,61 @@ def pre_normalize_department_acronyms(query: str) -> str:
     )
     return q
 
+_STANDALONE_DOMAIN_KEYWORDS = {
+    "developer", "creator", "author", "architect", "zendrum", "ramzenderum", "ramzendrum",
+    "ramanathan", "hackerstudent29", "lorin", "principal", "srinivasan", "hostel", "hostels",
+    "bus", "buses", "transport", "route", "routes", "admission", "admissions", "tnea", "1301",
+    "cutoff", "cutoffs", "fee", "fees", "scholarship", "placement", "placements", "cse", "it",
+    "ece", "eee", "mech", "civil", "aids", "aiml", "cyber", "csbs", "location", "address", "map",
+    "csi", "college", "msajce", "msajcea", "canteen", "library", "sports", "gym", "mess", "wifi",
+    "degree", "courses", "intake", "eligibility", "quota", "syllabus", "department", "departments"
+}
+
 def is_standalone_or_protected_query(query: str) -> bool:
-    """Checks if query is an exact numeric lookup or standalone multi-sentence topic."""
+    """Checks if query is a self-contained, standalone question or exact identifier lookup."""
+    if not query or not query.strip():
+        return False
     q_clean = query.strip()
+    q_low = q_clean.lower()
+    
     if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_clean):
         return False
+
+    if any(k in q_low for k in ["developer", "creator", "who made", "who built", "who created", "who developed", "who programmed", "who coded", "ram", "rama", "ramanathan", "zendrum", "ramzenderum", "ramzendrum", "hackerstudent29"]):
+        return True
+
     if re.search(r'\b\d{6,12}[A-Za-z]?\b', q_clean):
         return True
+
+    words = set(re.findall(r'\b\w+\b', q_low))
+    if words.intersection(_STANDALONE_DOMAIN_KEYWORDS):
+        return True
+
+    if re.search(r'\b(who\s+is|what\s+is|what\s+are|where\s+is|how\s+to|list\s+all|tell\s+me\s+about)\b', q_low) and len(q_clean.split()) >= 3:
+        if not re.search(r'\b(who\s+is\s+he|who\s+is\s+she|who\s+are\s+they|what\s+is\s+it|what\s+is\s+that|what\s+are\s+they|tell\s+me\s+about\s+it|tell\s+me\s+about\s+that|tell\s+abt\s+it|tell\s+abt\s+that)\b', q_low):
+            return True
+
+    if q_clean.count('?') >= 2 or len(q_clean.split()) >= 15:
+        return True
+
     return False
 
 def is_contextual_query(query: str) -> bool:
     """
     Universal Production RAG Contextual Query Detector.
-    Returns True if query is a follow-up, referential, fragment, or short query
-    that depends on conversation context.
+    Returns True ONLY if query is a pure follow-up or referential query dependent on past dialogue.
     """
     if not query:
         return False
     q_norm = normalize_query_typos(query.strip())
 
-    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm) or _PRONOUN_TRIGGERS.search(q_norm):
+    if is_standalone_or_protected_query(q_norm):
+        return False
+
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm):
         return True
 
-    words = q_norm.split()
-    if len(words) <= 12 and not is_standalone_or_protected_query(q_norm):
+    if _PRONOUN_TRIGGERS.search(q_norm):
         return True
 
     return False

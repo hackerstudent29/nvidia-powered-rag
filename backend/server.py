@@ -1335,13 +1335,22 @@ Feel free to ask any question or choose one of the topics above!""",
             "who is the developer",
             "who is the creator",
             "who is your developer",
+            "who is ur developer",
             "who is your creator",
+            "who is ur creator",
             "developer of lorin ai",
             "creator of lorin ai",
             "ram portfolio",
             "ramanathan s",
             "ramzenderum",
-            "ramzendrum"
+            "ramzendrum",
+            "zendrum",
+            "who is zendrum",
+            "zendrum profile",
+            "tell abt him",
+            "tell abt him and his works",
+            "tell about developer",
+            "hackerstudent29"
         ],
         "response": """### Meet the Developer: Ramanathan S. (Ram)
 
@@ -2361,8 +2370,16 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     if re.match(r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|assalamu\s+alaikum|sup|yo|howdy|(?:good|gud|gd)\s+(?:morning|afternoon|evening|day|mrng|mng|aftn|evng|nite|night)|greetings|gm|ga|ge|gn|morning|afternoon|evening)(?:\s+(?:there|lorin|bot|assistant|sir|all|everyone|ai|bro|buddy))?[\s!.,?]*$', q_clean) or q_clean in ["hi", "hello", "hey", "good morning", "gud morning", "good afternoon", "gud afternoon", "good evening", "gud evening", "gm", "ga", "ge", "gn", "morning", "evening", "afternoon"]:
         return PREBUILT_CARD_ANSWERS.get("greeting")
 
-    # Developer questions ("who is ram", "who created you")
-    if any(k in q_clean for k in ["who is ram", "who is rama", "who is ramanathan", "who created you", "who made you", "who built you", "who developed you", "who programmed you", "developer of lorin", "creator of lorin", "ram portfolio"]):
+    # Developer & Creator questions ("who is ram", "who created you", "who is ur developer", "zendrum")
+    dev_triggers = [
+        "who is ram", "who is rama", "who is ramanathan", "who created you", "who made you",
+        "who built you", "who developed you", "who programmed you", "who coded you",
+        "who is ur developer", "who is your developer", "who is the developer", "who is ur creator",
+        "who is your creator", "who is the creator", "developer of lorin", "creator of lorin",
+        "ram portfolio", "zendrum", "ramzenderum", "ramzendrum", "who is zendrum", "zendrum profile",
+        "tell abt developer", "tell about developer", "tell abt him", "tell about him", "hackerstudent29"
+    ]
+    if any(k in q_clean for k in dev_triggers) or q_clean in ["developer", "creator", "ramanathan", "zendrum", "ramzenderum", "ramzendrum"]:
         return PREBUILT_CARD_ANSWERS.get("developer")
 
     # College Location & Google Maps Navigation link (0ms instant response)
@@ -2788,83 +2805,74 @@ _PRONOUN_TRIGGERS = re.compile(
     re.IGNORECASE
 )
 
+_STANDALONE_DOMAIN_KEYWORDS = {
+    "developer", "creator", "author", "architect", "zendrum", "ramzenderum", "ramzendrum",
+    "ramanathan", "hackerstudent29", "lorin", "principal", "srinivasan", "hostel", "hostels",
+    "bus", "buses", "transport", "route", "routes", "admission", "admissions", "tnea", "1301",
+    "cutoff", "cutoffs", "fee", "fees", "scholarship", "placement", "placements", "cse", "it",
+    "ece", "eee", "mech", "civil", "aids", "aiml", "cyber", "csbs", "location", "address", "map",
+    "csi", "college", "msajce", "msajcea", "canteen", "library", "sports", "gym", "mess", "wifi",
+    "degree", "courses", "intake", "eligibility", "quota", "syllabus", "department", "departments"
+}
+
+def is_standalone_or_protected_query(query: str) -> bool:
+    """
+    Checks if a query is a self-contained, standalone question or exact identifier lookup
+    that should NEVER be misclassified as a contextual follow-up.
+    """
+    if not query or not query.strip():
+        return False
+    q_clean = query.strip()
+    q_low = q_clean.lower()
+    
+    # 0. Contextual affirmations or generic desire phrases are NEVER standalone
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_clean):
+        return False
+
+    # 1. Developer & Creator inquiries
+    if any(k in q_low for k in ["developer", "creator", "who made", "who built", "who created", "who developed", "who programmed", "who coded", "ram", "rama", "ramanathan", "zendrum", "ramzenderum", "ramzendrum", "hackerstudent29"]):
+        return True
+
+    # 2. Exact numeric identifiers (patent numbers, roll numbers, Anna Univ codes, ISBNs)
+    if re.search(r'\b\d{6,12}[A-Za-z]?\b', q_clean):
+        return True
+
+    # 3. Contains clear domain vocabulary or specific entities
+    words = set(re.findall(r'\b\w+\b', q_low))
+    if words.intersection(_STANDALONE_DOMAIN_KEYWORDS):
+        return True
+
+    # 4. Direct question structures targeting specific topics (who is, what is, where is, how to)
+    if re.search(r'\b(who\s+is|what\s+is|what\s+are|where\s+is|how\s+to|list\s+all|tell\s+me\s+about)\b', q_low) and len(q_clean.split()) >= 3:
+        if not re.search(r'\b(who\s+is\s+he|who\s+is\s+she|who\s+are\s+they|what\s+is\s+it|what\s+is\s+that|what\s+are\s+they|tell\s+me\s+about\s+it|tell\s+me\s+about\s+that|tell\s+abt\s+it|tell\s+abt\s+that)\b', q_low):
+            return True
+
+    # 5. Compound / Multi-question queries with 2+ questions
+    if q_clean.count('?') >= 2 or len(q_clean.split()) >= 15:
+        return True
+
+    return False
+
 def is_contextual_query(query: str) -> bool:
     """
     Universal Production RAG Contextual Query Detector.
-    Returns True if the query is a follow-up, referential, fragment, or short query
-    that depends on conversation context and should never be globally cached.
+    Returns True ONLY if the query is a pure follow-up or referential query dependent on past dialogue.
     """
     if not query:
         return False
     q_norm = normalize_query_typos(query.strip())
 
-    # Affirmation & Pronoun Triggers
-    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm) or _PRONOUN_TRIGGERS.search(q_norm):
-        return True
-
-    # Any query <= 12 words that is not an explicit standalone numeric lookup is contextually evaluated
-    words = q_norm.split()
-    if len(words) <= 12 and not is_standalone_or_protected_query(q_norm):
-        return True
-
-    return False
-
-_ASSISTANT_OFFER_PATTERNS = [
-    re.compile(r'(?:would you like|do you want|shall i|should i|if you(?: would|\'d)? like|feel free to ask if you(?: would|\'d)? like|let me know if you(?: would|\'d)? like|if you need)\s+(?:to\s+(?:know|learn|hear|see|explore|get|read))?\s*(?:more\s+details?\s+(?:on|about)|more\s+(?:info|information)\s+(?:on|about)|more\s+about|more\s+on|details?\s+(?:on|about)|about|regarding)?\s*([^?.\n!]+)', re.IGNORECASE),
-    re.compile(r'(?:interested in|curious about)\s+([^?.\n!]+)', re.IGNORECASE),
-    re.compile(r'\b(?:about|regarding|on)\s+([^?.\n]{5,80})\?', re.IGNORECASE),
-]
-
-def extract_followup_topic_from_assistant(text: str) -> str:
-    """
-    Deterministically extracts the offered topic or question from the closing lines of the assistant message.
-    """
-    if not text:
-        return ''
-    lines = [l.strip() for l in text.strip().split('\n') if l.strip()]
-    search_scope = '\n'.join(lines[-3:]) if len(lines) >= 3 else text
-    
-    for pat in _ASSISTANT_OFFER_PATTERNS:
-        m = pat.search(search_scope)
-        if m:
-            topic = m.group(1).strip()
-            topic = re.sub(r'[\?\.!\'\"`]+$', '', topic).strip()
-            topic = re.sub(r',\s*(?:feel free to ask|please let me know|let me know).*$', '', topic, flags=re.IGNORECASE).strip()
-            topic = re.sub(r'^(?:more\s+about|more\s+on|about|on|regarding|the\s+specific|specific|the)\s+', '', topic, flags=re.IGNORECASE).strip()
-            if len(topic) >= 3 and not re.match(r'^(?:anything|something|more|it|this|that|help)$', topic, re.IGNORECASE):
-                return topic
-    return ''
-
-def is_standalone_or_protected_query(query: str) -> bool:
-    """
-    Checks if a query is a self-contained, standalone question or exact identifier lookup
-    (e.g., patent number, ISBN, research, faculty query, admission/cutoff) that should NEVER
-    undergo pronoun resolution or history rewriting.
-    """
-    q_clean = query.strip()
-    # 0. Contextual affirmations or desire phrases are NEVER standalone
-    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_clean):
+    # Standalone queries with clear domain subjects are NOT contextual
+    if is_standalone_or_protected_query(q_norm):
         return False
-    # 1. Exact numeric identifiers (patent numbers, roll numbers, Anna Univ codes, ISBNs)
-    if re.search(r'\b\d{6,12}[A-Za-z]?\b', q_clean):
+
+    # Affirmation & pure ambiguous pronoun triggers
+    if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm):
         return True
-    # 2. Research, patent, copyright, or publication keywords (only if not an affirmative)
-    if re.search(r'\b(patents?|patent\s*no|patent\s*number|copyright|isbn|journal|paper|research|publication|inventor|author|supervisor|advisor|advisors)\b', q_clean, re.IGNORECASE) and len(q_clean.split()) >= 3:
+
+    if _PRONOUN_TRIGGERS.search(q_norm):
         return True
-    # 3. Direct question structures targeting people or patents
-    if re.search(r'\b(whose\s+patent|who\s+invented|who\s+published|who\s+filed|who\s+wrote|who\s+holds|who\s+is\s+dr|who\s+is\s+prof)\b', q_clean, re.IGNORECASE):
-        return True
-    # 4. Department-specific admissions or academic queries
-    if re.search(r'\b(cutoff|cut-off|cut off|counselling|tnea|admissions?|fees?)\b', q_clean, re.IGNORECASE) and \
-       re.search(r'\b(information technology|it|cse|ece|eee|civil|mechanical|mech|ai\s*&?\s*ds|cyber security)\b', q_clean, re.IGNORECASE) and len(q_clean.split()) >= 4:
-        return True
-    # 5. Compound / Multi-question queries with 2+ questions or multi-topic inquiry
-    if (q_clean.count('?') >= 2 or len(q_clean.split()) >= 15) and any(w in q_clean.lower() for w in [
-        "what is", "what are", "how does", "what courses", "what sports", "what are the library", 
-        "sports facilities", "library facilities", "accreditation", "entrepreneurship", "incubation",
-        "procedure for", "contact the", "compare", "tell me how", "tell me about"
-    ]):
-        return True
+
     return False
 
 # Patterns to extract key entities from previous assistant responses
