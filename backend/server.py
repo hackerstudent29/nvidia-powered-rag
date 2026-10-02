@@ -2751,17 +2751,29 @@ def is_contextual_query(query: str) -> bool:
     if re.match(r'^(?:it|him|her|this|that|them|those|more|continue|yes|ok|sure|details|anyother|any\s+other|who\s+else|what\s+else|others?|anyone\s+else)$', q_norm, re.IGNORECASE):
         return True
         
+    # Direct Prepositional & Fragment Starters (e.g., "for eee, and ece depts?", "what about cse?", "and for mech?")
+    if re.match(r'^(?:for|what\s+about|how\s+about|and\s+for|what\s+of|and|in|about|with|for\s+the|also\s+for)\b', q_norm, re.IGNORECASE):
+        return True
+
     # Generalized Action-Verb Prefix & Short Followup Fallback (<= 10 words)
     words = q_norm.split()
     if len(words) <= 10:
         first_word = words[0].lower()
         action_starters = {
             "ok", "okay", "yes", "yeah", "sure", "give", "show", "tell", "get", "provide", 
-            "full", "all", "complete", "details", "detail", "share", "send", "more", "what", "where", "who", "how", "and"
+            "full", "all", "complete", "details", "detail", "share", "send", "more", "what", "where", "who", "how", "and", "for", "in", "about"
         }
-        if first_word in action_starters:
-            if len(words) <= 6 or any(w.lower() in {"this", "that", "it", "them", "those", "these", "same", "other", "others", "route", "bus", "driver", "fully", "full"} for w in words):
-                return True
+        has_fragment_keyword = bool(re.search(
+            r'\b(eee|ece|cse|it|mech|civil|aids|ai\s*&?\s*ds|ai\s*&?\s*ml|cyber|csbs|hostel|boys|girls|mess|canteen|fees|cutoff|cut-off|placements?|recruiters?|companies|packages?|salary|syllabus|faculty|hod|depts?|departments?|branch|branches)\b',
+            q_norm, re.IGNORECASE
+        ))
+        has_standalone_action = bool(re.search(
+            r'\b(where\s+is|who\s+is\s+dr|who\s+is\s+prof|how\s+to\s+reach|location|address|contact\s+number|phone\s+number|email\s+address|principal|vision|mission)\b',
+            q_norm, re.IGNORECASE
+        ))
+        if first_word in action_starters or (has_fragment_keyword and not has_standalone_action):
+            return True
+
     return False
 
 _ASSISTANT_OFFER_PATTERNS = [
@@ -5155,13 +5167,18 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 dynamics_instruction = "Fresh topic: Open directly with a context-aware sentence."
 
             raw_user_message = (req.message or "").strip()
-            prompt_user_question = raw_user_message if (len(raw_user_message.split()) >= 4 and not is_contextual_query(raw_user_message)) else user_query
+            prompt_user_question = raw_user_message if (len(raw_user_message.split()) >= 6 and not is_contextual_query(raw_user_message)) else user_query
 
             if query_class == "greeting":
                 messages.append({"role": "user", "content": prompt_user_question})
             else:
+                context_reminder = ""
+                if is_continuation_turn and history_messages:
+                    context_reminder = f"\n[CONTINUATION NOTICE: The user's question '{raw_user_message}' is a follow-up to the preceding conversation topic. Maintain strict focus on the prior topic (e.g., recruiters, placements, fees, hostel, bus route) applied specifically to '{prompt_user_question}'. Do NOT return an unrelated generic department overview.]\n"
+
                 user_prompt_with_context = (
-                    f"Verified MSAJCE Campus Records:\n{context_str}\n\n"
+                    f"Verified MSAJCE Campus Records:\n{context_str}\n"
+                    f"{context_reminder}\n"
                     f"User Question: {prompt_user_question}"
                 )
                 messages.append({"role": "user", "content": user_prompt_with_context})
