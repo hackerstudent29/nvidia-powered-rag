@@ -78,6 +78,7 @@ try:
     )
     from backend.app.services.database import DBContext, get_db_connection, release_db_connection
     from backend.app.services.query_rewriter import resolve_pronouns_llm, is_contextual_query, pre_normalize_department_acronyms
+    from backend.app.services.reranker import rerank_chunks, compute_neural_cross_score
 except ImportError:
     try:
         from app.services.redis_service import (
@@ -5014,7 +5015,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
                 rag_latency_ms = int((time.time() - rag_start) * 1000)
                 
-                # Expand after embedding + search completes
+                # Stage 2: Neural Cross-Encoder Reranking
+                if retrieved_chunks and 'rerank_chunks' in globals():
+                    retrieved_chunks = rerank_chunks(user_query, retrieved_chunks, top_n=5)
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": f"Neural Reranker: Cross-encoder scored & filtered to top {len(retrieved_chunks)} highest-relevance records",
+                        "done": True
+                    })
+
                 source_files = list({c.get("source_file", "").split('\t')[0] for c in retrieved_chunks if c.get("source_file")})
                 source_summary = ", ".join(source_files[:2]) if source_files else "official records"
                 yield json.dumps({
