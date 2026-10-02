@@ -3284,6 +3284,87 @@ TRANSPORT_PATTERNS = [
     "timings", "schedule", "schedules", "arrival", "departure", "reach", "driver"
 ]
 
+async def analyze_conversational_intent_ai(user_query: str) -> Dict[str, Any]:
+    """
+    360-Degree AI Multi-Lingual Intent & Domain Router.
+    Analyzes prompts in ANY language (English, Tamil, Tanglish, Hindi, Spanish, French, etc.)
+    and classifies into:
+      1. 'PURE_CONVERSATIONAL': Pure greetings, compliments, gratitude, small talk (e.g. "Nandri", "Thank you so much", "Super bot", "You are awesome").
+      2. 'PURE_JUNK': Keyboard smashes, random numbers, or noise (e.g. "asdfghjkl", "12345").
+      3. 'MIXED_COMPOUND': Greeting/compliment + campus question (e.g. "Hi Lorin! Great work! What is the CSE cutoff?").
+      4. 'INSTITUTIONAL_QUERY': Direct campus inquiry (e.g. "TNEA code", "hostel fees").
+    """
+    q_clean = user_query.strip()
+    if not q_clean:
+        return {"category": "PURE_JUNK", "extracted_question": "", "is_rag_required": False}
+
+    campus_keywords = [
+        "admission", "admissions", "fee", "fees", "tuition", "hostel", "hostels", "mess", "canteen",
+        "bus", "buses", "route", "routes", "transport", "placement", "placements", "salary", "package",
+        "cutoff", "cut-off", "tnea", "1301", "principal", "faculty", "hod", "department", "departments",
+        "course", "courses", "syllabus", "curriculum", "scholarship", "scholarships", "naac", "nba",
+        "cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs", "b.arch", "b.des"
+    ]
+    has_campus_term = any(re.search(rf'\b{re.escape(kw)}\b', q_clean, re.IGNORECASE) for kw in campus_keywords)
+    has_q_mark = "?" in q_clean
+
+    # 1. Fast LLM Classification Race (<150ms)
+    try:
+        client = get_http_client()
+        if client:
+            prompt = (
+                f"You are an AI Intent Classifier for Lorin AI, campus assistant for MSAJCE Engineering College.\n"
+                f"Analyze the user input below (in ANY language, e.g. English, Tamil, Tanglish, Hindi, etc.):\n\n"
+                f"User Input: \"{q_clean}\"\n\n"
+                f"Classify into exactly ONE category:\n"
+                f"1. \"PURE_CONVERSATIONAL\": Pure greetings, compliments, praise, gratitude, or small talk (e.g. \"Hi\", \"Thanks\", \"Nandri\", \"Super bot\", \"You are very helpful\"). NO campus question asked.\n"
+                f"2. \"PURE_JUNK\": Keyboard smashes, random numbers, or nonsense (e.g. \"asdfghjkl\", \"123456\"). NO campus question asked.\n"
+                f"3. \"MIXED_COMPOUND\": The user gives a greeting or compliment AND asks a college campus question (e.g. \"Hi! Great job! What is the CSE cutoff?\").\n"
+                f"4. \"INSTITUTIONAL_QUERY\": A direct campus question or inquiry.\n\n"
+                f"Respond ONLY in valid JSON format: {{\"category\": \"...\", \"extracted_question\": \"...\"}}"
+            )
+            headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Router"}
+            payload = {
+                "model": "nvidia/nemotron-3-super-120b-a12b:free",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.0,
+                "max_tokens": 80
+            }
+            resp = await client.post(f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", headers=headers, json=payload, timeout=1.8)
+            if resp.status_code == 200:
+                raw_out = resp.json()["choices"][0]["message"]["content"].strip()
+                raw_out = re.sub(r'<think>.*?</think>', '', raw_out, flags=re.DOTALL | re.IGNORECASE).strip()
+                raw_out = re.sub(r'^```(?:json)?\s*', '', raw_out, flags=re.IGNORECASE)
+                raw_out = re.sub(r'\s*```$', '', raw_out).strip()
+                s_idx = raw_out.find('{')
+                e_idx = raw_out.rfind('}')
+                if s_idx != -1 and e_idx != -1 and e_idx > s_idx:
+                    parsed = json.loads(raw_out[s_idx:e_idx+1])
+                    cat = parsed.get("category", "INSTITUTIONAL_QUERY")
+                    ext_q = parsed.get("extracted_question", q_clean)
+                    is_rag = cat in ["MIXED_COMPOUND", "INSTITUTIONAL_QUERY"]
+                    return {"category": cat, "extracted_question": ext_q if ext_q else q_clean, "is_rag_required": is_rag}
+    except Exception as e:
+        print(f"[WARN] AI Intent Router Exception: {e}")
+
+    # 2. Dynamic Multilingual Heuristic Fallback (0ms)
+    conv_tokens = [
+        "hi", "hello", "hey", "thanks", "thank", "nandri", "shukriya", "awesome", "great",
+        "good", "super", "love", "amazing", "helpful", "best", "nice", "brilliant", "vanakkam"
+    ]
+    has_conv_token = any(re.search(rf'\b{re.escape(ct)}\b', q_clean, re.IGNORECASE) for ct in conv_tokens)
+
+    if not has_campus_term and not has_q_mark:
+        if len(set(q_clean.lower())) <= 4 and len(q_clean) > 5:
+            return {"category": "PURE_JUNK", "extracted_question": "", "is_rag_required": False}
+        if has_conv_token or len(q_clean.split()) <= 4:
+            return {"category": "PURE_CONVERSATIONAL", "extracted_question": "", "is_rag_required": False}
+
+    if has_campus_term and has_conv_token:
+        return {"category": "MIXED_COMPOUND", "extracted_question": q_clean, "is_rag_required": True}
+
+    return {"category": "INSTITUTIONAL_QUERY", "extracted_question": q_clean, "is_rag_required": True}
+
 def classify_query(query: str) -> str:
     """Classify query complexity to dynamically scale token usage.
     Returns: 'greeting' | 'targeted' | 'transport' | 'simple' | 'complex'
@@ -4708,14 +4789,20 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             # Initialize query_vector for cache saving later
             query_vector = None
 
-            # 3. Classify query to scale token usage dynamically
-            query_class = classify_query(user_query)
+            # 2.5 360-Degree AI Multi-Lingual Intent & Domain Router
+            ai_intent = await analyze_conversational_intent_ai(user_query)
+            intent_category = ai_intent.get("category", "INSTITUTIONAL_QUERY")
+            extracted_campus_q = ai_intent.get("extracted_question") or user_query
+
+            if intent_category in ["PURE_CONVERSATIONAL", "PURE_JUNK"]:
+                query_class = "greeting"
+                RAG_TOP_K   = 0
+            else:
+                query_class = classify_query(extracted_campus_q)
 
             # --- Dynamic Token Budgeting & Effort Scaling ---
             req_effort = (req.effort or "Medium").strip()
             
-            # Smart Effort Logic: If user selected "Low" but asked a complex or long question (> 100 chars),
-            # automatically upgrade effort to Auto/Medium so answer is accurate and complete without quality loss.
             if req_effort == "Low" and (len(user_query) > 100 or query_class in ["complex", "transport"]):
                 req_effort = "Auto"
 
@@ -4743,7 +4830,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             CHUNK_TRIM = 99999
 
             # 3. Fast Knowledge Entity DB Lookup
-            matched_entities = search_knowledge_entities(user_query) or search_knowledge_entities(expanded_query)
+            matched_entities = search_knowledge_entities(extracted_campus_q) or search_knowledge_entities(expanded_query)
             if matched_entities and query_class != "greeting":
                 RAG_TOP_K = max(RAG_TOP_K, 10)  # Retain comprehensive context surrounding matched entities
                 yield json.dumps({
@@ -4755,15 +4842,22 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             retrieved_chunks = []
             sources_payload = []
 
-            if query_class == "greeting":
+            if query_class == "greeting" or intent_category in ["PURE_CONVERSATIONAL", "PURE_JUNK"]:
                 # Skip embedding + RAG entirely
                 rag_latency_ms = 0
+                step_msg = "Conversational input recognized — skipping database search" if intent_category == "PURE_CONVERSATIONAL" else "Unstructured input recognized — bypassing RAG retrieval"
                 yield json.dumps({
                     "type": "reasoning",
-                    "step": "Conversational greeting recognized — skipping RAG retrieval",
+                    "step": step_msg,
                     "done": True
                 })
             else:
+                if intent_category == "MIXED_COMPOUND":
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": f"AI Intent Router: Compound prompt detected — target campus query: '{extracted_campus_q[:50]}...'",
+                        "done": True
+                    })
                 # Dense Embedding & Hybrid Retrieval
                 rag_start = time.time()
                 
