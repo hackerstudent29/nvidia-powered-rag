@@ -1,0 +1,37 @@
+# ── Standard Web Crawlers ──
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+# ── AI & Generative Search Engine Crawlers (Explicitly Allowed for GEO / AIO) ──
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+# ── Sitemap & AI Index Locations ──
+Sitemap: https://a-powered-rag.vercel.app/sitemap.xml
+Sitemap: https://msajce.edu.in/sitemap.xml

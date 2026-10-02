@@ -1,85 +1,166 @@
-# MSAJCEA Lorin AI — Production Hybrid RAG Chatbot
+<div align="center">
 
-An enterprise-grade campus intelligence platform for **Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)**, powered by **NVIDIA NeMo Embeddings**, **Qdrant Vector Database**, **BM25 Sparse Retrieval**, **Reciprocal Rank Fusion (RRF)**, and **Neon Serverless PostgreSQL**.
+# 🏛️ Lorin AI — NVIDIA Powered Hybrid RAG Campus Intelligence System
 
----
+**Official AI Campus Assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai (TNEA Code 1301)**
 
-## 📁 Project Structure (Ascending & Clean)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-a--powered--rag.vercel.app-10b981?style=for-the-badge&logo=vercel)](https://a-powered-rag.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+[![NVIDIA NIM](https://img.shields.io/badge/NVIDIA-NIM_Embeddings-76B900?style=for-the-badge&logo=nvidia)](https://integrate.api.nvidia.com)
+[![Qdrant Vector DB](https://img.shields.io/badge/Qdrant-Vector_DB-dc2626?style=for-the-badge&logo=qdrant)](https://qdrant.tech)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![React 19](https://img.shields.io/badge/React_19-Vite-61DAFB?style=for-the-badge&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 
-```
-nvidia powered AI/
-├── .agents/                 # Antigravity agent customizations & skills
-├── .env                     # Secret credentials & endpoint configuration
-├── .gitignore               # Ignored system and build files
-├── .neon                    # Neon Functions metadata
-├── Dataset/                 # Official MSAJCEA knowledge base documents
-│   ├── links folder/        # Official URL and document registry
-│   ├── transport_data/      # Bus stops, route geometry, and route finder
-│   └── msajce_*.md          # Campus, departments, admissions, placements, etc.
-├── backend/                 # Python FastAPI Hybrid RAG backend
-│   ├── data/                # BM25 sparse index & entity registries
-│   ├── chunker.py           # NeMo parent-child chunking & hashing
-│   ├── domain_router.py     # Domain classification & intent routing
-│   ├── guardrails.py        # Safety & injection detection
-│   ├── ingest_knowledgebase.py # Vector embedding & BM25 ingestion pipeline
-│   ├── route_finder.py      # Campus transit routing engine
-│   └── server.py            # FastAPI streaming server, RRF, & DB session manager
-├── docs/                    # Technical architecture, specifications & analysis
-│   ├── FINAL_ARCHITECTURE.md # Full technical specification & RAG pipeline flow
-│   ├── LORIN_AI_MSAJCE_CHATBOT_ANALYSIS.md # Evaluation & feature breakdown
-│   ├── MARKET_ANALYSIS_2024.md # Market & competitive analysis
-│   ├── PROJECT_SPECIFICATIONS.md # Complete architectural specifications
-│   └── TOOLS_AND_CREDENTIALS.md # Production service endpoints & keys guide
-├── frontend/                # React 19 + Vite + Tailwind CSS web interface
-│   ├── src/                 # Chat interface, token usage badges, thinking steps
-│   └── package.json         # Frontend dependencies & scripts
-├── scripts/                 # Maintenance, cache clearing, and database utilities
-│   ├── check_db.py          # Database row & user inspector
-│   └── clear_cache.py       # One-shot cache & session reset
-├── check_db.py              # Root launcher for scripts/check_db.py
-├── clear_cache.py           # Root launcher for scripts/clear_cache.py
-├── README.md                # Project documentation & launch guide
-├── requirements.txt         # Backend Python dependencies
-├── start.bat                # Windows dual-server quickstart script
-├── start.ps1                # PowerShell dual-server quickstart script
-└── vercel.json              # Frontend cloud deployment descriptor
-```
+</div>
 
 ---
 
-## 🚀 Quickstart Guide
+## 📌 Project Overview
 
-### 1. Backend Service (FastAPI)
-The backend manages the Hybrid RAG pipeline (Dense 2048-d NVIDIA embeddings + BM25 sparse matching + RRF fusion) and persistent Neon PostgreSQL sessions.
+**Lorin AI** is an enterprise-grade campus intelligence platform built for **Mohamed Sathak A.J. College of Engineering (MSAJCE)**, Chennai. It combines 2048-dimensional **NVIDIA NeMo vector embeddings**, **Qdrant Vector Database**, **BM25 Okapi sparse lexical indexing**, **Reciprocal Rank Fusion (RRF)**, and **Neon Serverless PostgreSQL** to deliver zero-hallucination, 0ms-cached responses for TNEA Code 1301 admissions, degree programs, fee structures, campus bus routes, hostels, and placement packages.
 
+---
+
+## 📸 Visual Showcase & UI Gallery
+
+| Desktop Assistant View | Mobile Responsive Interface |
+|:---:|:---:|
+| ![Desktop Interface Showcase](https://raw.githubusercontent.com/hackerstudent29/nvidia-powered-rag/main/frontend/public/lorin-pic.png) | ![Mobile Interface Showcase](https://raw.githubusercontent.com/hackerstudent29/nvidia-powered-rag/main/frontend/public/lorin-pic.png) |
+
+---
+
+## ✨ Key System Features
+
+### 🔍 1. Multi-Stage Hybrid RAG Engine
+- **Dense Vector Search**: Powered by Qdrant Cloud vector collection with 2048-d NVIDIA NeMo embeddings (`nvidia/llama-nemotron-embed-vl-1b-v2`).
+- **Sparse Lexical Search**: BM25 Okapi algorithm indexing 1,200+ parent-child knowledge chunks from 50+ official campus records.
+- **Reciprocal Rank Fusion (RRF)**: Merges dense vector scores with sparse BM25 ranks to produce ground-truth context blocks.
+
+### ⚡ 2. Sub-Zero Latency & Dual-Tier Cache
+- **Tier-0 Memory Cache**: ThreadSafe in-memory RAM cache (<0.01ms latency).
+- **Tier-1 PostgreSQL Cache**: Persistent SHA-256 exact match and vector semantic cache stored in Neon Serverless PostgreSQL.
+
+### 🛡️ 3. Safety Interceptor & NeMo Guardrails
+- **0ms Fast-Path Defense**: Intercepts prompt injections, jailbreaks (DAN mode), and hostile instruction bypasses.
+- **Unified 16-Category Intent Taxonomy**: Automatically routes user queries to specialized domains (Admissions, Academics, Transport, Hostels, Placements, Research, etc.).
+
+### 🚌 4. Transport RouteFinder Engine
+- **Campus Transit Routing**: Graph routing algorithm managing 175 bus stops across 19 official college bus routes (AR/R/N series) and public MTC transit connections in Siruseri OMR IT Park.
+
+### 📊 5. Real-Time Token & Latency Observability
+- Transparent badge metrics displaying prompt tokens, completion tokens, time-to-first-token (TTFT), execution latency, and step-by-step reasoning progress.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User([👤 User / Client Interface]) -->|HTTPS / SSE Stream| Frontend[⚡ React 19 + Vite Application]
+    Frontend -->|POST /api/chat/stream| Backend[🐍 FastAPI Backend Server]
+    
+    Backend --> Tier0{⚡ Tier-0 RAM Cache}
+    Tier0 -->|Hit <0.01ms| ReturnCache[Return Verified Cached Response]
+    Tier0 -->|Miss| Guardrails[🛡️ Guardrails & Safety Interceptor]
+    
+    Guardrails -->|Blocked| Refusal[Return Refusal Notice]
+    Guardrails -->|Safe| HybridRAG[🔍 Multi-Stage Hybrid RAG Engine]
+    
+    HybridRAG -->|Dense Search| Qdrant[(🔴 Qdrant Vector DB - 2048d NeMo)]
+    HybridRAG -->|Sparse Search| BM25[(📄 BM25 Okapi Index - 1200+ Chunks)]
+    
+    Qdrant --> RRF[🔀 Reciprocal Rank Fusion RRF]
+    BM25 --> RRF
+    
+    RRF --> Reranker[🎯 Cross-Encoder Reranker]
+    Reranker --> LLMSynthesis[🤖 NVIDIA NIM / Vercel AI Engine]
+    
+    LLMSynthesis --> NeonDB[(🐘 Neon Serverless PostgreSQL Cache & Logs)]
+    LLMSynthesis -->|SSE Stream| Frontend
+```
+
+---
+
+## 🚀 Quickstart & Setup Guide
+
+### 1. Prerequisites
+- **Python 3.10+**
+- **Node.js 18+** & **npm 9+**
+- **PostgreSQL / Neon DB Connection String**
+- **Qdrant Vector DB Instance & API Key**
+
+### 2. Backend Service (FastAPI)
 ```bash
-# Navigate to backend
-cd backend
+# Clone the repository
+git clone https://github.com/hackerstudent29/nvidia-powered-rag.git
+cd nvidia-powered-rag/backend
 
-# Start the server (Port 8000)
+# Create and activate virtual environment
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
+
+# Install backend dependencies
+pip install -r requirements.txt
+
+# Start the FastAPI backend server
 python server.py
 ```
-Backend health check: `http://localhost:8000/api/health`
+*Backend API Health Check: `http://localhost:8080/api/health`*
 
-### 2. Frontend Application (React + Vite)
-The frontend provides a cardless assistant UI with real-time token metrics, step-by-step thinking breakdown, and verified campus citations.
-
+### 3. Frontend Application (React + Vite)
 ```bash
-# Navigate to frontend
-cd frontend
+# Navigate to frontend directory
+cd ../frontend
 
-# Install dependencies (if not already installed)
+# Install dependencies
 npm install
 
-# Start development server (Port 3000)
-npm run dev -- --port 3000 --host
+# Start local development server
+npm run dev
 ```
-Frontend interface: `http://localhost:3000/`
+*Frontend Interface: `http://localhost:5173`*
 
 ---
 
-## 🧠 Architectural Highlights
-- **No Web Search Hallucinations**: Answers strictly grounded in the official 50 MSAJCEA markdown documents.
-- **Sub-Zero Token Caching**: Exact MD5 hash and semantic caching in Neon PostgreSQL to deliver instant zero-cost responses.
-- **Model-Wise & Step-Wise Token Analytics**: Transparent breakdown of prompt tokens, completion tokens, and real-time execution cost per query.
-- **Curated MSAJCEA Aesthetic**: Designed with the official campus palette (`#D0CCE5`, `#D0E7E1`, `#F7F6ED`, `#E1EED7`, `#F2CFDF`).
+## 💖 Support & Developer Sponsorship
+
+If you find **Lorin AI** helpful or use this open-source Hybrid RAG architecture in your research, consider supporting the lead developer!
+
+<div align="center">
+
+### 👨‍💻 Developer Profile: Ramanathan S. (Ram)
+*Software Engineer | B.Tech Information Technology (Batch 2024–2028, CGPA 7.75)*  
+**Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai**
+
+[![Portfolio](https://img.shields.io/badge/🌐_3D_Portfolio-ram--portfolio3d.vercel.app-10b981?style=for-the-badge)](https://ram-portfolio3d.vercel.app)
+[![GitHub](https://img.shields.io/badge/🐙_GitHub-hackerstudent29-181717?style=for-the-badge&logo=github)](https://github.com/hackerstudent29)
+
+---
+
+### 💳 Direct Sponsorship / UPI Donation
+
+| Payment Method | Handle / Details |
+|---|---|
+| **UPI ID** | `ramanathanb86@oksbi` |
+| **GPay / PhonePe / Paytm** | `ramanathanb86@oksbi` |
+
+![GPay](https://img.shields.io/badge/GPay-ramanathanb86%40oksbi-4285F4?style=flat-square&logo=google-pay&logoColor=white)
+![PhonePe](https://img.shields.io/badge/PhonePe-ramanathanb86%40oksbi-5f259f?style=flat-square&logo=phonepe&logoColor=white)
+![Paytm](https://img.shields.io/badge/Paytm-ramanathanb86%40oksbi-00baf2?style=flat-square&logo=paytm&logoColor=white)
+
+</div>
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See `LICENSE` for details.
+
+---
+<div align="center">
+  <b>Designed & Developed by Ramanathan S. (Ram / hackerstudent29) for MSAJCE, Chennai</b>
+</div>
