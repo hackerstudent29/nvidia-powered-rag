@@ -315,12 +315,23 @@ export default function ThinkingState({
         className="group -ml-1 sm:-ml-1.5 flex w-full items-center justify-between rounded-lg pl-0 pr-1 py-1 transition-colors duration-150 hover:bg-black/[0.04] dark:hover:bg-white/[0.05] cursor-pointer text-left focus:outline-none"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-          {/* 3x3 Pixel Grid Wavefront Loader (Visible & Sharp) */}
-          <span aria-hidden className="grid grid-cols-[repeat(3,3.5px)] gap-[1.5px] shrink-0">
+          {/* 3x3 Pixel Grid Wavefront Loader (Exact 3 Columns x 3 Rows = 9 Dots) */}
+          <span
+            aria-hidden
+            className="shrink-0 items-center justify-center"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 3.5px)",
+              gridTemplateRows: "repeat(3, 3.5px)",
+              gap: "1.5px",
+              width: "13.5px",
+              height: "13.5px",
+            }}
+          >
             {MATRIX_DELAYS.map((d, i) => (
               <span
                 key={i}
-                className="size-[3.5px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px]"
+                className="size-[3.5px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px] block"
                 style={{
                   opacity: !isWorking ? 0.85 : 0.15,
                   animation: !isWorking
