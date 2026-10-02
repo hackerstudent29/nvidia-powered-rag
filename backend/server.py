@@ -79,6 +79,7 @@ try:
     from backend.app.services.database import DBContext, get_db_connection, release_db_connection
     from backend.app.services.query_rewriter import resolve_pronouns_llm, is_contextual_query, pre_normalize_department_acronyms
     from backend.app.services.reranker import rerank_chunks, compute_neural_cross_score
+    from backend.app.services.dataset_watcher import start_dataset_watcher, stop_dataset_watcher
 except ImportError:
     try:
         from app.services.redis_service import (
@@ -1022,8 +1023,18 @@ async def lifespan(app: FastAPI):
     print("[INIT] Initializing Lorin AI Enterprise Server...")
     http_client = httpx.AsyncClient(timeout=60.0)
     init_rag_resources()
+
+    # Start Real-Time Automated Dataset Watcher on Dataset/ directory
+    dataset_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Dataset")
+    if not os.path.exists(dataset_dir):
+        dataset_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Dataset")
+    if 'start_dataset_watcher' in globals():
+        start_dataset_watcher(dataset_dir)
+
     yield
 
+    if 'stop_dataset_watcher' in globals():
+        stop_dataset_watcher()
     if http_client:
         await http_client.aclose()
     if db_pool:
