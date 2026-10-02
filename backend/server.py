@@ -1423,7 +1423,16 @@ Would you like more details on how to join CSI or its upcoming student activitie
             "admission eligibility",
             "documents required for verification",
             "documents for verification",
-            "admission details"
+            "admission details",
+            "is there a dedicated member for admissions",
+            "is there a dedicated person for admissions",
+            "dedicated member for admissions",
+            "who handles admissions",
+            "who is in charge of admissions",
+            "head of admission",
+            "admission officer",
+            "admission helpline",
+            "admission contact"
         ],
         "response": """# Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) Admission Guide
 
@@ -1471,9 +1480,14 @@ Would you like more details on how to join CSI or its upcoming student activitie
 
 ---
 
-### Eligibility for Students from Other States
-- For candidates from **Andhra Pradesh, Telangana, Kerala, and Northern States**, selection is based on 10+2 / Intermediate marks.
-- **Calculation Formula**: `(Mathematics / 2) + ((Physics + Chemistry) / 4)`.
+---
+
+### Official Admission Contacts & Committee Leadership
+- **Dedicated Admission Authority**: Yes, the **Head of Admission** is a dedicated Member of the **Academic Advisory Committee** at MSAJCE responsible for managing the complete admission process.
+- **Official Admission Helpline**: [+91 9940004500](tel:+919940004500) / [+91 9444103328](tel:+919444103328)
+- **Admission Officers Direct**: [+91 9940319629](tel:+919940319629) / [+91 9840886992](tel:+919840886992)
+- **Campus Landline**: [044-27476300](tel:04427476300)
+- **Official Email**: [admission@msajce-edu.in](mailto:admission@msajce-edu.in) / [info@msajce-edu.in](mailto:info@msajce-edu.in)
 - **Other States Admission Coordinator**: **Dr. Vamsi Naga Mohan A** ([+91 9043358674](tel:9043358674) / [+91 9502687344](tel:9502687344) | [cse.vamsi@msajce.edu.in](mailto:cse.vamsi@msajce.edu.in)) — assists in Telugu, Tamil, Malayalam, and Hindi.
 
 ---
@@ -2381,6 +2395,16 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     ]
     if any(k in q_clean for k in dev_triggers) or q_clean in ["developer", "creator", "ramanathan", "zendrum", "ramzenderum", "ramzendrum"]:
         return PREBUILT_CARD_ANSWERS.get("developer")
+
+    # Dedicated Admission Member & Contact Inquiries (0ms instant response)
+    admission_member_triggers = [
+        "dedicated member for admissions", "dedicated member for admission",
+        "is there a dedicated member for admissions", "is there a dedicated person for admissions",
+        "who is responsible for admissions", "who handles admissions", "head of admission",
+        "admission officer", "admission helpline", "admission contact number", "admission contact person"
+    ]
+    if any(k in q_clean for k in admission_member_triggers):
+        return PREBUILT_CARD_ANSWERS.get("admission")
 
     # College Location & Google Maps Navigation link (0ms instant response)
     location_triggers = [

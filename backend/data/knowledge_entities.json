@@ -114,6 +114,32 @@
     }
   },
   {
+    "entity_key": "head_of_admission",
+    "entity_name": "Head of Admission (Academic Advisory Committee Member)",
+    "entity_type": "OFFICER",
+    "aliases": [
+      "head of admission",
+      "dedicated member for admissions",
+      "is there a dedicated member for admissions",
+      "admission officer",
+      "who handles admissions",
+      "admission committee member",
+      "admission contact person",
+      "person responsible for admissions"
+    ],
+    "value": "Yes, the Head of Admission is a dedicated Member of the Academic Advisory Committee at Mohamed Sathak A.J. College of Engineering (MSAJCE) responsible for managing the admission process. You can reach the Admission Office directly via Helpline: [+91 9940004500](tel:+919940004500) / [+91 9444103328](tel:+919444103328), Officers: [+91 9940319629](tel:+919940319629) / [+91 9840886992](tel:+919840886992), or Email: [admission@msajce-edu.in](mailto:admission@msajce-edu.in).",
+    "source_file": "msajcea_admission.md",
+    "source_url": "https://msajce-edu.in/admission.php",
+    "details": {
+      "role": "Head of Admission",
+      "committee": "Academic Advisory Committee Member",
+      "admission_helpline": "+91 9940004500",
+      "mobile": "+91 9444103328",
+      "officer_contacts": ["9940319629", "9840886992"],
+      "email": "admission@msajce-edu.in"
+    }
+  },
+  {
     "entity_key": "transport_total_bus_fleet",
     "entity_name": "Total College Bus Fleet Count & Routes",
     "entity_type": "TRANSPORT",
