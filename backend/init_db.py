@@ -18,7 +18,10 @@ if os.path.exists(dotenv_path):
 else:
     load_dotenv()
 
-db_url = os.getenv("DATABASE_URL", "postgresql://neondb_owner:npg_paA3JgI7qNiE@ep-small-hill-ayswm787.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require")
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    print("[ERROR] DATABASE_URL is not set in environment!")
+    sys.exit(1)
 
 schema_sql = """
 -- 1. Chat Sessions

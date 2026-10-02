@@ -33,11 +33,11 @@ PAGES_LINK_FILE = os.path.join(DATASET_DIR, "links folder", "pageslink.md")
 BM25_OUTPUT_FILE = os.path.join(BACKEND_DIR, "data", "bm25_chunks.json")
 RESOURCE_JSON_FILE = os.path.join(BACKEND_DIR, "data", "resource_links.json")
 
-QDRANT_URL = os.getenv("QDRANT_URL", "https://f8d4bd17-9f0d-4eb0-a31a-d7dba639e65f.eu-central-1-0.aws.cloud.qdrant.io")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIiwic3ViamVjdCI6ImFwaS1rZXk6ZmE4NDk4YTEtN2MxMC00YWFkLTg1OWQtYWJjNzBjZmNmZmY1In0.fYu0yy9w122-6znkMvB24baqvZjOLaHhUkuPyuKpYeM")
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 COLLECTION_NAME = "nvidia_powered_ai"
 
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "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")
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 NVIDIA_EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 
 # Parse pageslink.md to map source files to titles and official URLs
