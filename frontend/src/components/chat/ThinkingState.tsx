@@ -359,7 +359,7 @@ export default function ThinkingState({
           {MATRIX_DELAYS.map((d, i) => (
             <span
               key={i}
-              className="size-[4px] bg-[#9E2339] dark:bg-[#E11D48] rounded-[1px] block"
+              className="size-[4px] bg-[#2E6B5E] dark:bg-[#10b981] rounded-[1px] block"
               style={{
                 opacity: !isWorking ? 0.9 : 0.35,
                 animation: !isWorking
@@ -377,7 +377,7 @@ export default function ThinkingState({
               className="bg-clip-text text-[13.5px] font-semibold whitespace-nowrap text-transparent"
               style={{
                 backgroundImage:
-                  "linear-gradient(90deg, rgba(158,35,57,0.5) 30%, rgba(225,29,72,1) 50%, rgba(158,35,57,0.5) 70%)",
+                  "linear-gradient(90deg, rgba(46,107,94,0.6) 30%, rgba(16,185,129,1) 50%, rgba(46,107,94,0.6) 70%)",
                 backgroundSize: "200% 100%",
                 animation: "shimmer-text 1.4s linear infinite",
               }}
@@ -459,7 +459,7 @@ export default function ThinkingState({
                     <div className="shrink-0 flex items-center justify-center size-3.5">
                       {isStepActive ? (
                         <span
-                          className="size-2.5 rounded-full border-[1.5px] border-[#9E2339] border-t-transparent dark:border-[#E11D48] dark:border-t-transparent block"
+                          className="size-2.5 rounded-full border-[1.5px] border-[#2E6B5E] border-t-transparent dark:border-[#10b981] dark:border-t-transparent block"
                           style={{ animation: "spin 700ms linear infinite" }}
                         />
                       ) : (

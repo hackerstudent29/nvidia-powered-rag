@@ -114,8 +114,8 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
                   relative -translate-x-1/2 
                   ${position === 'top' ? '-translate-y-full' : 'translate-y-0'}
                   px-2.5 py-1.5 text-[11.5px] font-semibold tracking-wide font-sans
-                  bg-[#9E2339] text-white dark:bg-[#18181b] dark:text-zinc-100
-                  border border-[#9E2339]/20 dark:border-[#E11D48]/50 rounded-md shadow-xl whitespace-nowrap backdrop-blur-md max-w-[85vw] truncate
+                  bg-[#2E6B5E] text-white dark:bg-[#18181b] dark:text-zinc-100
+                  border border-[#2E6B5E]/20 dark:border-[#10b981]/50 rounded-md shadow-xl whitespace-nowrap backdrop-blur-md max-w-[85vw] truncate
                   ${className}
                 `}
               >
@@ -124,7 +124,7 @@ export function Tooltip({ content, children, delay = 300, position = 'top', clas
                   className={`
                     absolute left-1/2 -translate-x-1/2 w-0 h-0
                     border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent
-                    ${position === 'top' ? 'top-full border-t-[5px] border-t-[#9E2339] dark:border-t-[#18181b]' : 'bottom-full border-b-[5px] border-b-[#9E2339] dark:border-b-[#18181b]'}
+                    ${position === 'top' ? 'top-full border-t-[5px] border-t-[#2E6B5E] dark:border-t-[#18181b]' : 'bottom-full border-b-[5px] border-b-[#2E6B5E] dark:border-b-[#18181b]'}
                   `} 
                 />
               </div>

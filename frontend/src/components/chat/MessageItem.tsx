@@ -2254,7 +2254,7 @@ const MessageItem = React.memo(function MessageItem({
             transform: selectionToolbar.placement === "below" ? "translate(-50%, 0%)" : "translate(-50%, -100%)",
             zIndex: 99999,
           }}
-          className="selection-toolbar-portal flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#9E2339]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] shrink-0"
+          className="selection-toolbar-portal flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl bg-[#121214] dark:bg-[#18181b] text-white shadow-2xl border border-[#2E6B5E]/40 dark:border-emerald-500/40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 select-none font-sans max-w-[calc(100vw-24px)] shrink-0"
         >
           {/* 1. Ask Lorin */}
           <button
@@ -2350,7 +2350,7 @@ const MessageItem = React.memo(function MessageItem({
       {/* Single Side Action Popup Toast */}
       {toastMsg && typeof document !== "undefined" && createPortal(
         <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 rounded-md bg-[#18181b] text-zinc-100 px-3 py-1.5 text-[11.5px] font-sans font-semibold shadow-2xl backdrop-blur-md border border-zinc-700/60 animate-in fade-in slide-in-from-right-4 duration-200 select-none pointer-events-none">
-          <span className="size-1.5 rounded-full bg-[#9E2339] dark:bg-[#E11D48] animate-pulse shrink-0" />
+          <span className="size-1.5 rounded-full bg-[#2E6B5E] dark:bg-[#10b981] animate-pulse shrink-0" />
           <span>{toastMsg}</span>
         </div>,
         document.body

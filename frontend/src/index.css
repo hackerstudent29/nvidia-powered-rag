@@ -124,7 +124,7 @@
     --hover-2: rgba(0, 0, 0, 0.08);
 
     /* Accent & semantic */
-    --accent: #9E2339;
+    --accent: #2E6B5E;
     --orange: #D97706;
     --green:  #059669;
     --red:    #DC2626;
@@ -163,7 +163,7 @@
     --hover-2: rgba(244, 243, 238, 0.10);
 
     /* ── Brand Accents ── */
-    --accent: #E11D48;   /* Luminous MSAJCEA Radiant Crimson */
+    --accent: #10b981;   /* Radiant Emerald Green */
     --orange: #f97316;
     --green:  #10b981;
     --red:    #ef4444;

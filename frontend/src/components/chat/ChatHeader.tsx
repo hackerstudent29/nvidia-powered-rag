@@ -271,10 +271,10 @@ const ChatHeader = React.memo(function ChatHeader({
 
             <div className="flex flex-col justify-center min-w-0 leading-none">
               <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
-                <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#9E2339] dark:text-[#E11D48] leading-none">
+                <span className="text-[9px] sm:text-[9.5px] font-mono font-extrabold uppercase tracking-wider text-[#2E6B5E] dark:text-[#10b981] leading-none">
                   MSAJCE
                 </span>
-                <span className="inline-block rounded-md bg-[#9E2339]/15 dark:bg-[#E11D48]/20 px-1.5 py-0.5 text-[8px] sm:text-[8.5px] font-mono font-bold text-[#9E2339] dark:text-[#E11D48] border border-[#9E2339]/25 dark:border-[#E11D48]/30 leading-none whitespace-nowrap">
+                <span className="inline-block rounded-md bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 px-1.5 py-0.5 text-[8px] sm:text-[8.5px] font-mono font-bold text-[#2E6B5E] dark:text-[#10b981] border border-[#2E6B5E]/25 dark:border-[#10b981]/30 leading-none whitespace-nowrap">
                   TNEA 1301
                 </span>
               </div>
@@ -308,7 +308,7 @@ const ChatHeader = React.memo(function ChatHeader({
                         type="button"
                         className={`flex items-center justify-center rounded-full transition-all duration-200 relative h-9 cursor-pointer overflow-hidden ${
                           isActive
-                            ? "px-3.5 gap-2 bg-[#9E2339] text-white dark:bg-[#E11D48] dark:text-white font-bold shadow-md shadow-[#9E2339]/30 dark:shadow-[#E11D48]/30"
+                            ? "px-3.5 gap-2 bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-md shadow-[#2E6B5E]/30 dark:shadow-[#10b981]/30"
                             : "size-9 bg-transparent text-ink-3 dark:text-[#b1ada1] hover:bg-black/[0.05] dark:hover:bg-white/[0.08] hover:text-ink dark:hover:text-[#f4f3ee]"
                         }`}
                         aria-label={pill.label}
@@ -351,7 +351,7 @@ const ChatHeader = React.memo(function ChatHeader({
                   aria-label={mobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
                   className={`size-9 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                     mobileMenuOpen
-                      ? "bg-[#9E2339]/15 text-[#9E2339] border border-[#9E2339]/30 dark:bg-[#E11D48]/25 dark:text-[#E11D48] dark:border-[#E11D48]/40 shadow-xs"
+                      ? "bg-[#2E6B5E]/15 text-[#2E6B5E] border border-[#2E6B5E]/30 dark:bg-[#10b981]/25 dark:text-[#10b981] dark:border-[#10b981]/40 shadow-xs"
                       : "bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] border border-black/10 dark:border-white/15 hover:bg-black/[0.08] dark:hover:bg-white/[0.12] shadow-xs"
                   }`}
                 >
@@ -376,7 +376,7 @@ const ChatHeader = React.memo(function ChatHeader({
                     {!userProfile?.name && onOpenProfile && (
                       <div className="pb-2 px-2 flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="size-7 rounded-full bg-[#9E2339]/15 dark:bg-[#E11D48]/20 flex items-center justify-center text-[#9E2339] dark:text-[#E11D48] font-bold text-xs shrink-0">
+                          <div className="size-7 rounded-full bg-[#2E6B5E]/15 dark:bg-[#10b981]/20 flex items-center justify-center text-[#2E6B5E] dark:text-[#10b981] font-bold text-xs shrink-0">
                             <User size={14} />
                           </div>
                           <div className="min-w-0">
@@ -396,7 +396,7 @@ const ChatHeader = React.memo(function ChatHeader({
                             setMobileMenuOpen(false);
                             onOpenProfile();
                           }}
-                          className="text-[10.5px] font-semibold text-[#9E2339] dark:text-[#E11D48] hover:underline cursor-pointer shrink-0 ml-1"
+                          className="text-[10.5px] font-semibold text-[#2E6B5E] dark:text-[#10b981] hover:underline cursor-pointer shrink-0 ml-1"
                         >
                           Set Up
                         </motion.button>
@@ -414,7 +414,7 @@ const ChatHeader = React.memo(function ChatHeader({
                         }}
                         className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                       >
-                        <Plus size={16} className="text-[#9E2339] dark:text-[#E11D48]" />
+                        <Plus size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
                         <span>Start New Chat</span>
                       </motion.button>
 
@@ -428,7 +428,7 @@ const ChatHeader = React.memo(function ChatHeader({
                         }}
                         className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                       >
-                        <Clock size={16} className="text-[#9E2339] dark:text-[#E11D48]" />
+                        <Clock size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
                         <span>Chat History</span>
                       </motion.button>
 
@@ -443,7 +443,7 @@ const ChatHeader = React.memo(function ChatHeader({
                         }}
                         className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-ink dark:text-[#f4f3ee] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
                       >
-                        <Settings size={16} className="text-[#9E2339] dark:text-[#E11D48]" />
+                        <Settings size={16} className="text-[#2E6B5E] dark:text-[#10b981]" />
                         <span>Settings & Voice</span>
                       </motion.button>
 
@@ -457,7 +457,7 @@ const ChatHeader = React.memo(function ChatHeader({
                             const fullUrl = window.location.origin + window.location.pathname.replace(/\/$/, "");
                             window.open(fullUrl, "_blank");
                           }}
-                          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#9E2339] dark:text-[#E11D48] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
+                          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-xl text-xs font-medium text-[#2E6B5E] dark:text-[#10b981] hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer font-bold"
                         >
                           <ExternalLink size={16} />
                           <span>Open Full Website</span>
@@ -497,7 +497,7 @@ const ChatHeader = React.memo(function ChatHeader({
                               onClick={() => changeFontSize(sz)}
                               className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold transition-all cursor-pointer ${
                                 fontSize === sz
-                                  ? "bg-[#9E2339] text-white dark:bg-[#E11D48] dark:text-white font-bold shadow-xs"
+                                  ? "bg-[#2E6B5E] text-white dark:bg-[#10b981] dark:text-zinc-950 font-bold shadow-xs"
                                   : "text-ink-3 dark:text-[#b1ada1] hover:text-ink dark:hover:text-[#f4f3ee]"
                               }`}
                             >
@@ -542,13 +542,13 @@ const ChatHeader = React.memo(function ChatHeader({
                       }}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
                         fontSize === "normal"
-                          ? "bg-[#9E2339]/15 text-[#9E2339] dark:bg-[#E11D48]/20 dark:text-[#E11D48] font-bold"
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
                           : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
                       }`}
                     >
                       <span>Standard (100%)</span>
                       {fontSize === "normal" && (
-                        <span className="text-[#9E2339] dark:text-[#E11D48] text-[10px]">✓ Active</span>
+                        <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
                       )}
                     </motion.button>
 
@@ -562,13 +562,13 @@ const ChatHeader = React.memo(function ChatHeader({
                       }}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
                         fontSize === "large"
-                          ? "bg-[#9E2339]/15 text-[#9E2339] dark:bg-[#E11D48]/20 dark:text-[#E11D48] font-bold"
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
                           : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
                       }`}
                     >
                       <span>Large (+15% Parents)</span>
                       {fontSize === "large" && (
-                        <span className="text-[#9E2339] dark:text-[#E11D48] text-[10px]">✓ Active</span>
+                        <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
                       )}
                     </motion.button>
 
@@ -582,13 +582,13 @@ const ChatHeader = React.memo(function ChatHeader({
                       }}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
                         fontSize === "xlarge"
-                          ? "bg-[#9E2339]/15 text-[#9E2339] dark:bg-[#E11D48]/20 dark:text-[#E11D48] font-bold"
+                          ? "bg-[#2E6B5E]/15 text-[#2E6B5E] dark:bg-[#10b981]/20 dark:text-[#10b981] font-bold"
                           : "text-ink dark:text-[#f4f3ee] hover:bg-hover dark:hover:bg-white/[0.06]"
                       }`}
                     >
                       <span>Extra Large (+30%)</span>
                       {fontSize === "xlarge" && (
-                        <span className="text-[#9E2339] dark:text-[#E11D48] text-[10px]">✓ Active</span>
+                        <span className="text-[#2E6B5E] dark:text-[#10b981] text-[10px]">✓ Active</span>
                       )}
                     </motion.button>
                   </div>
