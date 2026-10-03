@@ -103,10 +103,11 @@ DOMAIN_DEFINITIONS: Dict[CampusDomain, Dict[str, Any]] = {
             "course", "courses", "department", "departments", "branch", "branches", "curriculum",
             "syllabus", "regulation", "anna university", "b.e", "b.tech", "m.e", "cse", "it",
             "ece", "eee", "mech", "civil", "ai & ds", "artificial intelligence", "cyber security",
-            "accreditation", "nba", "naac", "semester", "exam", "exams", "gpa", "cgpa", "labs"
+            "accreditation", "nba", "naac", "semester", "exam", "exams", "gpa", "cgpa", "labs",
+            "karma", "kaushal", "aicte"
         ],
         "regex": re.compile(
-            r'\b(courses?|departments?|branch|branches|curriculum|syllabus|regulations?|anna\s+university|b\.?tech|b\.?e|m\.?e|semesters?|exams?|gpa|cgpa)\b',
+            r'\b(courses?|departments?|branch|branches|curriculum|syllabus|regulations?|anna\s+university|b\.?tech|b\.?e|m\.?e|semesters?|exams?|gpa|cgpa|karma|kaushal|aicte)\b',
             re.IGNORECASE
         ),
         "allowed_categories": {"academics", "departments", "general"}

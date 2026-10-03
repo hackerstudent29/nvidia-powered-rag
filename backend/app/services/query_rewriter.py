@@ -49,6 +49,14 @@ def pre_normalize_department_acronyms(query: str) -> str:
     )
     return q
 
+try:
+    from backend.taxonomy import is_campus_domain_term_present
+except ImportError:
+    try:
+        from taxonomy import is_campus_domain_term_present
+    except ImportError:
+        is_campus_domain_term_present = lambda q: False
+
 _STANDALONE_DOMAIN_KEYWORDS = {
     "developer", "creator", "author", "architect", "zendrum", "ramzenderum", "ramzendrum",
     "ramanathan", "hackerstudent29", "lorin", "principal", "srinivasan", "hostel", "hostels",
@@ -56,7 +64,8 @@ _STANDALONE_DOMAIN_KEYWORDS = {
     "cutoff", "cutoffs", "fee", "fees", "scholarship", "placement", "placements", "cse", "it",
     "ece", "eee", "mech", "civil", "aids", "aiml", "cyber", "csbs", "location", "address", "map",
     "csi", "college", "msajce", "msajcea", "canteen", "library", "sports", "gym", "mess", "wifi",
-    "degree", "courses", "intake", "eligibility", "quota", "syllabus", "department", "departments"
+    "degree", "courses", "intake", "eligibility", "quota", "syllabus", "department", "departments",
+    "karma", "kaushal", "societies", "alumni", "naac", "nba", "aicte"
 }
 
 def is_standalone_or_protected_query(query: str) -> bool:
@@ -77,6 +86,9 @@ def is_standalone_or_protected_query(query: str) -> bool:
 
     words = set(re.findall(r'\b\w+\b', q_low))
     if words.intersection(_STANDALONE_DOMAIN_KEYWORDS):
+        return True
+
+    if is_campus_domain_term_present(q_clean):
         return True
 
     if re.search(r'\b(who\s+is|what\s+is|what\s+are|where\s+is|how\s+to|list\s+all|tell\s+me\s+about)\b', q_low) and len(q_clean.split()) >= 3:

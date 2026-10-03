@@ -344,6 +344,25 @@ for cat in CAMPUS_TAXONOMY.values():
 import os
 import json
 
+ENGLISH_STOP_WORDS = {
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't",
+    "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by",
+    "can", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing",
+    "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't",
+    "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself",
+    "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is",
+    "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no",
+    "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves",
+    "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so",
+    "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there",
+    "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to",
+    "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were",
+    "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's",
+    "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've",
+    "your", "yours", "yourself", "yourselves", "tell", "give", "show", "list", "want", "need", "please",
+    "details", "information", "info", "data", "file", "text", "page", "section", "topic", "header"
+}
+
 def _load_knowledge_entity_aliases() -> Tuple[Set[str], List[str]]:
     """Loads all alias terms and entity names from knowledge_entities.json dynamically."""
     single_words = set()
@@ -355,17 +374,22 @@ def _load_knowledge_entity_aliases() -> Tuple[Set[str], List[str]]:
             with open(ke_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             for ent in data:
-                for a in ent.get("aliases", []):
+                all_terms = list(ent.get("aliases", []))
+                if ent.get("entity_name"):
+                    all_terms.append(ent["entity_name"])
+                for a in all_terms:
                     a_clean = a.lower().strip()
                     if not a_clean:
                         continue
-                    if len(a_clean.split()) > 1:
+                    words = a_clean.split()
+                    if len(words) > 1:
                         multi_words.append(a_clean)
-                    else:
-                        if len(a_clean) >= 3 and a_clean not in {"the", "and", "for", "with", "this", "that", "code", "file", "header", "size", "basic", "text"}:
-                            single_words.add(a_clean)
-    except Exception:
-        pass
+                    for w in words:
+                        w_clean = re.sub(r'^\W+|\W+$', '', w)
+                        if len(w_clean) >= 2 and w_clean not in ENGLISH_STOP_WORDS:
+                            single_words.add(w_clean)
+    except Exception as e:
+        print(f"Error loading entity aliases: {e}")
     return single_words, multi_words
 
 ENTITY_SINGLE_WORDS, ENTITY_MULTI_WORDS = _load_knowledge_entity_aliases()
@@ -387,7 +411,7 @@ CAMPUS_DOMAIN_TERMS: Set[str] = {
     'btech', 'b.tech', 'be', 'b.e', 'me', 'm.e', 'ug', 'pg', 'curriculum', 'syllabus', 'syllabi',
     'regulation', 'regulations', 'anna university', 'anna univ', 'semester', 'semesters',
     'exam', 'exams', 'grade', 'grades', 'gpa', 'cgpa', 'marks', 'credits', 'arrear', 'arrears',
-    'lab', 'labs', 'laboratories', 'engineering',
+    'lab', 'labs', 'laboratories', 'engineering', 'karma', 'kaushal',
     # Engineering Disciplines & Programs
     'cse', 'computer science', 'information technology', 'ece', 'eee', 'mech', 'mechanical', 'civil',
     'cyber security', 'ai&ds', 'ai&ml', 'csbs', 'vlsi', 'applied electronics', 'structural engineering',
@@ -407,11 +431,6 @@ CAMPUS_DOMAIN_TERMS: Set[str] = {
     'phd', 'dhiravidachelvi', 'funded project', 'tnscst', 'nba', 'naac', 'aicte', 'accreditation'
 }
 CAMPUS_DOMAIN_TERMS.update(ENTITY_SINGLE_WORDS)
-
-DOMAIN_WORD_REGEX = re.compile(
-    r'\b(?:' + '|'.join(re.escape(k) for k in sorted(CAMPUS_DOMAIN_TERMS, key=len, reverse=True)) + r')\b',
-    re.IGNORECASE
-)
 
 IDENTIFIER_REGEX = re.compile(r'\b\d{6,12}[A-Za-z]?\b')  # Matches patent, ISBN, application numbers
 
@@ -465,13 +484,22 @@ def is_campus_domain_term_present(query: str) -> bool:
         return False
     q_lower = query.lower().strip()
 
-    # 1. Multi-word entity aliases match (e.g. "who is ram", "dr ks srinivasan", "central library")
+    # 1. Direct word set intersection with CAMPUS_DOMAIN_TERMS (0.01ms ultra-fast lookup)
+    raw_words = {re.sub(r'^\W+|\W+$', '', w) for w in q_lower.split()}
+    raw_words.discard('')
+    
+    meaningful_words = {w for w in raw_words if w not in ENGLISH_STOP_WORDS}
+    if meaningful_words and meaningful_words.intersection(CAMPUS_DOMAIN_TERMS):
+        return True
+
+    # 2. Multi-word entity aliases match (e.g. "kaushal augmentation", "shivam vishwakarma")
     for phrase in ENTITY_MULTI_WORDS:
-        if phrase in q_lower:
+        if len(phrase) >= 4 and phrase in q_lower:
             return True
 
-    # 2. Domain words or numeric identifier regex
-    return bool(DOMAIN_WORD_REGEX.search(query)) or bool(IDENTIFIER_REGEX.search(query))
+    # 3. Numeric identifier regex (Patent numbers, phone numbers, codes)
+    return bool(IDENTIFIER_REGEX.search(query))
+
 
 
 def fast_classify_intent(query: str) -> Optional[str]:
