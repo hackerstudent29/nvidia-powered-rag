@@ -1,0 +1,8 @@
+Configuration,Recall@10 (%),Answer Correctness (%),Eval Time (s)
+A_Dense_Only,100.0,79.56,52.16
+B_BM25_Only,100.0,78.2,55.4
+C_Dense_Plus_BM25,100.0,79.22,60.79
+D_Dense_BM25_RRF,100.0,79.22,53.92
+E_Dense_BM25_RRF_Reranker,100.0,79.22,50.13
+F_Full_Entity_Structured,100.0,79.22,45.79
+G_Full_Production_System,100.0,79.22,49.33

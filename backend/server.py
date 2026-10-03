@@ -3315,6 +3315,40 @@ async def async_hybrid_search(query: str, query_vector: Optional[List[float]], t
                     "sparse_score": score
                 }
 
+    # Metadata, Entity, Title, and Medical-Isolation Scoring Adjustments
+    q_low = query.lower()
+    matched_ents = search_knowledge_entities(query) if 'search_knowledge_entities' in globals() else []
+    ent_files = set(e.get("source_file", "").lower() for e in matched_ents if e.get("source_file"))
+
+    core_institutional_files = {
+        "msajce_about.md", "msajce_admission.md", "msajce_courses_overview.md",
+        "msajce_transport.md", "msajce_principal.md", "msajce_facilities.md",
+        "msajce_iqac.md", "msajce_hostel.md", "msajce_contact.md", "msajce_placements.md"
+    }
+
+    is_academic_aids = any(w in q_low for w in ["aids", "ai&ds", "ai and ds", "artificial intelligence"]) and not any(w in q_low for w in ["medical", "disease", "hiv", "policy", "health"])
+
+    for chunk_id, item in chunk_map.items():
+        s_file = item.get("source_file", "").lower()
+        c_title = item.get("title", "").lower()
+        c_content = item.get("content", "").lower()
+
+        # 1. Exact entity file boost
+        if s_file in ent_files:
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.25
+
+        # 2. Core institutional document boost
+        if s_file in core_institutional_files:
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.15
+
+        # 3. Medical AIDS isolation
+        if is_academic_aids and s_file == "msajcepolicy.md" and ("hiv" in c_content or "medical" in c_content or "aids awareness" in c_content):
+            scores[chunk_id] = max(0.0, scores.get(chunk_id, 0.0) - 0.50)
+
+        # 4. Title match boost
+        if any(w in c_title for w in q_low.split() if len(w) > 3):
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.10
+
     sorted_chunks = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     results = []
     seen_snippets = set()
@@ -3403,6 +3437,40 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
                     }
         except Exception as e:
             print(f"[WARN] BM25 search error in sync wrapper: {e}")
+
+    # Metadata, Entity, Title, and Medical-Isolation Scoring Adjustments
+    q_low = query.lower()
+    matched_ents = search_knowledge_entities(query) if 'search_knowledge_entities' in globals() else []
+    ent_files = set(e.get("source_file", "").lower() for e in matched_ents if e.get("source_file"))
+
+    core_institutional_files = {
+        "msajce_about.md", "msajce_admission.md", "msajce_courses_overview.md",
+        "msajce_transport.md", "msajce_principal.md", "msajce_facilities.md",
+        "msajce_iqac.md", "msajce_hostel.md", "msajce_contact.md", "msajce_placements.md"
+    }
+
+    is_academic_aids = any(w in q_low for w in ["aids", "ai&ds", "ai and ds", "artificial intelligence"]) and not any(w in q_low for w in ["medical", "disease", "hiv", "policy", "health"])
+
+    for chunk_id, item in chunk_map.items():
+        s_file = item.get("source_file", "").lower()
+        c_title = item.get("title", "").lower()
+        c_content = item.get("content", "").lower()
+
+        # 1. Exact entity file boost
+        if s_file in ent_files:
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.25
+
+        # 2. Core institutional document boost
+        if s_file in core_institutional_files:
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.15
+
+        # 3. Medical AIDS isolation
+        if is_academic_aids and s_file == "msajcepolicy.md" and ("hiv" in c_content or "medical" in c_content or "aids awareness" in c_content):
+            scores[chunk_id] = max(0.0, scores.get(chunk_id, 0.0) - 0.50)
+
+        # 4. Title match boost
+        if any(w in c_title for w in q_low.split() if len(w) > 3):
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.10
 
     sorted_chunks = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     results = []
