@@ -1,117 +1,72 @@
 {
-  "evaluation_timestamp": "20261003_151322",
-  "total_questions_evaluated": 710,
-  "total_passed": 464,
-  "total_failed": 246,
-  "overall_accuracy_pct": 65.35,
-  "overall_accuracy_fraction": "464/710",
+  "evaluation_timestamp": "20261003_153256",
+  "total_questions_evaluated": 750,
+  "total_passed": 498,
+  "total_failed": 252,
+  "overall_accuracy_pct": 66.4,
+  "overall_accuracy_fraction": "498/750",
   "average_groundedness_pct": 100.0,
-  "average_correctness_pct": 59.05,
-  "evidence_metrics": {
-    "evidence_support_rate": {
-      "fraction": "31586/31586",
-      "pct": 100.0
-    },
-    "evidence_completeness": {
-      "fraction": "6/40",
-      "pct": 15.0
-    },
-    "unsupported_claim_rate": {
-      "fraction": "0/31586",
-      "pct": 0.0
-    },
-    "abstention_precision": {
-      "fraction": "35/34",
-      "pct": 102.94
-    },
-    "abstention_recall": {
-      "fraction": "35/130",
-      "pct": 26.92
-    },
-    "false_refusal_rate": {
-      "fraction": "0/580",
-      "pct": 0.0
-    }
+  "average_correctness_pct": 59.54,
+  "confusion_matrix": {
+    "TRUE_ANSWER": 429,
+    "FALSE_REFUSAL": 151,
+    "FALSE_ANSWER": 101,
+    "TRUE_ABSTENTION": 69,
+    "answer_precision_pct": 80.94,
+    "answer_precision_fraction": "429/530",
+    "answer_recall_pct": 73.97,
+    "answer_recall_fraction": "429/580",
+    "abstention_precision_pct": 31.36,
+    "abstention_precision_fraction": "69/220",
+    "abstention_recall_pct": 40.59,
+    "abstention_recall_fraction": "69/170",
+    "false_refusal_rate_pct": 26.03,
+    "false_refusal_rate_fraction": "151/580",
+    "false_answer_rate_pct": 59.41,
+    "false_answer_rate_fraction": "101/170"
   },
   "dataset_splits": {
     "dev_split": {
       "split_name": "Dev Split",
-      "total_questions": 426,
-      "passed": 276,
-      "failed": 150,
-      "accuracy_pct": 64.79
+      "total_questions": 450,
+      "passed": 297,
+      "failed": 153,
+      "accuracy_pct": 66.0,
+      "fraction": "297/450"
     },
     "validation_split": {
       "split_name": "Validation Split",
-      "total_questions": 142,
-      "passed": 95,
-      "failed": 47,
-      "accuracy_pct": 66.9
+      "total_questions": 150,
+      "passed": 101,
+      "failed": 49,
+      "accuracy_pct": 67.33,
+      "fraction": "101/150"
     },
     "held_out_split": {
       "split_name": "Held-Out Split",
-      "total_questions": 142,
-      "passed": 93,
-      "failed": 49,
-      "accuracy_pct": 65.49
+      "total_questions": 150,
+      "passed": 100,
+      "failed": 50,
+      "accuracy_pct": 66.67,
+      "fraction": "100/150"
     }
   },
-  "total_evaluation_time_sec": 208.49,
+  "total_evaluation_time_sec": 253.27,
   "latency_percentiles_ms": {
-    "P50": 1906.64,
-    "P75": 2275.49,
-    "P90": 4454.34,
-    "P95": 5722.65,
-    "P99": 7412.26
+    "P50": 2157.24,
+    "P75": 2856.53,
+    "P90": 5215.37,
+    "P95": 6160.81,
+    "P99": 8022.32
   },
   "category_metrics": {
-    "basic_factual": {
-      "total_questions": 65,
-      "passed": 47,
-      "failed": 18,
-      "accuracy_pct": 72.31,
-      "fraction": "47/65",
-      "p50_latency_ms": 1799.18
-    },
-    "acronym": {
-      "total_questions": 45,
-      "passed": 32,
-      "failed": 13,
-      "accuracy_pct": 71.11,
-      "fraction": "32/45",
-      "p50_latency_ms": 2022.84
-    },
-    "typos": {
-      "total_questions": 35,
-      "passed": 28,
-      "failed": 7,
-      "accuracy_pct": 80.0,
-      "fraction": "28/35",
-      "p50_latency_ms": 1808.59
-    },
-    "negative_out_of_corpus": {
-      "total_questions": 45,
-      "passed": 1,
-      "failed": 44,
-      "accuracy_pct": 2.22,
-      "fraction": "1/45",
-      "p50_latency_ms": 2030.26
-    },
     "comparison": {
       "total_questions": 30,
       "passed": 25,
       "failed": 5,
       "accuracy_pct": 83.33,
       "fraction": "25/30",
-      "p50_latency_ms": 5099.96
-    },
-    "transport": {
-      "total_questions": 45,
-      "passed": 41,
-      "failed": 4,
-      "accuracy_pct": 91.11,
-      "fraction": "41/45",
-      "p50_latency_ms": 1836.75
+      "p50_latency_ms": 5239.65
     },
     "entity_resolution": {
       "total_questions": 35,
@@ -119,55 +74,15 @@
       "failed": 5,
       "accuracy_pct": 85.71,
       "fraction": "30/35",
-      "p50_latency_ms": 1535.4
+      "p50_latency_ms": 2768.24
     },
-    "list": {
-      "total_questions": 30,
-      "passed": 17,
+    "acronym": {
+      "total_questions": 45,
+      "passed": 32,
       "failed": 13,
-      "accuracy_pct": 56.67,
-      "fraction": "17/30",
-      "p50_latency_ms": 4612.17
-    },
-    "follow_up": {
-      "total_questions": 30,
-      "passed": 19,
-      "failed": 11,
-      "accuracy_pct": 63.33,
-      "fraction": "19/30",
-      "p50_latency_ms": 1989.67
-    },
-    "numerical": {
-      "total_questions": 35,
-      "passed": 29,
-      "failed": 6,
-      "accuracy_pct": 82.86,
-      "fraction": "29/35",
-      "p50_latency_ms": 1586.14
-    },
-    "paraphrase": {
-      "total_questions": 55,
-      "passed": 33,
-      "failed": 22,
-      "accuracy_pct": 60.0,
-      "fraction": "33/55",
-      "p50_latency_ms": 1551.62
-    },
-    "adversarial": {
-      "total_questions": 45,
-      "passed": 45,
-      "failed": 0,
-      "accuracy_pct": 100.0,
-      "fraction": "45/45",
-      "p50_latency_ms": 1885.17
-    },
-    "hallucination_trap": {
-      "total_questions": 45,
-      "passed": 0,
-      "failed": 45,
-      "accuracy_pct": 0.0,
-      "fraction": "0/45",
-      "p50_latency_ms": 1898.69
+      "accuracy_pct": 71.11,
+      "fraction": "32/45",
+      "p50_latency_ms": 2643.95
     },
     "tables": {
       "total_questions": 55,
@@ -175,23 +90,15 @@
       "failed": 14,
       "accuracy_pct": 74.55,
       "fraction": "41/55",
-      "p50_latency_ms": 1769.13
+      "p50_latency_ms": 1823.29
     },
-    "RAG-RETRIEVAL-NEGATIVE": {
+    "NEGATIVE-UNSEEN": {
       "total_questions": 40,
       "passed": 34,
       "failed": 6,
       "accuracy_pct": 85.0,
       "fraction": "34/40",
-      "p50_latency_ms": 2003.21
-    },
-    "multi_hop": {
-      "total_questions": 45,
-      "passed": 27,
-      "failed": 18,
-      "accuracy_pct": 60.0,
-      "fraction": "27/45",
-      "p50_latency_ms": 5101.43
+      "p50_latency_ms": 1895.92
     },
     "ambiguous": {
       "total_questions": 30,
@@ -199,51 +106,158 @@
       "failed": 15,
       "accuracy_pct": 50.0,
       "fraction": "15/30",
-      "p50_latency_ms": 2244.71
+      "p50_latency_ms": 2134.65
+    },
+    "list": {
+      "total_questions": 30,
+      "passed": 17,
+      "failed": 13,
+      "accuracy_pct": 56.67,
+      "fraction": "17/30",
+      "p50_latency_ms": 5531.43
+    },
+    "paraphrase": {
+      "total_questions": 55,
+      "passed": 33,
+      "failed": 22,
+      "accuracy_pct": 60.0,
+      "fraction": "33/55",
+      "p50_latency_ms": 2777.68
+    },
+    "hallucination_trap": {
+      "total_questions": 45,
+      "passed": 0,
+      "failed": 45,
+      "accuracy_pct": 0.0,
+      "fraction": "0/45",
+      "p50_latency_ms": 1653.17
+    },
+    "transport": {
+      "total_questions": 45,
+      "passed": 41,
+      "failed": 4,
+      "accuracy_pct": 91.11,
+      "fraction": "41/45",
+      "p50_latency_ms": 2010.55
+    },
+    "multi_hop": {
+      "total_questions": 45,
+      "passed": 27,
+      "failed": 18,
+      "accuracy_pct": 60.0,
+      "fraction": "27/45",
+      "p50_latency_ms": 6058.8
+    },
+    "negative_out_of_corpus": {
+      "total_questions": 45,
+      "passed": 1,
+      "failed": 44,
+      "accuracy_pct": 2.22,
+      "fraction": "1/45",
+      "p50_latency_ms": 1779.01
+    },
+    "basic_factual": {
+      "total_questions": 65,
+      "passed": 47,
+      "failed": 18,
+      "accuracy_pct": 72.31,
+      "fraction": "47/65",
+      "p50_latency_ms": 2268.18
+    },
+    "follow_up": {
+      "total_questions": 30,
+      "passed": 19,
+      "failed": 11,
+      "accuracy_pct": 63.33,
+      "fraction": "19/30",
+      "p50_latency_ms": 1852.15
+    },
+    "numerical": {
+      "total_questions": 35,
+      "passed": 29,
+      "failed": 6,
+      "accuracy_pct": 82.86,
+      "fraction": "29/35",
+      "p50_latency_ms": 2822.47
+    },
+    "RAG-RETRIEVAL-NEGATIVE": {
+      "total_questions": 40,
+      "passed": 34,
+      "failed": 6,
+      "accuracy_pct": 85.0,
+      "fraction": "34/40",
+      "p50_latency_ms": 1846.63
+    },
+    "typos": {
+      "total_questions": 35,
+      "passed": 28,
+      "failed": 7,
+      "accuracy_pct": 80.0,
+      "fraction": "28/35",
+      "p50_latency_ms": 2440.56
+    },
+    "adversarial": {
+      "total_questions": 45,
+      "passed": 45,
+      "failed": 0,
+      "accuracy_pct": 100.0,
+      "fraction": "45/45",
+      "p50_latency_ms": 1755.29
     }
   },
   "failure_root_causes": {
-    "LLM_SYNTHESIS_FAILURE": 91,
-    "STRUCTURED_DATA_FAILURE": 20,
-    "CONTEXT_ASSEMBLY_FAILURE": 36,
-    "TRANSPORT_ORCHESTRATION_FAILURE": 4,
-    "EVIDENCE_GATE_FAILURE": 95
+    "NONE": 151,
+    "F_RELATED_BUT_NON_ENTAILING": 101
   },
   "ablation_study": {
     "A_Dense_Only": {
       "recall_at_10": 77.14,
+      "mrr_at_10": 55.44,
+      "ndcg_at_10": 133.78,
       "answer_correctness": 79.56,
-      "eval_time_sec": 53.86
+      "eval_time_sec": 51.75
     },
     "B_BM25_Only": {
       "recall_at_10": 77.14,
+      "mrr_at_10": 56.9,
+      "ndcg_at_10": 121.41,
       "answer_correctness": 78.2,
-      "eval_time_sec": 50.76
+      "eval_time_sec": 54.12
     },
     "C_Dense_Plus_BM25": {
       "recall_at_10": 82.86,
+      "mrr_at_10": 69.82,
+      "ndcg_at_10": 145.4,
       "answer_correctness": 79.22,
-      "eval_time_sec": 53.74
+      "eval_time_sec": 54.6
     },
     "D_Dense_BM25_RRF": {
       "recall_at_10": 82.86,
+      "mrr_at_10": 69.82,
+      "ndcg_at_10": 145.4,
       "answer_correctness": 79.22,
-      "eval_time_sec": 52.68
+      "eval_time_sec": 54.94
     },
     "E_Dense_BM25_RRF_Reranker": {
       "recall_at_10": 82.86,
+      "mrr_at_10": 69.82,
+      "ndcg_at_10": 145.4,
       "answer_correctness": 79.22,
-      "eval_time_sec": 47.64
+      "eval_time_sec": 43.18
     },
     "F_Full_Entity_Structured": {
       "recall_at_10": 82.86,
+      "mrr_at_10": 69.82,
+      "ndcg_at_10": 145.4,
       "answer_correctness": 79.22,
-      "eval_time_sec": 52.6
+      "eval_time_sec": 39.3
     },
     "G_Full_Production_System": {
       "recall_at_10": 82.86,
+      "mrr_at_10": 69.82,
+      "ndcg_at_10": 145.4,
       "answer_correctness": 79.22,
-      "eval_time_sec": 52.6
+      "eval_time_sec": 40.37
     }
   }
 }

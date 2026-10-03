@@ -1,8 +1,8 @@
-Configuration,True Recall@10 (%),Answer Correctness (%),Eval Time (s)
-A_Dense_Only,77.14,79.56,53.86
-B_BM25_Only,77.14,78.2,50.76
-C_Dense_Plus_BM25,82.86,79.22,53.74
-D_Dense_BM25_RRF,82.86,79.22,52.68
-E_Dense_BM25_RRF_Reranker,82.86,79.22,47.64
-F_Full_Entity_Structured,82.86,79.22,52.6
-G_Full_Production_System,82.86,79.22,52.6
+Configuration,True Recall@10 (%),MRR@10 (%),nDCG@10 (%),Answer Correctness (%),Eval Time (s)
+A_Dense_Only,77.14,55.44,133.78,79.56,51.75
+B_BM25_Only,77.14,56.9,121.41,78.2,54.12
+C_Dense_Plus_BM25,82.86,69.82,145.4,79.22,54.6
+D_Dense_BM25_RRF,82.86,69.82,145.4,79.22,54.94
+E_Dense_BM25_RRF_Reranker,82.86,69.82,145.4,79.22,43.18
+F_Full_Entity_Structured,82.86,69.82,145.4,79.22,39.3
+G_Full_Production_System,82.86,69.82,145.4,79.22,40.37

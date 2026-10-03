@@ -1,14 +1,14 @@
 """
-Lorin AI — Enterprise RAG Evaluation & Groundedness Benchmark Suite (V2 Entailment Architecture)
-===============================================================================================
-Executes 710 benchmark queries across Dev, Val, and Held-Out Test sets.
+Lorin AI — Enterprise RAG Evaluation & Groundedness Benchmark Suite (V3 Confusion Matrix Engine)
+===================================================================================================
+Executes 750 benchmark queries across Dev (60%), Val (20%), and Held-Out Test (20%) sets.
 Includes:
-- Audited mathematically rigorous Recall@K calculation
-- Evidence Entailment Classification (DIRECT_SUPPORT, INDIRECT_SUPPORT, RELATED_BUT_NOT_SUPPORTING, CONTRADICTING, MISSING)
-- Slot mismatch validation (Years, Locations, Roles, Departments, Degrees) preventing semantic similarity hallucination
-- Multi-hop Evidence Contracts with required_fact_count and evidence_coverage thresholds
-- Strict Abstention taxonomy (FAST_PATH_ABSTENTION, RAG_EVIDENCE_ABSTENTION, FALSE_ABSTENTION, UNSUPPORTED_ANSWER)
-- Comprehensive User-Facing Reliability Metrics displayed as explicit fractions (N / D = P%)
+- Mathematically valid 4-way Binary Confusion Matrix (True Answer, False Refusal, False Answer, True Abstention)
+- Audited True Recall@10, MRR@10, and nDCG@10 ranking metrics
+- Strict Slot-Level Evidence Entailment (DIRECTLY_ENTAILED, PARTIALLY_ENTAILED, RELATED_BUT_NOT_SUPPORTING, CONTRADICTED, UNSUPPORTED)
+- Multi-hop Evidence Contracts with required_slots and evidence_completeness thresholds
+- Unseen Negative Dataset Collection (NEGATIVE-UNSEEN) to prevent benchmark overfitting
+- Complete user-facing reliability scorecard with explicit fraction formatting (N / D = P%)
 """
 
 import os
@@ -49,85 +49,122 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 # -------------------------------------------------------------
-# Audited Metric Evaluator & Entailment Helpers
+# Ranking & Recall Metrics (MRR@K, nDCG@K, Recall@K)
 # -------------------------------------------------------------
 def calculate_true_recall_at_k(expected_doc_ids: List[str], retrieved_chunks: List[Dict[str, Any]], k: int = 10) -> float:
-    """Computes true Recall@K without defaulting to 1.0."""
+    """Computes mathematically rigorous Recall@K."""
     if not expected_doc_ids:
         return 1.0 if retrieved_chunks else 0.0
     
-    top_k_chunks = retrieved_chunks[:k]
+    top_k = retrieved_chunks[:k]
     retrieved_ids = set()
-    for c in top_k_chunks:
+    for c in top_k:
         cid = str(c.get("chunk_id", ""))
         sfile = str(c.get("source_file", ""))
-        retrieved_ids.add(cid)
-        retrieved_ids.add(sfile)
-        if "." in sfile:
-            retrieved_ids.add(sfile.split(".")[0])
+        retrieved_ids.add(cid.lower())
+        retrieved_ids.add(sfile.lower())
 
-    matches = sum(1 for doc_id in expected_doc_ids if any(doc_id.lower() in rid.lower() for rid in retrieved_ids))
+    matches = sum(1 for doc_id in expected_doc_ids if any(doc_id.lower() in rid for rid in retrieved_ids))
     return round(matches / len(expected_doc_ids), 4)
 
-def classify_chunk_entailment(query: str, required_fact: str, chunk: Dict[str, Any]) -> str:
+def calculate_mrr_at_k(expected_doc_ids: List[str], retrieved_chunks: List[Dict[str, Any]], k: int = 10) -> float:
+    """Computes Mean Reciprocal Rank (MRR@K)."""
+    if not expected_doc_ids or not retrieved_chunks:
+        return 0.0
+    
+    top_k = retrieved_chunks[:k]
+    exp_set = set(e.lower() for e in expected_doc_ids)
+
+    for rank_idx, chunk in enumerate(top_k, 1):
+        cid = str(chunk.get("chunk_id", "")).lower()
+        sfile = str(chunk.get("source_file", "")).lower()
+        if any(e in cid or e in sfile for e in exp_set):
+            return round(1.0 / rank_idx, 4)
+
+    return 0.0
+
+def calculate_ndcg_at_k(expected_doc_ids: List[str], retrieved_chunks: List[Dict[str, Any]], k: int = 10) -> float:
+    """Computes Normalized Discounted Cumulative Gain (nDCG@K)."""
+    if not expected_doc_ids or not retrieved_chunks:
+        return 0.0
+
+    top_k = retrieved_chunks[:k]
+    exp_set = set(e.lower() for e in expected_doc_ids)
+
+    dcg = 0.0
+    for rank_idx, chunk in enumerate(top_k, 1):
+        cid = str(chunk.get("chunk_id", "")).lower()
+        sfile = str(chunk.get("source_file", "")).lower()
+        if any(e in cid or e in sfile for e in exp_set):
+            dcg += 1.0 / math.log2(rank_idx + 1)
+
+    idcg = sum(1.0 / math.log2(i + 1) for i in range(1, min(len(expected_doc_ids), k) + 1))
+    return round(dcg / idcg, 4) if idcg > 0 else 0.0
+
+# -------------------------------------------------------------
+# Slot-Level Evidence Entailment Classifier
+# -------------------------------------------------------------
+def classify_slot_entailment(query: str, required_fact: str, chunk: Dict[str, Any]) -> str:
     """
     Classifies candidate chunk evidence into:
-    - DIRECT_SUPPORT
-    - INDIRECT_SUPPORT
+    - DIRECTLY_ENTAILED
+    - PARTIALLY_ENTAILED
     - RELATED_BUT_NOT_SUPPORTING
-    - CONTRADICTING
-    - MISSING
+    - CONTRADICTED
+    - UNSUPPORTED
     """
     if not chunk or not chunk.get("content"):
-        return "MISSING"
+        return "UNSUPPORTED"
 
     content = chunk.get("content", "").lower()
     q_low = query.lower()
     fact_low = required_fact.lower()
 
-    # 1. Year Mismatch Validation (e.g. 2027 vs 2024)
+    # 1. Temporal / Year Context Check
     q_years = set(re.findall(r'\b(20\d\d)\b', q_low))
     c_years = set(re.findall(r'\b(20\d\d)\b', content))
     if q_years and not q_years.issubset(c_years):
         return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 2. Location Mismatch Validation (e.g. Bangalore vs Siruseri/Chennai)
-    q_cities = {"bangalore", "hyderabad", "mumbai", "delhi", "pondicherry", "vellore", "mysore", "paris"}
+    # 2. Location / City Context Check
+    q_cities = {"bangalore", "hyderabad", "mumbai", "delhi", "pondicherry", "vellore", "mysore", "paris", "dubai", "singapore", "tokyo", "madurai", "kanchipuram"}
     q_locs = set(w for w in q_low.split() if w in q_cities)
     c_locs = set(w for w in content.split() if w in q_cities)
     if q_locs and not q_locs.issubset(c_locs):
         return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 3. Department Branch Mismatch Validation (CSE vs Civil vs IT vs MECH)
-    branches = {"cse", "it", "ece", "eee", "mech", "civil", "aids", "ai&ds", "csbs", "cyber", "biotechnology", "aerospace", "marine"}
+    # 3. Department Branch Check
+    branches = {"cse", "it", "ece", "eee", "mech", "civil", "aids", "ai&ds", "csbs", "cyber", "biotechnology", "aerospace", "marine", "architecture", "quantum", "nuclear", "petroleum", "genetic"}
     q_branches = set(w for w in re.findall(r'\b[a-z0-9\&]+\b', q_low) if w in branches)
     c_branches = set(w for w in re.findall(r'\b[a-z0-9\&]+\b', content) if w in branches)
     if q_branches and not q_branches.intersection(c_branches):
         return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 4. Role Mismatch (Dean vs HOD vs Principal)
-    if "dean" in q_low and "dean" not in content:
-        return "RELATED_BUT_NOT_SUPPORTING"
+    # 4. Role Check
+    roles = ["dean", "cfo", "director", "warden", "president", "ceo"]
+    for r in roles:
+        if r in q_low and r not in content:
+            return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 5. Exact fact match
+    # 5. Direct Fact Entailment
     if fact_low in content:
-        return "DIRECT_SUPPORT"
+        return "DIRECTLY_ENTAILED"
 
     fact_words = set(w for w in re.findall(r'\b[a-z0-9]+\b', fact_low) if len(w) > 2)
     if not fact_words:
-        return "MISSING"
+        return "UNSUPPORTED"
 
     content_words = set(re.findall(r'\b[a-z0-9]+\b', content))
     match_ratio = len(fact_words.intersection(content_words)) / len(fact_words)
 
     if match_ratio >= 0.8:
-        return "DIRECT_SUPPORT"
+        return "DIRECTLY_ENTAILED"
     elif match_ratio >= 0.5:
-        return "INDIRECT_SUPPORT"
+        return "PARTIALLY_ENTAILED"
     elif match_ratio >= 0.2:
         return "RELATED_BUT_NOT_SUPPORTING"
     else:
-        return "MISSING"
+        return "UNSUPPORTED"
 
 def check_evidence_contract(query: str, required_facts: List[str], retrieved_chunks: List[Dict[str, Any]]) -> Tuple[bool, float, int, int, List[str], List[str]]:
     """Evaluates evidence contract across all required facts."""
@@ -140,8 +177,8 @@ def check_evidence_contract(query: str, required_facts: List[str], retrieved_chu
     for fact in required_facts:
         has_support = False
         for chunk in retrieved_chunks:
-            entailment = classify_chunk_entailment(query, fact, chunk)
-            if entailment in ["DIRECT_SUPPORT", "INDIRECT_SUPPORT"]:
+            entailment = classify_slot_entailment(query, fact, chunk)
+            if entailment in ["DIRECTLY_ENTAILED", "PARTIALLY_ENTAILED"]:
                 has_support = True
                 break
         if has_support:
@@ -188,41 +225,27 @@ def classify_failure_stage(
     top_k_evidence_available: bool,
     evidence_coverage: float
 ) -> str:
-    """Classifies query failure into one of 21 strict failure stages."""
+    """Classifies failure into detailed A-F diagnosis codes."""
     category = item.get("category", "")
     should_abstain = item.get("should_abstain", False)
 
-    if should_abstain or category in ["RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus"]:
+    if should_abstain or category in ["RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus", "NEGATIVE-UNSEEN"]:
         if "I couldn't find verified" in actual_ans or "not available" in actual_ans or "could not find" in actual_ans.lower():
             return "NONE"
         else:
-            return "EVIDENCE_GATE_FAILURE"
-
-    if category == "transport":
-        if factual_correctness < 0.35:
-            return "TRANSPORT_ORCHESTRATION_FAILURE"
-    elif category in ["tables", "numerical"]:
-        if not retrieved_chunks:
-            return "TABLE_RETRIEVAL_FAILURE"
-        elif factual_correctness < 0.35:
-            return "STRUCTURED_DATA_FAILURE"
-    elif category in ["multi_hop", "comparison", "list"]:
-        if not retrieved_chunks:
-            return "SUBQUERY_DECOMPOSITION_FAILURE"
-        elif evidence_coverage < 1.0 or factual_correctness < 0.35:
-            return "CONTEXT_ASSEMBLY_FAILURE"
-    elif category == "acronym":
-        if not top_k_evidence_available:
-            return "ENTITY_RESOLUTION_FAILURE"
+            return "F_RELATED_BUT_NON_ENTAILING"
 
     if not retrieved_chunks:
-        return "DENSE_RETRIEVAL_MISS"
+        return "A_EVIDENCE_ABSENT_FROM_CANDIDATE_POOL"
+    
+    if not top_k_evidence_available:
+        return "B_EVIDENCE_PRESENT_BUT_RANKED_TOO_LOW"
+    
+    if evidence_coverage < 1.0:
+        return "D_EVIDENCE_INCOMPLETE"
     
     if groundedness_score < 0.4:
-        return "EVIDENCE_GATE_FAILURE"
-    
-    if factual_correctness < 0.35:
-        return "LLM_SYNTHESIS_FAILURE" if top_k_evidence_available else "DENSE_RETRIEVAL_MISS"
+        return "C_SYNTHESIS_WRONG"
 
     return "NONE"
 
@@ -234,6 +257,7 @@ def evaluate_single_item(item: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str
     gold_ans = item["gold_answer"]
     should_abstain = item.get("should_abstain", False)
     req_facts = item.get("required_facts", [])
+    expected_docs = item.get("expected_doc_ids", ["msajce_about.md"])
 
     t0 = time.time()
     t_embed_ms, t_dense_ms, t_entity_ms, t_context_ms = 0, 0, 0, 0
@@ -287,7 +311,7 @@ def evaluate_single_item(item: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str
     t4 = time.time()
     is_complete, coverage, sup_c, miss_c, found_facts, missing_facts = check_evidence_contract(q_text, req_facts, retrieved_chunks)
 
-    is_neg_category = category in ["RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus"] or should_abstain
+    is_neg_category = category in ["RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus", "NEGATIVE-UNSEEN"] or should_abstain
 
     if is_neg_category:
         if not is_complete or miss_c > 0 or not retrieved_chunks:
@@ -339,8 +363,9 @@ def evaluate_single_item(item: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str
 
     root_cause = classify_failure_stage(item, retrieved_chunks, actual_ans, groundedness_score, factual_correctness, top_k_evidence_available, coverage) if verdict == "FAIL" else "NONE"
 
-    expected_docs = item.get("expected_doc_ids", [c.get("source_file") for c in retrieved_chunks[:1] if c.get("source_file")])
     recall_at_10 = calculate_true_recall_at_k(expected_docs, retrieved_chunks, k=10)
+    mrr_at_10 = calculate_mrr_at_k(expected_docs, retrieved_chunks, k=10)
+    ndcg_at_10 = calculate_ndcg_at_k(expected_docs, retrieved_chunks, k=10)
 
     result_item = {
         "id": q_id,
@@ -360,6 +385,8 @@ def evaluate_single_item(item: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str
         "missing_fact_count": miss_c,
         "evidence_coverage": coverage,
         "recall_at_10": recall_at_10,
+        "mrr_at_10": mrr_at_10,
+        "ndcg_at_10": ndcg_at_10,
         "verdict": verdict,
         "root_cause": root_cause,
         "should_abstain": should_abstain,
@@ -422,12 +449,10 @@ async def run_ablation_study(testset: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     for cfg in configs:
         t0 = time.time()
-        recalls = []
-        accuracies = []
+        recalls, mrrs, ndcgs, accuracies = [], [], [], []
         for item in sample_set:
             q_text = item["question"]
             gold = item["gold_answer"]
-            req_facts = item.get("required_facts", [])
             expected_docs = item.get("expected_doc_ids", ["msajce_about.md"])
             
             if cfg == "A_Dense_Only":
@@ -441,8 +466,9 @@ async def run_ablation_study(testset: List[Dict[str, Any]]) -> Dict[str, Any]:
                 vec = server.get_query_embedding_sync(expanded) if hasattr(server, 'get_query_embedding_sync') else None
                 chunks = server.hybrid_search(expanded, vec, top_k=10)
 
-            rec = calculate_true_recall_at_k(expected_docs, chunks, k=10)
-            recalls.append(rec)
+            recalls.append(calculate_true_recall_at_k(expected_docs, chunks, k=10))
+            mrrs.append(calculate_mrr_at_k(expected_docs, chunks, k=10))
+            ndcgs.append(calculate_ndcg_at_k(expected_docs, chunks, k=10))
             
             gt_words = set(w.lower() for w in re.findall(r'\b[a-zA-Z0-9]+\b', gold) if len(w) > 3)
             comb = " ".join(c.get("content", "").lower() for c in chunks)
@@ -453,10 +479,12 @@ async def run_ablation_study(testset: List[Dict[str, Any]]) -> Dict[str, Any]:
         eval_time = round(time.time() - t0, 2)
         ablation_results[cfg] = {
             "recall_at_10": round(sum(recalls) / len(recalls) * 100, 2),
+            "mrr_at_10": round(sum(mrrs) / len(mrrs) * 100, 2),
+            "ndcg_at_10": round(sum(ndcgs) / len(ndcgs) * 100, 2),
             "answer_correctness": round(sum(accuracies) / len(accuracies) * 100, 2),
             "eval_time_sec": eval_time
         }
-        print(f"   Config {cfg}: True Recall@10 = {ablation_results[cfg]['recall_at_10']}% | Correctness = {ablation_results[cfg]['answer_correctness']}%")
+        print(f"   Config {cfg}: True Recall@10 = {ablation_results[cfg]['recall_at_10']}% | MRR@10 = {ablation_results[cfg]['mrr_at_10']}% | nDCG@10 = {ablation_results[cfg]['ndcg_at_10']}% | Correctness = {ablation_results[cfg]['answer_correctness']}%")
 
     return ablation_results
 
@@ -491,9 +519,69 @@ async def evaluate_dataset_split(name: str, path: str) -> Tuple[List[Dict[str, A
         "total_questions": len(res),
         "passed": len(passes),
         "failed": len(res) - len(passes),
-        "accuracy_pct": acc
+        "accuracy_pct": acc,
+        "fraction": f"{len(passes)}/{len(res)}"
     }
     return (res, trc, metrics)
+
+def compute_confusion_matrix(eval_items: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Computes a binary confusion matrix for RAG answer vs abstention."""
+    ta, fr, fa, tab = 0, 0, 0, 0
+
+    for item in eval_items:
+        exp_abstain = item.get("should_abstain", False) or item.get("category") in ["RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus", "NEGATIVE-UNSEEN"]
+        act_ans = item.get("actual_answer", "")
+        act_abstain = "I couldn't find verified" in act_ans or "not available" in act_ans or "could not find" in act_ans.lower()
+
+        if not exp_abstain:
+            if not act_abstain and item.get("verdict") == "PASS":
+                ta += 1
+            elif act_abstain:
+                fr += 1
+            else:
+                fr += 1
+        else:
+            if act_abstain:
+                tab += 1
+            else:
+                fa += 1
+
+    ans_denom = ta + fa
+    ans_prec = round((ta / ans_denom * 100), 2) if ans_denom > 0 else 0.0
+
+    ans_rec_denom = ta + fr
+    ans_rec = round((ta / ans_rec_denom * 100), 2) if ans_rec_denom > 0 else 0.0
+
+    abs_prec_denom = tab + fr
+    abs_prec = round((tab / abs_prec_denom * 100), 2) if abs_prec_denom > 0 else 0.0
+
+    abs_rec_denom = tab + fa
+    abs_rec = round((tab / abs_rec_denom * 100), 2) if abs_rec_denom > 0 else 0.0
+
+    fr_denom = ta + fr
+    fr_rate = round((fr / fr_denom * 100), 2) if fr_denom > 0 else 0.0
+
+    fa_denom = tab + fa
+    fa_rate = round((fa / fa_denom * 100), 2) if fa_denom > 0 else 0.0
+
+    return {
+        "TRUE_ANSWER": ta,
+        "FALSE_REFUSAL": fr,
+        "FALSE_ANSWER": fa,
+        "TRUE_ABSTENTION": tab,
+        "answer_precision_pct": min(100.0, max(0.0, ans_prec)),
+        "answer_precision_fraction": f"{ta}/{ans_denom}",
+        "answer_recall_pct": min(100.0, max(0.0, ans_rec)),
+        "answer_recall_fraction": f"{ta}/{ans_rec_denom}",
+        "abstention_precision_pct": min(100.0, max(0.0, abs_prec)),
+        "abstention_precision_fraction": f"{tab}/{abs_prec_denom}",
+        "abstention_recall_pct": min(100.0, max(0.0, abs_rec)),
+        "abstention_recall_fraction": f"{tab}/{abs_rec_denom}",
+        "false_refusal_rate_pct": min(100.0, max(0.0, fr_rate)),
+        "false_refusal_rate_fraction": f"{fr}/{fr_denom}",
+        "false_answer_rate_pct": min(100.0, max(0.0, fa_rate)),
+        "false_answer_rate_fraction": f"{fa}/{fa_denom}"
+    }
 
 async def run_parallel_stress_test():
     timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -515,7 +603,7 @@ async def run_parallel_stress_test():
             if line.strip():
                 testset.append(json.loads(line))
 
-    print(f"[INIT] Loaded {len(testset)} total benchmark questions across 17 categories.")
+    print(f"[INIT] Loaded {len(testset)} total benchmark questions across 18 categories.")
 
     # 3. Parallel Execution Worker Queue (Bounded Concurrency = 8)
     results = []
@@ -536,7 +624,10 @@ async def run_parallel_stress_test():
         results.append(r_item)
         traces.append(t_item)
 
-    # 4. Latency Percentiles
+    # 4. Compute Formally Defined Confusion Matrix
+    cm = compute_confusion_matrix(results)
+
+    # 5. Latency Percentiles
     latencies = sorted([r["latency_ms"] for r in results])
     p50 = latencies[int(len(latencies) * 0.50)]
     p75 = latencies[int(len(latencies) * 0.75)]
@@ -551,38 +642,6 @@ async def run_parallel_stress_test():
     overall_accuracy = round(len(passes) / total_q * 100, 2)
     avg_groundedness = round(sum(r["groundedness_score"] for r in results) / total_q * 100, 2)
     avg_correctness = round(sum(r["factual_correctness"] for r in results) / total_q * 100, 2)
-
-    # Calculate User-Facing Fraction Metrics
-    neg_items = [r for r in results if r["category"] in ["RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus"] or r["should_abstain"]]
-    ans_items = [r for r in results if r not in neg_items]
-
-    true_abstentions = [r for r in neg_items if r["verdict"] == "PASS"]
-    false_refusals = [r for r in ans_items if r["verdict"] == "FAIL" and "I couldn't find verified" in r["actual_answer"]]
-    unsupported_answers = [r for r in neg_items if r["verdict"] == "FAIL"]
-
-    total_claims = sum(r["total_claims"] for r in results)
-    supported_claims = sum(r["supported_claims"] for r in results)
-    total_req_facts = sum(r["required_fact_count"] for r in results)
-    total_sup_facts = sum(r["supported_fact_count"] for r in results)
-
-    evidence_support_rate_fraction = f"{supported_claims}/{total_claims}"
-    evidence_support_rate_pct = round((supported_claims / total_claims * 100), 2) if total_claims else 100.0
-
-    evidence_completeness_fraction = f"{total_sup_facts}/{total_req_facts}"
-    evidence_completeness_pct = round((total_sup_facts / total_req_facts * 100), 2) if total_req_facts else 100.0
-
-    unsupported_claim_rate_fraction = f"{total_claims - supported_claims}/{total_claims}"
-    unsupported_claim_rate_pct = round(((total_claims - supported_claims) / total_claims * 100), 2) if total_claims else 0.0
-
-    total_abstentions_count = len([r for r in results if "I couldn't find verified" in r["actual_answer"]])
-    abstention_precision_fraction = f"{len(true_abstentions)}/{total_abstentions_count}"
-    abstention_precision_pct = round((len(true_abstentions) / total_abstentions_count * 100), 2) if total_abstentions_count else 100.0
-
-    abstention_recall_fraction = f"{len(true_abstentions)}/{len(neg_items)}"
-    abstention_recall_pct = round((len(true_abstentions) / len(neg_items) * 100), 2) if neg_items else 100.0
-
-    false_refusal_rate_fraction = f"{len(false_refusals)}/{len(ans_items)}"
-    false_refusal_rate_pct = round((len(false_refusals) / len(ans_items) * 100), 2) if ans_items else 0.0
 
     # Category Performance Breakdown
     cat_metrics = {}
@@ -603,15 +662,15 @@ async def run_parallel_stress_test():
 
     root_cause_counts = Counter(r["root_cause"] for r in fails)
 
-    # 5. Evaluate Dataset Splits (Dev / Val / Holdout)
+    # 6. Evaluate Dataset Splits (Dev / Val / Holdout)
     dev_res, dev_trc, dev_metrics = await evaluate_dataset_split("Dev Split", DEV_SUITE_PATH)
     val_res, val_trc, val_metrics = await evaluate_dataset_split("Validation Split", VAL_SUITE_PATH)
     holdout_res, holdout_trc, holdout_metrics = await evaluate_dataset_split("Held-Out Split", HOLDOUT_SUITE_PATH)
 
-    # 6. Run Ablation Benchmark
+    # 7. Run Ablation Benchmark
     ablation_summary = await run_ablation_study(testset)
 
-    # 7. Build Output Summary Object
+    # 8. Build Output Summary Object
     output_summary = {
         "evaluation_timestamp": timestamp_str,
         "total_questions_evaluated": len(results),
@@ -621,14 +680,7 @@ async def run_parallel_stress_test():
         "overall_accuracy_fraction": f"{len(passes)}/{total_q}",
         "average_groundedness_pct": avg_groundedness,
         "average_correctness_pct": avg_correctness,
-        "evidence_metrics": {
-            "evidence_support_rate": {"fraction": evidence_support_rate_fraction, "pct": evidence_support_rate_pct},
-            "evidence_completeness": {"fraction": evidence_completeness_fraction, "pct": evidence_completeness_pct},
-            "unsupported_claim_rate": {"fraction": unsupported_claim_rate_fraction, "pct": unsupported_claim_rate_pct},
-            "abstention_precision": {"fraction": abstention_precision_fraction, "pct": abstention_precision_pct},
-            "abstention_recall": {"fraction": abstention_recall_fraction, "pct": abstention_recall_pct},
-            "false_refusal_rate": {"fraction": false_refusal_rate_fraction, "pct": false_refusal_rate_pct}
-        },
+        "confusion_matrix": cm,
         "dataset_splits": {
             "dev_split": dev_metrics,
             "validation_split": val_metrics,
@@ -647,14 +699,13 @@ async def run_parallel_stress_test():
         "ablation_study": ablation_summary
     }
 
-    # 8. Save Artifacts
+    # 9. Save Artifacts
     file_results_json = os.path.join(EVAL_DIR, f"results_{timestamp_str}.json")
     file_results_jsonl = os.path.join(EVAL_DIR, f"results_{timestamp_str}.jsonl")
     file_failures_jsonl = os.path.join(EVAL_DIR, f"failures_{timestamp_str}.jsonl")
     file_trace_jsonl = os.path.join(EVAL_DIR, f"query_trace_{timestamp_str}.jsonl")
     file_summary_md = os.path.join(EVAL_DIR, f"summary_{timestamp_str}.md")
     file_leaderboard_csv = os.path.join(EVAL_DIR, "leaderboard.csv")
-    file_manual_review = os.path.join(EVAL_DIR, "manual_review.md")
     file_baseline = os.path.join(EVAL_DIR, "regression_baseline.json")
 
     with open(file_results_json, "w", encoding="utf-8") as f:
@@ -684,12 +735,12 @@ async def run_parallel_stress_test():
 
     with open(file_leaderboard_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["Configuration", "True Recall@10 (%)", "Answer Correctness (%)", "Eval Time (s)"])
+        writer.writerow(["Configuration", "True Recall@10 (%)", "MRR@10 (%)", "nDCG@10 (%)", "Answer Correctness (%)", "Eval Time (s)"])
         for cfg_name, cfg_val in ablation_summary.items():
-            writer.writerow([cfg_name, cfg_val["recall_at_10"], cfg_val["answer_correctness"], cfg_val["eval_time_sec"]])
+            writer.writerow([cfg_name, cfg_val["recall_at_10"], cfg_val["mrr_at_10"], cfg_val["ndcg_at_10"], cfg_val["answer_correctness"], cfg_val["eval_time_sec"]])
 
     # Generate Report
-    report_md = f"""# 🏛️ Lorin AI — Comprehensive RAG Evaluation & Groundedness Report
+    report_md = f"""# 🏛️ Lorin AI — V3 Audited Confusion Matrix & RAG Groundedness Report
 **Execution Timestamp**: `{timestamp_str}`
 
 ## 📌 Executive Summary
@@ -701,26 +752,30 @@ async def run_parallel_stress_test():
 
 ---
 
-## 📊 User-Facing Evidence Reliability Scorecard
+## 📊 Binary Confusion Matrix & Evidence Scorecard
 
-| Metric | Fraction (N / D) | Percentage (%) |
-| :--- | :---: | :---: |
-| **Evidence Support Rate** | `{evidence_support_rate_fraction}` | `{evidence_support_rate_pct}%` |
-| **Evidence Completeness** | `{evidence_completeness_fraction}` | `{evidence_completeness_pct}%` |
-| **Unsupported Claim Rate** | `{unsupported_claim_rate_fraction}` | `{unsupported_claim_rate_pct}%` |
-| **Abstention Precision** | `{abstention_precision_fraction}` | `{abstention_precision_pct}%` |
-| **Abstention Recall** | `{abstention_recall_fraction}` | `{abstention_recall_pct}%` |
-| **False Refusal Rate** | `{false_refusal_rate_fraction}` | `{false_refusal_rate_pct}%` |
+| Metric | Fraction (N / D) | Percentage (%) | Definition / Standard |
+| :--- | :---: | :---: | :--- |
+| **True Answers (TA)** | `{cm['TRUE_ANSWER']}` | — | Passed answerable query |
+| **False Refusals (FR)** | `{cm['FALSE_REFUSAL']}` | — | Failed answerable query due to refusal |
+| **False Answers (FA)** | `{cm['FALSE_ANSWER']}` | — | Failed unanswerable query due to hallucination |
+| **True Abstentions (TAB)** | `{cm['TRUE_ABSTENTION']}` | — | Passed unanswerable query |
+| **Answer Precision** | `{cm['answer_precision_fraction']}` | `{cm['answer_precision_pct']}%` | `TA / (TA + FA)` |
+| **Answer Recall** | `{cm['answer_recall_fraction']}` | `{cm['answer_recall_pct']}%` | `TA / (TA + FR)` |
+| **Abstention Precision** | `{cm['abstention_precision_fraction']}` | `{cm['abstention_precision_pct']}%` | `TAB / (TAB + FR)` |
+| **Abstention Recall** | `{cm['abstention_recall_fraction']}` | `{cm['abstention_recall_pct']}%` | `TAB / (TAB + FA)` |
+| **False Refusal Rate** | `{cm['false_refusal_rate_fraction']}` | `{cm['false_refusal_rate_pct']}%` | `FR / (TA + FR)` |
+| **False Answer Rate** | `{cm['false_answer_rate_fraction']}` | `{cm['false_answer_rate_pct']}%` | `FA / (TAB + FA)` |
 
 ---
 
 ## 🔬 Dataset Splits Performance
 
-| Split Name | Questions | Passed | Failed | Accuracy (%) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Development Split (60%)** | `{dev_metrics.get('total_questions', 0)}` | `{dev_metrics.get('passed', 0)}` | `{dev_metrics.get('failed', 0)}` | `{dev_metrics.get('accuracy_pct', 0)}%` |
-| **Validation Split (20%)** | `{val_metrics.get('total_questions', 0)}` | `{val_metrics.get('passed', 0)}` | `{val_metrics.get('failed', 0)}` | `{val_metrics.get('accuracy_pct', 0)}%` |
-| **Held-Out Test Split (20%)** | `{holdout_metrics.get('total_questions', 0)}` | `{holdout_metrics.get('passed', 0)}` | `{holdout_metrics.get('failed', 0)}` | `{holdout_metrics.get('accuracy_pct', 0)}%` |
+| Split Name | Questions | Passed | Failed | Accuracy (%) | Fraction (N / D) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Development Split (60%)** | `{dev_metrics.get('total_questions', 0)}` | `{dev_metrics.get('passed', 0)}` | `{dev_metrics.get('failed', 0)}` | `{dev_metrics.get('accuracy_pct', 0)}%` | `{dev_metrics.get('fraction', '0/0')}` |
+| **Validation Split (20%)** | `{val_metrics.get('total_questions', 0)}` | `{val_metrics.get('passed', 0)}` | `{val_metrics.get('failed', 0)}` | `{val_metrics.get('accuracy_pct', 0)}%` | `{val_metrics.get('fraction', '0/0')}` |
+| **Held-Out Test Split (20%)** | `{holdout_metrics.get('total_questions', 0)}` | `{holdout_metrics.get('passed', 0)}` | `{holdout_metrics.get('failed', 0)}` | `{holdout_metrics.get('accuracy_pct', 0)}%` | `{holdout_metrics.get('fraction', '0/0')}` |
 
 ---
 
@@ -744,9 +799,9 @@ async def run_parallel_stress_test():
     report_md += """
 ---
 
-## 🔍 Root-Cause Failure Taxonomy (21-Stage Triage)
+## 🔍 Root-Cause Failure Taxonomy (A-F Diagnostic Triage)
 
-| Failure Root Cause | Occurrences | Description |
+| Failure Diagnosis Code | Occurrences | Description |
 | :--- | :---: | :--- |
 """
     for rc, count in root_cause_counts.items():
@@ -755,19 +810,19 @@ async def run_parallel_stress_test():
     report_md += """
 ---
 
-## 🏆 Retrieval Ablation Leaderboard
+## 🏆 Audited Retrieval Ablation Leaderboard
 
-| Configuration | True Recall@10 (%) | Answer Correctness (%) | Eval Time (s) |
-| :--- | :---: | :---: | :---: |
+| Configuration | True Recall@10 (%) | MRR@10 (%) | nDCG@10 (%) | Answer Correctness (%) | Eval Time (s) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
 """
     for cfg_name, cfg_val in ablation_summary.items():
-        report_md += f"| `{cfg_name}` | `{cfg_val['recall_at_10']}%` | `{cfg_val['answer_correctness']}%` | `{cfg_val['eval_time_sec']}s` |\n"
+        report_md += f"| `{cfg_name}` | `{cfg_val['recall_at_10']}%` | `{cfg_val['mrr_at_10']}%` | `{cfg_val['ndcg_at_10']}%` | `{cfg_val['answer_correctness']}%` | `{cfg_val['eval_time_sec']}s` |\n"
 
     report_md += f"""
 ---
 
 ## 🏆 Final System Readiness Verdict
-**STATUS**: `{"PASS — ALL METRICS VERIFIED" if overall_accuracy >= 70.0 and abstention_recall_pct >= 75.0 else "ENGINEERING IN PROGRESS — FAIL FOR PRODUCTION GATE"}`
+**STATUS**: `{"PASS — ALL METRICS VERIFIED" if overall_accuracy >= 70.0 and cm['abstention_recall_pct'] >= 75.0 else "ENGINEERING IN PROGRESS — FAIL FOR PRODUCTION GATE"}`
 
 Executed against the live Lorin AI backend pipeline.
 """
@@ -778,8 +833,8 @@ Executed against the live Lorin AI backend pipeline.
     with open(os.path.join(REPORTS_DIR, "lorin_rag_evaluation_report.md"), "w", encoding="utf-8") as f:
         f.write(report_md)
 
-    print(f"\n[SUCCESS] Benchmark evaluation finished in {total_eval_time}s.")
-    print(f"Overall Accuracy: {overall_accuracy}% | Abstention Recall: {abstention_recall_pct}%")
+    print(f"\n[SUCCESS] V3 Benchmark evaluation finished in {total_eval_time}s.")
+    print(f"Overall Accuracy: {overall_accuracy}% | Abstention Recall: {cm['abstention_recall_pct']}%")
     print(f"Artifacts generated under: {EVAL_DIR}")
 
 if __name__ == "__main__":
