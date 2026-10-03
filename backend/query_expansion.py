@@ -113,3 +113,105 @@ def fuzzy_find_alias(term: str, entities: List[Dict[str, Any]], threshold: float
                 matched.append(ent)
                 break
     return matched
+
+def normalize_query_representation(query: str, conversation_history: List[Dict[str, str]] = None) -> Dict[str, Any]:
+    """
+    Builds a deterministic normalized query representation extracting typed slots:
+    years, dates, locations, roles, departments, degrees, numbers, requested_attributes, and query_type.
+    """
+    if not query:
+        return {
+            "original_query": "",
+            "standalone_query": "",
+            "entities": [],
+            "aliases": [],
+            "acronyms": [],
+            "years": [],
+            "dates": [],
+            "locations": [],
+            "roles": [],
+            "departments": [],
+            "degrees": [],
+            "numbers": [],
+            "requested_attributes": [],
+            "query_type": "single_fact"
+        }
+
+    q_clean = query.strip()
+    q_low = q_clean.lower()
+
+    # 1. Resolve context / standalone query if follow-up
+    standalone_q = q_clean
+    if conversation_history:
+        last_turn = conversation_history[-1].get("content", "") if conversation_history else ""
+        if any(w in q_low for w in ["what about", "how about", "and for", "its", "their", "where is it", "fee for that"]):
+            subj_match = re.search(r'\b(hostel|fees?|placement|admission|bus|route|canteen|library|principal|iqac)\b', last_turn, re.I)
+            if subj_match:
+                standalone_q = f"{q_clean} regarding {subj_match.group(1)}"
+
+    # 2. Extract Years & Dates
+    years = re.findall(r'\b(20\d\d|19\d\d)\b', q_clean)
+
+    # 3. Extract Locations & Cities
+    known_locations = {
+        "siruseri", "padur", "chennai", "omr", "bangalore", "hyderabad", "mumbai", "delhi",
+        "pondicherry", "vellore", "mysore", "paris", "dubai", "singapore", "tokyo", "madurai",
+        "kanchipuram", "sydney", "berlin", "london", "california", "everest", "mars", "jupiter"
+    }
+    locations = [w for w in known_locations if w in q_low]
+
+    # 4. Extract Roles
+    known_roles = [
+        "dean", "cfo", "director", "warden", "principal", "president", "ceo",
+        "chief ai officer", "lead drone operator", "vice chancellor", "hod", "head of department"
+    ]
+    roles = [r for r in known_roles if r in q_low]
+
+    # 5. Extract Departments
+    known_departments = {
+        "cse", "it", "ece", "eee", "mech", "civil", "aids", "ai&ds", "ai and ds", "aiml", "csbs",
+        "cyber", "biotechnology", "aerospace", "marine", "architecture", "quantum", "nuclear"
+    }
+    departments = [d for d in known_departments if d in q_low]
+
+    # 6. Extract Degrees
+    known_degrees = ["b.e", "b.tech", "m.e", "m.tech", "b.arch", "b.des", "phd", "diploma", "undergraduate", "postgraduate"]
+    degrees = [deg for deg in known_degrees if deg in q_low]
+
+    # 7. Extract Acronyms & Entities
+    tokens = re.findall(r'\b[a-z0-9]+\b', q_low)
+    acronyms = [t for t in tokens if t in ACRONYM_MAP]
+    aliases = [ACRONYM_MAP[t] for t in acronyms if t in ACRONYM_MAP]
+
+    # 8. Extract Numeric Slots / Fees
+    numbers = re.findall(r'\b(\d+k?|rs\.?\s*\d+|\$\d+)\b', q_low)
+
+    # 9. Classify Query Type
+    query_type = "single_fact"
+    if any(w in q_low for w in ["bus", "route", "timing", "stop", "pickup", "drop"]):
+        query_type = "transport"
+    elif any(w in q_low for w in ["compare", "difference", "versus", "vs", "better"]):
+        query_type = "comparison"
+    elif any(w in q_low for w in ["list", "all departments", "which courses", "enlist", "names of"]):
+        query_type = "list"
+    elif any(w in q_low for w in ["fee", "intake", "seat", "table", "cutoff", "percentage", "rate"]):
+        query_type = "structured_table"
+    elif len(re.findall(r'\b(and|who is the.*that|department.*offers|hod of)\b', q_low)) >= 1:
+        query_type = "multi_hop"
+
+    return {
+        "original_query": q_clean,
+        "standalone_query": standalone_q,
+        "entities": list(set(departments + roles + degrees)),
+        "aliases": aliases,
+        "acronyms": acronyms,
+        "years": list(set(years)),
+        "dates": [],
+        "locations": locations,
+        "roles": roles,
+        "departments": departments,
+        "degrees": degrees,
+        "numbers": numbers,
+        "requested_attributes": ["fee", "intake", "location", "hod", "principal", "route"] if any(w in q_low for w in ["fee", "intake", "where", "hod", "principal", "route"]) else [],
+        "query_type": query_type
+    }
