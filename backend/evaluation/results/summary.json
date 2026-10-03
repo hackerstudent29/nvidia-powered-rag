@@ -1,138 +1,205 @@
 {
-  "evaluation_timestamp": "20261003_143314",
+  "evaluation_timestamp": "20261003_151322",
   "total_questions_evaluated": 710,
-  "total_passed": 441,
-  "total_failed": 269,
-  "overall_accuracy_pct": 62.11,
-  "average_groundedness_pct": 99.3,
-  "average_correctness_pct": 58.35,
-  "total_evaluation_time_sec": 229.94,
+  "total_passed": 464,
+  "total_failed": 246,
+  "overall_accuracy_pct": 65.35,
+  "overall_accuracy_fraction": "464/710",
+  "average_groundedness_pct": 100.0,
+  "average_correctness_pct": 59.05,
+  "evidence_metrics": {
+    "evidence_support_rate": {
+      "fraction": "31586/31586",
+      "pct": 100.0
+    },
+    "evidence_completeness": {
+      "fraction": "6/40",
+      "pct": 15.0
+    },
+    "unsupported_claim_rate": {
+      "fraction": "0/31586",
+      "pct": 0.0
+    },
+    "abstention_precision": {
+      "fraction": "35/34",
+      "pct": 102.94
+    },
+    "abstention_recall": {
+      "fraction": "35/130",
+      "pct": 26.92
+    },
+    "false_refusal_rate": {
+      "fraction": "0/580",
+      "pct": 0.0
+    }
+  },
+  "dataset_splits": {
+    "dev_split": {
+      "split_name": "Dev Split",
+      "total_questions": 426,
+      "passed": 276,
+      "failed": 150,
+      "accuracy_pct": 64.79
+    },
+    "validation_split": {
+      "split_name": "Validation Split",
+      "total_questions": 142,
+      "passed": 95,
+      "failed": 47,
+      "accuracy_pct": 66.9
+    },
+    "held_out_split": {
+      "split_name": "Held-Out Split",
+      "total_questions": 142,
+      "passed": 93,
+      "failed": 49,
+      "accuracy_pct": 65.49
+    }
+  },
+  "total_evaluation_time_sec": 208.49,
   "latency_percentiles_ms": {
-    "P50": 1997.99,
-    "P75": 2519.36,
-    "P90": 5133.22,
-    "P95": 6536.75,
-    "P99": 10084.08
+    "P50": 1906.64,
+    "P75": 2275.49,
+    "P90": 4454.34,
+    "P95": 5722.65,
+    "P99": 7412.26
   },
   "category_metrics": {
-    "transport": {
-      "total_questions": 45,
-      "passed": 41,
-      "failed": 4,
-      "accuracy_pct": 91.11,
-      "p50_latency_ms": 1515.52
-    },
-    "entity_resolution": {
-      "total_questions": 35,
-      "passed": 30,
-      "failed": 5,
-      "accuracy_pct": 85.71,
-      "p50_latency_ms": 1762.9
-    },
-    "paraphrase": {
-      "total_questions": 55,
-      "passed": 33,
-      "failed": 22,
-      "accuracy_pct": 60.0,
-      "p50_latency_ms": 1926.97
-    },
-    "negative_out_of_corpus": {
-      "total_questions": 45,
-      "passed": 1,
-      "failed": 44,
-      "accuracy_pct": 2.22,
-      "p50_latency_ms": 2033.53
-    },
-    "ambiguous": {
-      "total_questions": 30,
-      "passed": 15,
-      "failed": 15,
-      "accuracy_pct": 50.0,
-      "p50_latency_ms": 2299.08
-    },
-    "tables": {
-      "total_questions": 55,
-      "passed": 41,
-      "failed": 14,
-      "accuracy_pct": 74.55,
-      "p50_latency_ms": 2322.57
-    },
-    "adversarial": {
-      "total_questions": 45,
-      "passed": 45,
-      "failed": 0,
-      "accuracy_pct": 100.0,
-      "p50_latency_ms": 2177.52
-    },
-    "comparison": {
-      "total_questions": 30,
-      "passed": 25,
-      "failed": 5,
-      "accuracy_pct": 83.33,
-      "p50_latency_ms": 5582.09
-    },
-    "list": {
-      "total_questions": 30,
-      "passed": 17,
-      "failed": 13,
-      "accuracy_pct": 56.67,
-      "p50_latency_ms": 5062.66
-    },
-    "RAG-RETRIEVAL-NEGATIVE": {
-      "total_questions": 40,
-      "passed": 11,
-      "failed": 29,
-      "accuracy_pct": 27.5,
-      "p50_latency_ms": 2170.24
-    },
-    "numerical": {
-      "total_questions": 35,
-      "passed": 29,
-      "failed": 6,
-      "accuracy_pct": 82.86,
-      "p50_latency_ms": 1596.96
-    },
     "basic_factual": {
       "total_questions": 65,
       "passed": 47,
       "failed": 18,
       "accuracy_pct": 72.31,
-      "p50_latency_ms": 2262.37
-    },
-    "multi_hop": {
-      "total_questions": 45,
-      "passed": 27,
-      "failed": 18,
-      "accuracy_pct": 60.0,
-      "p50_latency_ms": 6955.48
-    },
-    "hallucination_trap": {
-      "total_questions": 45,
-      "passed": 0,
-      "failed": 45,
-      "accuracy_pct": 0.0,
-      "p50_latency_ms": 1646.47
-    },
-    "follow_up": {
-      "total_questions": 30,
-      "passed": 19,
-      "failed": 11,
-      "accuracy_pct": 63.33,
-      "p50_latency_ms": 1473.29
-    },
-    "typos": {
-      "total_questions": 35,
-      "passed": 28,
-      "failed": 7,
-      "accuracy_pct": 80.0,
-      "p50_latency_ms": 1735.12
+      "fraction": "47/65",
+      "p50_latency_ms": 1799.18
     },
     "acronym": {
       "total_questions": 45,
       "passed": 32,
       "failed": 13,
       "accuracy_pct": 71.11,
-      "p50_latency_ms": 1703.52
+      "fraction": "32/45",
+      "p50_latency_ms": 2022.84
+    },
+    "typos": {
+      "total_questions": 35,
+      "passed": 28,
+      "failed": 7,
+      "accuracy_pct": 80.0,
+      "fraction": "28/35",
+      "p50_latency_ms": 1808.59
+    },
+    "negative_out_of_corpus": {
+      "total_questions": 45,
+      "passed": 1,
+      "failed": 44,
+      "accuracy_pct": 2.22,
+      "fraction": "1/45",
+      "p50_latency_ms": 2030.26
+    },
+    "comparison": {
+      "total_questions": 30,
+      "passed": 25,
+      "failed": 5,
+      "accuracy_pct": 83.33,
+      "fraction": "25/30",
+      "p50_latency_ms": 5099.96
+    },
+    "transport": {
+      "total_questions": 45,
+      "passed": 41,
+      "failed": 4,
+      "accuracy_pct": 91.11,
+      "fraction": "41/45",
+      "p50_latency_ms": 1836.75
+    },
+    "entity_resolution": {
+      "total_questions": 35,
+      "passed": 30,
+      "failed": 5,
+      "accuracy_pct": 85.71,
+      "fraction": "30/35",
+      "p50_latency_ms": 1535.4
+    },
+    "list": {
+      "total_questions": 30,
+      "passed": 17,
+      "failed": 13,
+      "accuracy_pct": 56.67,
+      "fraction": "17/30",
+      "p50_latency_ms": 4612.17
+    },
+    "follow_up": {
+      "total_questions": 30,
+      "passed": 19,
+      "failed": 11,
+      "accuracy_pct": 63.33,
+      "fraction": "19/30",
+      "p50_latency_ms": 1989.67
+    },
+    "numerical": {
+      "total_questions": 35,
+      "passed": 29,
+      "failed": 6,
+      "accuracy_pct": 82.86,
+      "fraction": "29/35",
+      "p50_latency_ms": 1586.14
+    },
+    "paraphrase": {
+      "total_questions": 55,
+      "passed": 33,
+      "failed": 22,
+      "accuracy_pct": 60.0,
+      "fraction": "33/55",
+      "p50_latency_ms": 1551.62
+    },
+    "adversarial": {
+      "total_questions": 45,
+      "passed": 45,
+      "failed": 0,
+      "accuracy_pct": 100.0,
+      "fraction": "45/45",
+      "p50_latency_ms": 1885.17
+    },
+    "hallucination_trap": {
+      "total_questions": 45,
+      "passed": 0,
+      "failed": 45,
+      "accuracy_pct": 0.0,
+      "fraction": "0/45",
+      "p50_latency_ms": 1898.69
+    },
+    "tables": {
+      "total_questions": 55,
+      "passed": 41,
+      "failed": 14,
+      "accuracy_pct": 74.55,
+      "fraction": "41/55",
+      "p50_latency_ms": 1769.13
+    },
+    "RAG-RETRIEVAL-NEGATIVE": {
+      "total_questions": 40,
+      "passed": 34,
+      "failed": 6,
+      "accuracy_pct": 85.0,
+      "fraction": "34/40",
+      "p50_latency_ms": 2003.21
+    },
+    "multi_hop": {
+      "total_questions": 45,
+      "passed": 27,
+      "failed": 18,
+      "accuracy_pct": 60.0,
+      "fraction": "27/45",
+      "p50_latency_ms": 5101.43
+    },
+    "ambiguous": {
+      "total_questions": 30,
+      "passed": 15,
+      "failed": 15,
+      "accuracy_pct": 50.0,
+      "fraction": "15/30",
+      "p50_latency_ms": 2244.71
     }
   },
   "failure_root_causes": {
@@ -140,43 +207,43 @@
     "STRUCTURED_DATA_FAILURE": 20,
     "CONTEXT_ASSEMBLY_FAILURE": 36,
     "TRANSPORT_ORCHESTRATION_FAILURE": 4,
-    "EVIDENCE_GATE_FAILURE": 118
+    "EVIDENCE_GATE_FAILURE": 95
   },
   "ablation_study": {
     "A_Dense_Only": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 77.14,
       "answer_correctness": 79.56,
-      "eval_time_sec": 52.16
+      "eval_time_sec": 53.86
     },
     "B_BM25_Only": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 77.14,
       "answer_correctness": 78.2,
-      "eval_time_sec": 55.4
+      "eval_time_sec": 50.76
     },
     "C_Dense_Plus_BM25": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 82.86,
       "answer_correctness": 79.22,
-      "eval_time_sec": 60.79
+      "eval_time_sec": 53.74
     },
     "D_Dense_BM25_RRF": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 82.86,
       "answer_correctness": 79.22,
-      "eval_time_sec": 53.92
+      "eval_time_sec": 52.68
     },
     "E_Dense_BM25_RRF_Reranker": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 82.86,
       "answer_correctness": 79.22,
-      "eval_time_sec": 50.13
+      "eval_time_sec": 47.64
     },
     "F_Full_Entity_Structured": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 82.86,
       "answer_correctness": 79.22,
-      "eval_time_sec": 45.79
+      "eval_time_sec": 52.6
     },
     "G_Full_Production_System": {
-      "recall_at_10": 100.0,
+      "recall_at_10": 82.86,
       "answer_correctness": 79.22,
-      "eval_time_sec": 49.33
+      "eval_time_sec": 52.6
     }
   }
 }
