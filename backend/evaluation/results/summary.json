@@ -1,0 +1,117 @@
+{
+  "total_questions_evaluated": 670,
+  "total_passed": 334,
+  "total_failed": 336,
+  "overall_accuracy_pct": 49.85,
+  "average_groundedness_pct": 86.57,
+  "average_correctness_pct": 45.16,
+  "total_evaluation_time_sec": 122.36,
+  "latency_percentiles_ms": {
+    "P50": 1584.62,
+    "P75": 1820.54,
+    "P90": 2083.4,
+    "P95": 2239.97,
+    "P99": 3263.03
+  },
+  "category_metrics": {
+    "negative_out_of_corpus": {
+      "total_questions": 45,
+      "passed": 45,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 0.0
+    },
+    "hallucination_trap": {
+      "total_questions": 45,
+      "passed": 45,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 0.0
+    },
+    "entity_resolution": {
+      "total_questions": 35,
+      "passed": 15,
+      "accuracy_pct": 42.86,
+      "p50_latency_ms": 1675.75
+    },
+    "list": {
+      "total_questions": 30,
+      "passed": 4,
+      "accuracy_pct": 13.33,
+      "p50_latency_ms": 1647.6
+    },
+    "transport": {
+      "total_questions": 45,
+      "passed": 13,
+      "accuracy_pct": 28.89,
+      "p50_latency_ms": 1794.32
+    },
+    "multi_hop": {
+      "total_questions": 45,
+      "passed": 12,
+      "accuracy_pct": 26.67,
+      "p50_latency_ms": 1666.68
+    },
+    "follow_up": {
+      "total_questions": 30,
+      "passed": 7,
+      "accuracy_pct": 23.33,
+      "p50_latency_ms": 1626.94
+    },
+    "paraphrase": {
+      "total_questions": 55,
+      "passed": 24,
+      "accuracy_pct": 43.64,
+      "p50_latency_ms": 1506.15
+    },
+    "numerical": {
+      "total_questions": 35,
+      "passed": 27,
+      "accuracy_pct": 77.14,
+      "p50_latency_ms": 1701.91
+    },
+    "tables": {
+      "total_questions": 55,
+      "passed": 19,
+      "accuracy_pct": 34.55,
+      "p50_latency_ms": 1571.44
+    },
+    "ambiguous": {
+      "total_questions": 30,
+      "passed": 1,
+      "accuracy_pct": 3.33,
+      "p50_latency_ms": 1698.95
+    },
+    "basic_factual": {
+      "total_questions": 65,
+      "passed": 26,
+      "accuracy_pct": 40.0,
+      "p50_latency_ms": 1565.3
+    },
+    "adversarial": {
+      "total_questions": 45,
+      "passed": 45,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 1803.22
+    },
+    "comparison": {
+      "total_questions": 30,
+      "passed": 6,
+      "accuracy_pct": 20.0,
+      "p50_latency_ms": 1753.67
+    },
+    "typos": {
+      "total_questions": 35,
+      "passed": 18,
+      "accuracy_pct": 51.43,
+      "p50_latency_ms": 1543.93
+    },
+    "acronym": {
+      "total_questions": 45,
+      "passed": 27,
+      "accuracy_pct": 60.0,
+      "p50_latency_ms": 1582.54
+    }
+  },
+  "failure_root_causes": {
+    "ANSWER_CORRECTNESS_FAILURE": 336
+  }
+}

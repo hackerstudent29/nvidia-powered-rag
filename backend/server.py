@@ -1137,6 +1137,31 @@ async def get_query_embedding(query_text: str) -> Optional[List[float]]:
         print(f"[WARN] NVIDIA Embedding Exception: {e}")
         return None
 
+def get_query_embedding_sync(query_text: str) -> Optional[List[float]]:
+    """Synchronous version of dense embedding lookup via NVIDIA NeMo API."""
+    if not NVIDIA_API_KEY:
+        return None
+    base_url = (NVIDIA_BASE_URL or "https://integrate.api.nvidia.com/v1").rstrip("/")
+    url = f"{base_url}/embeddings"
+    headers = {
+        "Authorization": f"Bearer {NVIDIA_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "input": [query_text],
+        "model": EMBEDDING_MODEL,
+        "input_type": "query"
+    }
+    try:
+        import requests
+        resp = requests.post(url, headers=headers, json=payload, timeout=5.0)
+        if resp.status_code == 200:
+            data = resp.json()
+            return data["data"][0]["embedding"]
+    except Exception as e:
+        print(f"[WARN] NVIDIA Sync Embedding Exception: {e}")
+    return None
+
 # ---------------------------------------------------------
 # NVIDIA NeMo Guardrails & Nemotron Reranking Integration
 # Skills: nemotron-policy-generator & nemotron-retrieval-recipes
@@ -3213,7 +3238,12 @@ async def async_hybrid_search(query: str, query_vector: Optional[List[float]], t
     }
 
     async def _fetch_dense():
-        if not (qdrant_client and query_vector):
+        nonlocal query_vector
+        if not qdrant_client:
+            return []
+        if query_vector is None:
+            query_vector = await get_query_embedding(expanded_query)
+        if not query_vector:
             return []
         try:
             query_res = qdrant_client.query_points(
@@ -3318,6 +3348,9 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
     expanded_query = " ".join(variants)
     scores: Dict[str, float] = {}
     chunk_map: Dict[str, Dict[str, Any]] = {}
+
+    if query_vector is None:
+        query_vector = get_query_embedding_sync(expanded_query)
 
     # 1. Qdrant Dense Search
     if qdrant_client and query_vector:

@@ -1,0 +1,825 @@
+{
+  "document_count": 51,
+  "total_knowledge_chunks": 811,
+  "total_entities": 4409,
+  "total_bus_routes": 19,
+  "total_bus_stops": 175,
+  "documents": [
+    {
+      "filename": "msajce_about.md",
+      "char_count": 13764,
+      "line_count": 143,
+      "headings_count": 26,
+      "sample_headings": [
+        "**MSAJCEA** \u2014 About",
+        "1. Overview",
+        "2. Why Join **MSAJCEA**",
+        "3. Campus Location & Google Maps",
+        "4. Local Essential Services, Emergency Facilities & Government Offices"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_academicadvisorycommittee.md",
+      "char_count": 1581,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Academic Advisory Committee",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_admission.md",
+      "char_count": 13493,
+      "line_count": 43,
+      "headings_count": 13,
+      "sample_headings": [
+        "Programmes Offered and Seats Available",
+        "1. Under Graduate Programmes",
+        "2. Post Graduate Programmes",
+        "3. Research Programs",
+        "4. Admission through TNEA Counselling"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_aids.md",
+      "char_count": 16182,
+      "line_count": 62,
+      "headings_count": 14,
+      "sample_headings": [
+        "B.Tech in Artificial Intelligence and Data Science",
+        "1. Overview",
+        "2. Career Opportunities",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_aiml.md",
+      "char_count": 17023,
+      "line_count": 62,
+      "headings_count": 14,
+      "sample_headings": [
+        "Artificial Intelligence and Machine Learning (CSE - AIML)",
+        "1. Overview",
+        "2. Career Prospects",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_alumni.md",
+      "char_count": 102326,
+      "line_count": 499,
+      "headings_count": 18,
+      "sample_headings": [
+        "**MSAJCEA** Alumni Association",
+        "1. Overview",
+        "2. Office Bearers",
+        "3. MSEC Alumni Association Registration Certificate",
+        "4. MSEC Alumni Association Reports"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_antiragging.md",
+      "char_count": 5210,
+      "line_count": 21,
+      "headings_count": 3,
+      "sample_headings": [
+        "Anti-Ragging Policy at Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), Siruseri, Chennai",
+        "1. Punishments and Disciplinary Actions",
+        "2. Anti-Ragging Committee Members and Contacts"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_civil.md",
+      "char_count": 12841,
+      "line_count": 47,
+      "headings_count": 14,
+      "sample_headings": [
+        "Civil Engineering",
+        "1. Overview",
+        "2. Vision",
+        "3. Mission",
+        "4. Programme Educational Objectives (PEOs)"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_clubssocieties.md",
+      "char_count": 17023,
+      "line_count": 88,
+      "headings_count": 9,
+      "sample_headings": [
+        "CLUBSSOCIETIES",
+        "1. SPORTS CLUB",
+        "2. FINE ARTS CLUB",
+        "3. SCIENCE CLUB",
+        "4. \u0ba4\u0bae\u0bbf\u0bb4\u0bcd \u0bae\u0ba9\u0bcd\u0bb1\u0bae\u0bcd"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_courses_overview.md",
+      "char_count": 3077,
+      "line_count": 68,
+      "headings_count": 7,
+      "sample_headings": [
+        "MSAJCEA Courses Offered \u2014 Complete Programme List",
+        "\ud83c\udf93 Undergraduate Programmes (B.E. / B.Tech) \u2014 4 Years",
+        "\ud83c\udf93 Postgraduate Programmes (M.E.) \u2014 2 Years",
+        "\ud83c\udfdb\ufe0f School of Architecture & Design Programmes",
+        "\ud83d\udd2c Research Programme"
+      ],
+      "has_tables": true
+    },
+    {
+      "filename": "msajce_csbs.md",
+      "char_count": 13045,
+      "line_count": 44,
+      "headings_count": 11,
+      "sample_headings": [
+        "Computer Science and Business System (CSBS)",
+        "1. Overview",
+        "2. Vision",
+        "3. Mission",
+        "4. Programme Educational Objectives (PEOs)"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_cse.md",
+      "char_count": 17320,
+      "line_count": 52,
+      "headings_count": 15,
+      "sample_headings": [
+        "Computer Science and Engineering (CSE)",
+        "1. Overview",
+        "2. Vision",
+        "3. Mission",
+        "4. Programme Educational Objectives (PEOs)"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_cyber.md",
+      "char_count": 18147,
+      "line_count": 65,
+      "headings_count": 20,
+      "sample_headings": [
+        "Computer Science and Engineering with Specialization in Cyber Security (CSCS)",
+        "1. Overview",
+        "2. Programme",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_developer_ramanathan.md",
+      "char_count": 5755,
+      "line_count": 19,
+      "headings_count": 7,
+      "sample_headings": [
+        "Developer Profile \u2014 Ramanathan S. (Creator of Lorin AI Chatbot)",
+        "1. Document Metadata",
+        "2. Developer Biography and Personal Background",
+        "3. Core Engineering Capabilities and Technical Stack",
+        "4. Shipped Software Products and Portfolio Projects"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_ebsb.md",
+      "char_count": 1858,
+      "line_count": 7,
+      "headings_count": 3,
+      "sample_headings": [
+        "Ek Bharat Shreshtha Bharat",
+        "1. Initiative Overview",
+        "2. College Participation"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_ece-act.md",
+      "char_count": 13772,
+      "line_count": 50,
+      "headings_count": 14,
+      "sample_headings": [
+        "Electronics and Communication Engineering with Specialization in Advanced Communication Technology",
+        "1. Overview",
+        "2. Programme",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_ece.md",
+      "char_count": 12350,
+      "line_count": 53,
+      "headings_count": 17,
+      "sample_headings": [
+        "Electronics and Communication Engineering",
+        "1. Overview",
+        "2. Programme",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_ece_vlsi.md",
+      "char_count": 16743,
+      "line_count": 58,
+      "headings_count": 15,
+      "sample_headings": [
+        "Electronics Engineering with Specialization in VLSI Design and Technology",
+        "1. Overview",
+        "2. Career Prospects",
+        "3. Programme",
+        "4. Vision"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_edc.md",
+      "char_count": 1767,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "**MSAJCEA** Entrepreneurship Development Cell",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_eee.md",
+      "char_count": 10881,
+      "line_count": 56,
+      "headings_count": 15,
+      "sample_headings": [
+        "Electrical and Electronics Engineering",
+        "1. Overview",
+        "2. Programme",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_faculty_profiles.md",
+      "char_count": 11050,
+      "line_count": 266,
+      "headings_count": 55,
+      "sample_headings": [
+        "Faculty Profiles \u2014 MSAJCEA Key Faculty Members",
+        "Dr. E. Dhiravidachelvi",
+        "Patents Filed",
+        "Books Authored",
+        "Dr. I. Manju"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_governingcouncil.md",
+      "char_count": 1549,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Governing Council",
+        "1. Council Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_grievanceredressalcommittee.md",
+      "char_count": 2305,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Grievance Redressal Committee",
+        "1. Committee Members and Contact Information"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_hostel.md",
+      "char_count": 7032,
+      "line_count": 53,
+      "headings_count": 10,
+      "sample_headings": [
+        "Hostel Facilities",
+        "1. Overview & Comparison of Hostel Facilities",
+        "2. Boys Hostel Details",
+        "3. Girls Hostel Details",
+        "4. Hostel Rules & Regulations"
+      ],
+      "has_tables": true
+    },
+    {
+      "filename": "msajce_incubation.md",
+      "char_count": 19331,
+      "line_count": 49,
+      "headings_count": 17,
+      "sample_headings": [
+        "Sathak Innovation and Incubation Foundation",
+        "1. Overview",
+        "2. Incubation Cell",
+        "3. National Innovation and Startup Policy",
+        "4. Objectives"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_internalcomplaintcommittee.md",
+      "char_count": 1749,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Internal Complaint Committee",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_iqac.md",
+      "char_count": 19732,
+      "line_count": 54,
+      "headings_count": 18,
+      "sample_headings": [
+        "Internal Quality Assurance Cell (IQAC)",
+        "1. Overview",
+        "2. Objective of IQAC",
+        "3. Strategies",
+        "4. Functions"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_it.md",
+      "char_count": 14113,
+      "line_count": 58,
+      "headings_count": 17,
+      "sample_headings": [
+        "Information Technology (IT)",
+        "1. Overview",
+        "2. Programme",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_karma.md",
+      "char_count": 3382,
+      "line_count": 10,
+      "headings_count": 4,
+      "sample_headings": [
+        "Kaushal Augmentation and Restructuring Mission of AICTE (KARMA)",
+        "1. Overview and Objectives",
+        "2. Skilling Models",
+        "3. College Implementation and Approvals"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_library.md",
+      "char_count": 11042,
+      "line_count": 42,
+      "headings_count": 14,
+      "sample_headings": [
+        "Learning Centre (Library)",
+        "1. Overview",
+        "2. Library Resources and Stack Collection Details",
+        "3. Library Working Hours",
+        "4. Printed Journals"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_mech.md",
+      "char_count": 14895,
+      "line_count": 60,
+      "headings_count": 17,
+      "sample_headings": [
+        "Mechanical Engineering (Mech)",
+        "1. Overview",
+        "2. Programme",
+        "3. Vision",
+        "4. Mission"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_minoritycell.md",
+      "char_count": 1729,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Minority Cell",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_msajcepolicy.md",
+      "char_count": 92680,
+      "line_count": 295,
+      "headings_count": 74,
+      "sample_headings": [
+        "E-Governance Policy",
+        "Feedback Policy",
+        "HR Policies",
+        "1. Definition",
+        "2. Orientation"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_naac.md",
+      "char_count": 75906,
+      "line_count": 426,
+      "headings_count": 11,
+      "sample_headings": [
+        "NAAC",
+        "1. NATIONAL ASSESSMENT AND ACCREDITATION COUNCIL (NAAC)",
+        "2. Criteria 1-7",
+        "3. DVV Clarification",
+        "4. DVV - EXTENDED PROFILE"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_nirf.md",
+      "char_count": 1416,
+      "line_count": 10,
+      "headings_count": 4,
+      "sample_headings": [
+        "National Institutional Ranking Framework (NIRF) Overview",
+        "1. NIRF Overview",
+        "2. NIRF 2026 Submissions",
+        "3. NIRF 2025 Submissions"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_obccell.md",
+      "char_count": 1749,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Other Backward Classes (OBC) Cell",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_ourhistory.md",
+      "char_count": 3259,
+      "line_count": 17,
+      "headings_count": 5,
+      "sample_headings": [
+        "History and Leadership",
+        "1. Mohamed Sathak Trust",
+        "2. Our Founders",
+        "3. Our Trustees",
+        "4. Chairman Message"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_placement.md",
+      "char_count": 37398,
+      "line_count": 234,
+      "headings_count": 24,
+      "sample_headings": [
+        "PLACEMENT",
+        "1. Overview",
+        "2. Facilities",
+        "3. Student Internship Details",
+        "4. Internship Details"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_planningmonitoringboard.md",
+      "char_count": 1521,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Planning and Monitoring Committee",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_principal.md",
+      "char_count": 4241,
+      "line_count": 59,
+      "headings_count": 8,
+      "sample_headings": [
+        "Principal \u2014 Dr. K.S. Srinivasan",
+        "Profile",
+        "Institutional Roles & Responsibilities",
+        "Research Supervision",
+        "Patent"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_professional_societies.md",
+      "char_count": 14249,
+      "line_count": 41,
+      "headings_count": 5,
+      "sample_headings": [
+        "Professional Societies",
+        "1. Computer Society of India",
+        "2. IETE Students Forum",
+        "3. Society of Automotive Engineers",
+        "4. The Indian Society of Heating, Refrigerating and Air Conditioning Engineers (ISHRAE)"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_research.md",
+      "char_count": 14880,
+      "line_count": 22,
+      "headings_count": 8,
+      "sample_headings": [
+        "Research",
+        "1. Objectives",
+        "2. Research Advisory Committee",
+        "3. Patent Filed",
+        "4. Patent Published"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_science_and_humanities.md",
+      "char_count": 4426,
+      "line_count": 27,
+      "headings_count": 9,
+      "sample_headings": [
+        "**MSAJCEA** \u2014 Science And Humanities",
+        "1. Overview",
+        "2. Vision",
+        "3. Mission",
+        "4. Programme"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_scstcell.md",
+      "char_count": 1769,
+      "line_count": 8,
+      "headings_count": 2,
+      "sample_headings": [
+        "Scheduled Caste and Scheduled Tribe (SC/ST) Cell",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_sipcot_companies.md",
+      "char_count": 4013,
+      "line_count": 40,
+      "headings_count": 5,
+      "sample_headings": [
+        "Companies and Infrastructure in SIPCOT IT Park, Siruseri",
+        "Major IT & Software Services",
+        "Data Centers & Digital Infrastructure",
+        "Electronics, Defense & Specialized Manufacturing",
+        "Other Notable Entities"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_socialservices.md",
+      "char_count": 16610,
+      "line_count": 86,
+      "headings_count": 5,
+      "sample_headings": [
+        "SOCIALSERVICES",
+        "1. NSS",
+        "2. YRC Club",
+        "3. Unnat Bharath Abiyan ( UBA )",
+        "4. Activities"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_sports.md",
+      "char_count": 2896,
+      "line_count": 22,
+      "headings_count": 8,
+      "sample_headings": [
+        "Sports and Physical Education",
+        "1. Physical Education Overview",
+        "2. Leadership Profiles",
+        "3. Objectives",
+        "4. Sports Quota Scholarship"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_technologycentre.md",
+      "char_count": 2538,
+      "line_count": 13,
+      "headings_count": 5,
+      "sample_headings": [
+        "Technology Centres",
+        "1. Overview",
+        "2. MECH and CIVIL Technology Centres",
+        "3. ECE and EEE Technology Centres",
+        "4. CSE and IT Technology Centres"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_transport.md",
+      "char_count": 8376,
+      "line_count": 83,
+      "headings_count": 14,
+      "sample_headings": [
+        "Mohamed Sathak A.J. College of Engineering (MSAJCE) Transport System & Bus Routes",
+        "1. Overview & Key Contacts",
+        "2. Official College Bus Routes & Driver Directory",
+        "3. Stop-by-Stop Detailed College Schedules",
+        "Route AR 3 (Uthiramerur \u2192 MSAJCEA)"
+      ],
+      "has_tables": true
+    },
+    {
+      "filename": "msajce_visionmission.md",
+      "char_count": 1121,
+      "line_count": 14,
+      "headings_count": 4,
+      "sample_headings": [
+        "Vision, Mission, and Quality Policy",
+        "1. Institutional Vision",
+        "2. Institutional Mission",
+        "3. Quality Policy"
+      ],
+      "has_tables": false
+    },
+    {
+      "filename": "msajce_womensempowermentcell.md",
+      "char_count": 1511,
+      "line_count": 6,
+      "headings_count": 2,
+      "sample_headings": [
+        "Women's Empowerment Cell",
+        "1. Committee Members"
+      ],
+      "has_tables": false
+    }
+  ],
+  "sample_entities": [
+    {
+      "entity_key": "uba_cell_msajce",
+      "entity_name": "Unnat Bharat Abhiyan (UBA) Cell - MSAJCE",
+      "entity_type": "ORGANIZATION",
+      "aliases": [
+        "uba",
+        "uba cell",
+        "unnat bharat",
+        "unnat bharat abhiyan",
+        "unnat bharat abhiyan cell"
+      ],
+      "source_file": "msajce_uba.md"
+    },
+    {
+      "entity_key": "karma_scheme_msajce",
+      "entity_name": "KARMA / AICTE Skill Development Scheme at MSAJCE",
+      "entity_type": "SCHEME",
+      "aliases": [
+        "karma",
+        "karma scheme",
+        "aicte karma",
+        "kaushal",
+        "skill development scheme"
+      ],
+      "source_file": "msajce_karma.md"
+    },
+    {
+      "entity_key": "developer_ramanathan",
+      "entity_name": "Ramanathan S. (Creator / Developer of Lorin AI)",
+      "entity_type": "DEVELOPER",
+      "aliases": [
+        "ram",
+        "rama",
+        "ramanathan",
+        "ramzenderum",
+        "ramzendrum",
+        "developer",
+        "creator",
+        "creator of bot",
+        "who made this bot",
+        "who created lorin",
+        "hackerstudent29"
+      ],
+      "source_file": "msajce_developer_ramanathan.md"
+    },
+    {
+      "entity_key": "principal_srinivasan",
+      "entity_name": "Dr. K.S. Srinivasan (Principal of MSAJCEA)",
+      "entity_type": "PERSON",
+      "aliases": [
+        "principal",
+        "dr ks srinivasan",
+        "dr. k.s. srinivasan",
+        "srinivasan",
+        "head of college"
+      ],
+      "source_file": "msajce_principal.md"
+    },
+    {
+      "entity_key": "contact_college_helpline",
+      "entity_name": "MSAJCEA Official Contact Numbers & Office",
+      "entity_type": "CONTACT_PHONE",
+      "aliases": [
+        "phone",
+        "phone number",
+        "contact number",
+        "college phone",
+        "helpline",
+        "admission phone",
+        "contact us"
+      ],
+      "source_file": "msajce_about.md"
+    },
+    {
+      "entity_key": "tnea_counselling_code",
+      "entity_name": "MSAJCEA TNEA Counselling Code",
+      "entity_type": "COURSE",
+      "aliases": [
+        "tnea code",
+        "counselling code",
+        "college code",
+        "tnea counselling code",
+        "anna university code",
+        "1301"
+      ],
+      "source_file": "msajce_admission.md"
+    },
+    {
+      "entity_key": "transport_velachery_bus_route___mtc",
+      "entity_name": "Velachery Bus Route / MTC",
+      "entity_type": "TRANSPORT",
+      "aliases": [
+        "velachery bus",
+        "which bus goes velachery",
+        "bus to velachery",
+        "velachery route",
+        "51",
+        "21g"
+      ],
+      "source_file": "msajce_transport.md"
+    },
+    {
+      "entity_key": "transport_tambaram_bus_route",
+      "entity_name": "Tambaram Bus Route",
+      "entity_type": "TRANSPORT",
+      "aliases": [
+        "tambaram bus",
+        "bus to tambaram",
+        "tambaram route",
+        "515"
+      ],
+      "source_file": "msajce_transport.md"
+    },
+    {
+      "entity_key": "transport_guindy_bus_route",
+      "entity_name": "Guindy Bus Route",
+      "entity_type": "TRANSPORT",
+      "aliases": [
+        "guindy bus",
+        "bus to guindy",
+        "guindy route",
+        "102"
+      ],
+      "source_file": "msajce_transport.md"
+    },
+    {
+      "entity_key": "transport_broadway___central_bus_route",
+      "entity_name": "Broadway / Central Bus Route",
+      "entity_type": "TRANSPORT",
+      "aliases": [
+        "broadway bus",
+        "central bus",
+        "bus to central",
+        "102x"
+      ],
+      "source_file": "msajce_transport.md"
+    }
+  ]
+}
