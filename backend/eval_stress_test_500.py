@@ -512,8 +512,7 @@ async def run_ablation_study(testset: List[Dict[str, Any]]) -> Dict[str, Any]:
     ]
     
     ablation_results = {}
-    sample_size = min(40, len(testset))
-    sample_set = testset[:sample_size]
+    sample_set = testset
 
     for cfg in configs:
         t0 = time.time()

@@ -146,6 +146,63 @@ def extract_keywords(topic_title: str, section_title: str, category: str, raw_te
     return keywords[:20]
 
 
+def format_markdown_table_rows(body_text: str, topic_title: str, sec_title: str) -> str:
+    """
+    Parses markdown tables in body_text and appends structured table-row representations.
+    Every table-row retains: document/table title, section title, column headers, row labels, cell values.
+    """
+    lines = body_text.split("\n")
+    table_blocks = []
+    in_table = False
+    cur_table = []
+
+    for l in lines:
+        if "|" in l and l.strip().startswith("|") and l.strip().endswith("|"):
+            in_table = True
+            cur_table.append(l.strip())
+        else:
+            if in_table:
+                if len(cur_table) >= 2:
+                    table_blocks.append(cur_table)
+                cur_table = []
+                in_table = False
+
+    if in_table and len(cur_table) >= 2:
+        table_blocks.append(cur_table)
+
+    if not table_blocks:
+        return body_text
+
+    row_representations = []
+    for t_idx, t_lines in enumerate(table_blocks, 1):
+        header_raw = t_lines[0]
+        headers = [c.strip() for c in header_raw.strip("|").split("|") if c.strip()]
+        
+        start_idx = 1
+        if len(t_lines) > 1 and ("---" in t_lines[1] or "-|-" in t_lines[1]):
+            start_idx = 2
+
+        for r_idx, r_line in enumerate(t_lines[start_idx:], 1):
+            cells = [c.strip() for c in r_line.strip("|").split("|")]
+            if not any(cells):
+                continue
+            pair_strs = []
+            for col_idx, cell_val in enumerate(cells):
+                col_name = headers[col_idx] if col_idx < len(headers) else f"Col{col_idx+1}"
+                if cell_val:
+                    pair_strs.append(f"{col_name}: {cell_val}")
+            
+            row_label = cells[0] if cells else f"Row {r_idx}"
+            cols_str = " | ".join(headers) if headers else "Table Columns"
+            row_str = f"Table: {topic_title} — {sec_title} | Columns: {cols_str} | Row ({row_label}): " + ", ".join(pair_strs)
+            row_representations.append(row_str)
+
+    if row_representations:
+        return body_text + "\n\n### Table Row Structured Representations:\n" + "\n".join(row_representations)
+
+    return body_text
+
+
 def hierarchical_chunk_markdown(file_path: str, filename: str, doc_info: dict, max_chunk_chars: int = 2500):
     """
     Enterprise Semantic Hierarchical Chunker (Parent-Child & Sliding Overlap):
@@ -228,11 +285,12 @@ def hierarchical_chunk_markdown(file_path: str, filename: str, doc_info: dict, m
         sec_title = " — ".join(sec_parts) if sec_parts else topic_title
 
         has_table = "|" in body_clean and ("-|-" in body_clean or "\n|" in body_clean)
+        body_with_tables = format_markdown_table_rows(body_clean, topic_title, sec_title) if has_table else body_clean
 
         # Retain section intact if under 3,500 chars or if it contains a structured table
-        if len(body_clean) <= max_chunk_chars or (has_table and len(body_clean) <= 4500):
+        if len(body_with_tables) <= max_chunk_chars or (has_table and len(body_with_tables) <= 5500):
             chunk_idx += 1
-            structured_text = f"### Document: {topic_title} | Section: {sec_title}\n\n{body_clean}"
+            structured_text = f"### Document: {topic_title} | Section: {sec_title}\n\n{body_with_tables}"
             chunks.append({
                 "chunk_id": f"{clean_base_id}_{chunk_idx:03d}",
                 "source_file": filename,
@@ -241,12 +299,12 @@ def hierarchical_chunk_markdown(file_path: str, filename: str, doc_info: dict, m
                 "parent_section_id": f"{clean_base_id}_sec_{sec_idx}",
                 "page_url": page_url,
                 "category": category,
-                "keywords": extract_keywords(topic_title, sec_title, category, body_clean),
-                "entities": extract_entities(body_clean),
+                "keywords": extract_keywords(topic_title, sec_title, category, body_with_tables),
+                "entities": extract_entities(body_with_tables),
                 "document_version": "2026-27",
                 "is_current": True,
                 "text": structured_text,
-                "raw_text": body_clean
+                "raw_text": body_with_tables
             })
         else:
             paras = [p.strip() for p in body_clean.split("\n\n") if p.strip()]

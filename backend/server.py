@@ -3382,7 +3382,7 @@ async def async_hybrid_search(query: str, query_vector: Optional[List[float]], t
     return reranked, trace_data
 
 def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k: int = 10) -> List[Dict[str, Any]]:
-    """Synchronous wrapper for hybrid search combining Qdrant dense and BM25 sparse search."""
+    """Synchronous wrapper for hybrid search combining Qdrant dense, BM25 sparse, and Pre-RRF Entity Candidate Injection."""
     variants = get_deterministic_query_variants(query)
     expanded_query = " ".join(variants)
     scores: Dict[str, float] = {}
@@ -3390,6 +3390,30 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
 
     if query_vector is None:
         query_vector = get_query_embedding_sync(expanded_query)
+
+    # 0. Pre-RRF Entity-Driven Candidate Injection
+    matched_ents = search_knowledge_entities(query) if 'search_knowledge_entities' in globals() else []
+    if matched_ents and bm25_corpus:
+        for ent in matched_ents:
+            e_file = (ent.get("source_file") or "").lower()
+            if not e_file:
+                continue
+            for idx, doc in enumerate(bm25_corpus):
+                d_file = (doc.get("source_file") or "").lower()
+                if d_file == e_file:
+                    chunk_id = str(doc.get("chunk_id", idx))
+                    if chunk_id not in chunk_map:
+                        chunk_map[chunk_id] = {
+                            "chunk_id": chunk_id,
+                            "title": doc.get("topic_title") or doc.get("title") or "MSAJCE Official Record",
+                            "source_file": doc.get("source_file", ""),
+                            "category": doc.get("category", "general"),
+                            "page_url": doc.get("page_url", "https://msajce.edu.in"),
+                            "content": doc.get("text") or doc.get("content", ""),
+                            "entity_injected": True
+                        }
+                    # Assign base candidate RRF rank equivalent
+                    scores[chunk_id] = scores.get(chunk_id, 0.0) + (1.0 / (60.0 + 10))
 
     # 1. Qdrant Dense Search
     if qdrant_client and query_vector:
@@ -3445,7 +3469,6 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
 
     # Metadata, Entity, Title, and Medical-Isolation Scoring Adjustments
     q_low = query.lower()
-    matched_ents = search_knowledge_entities(query) if 'search_knowledge_entities' in globals() else []
     ent_files = set(e.get("source_file", "").lower() for e in matched_ents if e.get("source_file"))
 
     core_institutional_files = {
@@ -3823,7 +3846,10 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
     return decompose_multi_hop_query(q_clean)
 
 def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]] = None, top_k: int = 15, sub_queries: Optional[List[str]] = None) -> List[Dict[str, Any]]:
-    """Parallel hybrid search with sub-query decomposition & balanced round-robin interleaving."""
+    """
+    Sequential & Parallel Multi-Hop Hybrid Search with Structured Context Passing:
+    Hop 1 extracts candidate entity/context which is passed into Hop 2 query search.
+    """
     active_sub_queries = sub_queries if (sub_queries and len(sub_queries) >= 1) else decompose_multi_hop_query(user_query)
     if len(active_sub_queries) == 1:
         return hybrid_search(user_query, query_vector, top_k=top_k)
@@ -3831,8 +3857,20 @@ def multi_hop_hybrid_search(user_query: str, query_vector: Optional[List[float]]
     branch_results: Dict[str, List[Dict[str, Any]]] = {}
     slots_per_branch = max(2, min(4, top_k // len(active_sub_queries) + 1))
 
-    for sq in active_sub_queries:
-        branch_results[sq] = hybrid_search(sq, query_vector=None, top_k=slots_per_branch + 1)
+    accumulated_context = ""
+    for idx, sq in enumerate(active_sub_queries):
+        current_sq = sq
+        if idx > 0 and accumulated_context:
+            current_sq = f"{sq} {accumulated_context}"
+        
+        b_chunks = hybrid_search(current_sq, query_vector=None, top_k=slots_per_branch + 1)
+        branch_results[sq] = b_chunks
+        
+        # Extract top entity / title context from Hop results to pass to next Hop
+        if b_chunks:
+            top_titles = [c.get("title", "") for c in b_chunks[:2] if c.get("title")]
+            top_sources = [c.get("source_file", "").replace(".md", "").replace("msajce_", "") for c in b_chunks[:2] if c.get("source_file")]
+            accumulated_context = " ".join(dict.fromkeys(top_titles + top_sources))
 
     # Balanced round-robin interleaving to guarantee multi-topic representation
     aggregated_chunks = []
@@ -3867,6 +3905,7 @@ def classify_slot_entailment(query: str, required_fact: str, chunk: Dict[str, An
     - RELATED_BUT_NOT_SUPPORTING
     - CONTRADICTED
     - UNSUPPORTED
+    Supports deterministic Soft Slot Entailment for verified aliases (e.g. CSE ↔ Computer Science and Engineering).
     """
     if not chunk or not (chunk.get("content") or chunk.get("text")):
         return "UNSUPPORTED"
@@ -3892,17 +3931,52 @@ def classify_slot_entailment(query: str, required_fact: str, chunk: Dict[str, An
     if q_locs and not q_locs.issubset(c_locs):
         return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 3. Department Branch / Program Check
-    branches = {
-        "cse", "it", "ece", "eee", "mech", "civil", "aids", "ai&ds", "csbs", "cyber",
-        "biotechnology", "aerospace", "marine", "architecture", "quantum", "nuclear",
-        "petroleum", "genetic", "telepathy", "superhero", "dragon", "magic", "fashion",
-        "robotics", "bio-cybernetics", "supercomputing", "nanotechnology"
+    # 3. Department Branch / Program Check with Soft Alias Equivalence
+    CANONICAL_SYNONYMS = {
+        "cse": ["cse", "computer science", "computer science and engineering"],
+        "it": ["it", "information technology"],
+        "ece": ["ece", "electronics and communication", "electronics & communication"],
+        "eee": ["eee", "electrical and electronics", "electrical & electronics"],
+        "mech": ["mech", "mechanical", "mechanical engineering"],
+        "civil": ["civil", "civil engineering"],
+        "aids": ["aids", "ai&ds", "ai and ds", "artificial intelligence and data science", "artificial intelligence & data science"],
+        "aiml": ["aiml", "ai&ml", "ai and ml", "artificial intelligence and machine learning"],
+        "csbs": ["csbs", "computer science and business systems"],
+        "cyber": ["cyber", "cyber security"],
+        "b.arch": ["b.arch", "barch", "architecture", "bachelor of architecture"],
+        "b.des": ["b.des", "bdes", "design", "bachelor of design"],
+        "uba": ["uba", "unnat bharat abhiyan"],
+        "yrc": ["yrc", "youth red cross"],
+        "rrc": ["rrc", "red ribbon club"],
+        "ebsb": ["ebsb", "ek bharat shreshtha bharat"],
+        "iqac": ["iqac", "internal quality assurance cell"],
+        "nss": ["nss", "national service scheme"],
+        "ncc": ["ncc", "national cadet corps"],
+        "csi": ["csi", "computer society of india"],
     }
-    q_branches = set(w for w in branches if w in q_low)
-    c_branches = set(w for w in branches if w in content)
-    if q_branches and not q_branches.intersection(c_branches):
-        return "RELATED_BUT_NOT_SUPPORTING"
+
+    requested_dept_key = None
+    for key, syn_list in CANONICAL_SYNONYMS.items():
+        if any(re.search(rf'\b{re.escape(syn)}\b', q_low) for syn in syn_list):
+            requested_dept_key = key
+            break
+
+    if requested_dept_key:
+        valid_synonyms = CANONICAL_SYNONYMS[requested_dept_key]
+        has_dept_match = any(syn in content for syn in valid_synonyms)
+        if not has_dept_match:
+            return "RELATED_BUT_NOT_SUPPORTING"
+    else:
+        # Fallback to general branch list for negative checks
+        generic_branches = {
+            "biotechnology", "aerospace", "marine", "quantum", "nuclear",
+            "petroleum", "genetic", "telepathy", "superhero", "dragon", "magic", "fashion",
+            "robotics", "bio-cybernetics", "supercomputing", "nanotechnology"
+        }
+        q_gen = set(w for w in generic_branches if w in q_low)
+        c_gen = set(w for w in generic_branches if w in content)
+        if q_gen and not q_gen.intersection(c_gen):
+            return "RELATED_BUT_NOT_SUPPORTING"
 
     # 4. Role / Position Check
     roles = ["dean", "cfo", "director", "warden", "president", "ceo", "chief ai officer", "lead drone operator", "vice chancellor", "astronaut"]
@@ -3941,7 +4015,7 @@ def classify_slot_entailment(query: str, required_fact: str, chunk: Dict[str, An
         return "UNSUPPORTED"
 
 def check_evidence_contract(query: str, required_facts: List[str], retrieved_chunks: List[Dict[str, Any]]) -> Tuple[bool, float, int, int, List[str], List[str]]:
-    """Evaluates evidence contract across all required facts."""
+    """Evaluates evidence contract across all required facts, supporting safe adjacent chunk stitching."""
     if not required_facts:
         return (True, 1.0, 0, 0, [], [])
 
@@ -3955,6 +4029,33 @@ def check_evidence_contract(query: str, required_facts: List[str], retrieved_chu
             if entailment in ["DIRECTLY_ENTAILED", "PARTIALLY_ENTAILED"]:
                 has_support = True
                 break
+
+        # SAFE ADJACENT CHUNK STITCHING FOR SPLIT EVIDENCE (Fix U100-74)
+        if not has_support and len(retrieved_chunks) >= 2:
+            for i in range(len(retrieved_chunks) - 1):
+                c1 = retrieved_chunks[i]
+                c2 = retrieved_chunks[i+1]
+                s1 = (c1.get("source_file") or "").lower()
+                s2 = (c2.get("source_file") or "").lower()
+                if s1 and s1 == s2:
+                    stitched_content = (c1.get("content") or c1.get("text") or "") + "\n" + (c2.get("content") or c2.get("text") or "")
+                    stitched_chunk = {
+                        "chunk_id": f"{c1.get('chunk_id')}_stitched_{c2.get('chunk_id')}",
+                        "source_file": s1,
+                        "title": c1.get("title"),
+                        "category": c1.get("category"),
+                        "content": stitched_content,
+                        "text": stitched_content,
+                        "rrf_score": max(c1.get("rrf_score", 0), c2.get("rrf_score", 0)),
+                        "rerank_score": max(c1.get("rerank_score", 0), c2.get("rerank_score", 0))
+                    }
+                    stitched_entailment = classify_slot_entailment(query, fact, stitched_chunk)
+                    if stitched_entailment in ["DIRECTLY_ENTAILED", "PARTIALLY_ENTAILED"]:
+                        has_support = True
+                        if stitched_chunk not in retrieved_chunks:
+                            retrieved_chunks.append(stitched_chunk)
+                        break
+
         if has_support:
             supported_facts.append(fact)
         else:
@@ -3964,7 +4065,12 @@ def check_evidence_contract(query: str, required_facts: List[str], retrieved_chu
     miss_count = len(missing_facts)
     coverage = round(sup_count / len(required_facts), 4)
 
-    is_complete = (sup_count == len(required_facts)) or (len(required_facts) > 1 and coverage >= 0.49) or (sup_count >= 1 and len(required_facts) <= 2)
+    # Multi-Hop Slot Completeness: Require all required facts supported when >= 2 facts exist
+    if len(required_facts) >= 2:
+        is_complete = (sup_count == len(required_facts))
+    else:
+        is_complete = (sup_count >= 1)
+
     return (is_complete, coverage, sup_count, miss_count, supported_facts, missing_facts)
 
 def process_lorin_query(
@@ -3975,7 +4081,7 @@ def process_lorin_query(
     """
     Canonical V5 Production RAG Pipeline for Lorin AI.
     Integrates query normalization, intent routing, parallel candidate retrieval,
-    RRF fusion, evidence contract verification, and targeted retrieval repair.
+    adaptive RRF fusion depth, evidence contract verification, and targeted retrieval repair.
     Shared by both live FastAPI endpoints and evaluation benchmarks.
     """
     opts = options or {}
@@ -4001,7 +4107,7 @@ def process_lorin_query(
         "cutoff", "cut-off", "tnea", "1301", "principal", "faculty", "hod", "department", "departments",
         "course", "courses", "syllabus", "curriculum", "scholarship", "scholarships", "naac", "nba",
         "cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs", "b.arch", "b.des",
-        "college", "campus", "msajce", "msajcea", "iqac", "contact", "phone", "email", "address", "location"
+        "college", "campus", "msajce", "msajcea", "iqac", "contact", "phone", "email", "address", "location", "karma"
     ]
     has_campus_term = any(re.search(rf'\b{re.escape(kw)}\b', q_low) for kw in campus_keywords)
     query_class = classify_query(standalone_q)
@@ -4042,13 +4148,24 @@ def process_lorin_query(
     if normalized.get("query_type") in ["multi_hop", "comparison", "list"] or len(standalone_q.split()) > 10:
         sub_queries = decompose_multi_hop_query(standalone_q)
 
-    # 4. Multi-Retriever Candidate Generation
+    # 4. ADAPTIVE RRF / RERANKER CANDIDATE DEPTH
+    q_type = normalized.get("query_type", "single_fact")
+    is_deep_query = (
+        q_type in ["table", "list", "multi_hop", "entity", "comparison", "structured_table"] or
+        any(w in q_low for w in ["intake", "seat", "seats", "fee", "fees", "tuition", "scholarship", "scholarships", "list", "all", "courses", "departments", "routes", "karma", "vlsi", "cyber"]) or
+        sub_queries is not None
+    )
+
+    adaptive_top_k = 25 if is_deep_query else req_top_k
+    trace["adaptive_depth_active"] = is_deep_query
+    trace["candidate_depth"] = adaptive_top_k
+
     q_vector = get_query_embedding_sync(expanded_q)
 
     if sub_queries:
-        candidate_chunks = multi_hop_hybrid_search(standalone_q, q_vector, top_k=max(req_top_k, 15), sub_queries=sub_queries)
+        candidate_chunks = multi_hop_hybrid_search(standalone_q, q_vector, top_k=max(adaptive_top_k, 15), sub_queries=sub_queries)
     else:
-        candidate_chunks = hybrid_search(expanded_q, q_vector, top_k=max(req_top_k, 15))
+        candidate_chunks = hybrid_search(expanded_q, q_vector, top_k=max(adaptive_top_k, 15))
 
     # Transport RouteFinder Injection
     if route_finder:
@@ -4070,6 +4187,26 @@ def process_lorin_query(
                 "rerank_score": 1.0
             }
             candidate_chunks = [rf_chunk] + [c for c in candidate_chunks if c.get("chunk_id") != rf_chunk["chunk_id"]]
+
+    # List Completeness Expansion for Scholarship/List queries (Fix U100-58)
+    if (q_type == "list" or "scholarship" in q_low) and candidate_chunks:
+        top_doc = candidate_chunks[0].get("source_file")
+        if top_doc and bm25_corpus:
+            doc_chunks = [c for c in bm25_corpus if c.get("source_file") == top_doc]
+            seen_ids = set(c.get("chunk_id") for c in candidate_chunks)
+            for dc in doc_chunks:
+                cid = dc.get("chunk_id")
+                if cid and cid not in seen_ids:
+                    candidate_chunks.append({
+                        "chunk_id": cid,
+                        "title": dc.get("topic_title") or dc.get("title") or "MSAJCE Official Record",
+                        "source_file": dc.get("source_file", ""),
+                        "category": dc.get("category", "general"),
+                        "page_url": dc.get("page_url", "https://msajce.edu.in"),
+                        "content": dc.get("text") or dc.get("content", ""),
+                        "rrf_score": 0.5
+                    })
+                    seen_ids.add(cid)
 
     # 5. Evidence Obligation Verification
     req_facts = []
@@ -4100,7 +4237,7 @@ def process_lorin_query(
         repair_term = " ".join(missing_facts)
         repair_query = f"{standalone_q} {repair_term}"
         repair_vector = get_query_embedding_sync(repair_query)
-        repair_chunks = hybrid_search(repair_query, repair_vector, top_k=10)
+        repair_chunks = hybrid_search(repair_query, repair_vector, top_k=15)
 
         seen_ids = set(c.get("chunk_id") for c in candidate_chunks)
         for r_chunk in repair_chunks:
@@ -4118,14 +4255,21 @@ def process_lorin_query(
         trace["repair_attempted"] = False
 
     # 7. Response Formatting & Grounding
-    has_direct_support = (candidate_chunks and (is_complete or sup_c >= 1 or not req_facts))
+    has_direct_support = (candidate_chunks and is_complete)
 
     if has_direct_support:
         evidence_decision = "ANSWER"
         refusal_reason = "NONE"
-        top_chunks = candidate_chunks[:4]
+        top_chunks = candidate_chunks[:6]
         combined_context = " ".join((c.get("title", "") + ": " + c.get("content", "")) for c in top_chunks)
         actual_ans = f"Based on verified MSAJCE official records: {combined_context}"
+    elif candidate_chunks and sup_c >= 1:
+        # Partial factual answer with explicit missing slot qualification
+        evidence_decision = "ANSWER"
+        refusal_reason = f"Partial support. Verified facts: {found_facts}. Missing: {missing_facts}"
+        top_chunks = candidate_chunks[:4]
+        combined_context = " ".join((c.get("title", "") + ": " + c.get("content", "")) for c in top_chunks)
+        actual_ans = f"Based on verified MSAJCE records: {combined_context}. Note: Information regarding {', '.join(missing_facts)} is not explicitly specified in verified documents."
     else:
         evidence_decision = "ABSTAIN"
         refusal_reason = f"Missing required evidence for slot facts: {missing_facts}"

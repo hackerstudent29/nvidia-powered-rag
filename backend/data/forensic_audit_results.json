@@ -1,0 +1,640 @@
+{
+  "run2_summary": {
+    "total_questions": 100,
+    "passed": 94,
+    "failed": 6,
+    "accuracy_pct": 94.0,
+    "false_answers": 3,
+    "false_refusals": 3,
+    "latency_ms": {
+      "P50": 2486.91,
+      "P75": 3295.26,
+      "P90": 5698.98,
+      "P95": 6601.26,
+      "P99": 7643.27
+    }
+  },
+  "failed_query_audits": [
+    {
+      "question_id": "U100-12",
+      "category": "acronym",
+      "query": "What activities are done by RRC?",
+      "expected": "Red Ribbon Club health awareness",
+      "actual_response": "I couldn't verify this from the college's available sources.",
+      "decision": "ABSTAIN",
+      "normalized_query": {
+        "original_query": "What activities are done by RRC?",
+        "standalone_query": "What activities are done by RRC?",
+        "entities": [
+          "it"
+        ],
+        "aliases": [
+          "Red Ribbon Club RRC unit health awareness AIDS awareness"
+        ],
+        "acronyms": [
+          "rrc"
+        ],
+        "years": [],
+        "dates": [],
+        "locations": [],
+        "roles": [],
+        "departments": [
+          "it"
+        ],
+        "degrees": [],
+        "numbers": [],
+        "requested_attributes": [],
+        "query_type": "single_fact"
+      },
+      "conversation_history": [],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "msajce_aids_001",
+          "source_file": "msajce_aids.md",
+          "title": "AI & Data Science (AI&DS)",
+          "rrf_score": 0.2754,
+          "rerank_score": 0.7754,
+          "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 1. Overview\n\nThe B.Tech program in Artificial "
+        },
+        {
+          "chunk_id": "msajce_aids_010",
+          "source_file": "msajce_aids.md",
+          "title": "AI & Data Science (AI&DS)",
+          "rrf_score": 0.2745,
+          "rerank_score": 0.7745,
+          "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 8. Job Profiles \u2014 AI and Data Science Growth i"
+        },
+        {
+          "chunk_id": "msajce_about_002",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4429,
+          "rerank_score": 0.7429,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 2. Why Join **MSAJCEA**\n\n**MSAJCEA** is located in a green, lush environment at the Sirus"
+        },
+        {
+          "chunk_id": "msajce_aids_003",
+          "source_file": "msajce_aids.md",
+          "title": "AI & Data Science (AI&DS)",
+          "rrf_score": 0.2788,
+          "rerank_score": 0.7288,
+          "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 2. Career Opportunities\n\nThe career opportunit"
+        },
+        {
+          "chunk_id": "msajce_aids_008",
+          "source_file": "msajce_aids.md",
+          "title": "AI & Data Science (AI&DS)",
+          "rrf_score": 0.2766,
+          "rerank_score": 0.7266,
+          "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 7. Programme Outcomes (PO)\n\nThe Programme Outc"
+        }
+      ],
+      "trace": {
+        "request_id": "req_1791038353609",
+        "original_query": "What activities are done by RRC?",
+        "normalized_query": {
+          "original_query": "What activities are done by RRC?",
+          "standalone_query": "What activities are done by RRC?",
+          "entities": [
+            "it"
+          ],
+          "aliases": [
+            "Red Ribbon Club RRC unit health awareness AIDS awareness"
+          ],
+          "acronyms": [
+            "rrc"
+          ],
+          "years": [],
+          "dates": [],
+          "locations": [],
+          "roles": [],
+          "departments": [
+            "it"
+          ],
+          "degrees": [],
+          "numbers": [],
+          "requested_attributes": [],
+          "query_type": "single_fact"
+        },
+        "intent_category": "INSTITUTIONAL_QUERY",
+        "query_class": "simple",
+        "is_rag_required": true,
+        "repair_attempted": true,
+        "repair_query": "What activities are done by RRC? it",
+        "latency_ms": 3802.49,
+        "evidence_decision": "ABSTAIN"
+      }
+    },
+    {
+      "question_id": "U100-14",
+      "category": "acronym",
+      "query": "Tell me about UBA cell Siruseri",
+      "expected": "Unnat Bharat Abhiyan village adoption",
+      "actual_response": "I couldn't verify this from the college's available sources.",
+      "decision": "ABSTAIN",
+      "normalized_query": {
+        "original_query": "Tell me about UBA cell Siruseri",
+        "standalone_query": "Tell me about UBA cell Siruseri",
+        "entities": [],
+        "aliases": [
+          "Unnat Bharat Abhiyan UBA Cell village adoption Siruseri rural development"
+        ],
+        "acronyms": [
+          "uba"
+        ],
+        "years": [],
+        "dates": [],
+        "locations": [
+          "siruseri"
+        ],
+        "roles": [],
+        "departments": [],
+        "degrees": [],
+        "numbers": [],
+        "requested_attributes": [],
+        "query_type": "single_fact"
+      },
+      "conversation_history": [],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "msajce_about_010",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.5552,
+          "rerank_score": 0.7052,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udfd8\ufe0f Residential & Cost of Living"
+        },
+        {
+          "chunk_id": "msajce_about_011",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.5551,
+          "rerank_score": 0.7051,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udfa1 Nearby Attractions & Lifestyl"
+        },
+        {
+          "chunk_id": "msajce_about_009",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.5548,
+          "rerank_score": 0.7048,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026"
+        },
+        {
+          "chunk_id": "msajce_about_012",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.5536,
+          "rerank_score": 0.7036,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udf93 Educational & Research Instit"
+        },
+        {
+          "chunk_id": "msajce_about_001",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.5429,
+          "rerank_score": 0.6929,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+        }
+      ],
+      "trace": {
+        "request_id": "req_1791038365611",
+        "original_query": "Tell me about UBA cell Siruseri",
+        "normalized_query": {
+          "original_query": "Tell me about UBA cell Siruseri",
+          "standalone_query": "Tell me about UBA cell Siruseri",
+          "entities": [],
+          "aliases": [
+            "Unnat Bharat Abhiyan UBA Cell village adoption Siruseri rural development"
+          ],
+          "acronyms": [
+            "uba"
+          ],
+          "years": [],
+          "dates": [],
+          "locations": [
+            "siruseri"
+          ],
+          "roles": [],
+          "departments": [],
+          "degrees": [],
+          "numbers": [],
+          "requested_attributes": [],
+          "query_type": "single_fact"
+        },
+        "intent_category": "INSTITUTIONAL_QUERY",
+        "query_class": "transport",
+        "is_rag_required": true,
+        "repair_attempted": true,
+        "repair_query": "Tell me about UBA cell Siruseri siruseri",
+        "latency_ms": 4320.1,
+        "evidence_decision": "ABSTAIN"
+      }
+    },
+    {
+      "question_id": "U100-19",
+      "category": "acronym",
+      "query": "Does the college have an NCC unit?",
+      "expected": "National Cadet Corps NCC unit",
+      "actual_response": "I couldn't verify this from the college's available sources.",
+      "decision": "ABSTAIN",
+      "normalized_query": {
+        "original_query": "Does the college have an NCC unit?",
+        "standalone_query": "Does the college have an NCC unit?",
+        "entities": [
+          "it"
+        ],
+        "aliases": [
+          "National Cadet Corps NCC unit drill training"
+        ],
+        "acronyms": [
+          "ncc"
+        ],
+        "years": [],
+        "dates": [],
+        "locations": [],
+        "roles": [],
+        "departments": [
+          "it"
+        ],
+        "degrees": [],
+        "numbers": [],
+        "requested_attributes": [],
+        "query_type": "single_fact"
+      },
+      "conversation_history": [],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "msajce_about_001",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4386,
+          "rerank_score": 0.6386,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+        },
+        {
+          "chunk_id": "msajce_admission_004",
+          "source_file": "msajce_admission.md",
+          "title": "Admissions & Eligibility",
+          "rrf_score": 0.4143,
+          "rerank_score": 0.5643,
+          "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 4. Admission through TNEA Counselling\n\nThe official TNEA Co"
+        },
+        {
+          "chunk_id": "msajce_admission_007",
+          "source_file": "msajce_admission.md",
+          "title": "Admissions & Eligibility",
+          "rrf_score": 0.4143,
+          "rerank_score": 0.5643,
+          "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 7. Direct Second Year Lateral Entry Eligibility\n\nFor Direct"
+        },
+        {
+          "chunk_id": "msajce_admission_009",
+          "source_file": "msajce_admission.md",
+          "title": "Admissions & Eligibility",
+          "rrf_score": 0.4143,
+          "rerank_score": 0.5643,
+          "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 9. Ph.D Mechanical Engineering Admission Eligibility\n\nFor t"
+        },
+        {
+          "chunk_id": "msajce_about_005",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4447,
+          "rerank_score": 0.5447,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n"
+        }
+      ],
+      "trace": {
+        "request_id": "req_1791038395614",
+        "original_query": "Does the college have an NCC unit?",
+        "normalized_query": {
+          "original_query": "Does the college have an NCC unit?",
+          "standalone_query": "Does the college have an NCC unit?",
+          "entities": [
+            "it"
+          ],
+          "aliases": [
+            "National Cadet Corps NCC unit drill training"
+          ],
+          "acronyms": [
+            "ncc"
+          ],
+          "years": [],
+          "dates": [],
+          "locations": [],
+          "roles": [],
+          "departments": [
+            "it"
+          ],
+          "degrees": [],
+          "numbers": [],
+          "requested_attributes": [],
+          "query_type": "single_fact"
+        },
+        "intent_category": "INSTITUTIONAL_QUERY",
+        "query_class": "simple",
+        "is_rag_required": true,
+        "repair_attempted": true,
+        "repair_query": "Does the college have an NCC unit? it",
+        "latency_ms": 3831.42,
+        "evidence_decision": "ABSTAIN"
+      }
+    },
+    {
+      "question_id": "U100-93",
+      "category": "negative",
+      "query": "What is the swimming pool timing in the campus hostel?",
+      "expected": "ABSTAIN",
+      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83c\udf7d\ufe0f Dining & Nightlife\n\nSiruseri has a vibrant food scene catering to IT professionals and students:\n- **Food Streets**: The **Navalur Junction** and **Thazhambur Main Road** are lined with hundreds of restaurants, ranging from quick-service (McDonald's, KFC, Domino's) to fine dining.\n- **Popular Chains**: **Starbucks**, **Barista**, **The Coffee Bean & Tea Leaf**, and **Burger King** have multiple outlets in the Navalur/Thazhambur stretch.\n- **Local Favorites**: Numerous \"mess\" style eateries inside the IT park and affordable South Indian tiffin centers (like **A2B** and **Saravana Bhavan**) surround the campus.\n- **Nightlife**: Pubs and breweries like **The Park** (hotel bar), **Highway 74**, and **Palm Beach** are located along the ECR and OMR stretch, about 10\u201315 minutes away. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n\n- **SIPCOT Industrial Fire Station**: Located **inside** the IT Park on First Cross Road. This is the primary response unit for fire emergencies within the campus. (Contact: 044-27470720 / 044-24401213)\n- **Tamil Nadu Fire & Rescue Services (Siruseri Unit)**: Co-located with the SIPCOT station, equipped for industrial and high-rise rescue operations. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83c\udfe5 Government Hospitals (Nearest to Siruseri)\n\nThere is no large government hospital *inside* Siruseri; the nearest government facilities are in Kelambakkam and Chengalpattu.\n- **Government Primary Health Centre (PHC), Kelambakkam**:\n    - **Phone**: **044-27474700**\n    - **Location**: Vandalur-Kelambakkam Road.\n- **Government Chengalpattu Medical College Hospital** (Major Trauma/Govt Facility):\n    - **Phone**: **044-27426566**\n    - **Distance**: ~15 km from Siruseri.\n- **Emergency Ambulance**: Dial **108** (Free government ambulance with life support).",
+      "decision": "ANSWER",
+      "normalized_query": {
+        "original_query": "What is the swimming pool timing in the campus hostel?",
+        "standalone_query": "What is the swimming pool timing in the campus hostel?",
+        "entities": [],
+        "aliases": [
+          "boys hostel girls hostel fees facilities mess menu Siruseri campus"
+        ],
+        "acronyms": [
+          "hostel"
+        ],
+        "years": [],
+        "dates": [],
+        "locations": [],
+        "roles": [],
+        "departments": [],
+        "degrees": [],
+        "numbers": [],
+        "requested_attributes": [],
+        "query_type": "transport"
+      },
+      "conversation_history": [],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "msajce_about_015",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4705,
+          "rerank_score": 0.6705,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83c\udf7d\ufe0f Dining & Nightlife\n\nSiruseri has a "
+        },
+        {
+          "chunk_id": "msajce_about_005",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4695,
+          "rerank_score": 0.6695,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n"
+        },
+        {
+          "chunk_id": "msajce_about_001",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4692,
+          "rerank_score": 0.6692,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+        },
+        {
+          "chunk_id": "msajce_about_021",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4683,
+          "rerank_score": 0.6183,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83c\udfe5 Government Hospitals (Nearest to Siruseri)\n\nThe"
+        },
+        {
+          "chunk_id": "msajce_about_009",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4679,
+          "rerank_score": 0.6179,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026"
+        }
+      ],
+      "trace": {
+        "request_id": "req_1791038846503",
+        "original_query": "What is the swimming pool timing in the campus hostel?",
+        "normalized_query": {
+          "original_query": "What is the swimming pool timing in the campus hostel?",
+          "standalone_query": "What is the swimming pool timing in the campus hostel?",
+          "entities": [],
+          "aliases": [
+            "boys hostel girls hostel fees facilities mess menu Siruseri campus"
+          ],
+          "acronyms": [
+            "hostel"
+          ],
+          "years": [],
+          "dates": [],
+          "locations": [],
+          "roles": [],
+          "departments": [],
+          "degrees": [],
+          "numbers": [],
+          "requested_attributes": [],
+          "query_type": "transport"
+        },
+        "intent_category": "INSTITUTIONAL_QUERY",
+        "query_class": "transport",
+        "is_rag_required": true,
+        "repair_attempted": false,
+        "latency_ms": 1532.73,
+        "evidence_decision": "ANSWER"
+      }
+    },
+    {
+      "question_id": "U100-94",
+      "category": "negative",
+      "query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
+      "expected": "ABSTAIN",
+      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architecture is located at:\n34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Chennai, Tamil Nadu 603103, India.\n\nThe college is situated within the Siruseri IT Park, making it easily accessible via the Old Mahabalipuram Road. Its precise coordinates are approximately **12\u00b050'08.9\"N 80\u00b013'07.0\"E**\nPlus Code: **R6P9+8C Egattur, Tamil Nadu**.\n\nOfficial Map Directions Link: [Mohamed Sathak A.J. College of Engineering and Architecture on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA) About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\udecd\ufe0f Shopping Malls & Retail Hubs\n\nWhile there are no massive \"city-style\" malls strictly inside the IT park gates, the immediate surrounding stretches (Egattur, Navalur, Thazhambur) offer extensive retail options:\n- **The Marina Mall (Egattur)**: A major 1.5 million sq. ft. lifestyle destination located right at the edge of Siruseri (Egattur, OMR). It features international brands (Marks & Spencer, Levi's), a SPAR supermarket, food court, INOX theater, and Timezone gaming. Open daily 10 AM to 10 PM.\n- **Thazhambur High Road Market**: A bustling commercial strip **3 km** away, densely packed with showrooms, clothing brands, electronics stores, and lifestyle outlets.\n- **ECR Shopping Complexes**: Towards the East Coast Road (10\u201315 mins away), you find large format stores like **Decathlon** (sports), **IKEA** (home furnishings, near Thoraipakkam), and **Croma/Reliance Digital**.\n- **Local Retail**: Inside the Siruseri/Navalur junction, there are numerous mini-marts, **Reliance Smart Point**, **More Supermarket**, and **Nilgiris** for daily groceries. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\ude97 Fuel & Automotive\n\n- **Fuel Stations**: Multiple high-capacity fuel bunks (IOCL, BPCL, HPCL) with attached convenience stores (**Smart Bazaar**, **In & Out**) are located at the Siruseri entrance, Navalur, and Thazhambur.\n- **Service Centers**: Showrooms and service centers for major car and two-wheeler brands (Hyundai, Maruti, Honda, TVS) are clustered along the OMR service road near Navalur.",
+      "decision": "ANSWER",
+      "normalized_query": {
+        "original_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
+        "standalone_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
+        "entities": [],
+        "aliases": [
+          "Mohamed Sathak A.J. College of Engineering"
+        ],
+        "acronyms": [
+          "msajce"
+        ],
+        "years": [],
+        "dates": [],
+        "locations": [],
+        "roles": [],
+        "departments": [],
+        "degrees": [],
+        "numbers": [],
+        "requested_attributes": [],
+        "query_type": "single_fact"
+      },
+      "conversation_history": [],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "msajce_about_001",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4552,
+          "rerank_score": 0.8052,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+        },
+        {
+          "chunk_id": "msajce_about_003",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4566,
+          "rerank_score": 0.7566,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architec"
+        },
+        {
+          "chunk_id": "msajce_about_013",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4429,
+          "rerank_score": 0.6429,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\udecd\ufe0f Shopping Malls & Retail Hubs\n\nWhile"
+        },
+        {
+          "chunk_id": "msajce_about_017",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4429,
+          "rerank_score": 0.6429,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\ude97 Fuel & Automotive\n\n- **Fuel Stations"
+        },
+        {
+          "chunk_id": "msajce_about_002",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4429,
+          "rerank_score": 0.5929,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 2. Why Join **MSAJCEA**\n\n**MSAJCEA** is located in a green, lush environment at the Sirus"
+        }
+      ],
+      "trace": {
+        "request_id": "req_1791038852504",
+        "original_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
+        "normalized_query": {
+          "original_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
+          "standalone_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
+          "entities": [],
+          "aliases": [
+            "Mohamed Sathak A.J. College of Engineering"
+          ],
+          "acronyms": [
+            "msajce"
+          ],
+          "years": [],
+          "dates": [],
+          "locations": [],
+          "roles": [],
+          "departments": [],
+          "degrees": [],
+          "numbers": [],
+          "requested_attributes": [],
+          "query_type": "single_fact"
+        },
+        "intent_category": "INSTITUTIONAL_QUERY",
+        "query_class": "simple",
+        "is_rag_required": true,
+        "repair_attempted": false,
+        "latency_ms": 2594.99,
+        "evidence_decision": "ANSWER"
+      }
+    },
+    {
+      "question_id": "U100-96",
+      "category": "negative",
+      "query": "What is the Metro train station located inside the campus?",
+      "expected": "ABSTAIN",
+      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n\n- **SIPCOT Industrial Fire Station**: Located **inside** the IT Park on First Cross Road. This is the primary response unit for fire emergencies within the campus. (Contact: 044-27470720 / 044-24401213)\n- **Tamil Nadu Fire & Rescue Services (Siruseri Unit)**: Co-located with the SIPCOT station, equipped for industrial and high-rise rescue operations. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83d\ude92 Fire & Rescue (Siruseri IT Park)\n\nThe **SIPCOT IT Park Fire Station** is located inside the park premises.\n- **Station Phone**: **044-27470720**\n- **Mobile (Duty Officer)**: **+91-9445086139** / **+91-9600984344**\n- **Location**: First Cross Road, SIPCOT IT Park, Siruseri.\n- **Emergency Dial**: **101** (Routes to nearest unit). About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026\u20132028)\n\n- **Chennai Metro Phase II**: The **Purple Line (Corridor 3: Madhavaram\u2013SIPCOT)** and **Corridor 5** are under construction. The **Siruseri SIPCOT Metro Station** is expected to be operational by **late 2026 to 2028**, directly connecting the park to central Chennai and reducing commute times significantly.\n- **Road Upgrades**: An **under-pass at Potheri Junction** and extensions to the **Outer Ring Road (ORR)** are planned to decongest the NH-45 and OMR intersection, improving access to the airport and Chengalpattu.\n- **Campus Expansions**: Major firms like **HCL** and **L&T** have announced plans for adjacent expansions in 2026, adding further office capacity.",
+      "decision": "ANSWER",
+      "normalized_query": {
+        "original_query": "What is the Metro train station located inside the campus?",
+        "standalone_query": "What is the Metro train station located inside the campus?",
+        "entities": [],
+        "aliases": [],
+        "acronyms": [],
+        "years": [],
+        "dates": [],
+        "locations": [],
+        "roles": [],
+        "departments": [],
+        "degrees": [],
+        "numbers": [],
+        "requested_attributes": [],
+        "query_type": "single_fact"
+      },
+      "conversation_history": [],
+      "retrieved_chunks": [
+        {
+          "chunk_id": "msajce_about_005",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4735,
+          "rerank_score": 0.7235,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n"
+        },
+        {
+          "chunk_id": "msajce_about_001",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4718,
+          "rerank_score": 0.7218,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+        },
+        {
+          "chunk_id": "msajce_about_019",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4733,
+          "rerank_score": 0.6733,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83d\ude92 Fire & Rescue (Siruseri IT Park)\n\nThe **SIPCOT "
+        },
+        {
+          "chunk_id": "msajce_about_009",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.473,
+          "rerank_score": 0.673,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026"
+        },
+        {
+          "chunk_id": "msajce_about_003",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4725,
+          "rerank_score": 0.6725,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architec"
+        }
+      ],
+      "trace": {
+        "request_id": "req_1791038864513",
+        "original_query": "What is the Metro train station located inside the campus?",
+        "normalized_query": {
+          "original_query": "What is the Metro train station located inside the campus?",
+          "standalone_query": "What is the Metro train station located inside the campus?",
+          "entities": [],
+          "aliases": [],
+          "acronyms": [],
+          "years": [],
+          "dates": [],
+          "locations": [],
+          "roles": [],
+          "departments": [],
+          "degrees": [],
+          "numbers": [],
+          "requested_attributes": [],
+          "query_type": "single_fact"
+        },
+        "intent_category": "INSTITUTIONAL_QUERY",
+        "query_class": "simple",
+        "is_rag_required": true,
+        "repair_attempted": false,
+        "latency_ms": 1685.72,
+        "evidence_decision": "ANSWER"
+      }
+    }
+  ]
+}

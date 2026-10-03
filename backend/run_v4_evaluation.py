@@ -43,7 +43,7 @@ async def main():
     print(f"[INIT] Loaded {len(testset)} total benchmark questions across categories.")
 
     # 3. Parallel Execution Worker Queue
-    semaphore = asyncio.Semaphore(8)
+    semaphore = asyncio.Semaphore(3)
     async def worker(item):
         async with semaphore:
             loop = asyncio.get_event_loop()
