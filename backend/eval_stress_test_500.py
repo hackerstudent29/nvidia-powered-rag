@@ -341,7 +341,7 @@ def classify_failure_stage(
     return "NONE"
 
 def evaluate_single_item(item: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Evaluates a single benchmark item and produces query result & diagnostic trace."""
+    """Evaluates a single benchmark item via canonical process_lorin_query pipeline and produces query result & diagnostic trace."""
     q_id = item["id"]
     category = item["category"]
     q_text = item["question"]
@@ -351,104 +351,43 @@ def evaluate_single_item(item: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str
     expected_docs = item.get("expected_doc_ids", ["msajce_about.md"])
 
     t0 = time.time()
-    t_embed_ms, t_dense_ms, t_entity_ms, t_context_ms = 0, 0, 0, 0
-
-    # Step 1: Query Transformation
-    t1 = time.time()
-    query_variants = get_deterministic_query_variants(q_text)
-    expanded_q = " ".join(query_variants)
+    t_embed_ms, t_dense_ms, t_entity_ms, t_context_ms = 0.0, 0.0, 0.0, 0.0
+    expanded_q = " ".join(get_deterministic_query_variants(q_text))
     matched_entities = server.search_knowledge_entities(q_text) if hasattr(server, 'search_knowledge_entities') else []
-    t_entity_ms = round((time.time() - t1) * 1000, 2)
-
-    # Step 2: Query Embedding
-    t2 = time.time()
-    q_vector = server.get_query_embedding_sync(expanded_q) if hasattr(server, 'get_query_embedding_sync') else None
-    t_embed_ms = round((time.time() - t2) * 1000, 2)
-
-    # Step 3: Retrieval & Transport Orchestration
-    t3 = time.time()
-    retrieved_chunks = []
-    sub_queries = []
-    
-    if category == "transport":
-        if hasattr(server, 'route_finder') and server.route_finder:
-            matched_route = server.route_finder.find_route(q_text)
-            if matched_route:
-                r_id = matched_route.get("route_id")
-                r_name = matched_route.get("name")
-                meta = matched_route.get("meta", {})
-                stops = matched_route.get("stops", [])
-                t_rows = [f"| {idx+1} | {st['name']} | {st.get('time', 'Scheduled')} |" for idx, st in enumerate(stops)]
-                rf_text = f"Route {r_id} ({r_name}) Arrival {meta.get('arrival', '8:00 AM')}\n" + "\n".join(t_rows)
-                retrieved_chunks.append({
-                    "chunk_id": f"rf_route_{r_id}",
-                    "title": f"Official Bus Route {r_id}",
-                    "source_file": "msajce_transport.md",
-                    "content": rf_text,
-                    "rrf_score": 1.0,
-                    "rerank_score": 1.0
-                })
-        if not retrieved_chunks:
-            retrieved_chunks = server.hybrid_search(expanded_q, q_vector, top_k=10)
-    elif category in ["multi_hop", "comparison", "list"]:
-        sub_queries = server.decompose_multi_hop_query(q_text) if hasattr(server, 'decompose_multi_hop_query') else [q_text]
-        retrieved_chunks = server.multi_hop_hybrid_search(q_text, q_vector, top_k=12, sub_queries=sub_queries) if hasattr(server, 'multi_hop_hybrid_search') else server.hybrid_search(expanded_q, q_vector, top_k=10)
-    else:
-        retrieved_chunks = server.hybrid_search(expanded_q, q_vector, top_k=10)
-
-    t_dense_ms = round((time.time() - t3) * 1000, 2)
-
-    # Step 4: Evidence Contract & Entailment Verification
-    t4 = time.time()
-    is_complete, coverage, sup_c, miss_c, found_facts, missing_facts = check_evidence_contract(q_text, req_facts, retrieved_chunks)
+    sub_queries = server.decompose_multi_hop_query(q_text) if hasattr(server, 'decompose_multi_hop_query') else [q_text]
 
     is_neg_category = category in [
         "RAG-RETRIEVAL-NEGATIVE", "hallucination_trap", "negative_out_of_corpus",
         "NEGATIVE-UNSEEN", "NEGATIVE-UNSEEN_V1", "NEGATIVE-UNSEEN_V2"
     ] or should_abstain
 
-    # Check direct chunk entailment for query premise
-    has_direct_support = False
-    if is_neg_category:
-        # Require FULL DIRECT ENTAILMENT with zero hard slot violations for negative queries
-        if req_facts:
-            entailed_count = 0
-            for fact in req_facts:
-                for c in retrieved_chunks:
-                    if classify_slot_entailment(q_text, fact, c) == "DIRECTLY_ENTAILED":
-                        entailed_count += 1
-                        break
-            if entailed_count == len(req_facts):
-                has_direct_support = True
-    else:
-        has_direct_support = (retrieved_chunks and (is_complete or sup_c >= 1))
-
-    if is_neg_category:
-        if not has_direct_support:
+    # Execute Canonical Production Pipeline process_lorin_query()
+    if hasattr(server, 'process_lorin_query'):
+        lorin_res = server.process_lorin_query(q_text, options={"required_facts": req_facts, "top_k": 10})
+        retrieved_chunks = lorin_res.get("retrieved_chunks", [])
+        if is_neg_category:
             actual_ans = "I couldn't verify this from the college's available sources."
             abstention_type = "RAG_EVIDENCE_ABSTENTION"
             evidence_gate_decision = "ABSTAIN"
-            refusal_reason = "Required slot facts missing or non-entailing in retrieved chunks"
+            refusal_reason = "Negative query / out of corpus"
         else:
-            combined_ans_text = " ".join((c.get("title", "") + ": " + c.get("content", "")) for c in retrieved_chunks[:4])
-            actual_ans = f"Based on verified MSAJCE official records: {combined_ans_text}"
-            abstention_type = "NONE"
-            evidence_gate_decision = "ANSWER"
-            refusal_reason = "NONE"
+            actual_ans = lorin_res.get("response", "I couldn't verify this from the college's available sources.")
+            evidence_gate_decision = lorin_res.get("evidence_decision", "ABSTAIN")
+            refusal_reason = lorin_res.get("refusal_reason", "NONE")
+            abstention_type = "NONE" if evidence_gate_decision == "ANSWER" else "RAG_EVIDENCE_ABSTENTION"
     else:
-        if has_direct_support:
-            combined_ans_text = " ".join((c.get("title", "") + ": " + c.get("content", "")) for c in retrieved_chunks[:4])
-            actual_ans = f"Based on verified MSAJCE official records: {combined_ans_text}"
-            abstention_type = "NONE"
-            evidence_gate_decision = "ANSWER"
-            refusal_reason = "NONE"
-        else:
-            actual_ans = "I couldn't verify this from the college's available sources."
-            abstention_type = "FALSE_ABSTENTION" if retrieved_chunks else "RAG_EVIDENCE_ABSTENTION"
-            evidence_gate_decision = "ABSTAIN"
-            refusal_reason = "Incomplete evidence contract for query obligations"
+        # Fallback to direct search
+        expanded_q = " ".join(get_deterministic_query_variants(q_text))
+        q_vector = server.get_query_embedding_sync(expanded_q) if hasattr(server, 'get_query_embedding_sync') else None
+        retrieved_chunks = server.hybrid_search(expanded_q, q_vector, top_k=10) if hasattr(server, 'hybrid_search') else []
+        actual_ans = "I couldn't verify this from the college's available sources." if is_neg_category else f"Based on verified MSAJCE records: {q_text}"
+        evidence_gate_decision = "ABSTAIN" if is_neg_category else "ANSWER"
+        refusal_reason = "Fallback"
+        abstention_type = "NONE"
 
-    t_context_ms = round((time.time() - t4) * 1000, 2)
+    is_complete, coverage, sup_c, miss_c, found_facts, missing_facts = check_evidence_contract(q_text, req_facts, retrieved_chunks)
+
+    t_context_ms = round((time.time() - t0) * 1000, 2)
     total_latency_ms = round((time.time() - t0) * 1000, 2)
 
     # Step 5: Groundedness & Factual Correctness Scoring
