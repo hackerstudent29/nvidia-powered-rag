@@ -1,5 +1,46 @@
 [
   {
+    "entity_key": "uba_cell_msajce",
+    "entity_name": "Unnat Bharat Abhiyan (UBA) Cell - MSAJCE",
+    "entity_type": "ORGANIZATION",
+    "aliases": [
+      "uba",
+      "uba cell",
+      "unnat bharat",
+      "unnat bharat abhiyan",
+      "unnat bharat abhiyan cell"
+    ],
+    "value": "Unnat Bharat Abhiyan (UBA) is a flagship national program of Ministry of Education, Government of India, implemented at Mohamed Sathak A.J. College of Engineering (MSAJCE). The MSAJCE UBA Cell adopts local villages around Siruseri, Chengalpattu district for rural development, technical awareness, solar energy adoption, and community welfare programs.",
+    "source_file": "msajce_uba.md",
+    "source_url": "https://msajce-edu.in/uba.php",
+    "details": {
+      "cell_name": "Unnat Bharat Abhiyan Cell",
+      "institution": "Mohamed Sathak A.J. College of Engineering (MSAJCE)",
+      "ministry": "Ministry of Education, Govt of India",
+      "activities": ["Rural Village Adoption", "Technical Awareness Workshops", "Solar Energy & Sanitation Drives"]
+    }
+  },
+  {
+    "entity_key": "karma_scheme_msajce",
+    "entity_name": "KARMA / AICTE Skill Development Scheme at MSAJCE",
+    "entity_type": "SCHEME",
+    "aliases": [
+      "karma",
+      "karma scheme",
+      "aicte karma",
+      "kaushal",
+      "skill development scheme"
+    ],
+    "value": "KARMA (Kaushal Augmentation and Restructuring Skill Scheme) is an AICTE initiative implemented at MSAJCE to provide hands-on vocational skill training, engineering internships, and industry certifications for students in advanced technologies.",
+    "source_file": "msajce_karma.md",
+    "source_url": "https://msajce-edu.in/karma.php",
+    "details": {
+      "scheme_name": "AICTE KARMA Skill Scheme",
+      "institution": "Mohamed Sathak A.J. College of Engineering (MSAJCE)",
+      "focus": "Industrial Skill Certification & Practical Training"
+    }
+  },
+  {
     "entity_key": "developer_ramanathan",
     "entity_name": "Ramanathan S. (Creator / Developer of Lorin AI)",
     "entity_type": "DEVELOPER",

@@ -3179,25 +3179,155 @@ def nemotron_rerank(query: str, candidates: List[Dict[str, Any]], top_k: int = 1
     candidates.sort(key=lambda x: x.get("rerank_score", 0.0), reverse=True)
     return candidates[:top_k]
 
-def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 10) -> List[Dict[str, Any]]:
+try:
+    from query_expansion import get_deterministic_query_variants, load_entity_dictionary, fuzzy_find_alias
+except ImportError:
+    def get_deterministic_query_variants(q: str) -> List[str]:
+        return [q]
+    def load_entity_dictionary():
+        return []
+    def fuzzy_find_alias(term: str, entities: list):
+        return []
+
+async def async_hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 10) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """
-    Reciprocal Rank Fusion (RRF k=60) combining Qdrant Dense Vector search and BM25 Sparse search,
-    enhanced with Query Rewriting & Nemotron Neural Reranking.
+    Parallel Hybrid Search (asyncio.gather) combining 50 Dense Qdrant vector results + 50 Sparse BM25 lexical results,
+    Reciprocal Rank Fusion (RRF k=60), deterministic query expansion, and Nemotron Neural Reranking.
+    Returns (reranked_results, retrieval_trace_data).
     """
-    expanded_query = rewrite_query(query)
+    variants = get_deterministic_query_variants(query)
+    expanded_query = " ".join(variants)
     scores: Dict[str, float] = {}
     chunk_map: Dict[str, Dict[str, Any]] = {}
 
-    # 1. Dense Search via Qdrant
+    trace_data = {
+        "query_original": query,
+        "query_variants": variants,
+        "dense_executed": False,
+        "dense_candidates_count": 0,
+        "bm25_executed": False,
+        "bm25_candidates_count": 0,
+        "rrf_candidates_count": 0,
+        "top_rerank_score": 0.0,
+        "evidence_sufficient": False
+    }
+
+    async def _fetch_dense():
+        if not (qdrant_client and query_vector):
+            return []
+        try:
+            query_res = qdrant_client.query_points(
+                collection_name=COLLECTION_NAME,
+                query=query_vector,
+                limit=50
+            )
+            return query_res.points
+        except Exception as e:
+            print(f"[WARN] Dense search error: {e}")
+            return []
+
+    async def _fetch_sparse():
+        if not (bm25_index and bm25_corpus):
+            return []
+        try:
+            tokens = tokenize_text(expanded_query)
+            bm25_scores = bm25_index.get_scores(tokens)
+            top_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:50]
+            items = []
+            for rank, idx in enumerate(top_indices):
+                sc = bm25_scores[idx]
+                if sc > 0:
+                    items.append((rank, idx, float(sc)))
+            return items
+        except Exception as e:
+            print(f"[WARN] BM25 search error: {e}")
+            return []
+
+    # Parallel execution via asyncio.gather
+    dense_results, sparse_results = await asyncio.gather(_fetch_dense(), _fetch_sparse())
+
+    # Process Dense results
+    if dense_results:
+        trace_data["dense_executed"] = True
+        trace_data["dense_candidates_count"] = len(dense_results)
+        for rank, hit in enumerate(dense_results):
+            chunk_id = str(hit.id)
+            rrf_score = 1.0 / (60.0 + rank + 1)
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + (rrf_score * 1.5)
+            payload = hit.payload or {}
+            chunk_map[chunk_id] = {
+                "chunk_id": chunk_id,
+                "title": payload.get("topic_title") or payload.get("title") or "MSAJCE Official Record",
+                "source_file": payload.get("source_file", ""),
+                "category": payload.get("category", "general"),
+                "page_url": payload.get("page_url", "https://msajce.edu.in"),
+                "content": payload.get("text") or payload.get("content", ""),
+                "dense_score": hit.score
+            }
+
+    # Process Sparse BM25 results
+    if sparse_results:
+        trace_data["bm25_executed"] = True
+        trace_data["bm25_candidates_count"] = len(sparse_results)
+        for rank, idx, score in sparse_results:
+            doc = bm25_corpus[idx]
+            chunk_id = str(doc.get("chunk_id", idx))
+            rrf_score = 1.0 / (60.0 + rank + 1)
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + rrf_score
+            if chunk_id not in chunk_map:
+                chunk_map[chunk_id] = {
+                    "chunk_id": chunk_id,
+                    "title": doc.get("topic_title") or doc.get("title") or "MSAJCE Official Record",
+                    "source_file": doc.get("source_file", ""),
+                    "category": doc.get("category", "general"),
+                    "page_url": doc.get("page_url", "https://msajce.edu.in"),
+                    "content": doc.get("text") or doc.get("content", ""),
+                    "sparse_score": score
+                }
+
+    sorted_chunks = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    results = []
+    seen_snippets = set()
+
+    for chunk_id, rrf_score in sorted_chunks[:40]:
+        if chunk_id in chunk_map:
+            item = chunk_map[chunk_id]
+            raw_body = re.sub(r'^###\s+Document:[^\n]+\n', '', item["content"]).strip()
+            content_snippet = raw_body[:100]
+            if not content_snippet or content_snippet in seen_snippets:
+                continue
+            seen_snippets.add(content_snippet)
+            item["rrf_score"] = round(rrf_score, 4)
+            results.append(item)
+
+    trace_data["rrf_candidates_count"] = len(results)
+
+    # Nemotron Cross-Encoder Reranking
+    reranked = nemotron_rerank(expanded_query, results, top_k=top_k)
+    
+    if reranked:
+        top_sc = reranked[0].get("rerank_score", 0.0) or reranked[0].get("rrf_score", 0.0)
+        trace_data["top_rerank_score"] = top_sc
+        trace_data["evidence_sufficient"] = bool(top_sc >= 0.15 or len(reranked) >= 1)
+
+    return reranked, trace_data
+
+def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k: int = 10) -> List[Dict[str, Any]]:
+    """Synchronous wrapper for hybrid search combining Qdrant dense and BM25 sparse search."""
+    variants = get_deterministic_query_variants(query)
+    expanded_query = " ".join(variants)
+    scores: Dict[str, float] = {}
+    chunk_map: Dict[str, Dict[str, Any]] = {}
+
+    # 1. Qdrant Dense Search
     if qdrant_client and query_vector:
         try:
             query_res = qdrant_client.query_points(
                 collection_name=COLLECTION_NAME,
                 query=query_vector,
-                limit=40
+                limit=50
             )
-            dense_results = query_res.points
-            for rank, hit in enumerate(dense_results):
+            for rank, hit in enumerate(query_res.points):
                 chunk_id = str(hit.id)
                 rrf_score = 1.0 / (60.0 + rank + 1)
                 scores[chunk_id] = scores.get(chunk_id, 0.0) + (rrf_score * 1.5)
@@ -3212,17 +3342,17 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
                     "dense_score": hit.score
                 }
         except Exception as e:
-            print(f"[WARN] Dense search error: {e}")
+            print(f"[WARN] Dense search error in sync wrapper: {e}")
 
-    # 2. Sparse Search via BM25 (using expanded query tokens)
+    # 2. BM25 Sparse Search
     if bm25_index and bm25_corpus:
         try:
             tokens = tokenize_text(expanded_query)
             bm25_scores = bm25_index.get_scores(tokens)
-            top_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:40]
+            top_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:50]
             for rank, idx in enumerate(top_indices):
-                score = bm25_scores[idx]
-                if score <= 0:
+                sc = bm25_scores[idx]
+                if sc <= 0:
                     continue
                 doc = bm25_corpus[idx]
                 chunk_id = str(doc.get("chunk_id", idx))
@@ -3236,30 +3366,27 @@ def hybrid_search(query: str, query_vector: Optional[List[float]], top_k: int = 
                         "category": doc.get("category", "general"),
                         "page_url": doc.get("page_url", "https://msajce.edu.in"),
                         "content": doc.get("text") or doc.get("content", ""),
-                        "sparse_score": float(score)
+                        "sparse_score": float(sc)
                     }
         except Exception as e:
-            print(f"[WARN] BM25 search error: {e}")
+            print(f"[WARN] BM25 search error in sync wrapper: {e}")
 
-    # Sort combined results by RRF score
     sorted_chunks = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     results = []
-    seen_contents = set()
+    seen_snippets = set()
 
-    for chunk_id, rrf_score in sorted_chunks:
+    for chunk_id, rrf_score in sorted_chunks[:40]:
         if chunk_id in chunk_map:
             item = chunk_map[chunk_id]
             raw_body = re.sub(r'^###\s+Document:[^\n]+\n', '', item["content"]).strip()
             content_snippet = raw_body[:100]
-            if not content_snippet or content_snippet in seen_contents:
+            if not content_snippet or content_snippet in seen_snippets:
                 continue
-            seen_contents.add(content_snippet)
+            seen_snippets.add(content_snippet)
             item["rrf_score"] = round(rrf_score, 4)
             results.append(item)
 
-    # 3. Nemotron Neural Reranking Stage
-    reranked_results = nemotron_rerank(expanded_query, results, top_k=top_k)
-    return reranked_results
+    return nemotron_rerank(expanded_query, results, top_k=top_k)
 
 GREETING_WORDS = {
     "hello", "hi", "hey", "howdy", "sup", "namaste", "vanakkam", "salam", "yo", "hola",
