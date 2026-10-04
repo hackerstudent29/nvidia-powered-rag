@@ -2738,7 +2738,73 @@ def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
             f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
             "google/gemini-2.5-flash-lite"
-        )
+async def execute_tako_websearch(user_query: str) -> Optional[Dict[str, Any]]:
+    """
+    Executes a structured live web search using tako/search (Vercel AI Gateway)
+    when local vector/BM25 retrieval finds no relevant records.
+    
+    Query format: 'Mohamed Sathak A.J. College of Engineering (MSAJCE) ' + user_query
+    Payload format: Structured JSON/text prompt explicitly stating what is needed.
+    """
+    college_prefix = "Mohamed Sathak A.J. College of Engineering (MSAJCE)"
+    structured_search_query = f"{college_prefix} {user_query.strip()}"
+    websearch_model = os.getenv("WEBSEARCH_TOOL", "tako/search")
+    
+    prompt_payload = (
+        f"INSTITUTION: {college_prefix}\n"
+        f"USER_QUERY: {user_query}\n"
+        f"STRUCTURED_SEARCH_QUERY: {structured_search_query}\n"
+        f"REQUESTED_INFORMATION: Perform a live web search for verified official records, admissions, syllabus, placements, faculty, bus routes, or campus details regarding '{user_query}' at Mohamed Sathak A.J. College of Engineering (MSAJCE).\n"
+        f"INSTRUCTION: Extract exact verified facts, official page links, and structured details."
+    )
+    
+    url = f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": websearch_model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    f"You are the official live web search tool for {college_prefix}. "
+                    "Execute live search for the structured query and return verified facts and official links."
+                )
+            },
+            {
+                "role": "user",
+                "content": prompt_payload
+            }
+        ],
+        "temperature": 0.1,
+        "max_tokens": 1024
+    }
+    
+    try:
+        logger.info(f"[tako/search] Triggering live web search for structured query: '{structured_search_query}'")
+        client = get_http_client()
+        resp = await client.post(url, headers=headers, json=payload, timeout=8.0)
+        if resp.status_code == 200:
+            data = resp.json()
+            if "choices" in data and len(data["choices"]) > 0:
+                content = data["choices"][0]["message"].get("content", "").strip()
+                if content:
+                    logger.info(f"[tako/search] Websearch successfully retrieved results for '{user_query}'")
+                    return {
+                        "chunk_id": f"tako_websearch_{int(time.time())}",
+                        "title": f"Verified Web Search: {college_prefix}",
+                        "source_file": "tako_websearch_live",
+                        "category": "live_websearch",
+                        "page_url": "https://msajce.edu.in",
+                        "content": content,
+                        "rrf_score": 2.0
+                    }
+    except Exception as e:
+        logger.warning(f"[tako/search] Live web search error: {e}")
+    return None
+
 
 def sanitize_response_text(text: str) -> str:
     """
@@ -6259,6 +6325,17 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     if fused_rec and 'rerank_chunks' in globals():
                         retrieved_chunks = rerank_chunks(user_query, fused_rec, top_n=6)
 
+                if not retrieved_chunks:
+                    logger.info(f"[tako/search] Retrieval empty for '{user_query}' — Executing structured live web search fallback")
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "tako/search Fallback: Executing structured live web search for Mohamed Sathak A.J. College of Engineering (MSAJCE)",
+                        "done": True
+                    })
+                    tako_chunk = await execute_tako_websearch(user_query)
+                    if tako_chunk:
+                        retrieved_chunks = [tako_chunk]
+
                 source_files = list({c.get("source_file", "").split('\t')[0] for c in retrieved_chunks if c.get("source_file")})
                 source_summary = ", ".join(source_files[:2]) if source_files else "official records"
                 yield json.dumps({
@@ -7069,6 +7146,12 @@ async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
 
     target_domain = domain_router.classify(user_query)
     retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
+
+    if not retrieved_chunks:
+        logger.info(f"[tako/search] Retrieval empty for '{user_query}' — Executing structured live web search fallback")
+        tako_chunk = await execute_tako_websearch(user_query)
+        if tako_chunk:
+            retrieved_chunks = [tako_chunk]
 
     seen_source_keys = set()
     sources_payload = []
