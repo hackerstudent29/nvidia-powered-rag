@@ -137,21 +137,29 @@ try:
     from backend.core.feature_flags import global_flags
     from backend.core.conversation_state import (
         ConversationState, load_durable_conversation_state, commit_durable_conversation_state,
-        QueryPlan, EntityRef, ResultSet, ResultItem, TopicFrame
+        QueryPlan, EvidencePlan, EntityRef, ResultSet, ResultItem, TopicFrame
     )
     from backend.core.semantic_resolver import resolve_user_utterance, build_canonical_cache_key
     from backend.core.dialogue_state_tracker import global_dialogue_state_tracker
     from backend.core.capability_orchestrator import global_capability_orchestrator
+    from backend.core.universal_interaction import (
+        UniversalInteractionModel, analyze_universal_interaction, DiscourseAct, InteractionMode, DetailPreference, UnknownPolicy
+    )
+    from backend.core.answer_planner import AnswerPlan, build_answer_plan, global_response_validator
 except ImportError:
     from core.security import global_rate_limiter, sanitize_user_input, mask_sensitive_data
     from core.observability import trace_id_ctx, session_id_ctx, log_pipeline_telemetry, telemetry_logger
     from core.conversation_state import (
         ConversationState, load_durable_conversation_state, commit_durable_conversation_state,
-        QueryPlan, EntityRef, ResultSet, ResultItem, TopicFrame
+        QueryPlan, EvidencePlan, EntityRef, ResultSet, ResultItem, TopicFrame
     )
     from core.semantic_resolver import resolve_user_utterance, build_canonical_cache_key
     from core.dialogue_state_tracker import global_dialogue_state_tracker
     from core.capability_orchestrator import global_capability_orchestrator
+    from core.universal_interaction import (
+        UniversalInteractionModel, analyze_universal_interaction, DiscourseAct, InteractionMode, DetailPreference, UnknownPolicy
+    )
+    from core.answer_planner import AnswerPlan, build_answer_plan, global_response_validator
     from core.resilience import (
         with_retry, with_async_retry, qdrant_circuit_breaker, nvidia_nim_circuit_breaker, CircuitBreakerOpenException
     )
@@ -5453,13 +5461,54 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         yield item
                     return
 
-            # 1.1 Lorin V6 Stateful Dialogue State Tracker & Semantic Resolver
+            # 1.1 Lorin V7 Universal Interaction Engine & Dialogue State Tracker
             v6_state = load_durable_conversation_state(session_id)
+            v7_interaction = analyze_universal_interaction(user_query, v6_state)
+
+            # V7 Social Fast-Path Interceptor: Handle generic social conversational acts sub-5ms
+            if v7_interaction.interaction_mode == InteractionMode.SOCIAL_CONVERSATION:
+                logger.info(f"[V7 Social Fast-Path] Servicing conversational act '{v7_interaction.discourse_act.value}'")
+                social_response = "Hello! Welcome to MSAJCE institutional assistant. How can I assist you today?"
+                if v7_interaction.discourse_act == DiscourseAct.THANK:
+                    social_response = "You're very welcome! Feel free to ask if you need any more information about MSAJCE."
+                elif v7_interaction.discourse_act == DiscourseAct.FAREWELL:
+                    social_response = "Goodbye! Wishing you all the best. Feel free to reach out anytime."
+                
+                yield json.dumps({
+                    "type": "reasoning",
+                    "step": f"Universal Interaction Engine: Serviced conversational act '{v7_interaction.discourse_act.value}'",
+                    "done": True
+                })
+                async for item in stream_cached_or_prebuilt(
+                    response_text=social_response,
+                    sources=[],
+                    user_query=user_query,
+                    session_id=session_id,
+                    model_id=model_id,
+                    start_time=start_time,
+                    cache_type="social_fastpath",
+                    user_id=user_id
+                ):
+                    yield item
+                return
+
             task_v6_resolve = asyncio.create_task(resolve_user_utterance(user_query, v6_state))
             task_guardrails = asyncio.create_task(asyncio.to_thread(check_guardrails, user_query))
 
             v6_query_plan, (is_allowed, refusal_msg) = await asyncio.gather(task_v6_resolve, task_guardrails)
             v6_state = global_dialogue_state_tracker.apply_query_plan(v6_state, v6_query_plan)
+
+            # V7 Layer 3 & 5: Universal Evidence and Answer Planning
+            v7_answer_plan = build_answer_plan(
+                interaction=v7_interaction,
+                target_entities=v6_query_plan.target_entities if v6_query_plan else [],
+                requested_attributes=v6_query_plan.attribute_requests if v6_query_plan else []
+            )
+            v7_evidence_plan = EvidencePlan(
+                plan_id=f"ep_{int(time.time()*1000)}",
+                search_queries=[(v6_query_plan.search_query if v6_query_plan and v6_query_plan.search_query else user_query)],
+                is_probing=(v7_interaction.unknown_policy == UnknownPolicy.UNKNOWN_REQUIRES_PROBING)
+            )
 
             # Capability Orchestration Execution
             v6_cap_result = global_capability_orchestrator.execute_plan(
@@ -6467,6 +6516,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 full_answer = "".join(collected_response)
 
             full_answer = sanitize_response_text(full_answer)
+            if "v7_answer_plan" in locals() and v7_answer_plan:
+                full_answer = global_response_validator.validate_and_trim_scope(full_answer, v7_answer_plan)
             full_answer = validate_citations(full_answer, retrieved_chunks)
             total_latency_ms = int((time.time() - start_time) * 1000)
             generation_latency_ms = int((time.time() - generation_start) * 1000) if "generation_start" in locals() else 0

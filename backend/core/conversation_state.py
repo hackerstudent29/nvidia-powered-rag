@@ -69,6 +69,15 @@ class QueryPlan:
     confidence: float = 1.0
 
 @dataclass
+class EvidencePlan:
+    plan_id: str
+    required_entities: List[EntityRef] = field(default_factory=list)
+    required_attributes: List[str] = field(default_factory=list)
+    minimum_completeness: float = 0.8
+    search_queries: List[str] = field(default_factory=list)
+    is_probing: bool = False
+
+@dataclass
 class ConversationState:
     session_id: str
     user_id: Optional[str] = None
