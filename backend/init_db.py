@@ -34,8 +34,12 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
     user_ip VARCHAR(45),
     user_agent TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    last_active_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    last_active_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    state JSONB DEFAULT '{}'::jsonb
 );
+
+ALTER TABLE chat_sessions ADD COLUMN IF NOT EXISTS state JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE chat_sessions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
 -- 2. Chat Messages
 CREATE TABLE IF NOT EXISTS chat_messages (
@@ -48,8 +52,11 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     latency_ms FLOAT,
     token_usage JSONB DEFAULT '{}'::jsonb,
     is_cached BOOLEAN DEFAULT FALSE,
+    metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);

@@ -135,9 +135,23 @@ try:
     from backend.core.session_manager import global_session_manager
     from backend.core.monitoring import global_metrics
     from backend.core.feature_flags import global_flags
+    from backend.core.conversation_state import (
+        ConversationState, load_durable_conversation_state, commit_durable_conversation_state,
+        QueryPlan, EntityRef, ResultSet, ResultItem, TopicFrame
+    )
+    from backend.core.semantic_resolver import resolve_user_utterance, build_canonical_cache_key
+    from backend.core.dialogue_state_tracker import global_dialogue_state_tracker
+    from backend.core.capability_orchestrator import global_capability_orchestrator
 except ImportError:
     from core.security import global_rate_limiter, sanitize_user_input, mask_sensitive_data
     from core.observability import trace_id_ctx, session_id_ctx, log_pipeline_telemetry, telemetry_logger
+    from core.conversation_state import (
+        ConversationState, load_durable_conversation_state, commit_durable_conversation_state,
+        QueryPlan, EntityRef, ResultSet, ResultItem, TopicFrame
+    )
+    from core.semantic_resolver import resolve_user_utterance, build_canonical_cache_key
+    from core.dialogue_state_tracker import global_dialogue_state_tracker
+    from core.capability_orchestrator import global_capability_orchestrator
     from core.resilience import (
         with_retry, with_async_retry, qdrant_circuit_breaker, nvidia_nim_circuit_breaker, CircuitBreakerOpenException
     )
@@ -5439,11 +5453,23 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         yield item
                     return
 
-            # 1.1 Multi-Model Parallel Preprocessing (Concurrent Query Rewriter + Guardrails)
-            task_rewrite = asyncio.create_task(resolve_pronouns_llm(user_query, session_id))
+            # 1.1 Lorin V6 Stateful Dialogue State Tracker & Semantic Resolver
+            v6_state = load_durable_conversation_state(session_id)
+            task_v6_resolve = asyncio.create_task(resolve_user_utterance(user_query, v6_state))
             task_guardrails = asyncio.create_task(asyncio.to_thread(check_guardrails, user_query))
 
-            user_query, (is_allowed, refusal_msg) = await asyncio.gather(task_rewrite, task_guardrails)
+            v6_query_plan, (is_allowed, refusal_msg) = await asyncio.gather(task_v6_resolve, task_guardrails)
+            v6_state = global_dialogue_state_tracker.apply_query_plan(v6_state, v6_query_plan)
+
+            # Capability Orchestration Execution
+            v6_cap_result = global_capability_orchestrator.execute_plan(
+                query_plan=v6_query_plan,
+                state=v6_state,
+                route_finder_instance=route_finder
+            )
+
+            if v6_query_plan and v6_query_plan.search_query:
+                user_query = v6_query_plan.search_query
 
             # 1.2 Zero-Token Local Query Rewriting & Acronym Expansion
             expanded_query = rewrite_query(user_query)
@@ -6545,6 +6571,10 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     ))
                                 conn.commit()
                                 append_cached_session_message(session_id, "assistant", structured_answer)
+                                try:
+                                    commit_durable_conversation_state(v6_state)
+                                except Exception as st_err:
+                                    print(f"[WARN] Durable state commit error: {st_err}")
                 except Exception as e:
                     print(f"[WARN] Message persistence error: {e}")
 

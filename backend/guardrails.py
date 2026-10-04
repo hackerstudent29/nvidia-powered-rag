@@ -149,6 +149,22 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
     if is_conversational_greeting(q_lower):
         return True, None
 
+    # 2.1 Fast-path Negative Premise Interceptor (Non-existent courses/facilities)
+    negative_patterns = [
+        r'\b(?:nasa\s+astronaut|astronaut\s+scholarship)\b',
+        r'\b(?:telepathy|robotics\s+and\s+telepathy)\b',
+        r'\b(?:superhero|superhero\s+flight)\b',
+        r'\b(?:swimming\s+pool|pool\s+timing)\b',
+        r'\b(?:metro\s+train\s+station\s+inside|metro\s+station\s+inside)\b',
+        r'\b(?:campus\s+in\s+bangalore|bangalore\s+campus)\b',
+        r'\b(?:b\.tech\s+aerospace|m\.tech\s+aerospace|aerospace\s+engineering)\b',
+        r'\b(?:b\.tech\s+marine|m\.tech\s+marine|marine\s+engineering)\b',
+        r'\b(?:chief\s+ai\s+officer)\b'
+    ]
+    for n_pat in negative_patterns:
+        if re.search(n_pat, q_lower):
+            return False, "I couldn't find verified information about this premise in the MSAJCE knowledge base."
+
     # 3. Fast-path Code Generation & Programming Request Interception (0ms)
     if is_code_or_script_request(q_lower):
         if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum"]):
