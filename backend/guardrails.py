@@ -178,10 +178,6 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
             if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum", "course", "courses", "department", "degree"]):
                 return False, CAMPUS_REFUSAL_MESSAGE
 
-    # 4.5 Fast-path Local Domain Whitelist (0ms) - Bypasses slow HTTP evaluator if campus terms present
-    if is_campus_domain_term_present(q_lower) or len(q_lower.split()) <= 4 or any(k in q_lower for k in ["who", "what", "where", "how", "which", "bus", "route", "fee", "hostel", "cutoff", "tnea", "cse", "it", "ece", "eee", "mech", "civil", "aids", "aiml", "cyber", "csbs"]):
-        return True, None
-
     # 5. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
     if jev_evaluator and jev_evaluator.is_enabled:
         try:
