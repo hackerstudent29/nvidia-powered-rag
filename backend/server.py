@@ -3443,21 +3443,17 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
 
     try:
         if http_client:
-            # Step 2 Model Sequence: Primary (Vercel Gemini 2.5 Flash Lite) -> Secondary (NVIDIA NIM) -> Tertiary (OpenRouter Free)
+            backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or VERCEL_AI_GATEWAY_KEY
             step2_models = [
-                # Primary Worker: Vercel AI Gateway (Sub-250ms, 1M Context, Smart & Low Cost)
                 ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                # Secondary Failover: NVIDIA NIM Infrastructure (Flagship 120B MoE)
+                ("google/gemini-2.5-flash-lite:backup", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {backup_key}", "Content-Type": "application/json"}),
                 ("nvidia/nemotron-3-super-120b-a12b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
-                # Tertiary Failover: OpenRouter Multi-Cloud (100% Free 550B MoE)
-                ("nvidia/nemotron-3-ultra-550b-a55b:free", f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Campus Assistant"}),
             ]
 
-            for m_idx, (m_name, url, hdrs) in enumerate(step2_models):
-                role_label = "Primary Worker" if m_idx == 0 else f"Failover #{m_idx}"
+            async def _fetch_rewrite_model(m_name: str, url: str, hdrs: dict) -> Optional[Tuple[str, str]]:
                 try:
                     payload = {
-                        "model": m_name,
+                        "model": m_name.replace(":backup", ""),
                         "messages": [{"role": "user", "content": rewrite_prompt}],
                         "temperature": 0.1,
                         "max_tokens": 80
@@ -3474,12 +3470,30 @@ async def resolve_pronouns_llm(current_query: str, session_id: str) -> str:
                         rewritten_raw = re.sub(r'^(?:(?:rewritten|standalone|final|search)?\s*(?:query|question)?:\s*)', '', rewritten_raw, flags=re.IGNORECASE).strip()
                         rewritten_raw = rewritten_raw.strip('"\'`').strip()
                         if rewritten_raw and len(rewritten_raw) >= 3 and not rewritten_raw.lower().startswith("here's"):
-                            print(f"[STEP 2 REWRITER SUCCESS] '{current_query}' → '{rewritten_raw}' ({role_label}: {m_name})")
-                            return rewritten_raw
-                    else:
-                        print(f"[STEP 2 REWRITER {role_label.upper()} FAILED] Model {m_name} HTTP {resp.status_code}. Failing over...")
+                            return (m_name, rewritten_raw)
                 except Exception as model_err:
-                    print(f"[STEP 2 REWRITER {role_label.upper()} ERROR] Model {m_name}: {model_err}. Failing over...")
+                    print(f"[STEP 2 REWRITER ERROR] Model {m_name}: {model_err}")
+                return None
+
+            # Race top 2 rewriters in parallel
+            tasks = [asyncio.create_task(_fetch_rewrite_model(m, u, h)) for m, u, h in step2_models[:2]]
+            for completed in asyncio.as_completed(tasks):
+                res = await completed
+                if res:
+                    m_name, rewritten_raw = res
+                    for t in tasks:
+                        if not t.done():
+                            t.cancel()
+                    print(f"[STEP 2 REWRITER SUCCESS] '{current_query}' → '{rewritten_raw}' (Winner: {m_name})")
+                    return rewritten_raw
+
+            # Fallback to 3rd candidate if top 2 failed
+            if len(step2_models) > 2:
+                m_name, url, hdrs = step2_models[2]
+                res = await _fetch_rewrite_model(m_name, url, hdrs)
+                if res:
+                    _, rewritten_raw = res
+                    return rewritten_raw
     except Exception as e:
         print(f"[WARN] LLM Query Rewriter Exception: {e}")
 
@@ -6596,12 +6610,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             candidate_models = [
                 "google/gemini-2.5-flash-lite",
+                "google/gemini-2.5-flash-lite:backup",
                 "alibaba/qwen-3-32b",
                 "inclusionai/ling-3.0-flash-sante-free",
-                "google/gemini-2.5-flash-lite:backup",
-                "google/gemini-2.5-flash-lite:backup2"
+                "google/gemini-2.5-flash-lite:backup2",
+                "nvidia/nemotron-3-super-120b-a12b"
             ]
-            if model_id and model_id != "auto" and model_id not in candidate_models:
+            if model_id and model_id != "auto":
+                if model_id in candidate_models:
+                    candidate_models.remove(model_id)
                 candidate_models.insert(0, model_id)
 
             generation_start = time.time()
@@ -6610,190 +6627,235 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             model_used_final = model_id
             api_reported_usage = None
 
-            for candidate_idx, current_cand in enumerate(candidate_models):
-                target_url, target_headers, target_model_slug = get_model_endpoint_config(current_cand)
-                effective_max_tokens = max(MAX_TOKENS, 4096)
-                cand_messages = list(messages)
+            yield json.dumps({
+                "type": "reasoning",
+                "step": stage4_desc,
+                "done": False
+            })
 
-                if req.is_regeneration:
-                    cand_messages.append({
-                        "role": "user",
-                        "content": (
-                            f"[REGENERATION REQUEST]: Please provide a FRESH, NEWLY SYNTHESIZED answer for this question: '{prompt_user_question}'. "
-                            f"Use varied phrasing, fresh sentence structures, and distinct structural presentation while maintaining 100% factual accuracy."
-                        )
-                    })
-                    cand_temperature = 0.85
-                else:
-                    cand_temperature = 0.20
+            # Parallel inference worker batches (racing 2 workers concurrently for sub-second TTFT)
+            worker_batches = [candidate_models[i:i+2] for i in range(0, len(candidate_models), 2)]
+            effective_max_tokens = max(MAX_TOKENS, 4096)
+            cand_messages = list(messages)
+            if req.is_regeneration:
+                cand_messages.append({
+                    "role": "user",
+                    "content": (
+                        f"[REGENERATION REQUEST]: Please provide a FRESH, NEWLY SYNTHESIZED answer for this question: '{prompt_user_question}'. "
+                        f"Use varied phrasing, fresh sentence structures, and distinct structural presentation while maintaining 100% factual accuracy."
+                    )
+                })
+                cand_temperature = 0.85
+            else:
+                cand_temperature = 0.20
 
-                llm_payload = {
-                    "model": target_model_slug,
-                    "messages": cand_messages,
-                    "temperature": cand_temperature,
-                    "max_tokens": effective_max_tokens,
-                    "stream": True,
-                    "stream_options": {"include_usage": True}
-                }
+            for batch_idx, worker_batch in enumerate(worker_batches):
+                winner_event = asyncio.Event()
+                winner_lock = asyncio.Lock()
+                winner_box = [None, None]  # [worker_idx, cand_name]
+                stream_queue = asyncio.Queue()
+                active_worker_tasks = {}
 
-                if "openrouter" in target_url:
-                    provider_label = "OpenRouter Multi-Cloud Infrastructure"
-                elif "vercel" in target_url:
-                    provider_label = "Vercel AI Gateway"
-                else:
-                    provider_label = "NVIDIA NIM Infrastructure"
+                def cancel_competing_workers(winning_idx: int):
+                    for wid, t in active_worker_tasks.items():
+                        if wid != winning_idx and not t.done():
+                            t.cancel()
 
-                if candidate_idx == 0:
-                    yield json.dumps({
-                        "type": "reasoning",
-                        "step": stage4_desc,
-                        "done": False
-                    })
+                async def _stream_worker(worker_idx: int, cand_name: str, target_url: str, target_headers: dict, llm_payload: dict, timeout_cfg: httpx.Timeout):
+                    cand_stream_start = time.time()
+                    consecutive_spaces_count = 0
+                    cand_chunks = []
+                    in_think_block = False
+                    initial_buffer = []
+                    initial_buffer_chars = 0
+                    buffer_flushed = False
 
-                # Resilient timeout: 2.5s connect, 45.0s read; first token timeout 3.0s for sub-second failover
-                candidate_timeout = httpx.Timeout(connect=2.5, read=45.0, write=5.0, pool=5.0)
-                cand_stream_start = time.time()
-                first_token_received = False
-                consecutive_spaces_count = 0
-                cand_chunks = []
-                
-                # Live streaming rolling preamble filter & reasoning stream buffer
-                in_think_block = False
-                initial_buffer = []
-                initial_buffer_chars = 0
-                buffer_flushed = False
-                reasoning_stream_buffer = ""
+                    try:
+                        async with get_http_client().stream("POST", target_url, headers=target_headers, json=llm_payload, timeout=timeout_cfg) as response:
+                            if response.status_code != 200:
+                                err_bytes = await response.aread()
+                                print(f"[PARALLEL WORKER {worker_idx} ({cand_name}) FAILED] HTTP {response.status_code}: {err_bytes.decode('utf-8', errors='ignore')[:150]}")
+                                return
 
-                try:
-                    async with get_http_client().stream("POST", target_url, headers=target_headers, json=llm_payload, timeout=candidate_timeout) as response:
-                        if response.status_code != 200:
-                            err_bytes = await response.aread()
-                            print(f"[WARN] Model candidate '{current_cand}' HTTP {response.status_code}: {err_bytes.decode('utf-8', errors='ignore')[:200]}")
-                            continue
-
-                        async for line in response.aiter_lines():
-                            if not first_token_received and (time.time() - cand_stream_start > 12.0):
-                                print(f"[WARN] Candidate '{current_cand}' took >12s for first token. Triggering failover...")
-                                break
-
-                            if not line or not line.startswith("data: "):
-                                continue
-                            line_data = line[6:].strip()
-                            if line_data == "[DONE]":
-                                break
-
-                            try:
-                                chunk_json = json.loads(line_data)
-                                if "usage" in chunk_json and chunk_json["usage"]:
-                                    api_reported_usage = chunk_json["usage"]
-                                if "error" in chunk_json:
-                                    print(f"[WARN] Model '{current_cand}' stream error chunk: {chunk_json['error']}")
+                            async for line in response.aiter_lines():
+                                if not line or not line.startswith("data: "):
+                                    continue
+                                line_data = line[6:].strip()
+                                if line_data == "[DONE]":
                                     break
-                                delta = chunk_json.get("choices", [{}])[0].get("delta", {})
-                                content_token = delta.get("content")
-                                reasoning_token = delta.get("reasoning_content") or delta.get("thought")
 
-                                # Handle dynamic live reasoning tokens from MoE models (Nemotron / DeepSeek / Gemini)
-                                if reasoning_token:
-                                    if not first_token_received:
-                                        first_token_received = True
-                                        if not ttft_recorded:
-                                            ttft_recorded = True
-                                            ttft_ms = int((time.time() - start_time) * 1000)
+                                try:
+                                    chunk_json = json.loads(line_data)
+                                    if "usage" in chunk_json and chunk_json["usage"]:
+                                        if winner_box[0] == worker_idx:
+                                            await stream_queue.put(("usage", chunk_json["usage"]))
+                                    if "error" in chunk_json:
+                                        print(f"[WARN] Parallel worker '{cand_name}' stream error: {chunk_json['error']}")
+                                        break
 
-                                    broad_synth_step = "Formulating grounded response from verified records"
-                                    if broad_synth_step not in reasoning_steps:
-                                        reasoning_steps.append(broad_synth_step)
-                                        yield json.dumps({
-                                            "type": "reasoning",
-                                            "step": broad_synth_step,
-                                            "done": True
-                                        })
+                                    delta = chunk_json.get("choices", [{}])[0].get("delta", {})
+                                    content_token = delta.get("content")
+                                    reasoning_token = delta.get("reasoning_content") or delta.get("thought") or delta.get("reasoning")
 
-                                if not content_token:
+                                    # Atomic first token race election
+                                    if reasoning_token or content_token:
+                                        if not winner_event.is_set():
+                                            async with winner_lock:
+                                                if not winner_event.is_set():
+                                                    winner_box[0] = worker_idx
+                                                    winner_box[1] = cand_name
+                                                    winner_event.set()
+                                                    cancel_competing_workers(worker_idx)
+                                                    print(f"[PARALLEL STREAM WINNER: Worker {worker_idx} ({cand_name})] First token in {(time.time()-generation_start)*1000:.1f}ms! Competitors cancelled.")
+
+                                        if winner_box[0] != worker_idx:
+                                            return
+
+                                    if winner_box[0] != worker_idx:
+                                        continue
+
+                                    # Route reasoning tokens from winner
+                                    if reasoning_token:
+                                        broad_synth_step = "Formulating grounded response from verified records"
+                                        await stream_queue.put(("reasoning", broad_synth_step))
+
+                                    if not content_token:
+                                        continue
+
+                                    token_chunk = content_token
+                                    if token_chunk.strip() == "":
+                                        if "|" not in "".join(cand_chunks[-5:]):
+                                            consecutive_spaces_count += len(token_chunk)
+                                            if consecutive_spaces_count > 300:
+                                                print(f"[WARN] Runaway whitespace detected (>300 chars) from '{cand_name}'. Terminating stream.")
+                                                break
+                                    else:
+                                        consecutive_spaces_count = 0
+
+                                    cand_chunks.append(token_chunk)
+
+                                    if "<think>" in token_chunk:
+                                        in_think_block = True
+                                        continue
+                                    if "</think>" in token_chunk:
+                                        in_think_block = False
+                                        continue
+                                    if in_think_block:
+                                        continue
+
+                                    if not buffer_flushed:
+                                        initial_buffer.append(token_chunk)
+                                        initial_buffer_chars += len(token_chunk)
+                                        if initial_buffer_chars >= 15 or "\n" in token_chunk or " " in token_chunk:
+                                            buffered_text = "".join(initial_buffer)
+                                            cleaned_initial = sanitize_response_text(buffered_text)
+                                            if cleaned_initial:
+                                                await stream_queue.put(("token", cleaned_initial))
+                                            buffer_flushed = True
+                                            initial_buffer = []
+                                    else:
+                                        clean_live_tok = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\u203c\u2049\u2700-\u27bf\U00010000-\U0010ffff]', '', token_chunk)
+                                        if clean_live_tok:
+                                            await stream_queue.put(("token", clean_live_tok))
+                                except Exception:
                                     continue
 
-                                # Clear any remaining reasoning buffer when content stream starts
-                                reasoning_stream_buffer = ""
+                            if winner_box[0] == worker_idx:
+                                if not buffer_flushed and initial_buffer:
+                                    buffered_text = "".join(initial_buffer)
+                                    cleaned_initial = sanitize_response_text(buffered_text)
+                                    if cleaned_initial:
+                                        await stream_queue.put(("token", cleaned_initial))
+                                    buffer_flushed = True
+                                await stream_queue.put(("done", (cand_name, cand_chunks)))
 
-                                token_chunk = content_token
-                                if not token_chunk:
-                                    continue
+                    except asyncio.CancelledError:
+                        return
+                    except Exception as cand_err:
+                        print(f"[PARALLEL WORKER {worker_idx} ({cand_name}) ERROR] {type(cand_err)}: {cand_err}")
+                        if winner_box[0] == worker_idx:
+                            await stream_queue.put(("error", str(cand_err)))
 
-                                # Runaway whitespace and repetitive token glitch guard
-                                if token_chunk.strip() == "":
-                                    # Do not count spaces inside Markdown table rows (|)
-                                    if "|" not in "".join(cand_chunks[-5:]):
-                                        consecutive_spaces_count += len(token_chunk)
-                                        if consecutive_spaces_count > 300:
-                                            print(f"[WARN] Runaway whitespace detected (>300 chars) from '{current_cand}'. Terminating stream.")
-                                            break
-                                else:
-                                    consecutive_spaces_count = 0
+                # Launch parallel workers for this batch
+                for widx, cand in enumerate(worker_batch):
+                    t_url, t_hdrs, t_slug = get_model_endpoint_config(cand)
+                    c_payload = {
+                        "model": t_slug,
+                        "messages": cand_messages,
+                        "temperature": cand_temperature,
+                        "max_tokens": effective_max_tokens,
+                        "stream": True,
+                        "stream_options": {"include_usage": True}
+                    }
+                    c_timeout = httpx.Timeout(connect=3.0, read=45.0, write=5.0, pool=5.0)
+                    task = asyncio.create_task(_stream_worker(widx, cand, t_url, t_hdrs, c_payload, c_timeout))
+                    active_worker_tasks[widx] = task
 
-                                if not first_token_received:
-                                    first_token_received = True
-                                    if not ttft_recorded:
-                                        ttft_recorded = True
-                                        ttft_ms = int((time.time() - start_time) * 1000)
+                async def _watch_batch():
+                    await asyncio.gather(*active_worker_tasks.values(), return_exceptions=True)
+                    if not winner_event.is_set():
+                        await stream_queue.put(("batch_failed", None))
 
-                                cand_chunks.append(token_chunk)
+                watch_task = asyncio.create_task(_watch_batch())
 
-                                # Thinking block filter for models with internal scratchpads
-                                if "<think>" in token_chunk:
-                                    in_think_block = True
-                                    continue
-                                if "</think>" in token_chunk:
-                                    in_think_block = False
-                                    continue
-                                if in_think_block:
-                                    continue
+                # Consume streamed tokens from the winning worker
+                batch_completed_successfully = False
+                while True:
+                    try:
+                        if request and await request.is_disconnected():
+                            print("[STREAM] Client disconnected mid-generation. Cancelling parallel workers.")
+                            break
+                    except Exception:
+                        pass
 
-                                # Initial buffer to clean any starting reasoning preamble (e.g. "Analyze User Input:")
-                                if not buffer_flushed:
-                                    initial_buffer.append(token_chunk)
-                                    initial_buffer_chars += len(token_chunk)
-                                    if initial_buffer_chars >= 15 or "\n" in token_chunk or " " in token_chunk:
-                                        buffered_text = "".join(initial_buffer)
-                                        cleaned_initial = sanitize_response_text(buffered_text)
-                                        if cleaned_initial:
-                                            yield json.dumps({"type": "token", "token": cleaned_initial})
-                                            tokens_emitted_count += 1
-                                        buffer_flushed = True
-                                        initial_buffer = []
-                                else:
-                                    # True real-time live pass-through token streaming with emoji stripping!
-                                    clean_live_tok = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\u2600-\u27bf\u2300-\u23ff\u2b50\u2b55\u203c\u2049\u2700-\u27bf\U00010000-\U0010ffff]', '', token_chunk)
-                                    if clean_live_tok:
-                                        yield json.dumps({"type": "token", "token": clean_live_tok})
-                                        tokens_emitted_count += 1
-                            except Exception:
-                                continue
-
-                        # Clear reasoning stream buffer
-                        reasoning_stream_buffer = ""
-
-                        if not buffer_flushed and initial_buffer:
-                            buffered_text = "".join(initial_buffer)
-                            cleaned_initial = sanitize_response_text(buffered_text)
-                            if cleaned_initial:
-                                yield json.dumps({"type": "token", "token": cleaned_initial})
-                                tokens_emitted_count += 1
-                            buffer_flushed = True
-
-                    if cand_chunks or tokens_emitted_count > 0:
-                        collected_response = cand_chunks
-                        model_used_final = current_cand
-                        model_id = current_cand
+                    try:
+                        item = await asyncio.wait_for(stream_queue.get(), timeout=35.0)
+                    except asyncio.TimeoutError:
+                        print(f"[WARN] Stream queue timeout on batch #{batch_idx}.")
                         break
-                    else:
-                        print(f"[WARN] Candidate '{current_cand}' finished without producing content tokens (status={response.status_code}). Trying next model...")
 
-                except Exception as cand_err:
-                    import traceback
-                    traceback.print_exc()
-                    print(f"[WARN] Candidate '{current_cand}' connection exception: {type(cand_err)} - {cand_err}. Trying next model...")
-                    continue
+                    msg_type, payload = item
+                    if msg_type == "token":
+                        if not ttft_recorded:
+                            ttft_recorded = True
+                            ttft_ms = int((time.time() - start_time) * 1000)
+                        tokens_emitted_count += 1
+                        yield json.dumps({"type": "token", "token": payload})
+
+                    elif msg_type == "reasoning":
+                        if not ttft_recorded:
+                            ttft_recorded = True
+                            ttft_ms = int((time.time() - start_time) * 1000)
+                        if payload not in reasoning_steps:
+                            reasoning_steps.append(payload)
+                            yield json.dumps({"type": "reasoning", "step": payload, "done": True})
+
+                    elif msg_type == "usage":
+                        api_reported_usage = payload
+
+                    elif msg_type == "done":
+                        winner_cand_name, winning_chunks = payload
+                        collected_response = winning_chunks
+                        model_used_final = winner_cand_name
+                        model_id = winner_cand_name
+                        batch_completed_successfully = True
+                        break
+
+                    elif msg_type == "batch_failed":
+                        print(f"[PARALLEL WORKERS] Batch #{batch_idx} produced no winner. Failing over to next batch...")
+                        break
+
+                    elif msg_type == "error":
+                        print(f"[PARALLEL WORKERS] Winning worker error: {payload}")
+                        break
+
+                watch_task.cancel()
+                for wid, t in active_worker_tasks.items():
+                    if not t.done():
+                        t.cancel()
+
+                if batch_completed_successfully and (collected_response or tokens_emitted_count > 0):
+                    break
 
             # Absolute safeguard: if all LLM streams produced zero content tokens, synthesize full text from retrieved context
             if not collected_response or tokens_emitted_count == 0:
@@ -7294,35 +7356,56 @@ async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
     }
 
     answer = None
-    models_to_try = [model_id] if model_id and model_id != "auto" else []
-    for m_cand in [
-        "nvidia/nemotron-3-super-120b-a12b",
-        "google/gemini-2.5-flash-lite",
-        "nvidia/nemotron-3-super-120b-a12b:free",
+    models_to_try = [
+        model_id if model_id and model_id != "auto" else "google/gemini-2.5-flash-lite",
+        "google/gemini-2.5-flash-lite:backup",
         "alibaba/qwen-3-32b",
-        "nvidia/nemotron-3-ultra-550b-a55b:free"
-    ]:
-        if m_cand not in models_to_try:
-            models_to_try.append(m_cand)
-
+        "nvidia/nemotron-3-super-120b-a12b"
+    ]
+    seen_m = set()
+    dedup_models = []
     for m in models_to_try:
-        try:
-            call_url, call_hdrs, call_model = get_model_endpoint_config(m)
-            call_max_tokens = max(max_tokens_val, 2048)
+        if m not in seen_m:
+            seen_m.add(m)
+            dedup_models.append(m)
 
-            llm_payload["model"] = call_model
-            llm_payload["max_tokens"] = call_max_tokens
-            resp = await get_http_client().post(call_url, headers=call_hdrs, json=llm_payload, timeout=45.0)
+    async def _fetch_sync_model(m_name: str) -> Optional[Tuple[str, str]]:
+        try:
+            call_url, call_hdrs, call_model = get_model_endpoint_config(m_name)
+            call_max_tokens = max(max_tokens_val, 2048)
+            payload = dict(llm_payload)
+            payload["model"] = call_model
+            payload["max_tokens"] = call_max_tokens
+            resp = await get_http_client().post(call_url, headers=call_hdrs, json=payload, timeout=25.0)
             if resp.status_code == 200:
                 data = resp.json()
                 if "choices" in data and isinstance(data["choices"], list) and len(data["choices"]) > 0:
                     ans_text = data["choices"][0]["message"].get("content")
                     if ans_text and len(ans_text.strip()) > 0:
-                        answer = ans_text
-                        model_id = m
-                        break
+                        return (m_name, ans_text)
         except Exception as e:
-            print(f"[WARN] Error querying model {m}: {e}")
+            print(f"[PARALLEL SYNC WORKER] Model {m_name} error: {e}")
+        return None
+
+    # Race top 2 candidates in parallel
+    top_candidates = dedup_models[:2]
+    tasks = [asyncio.create_task(_fetch_sync_model(m)) for m in top_candidates]
+    for completed in asyncio.as_completed(tasks):
+        res = await completed
+        if res:
+            model_id, answer = res
+            for t in tasks:
+                if not t.done():
+                    t.cancel()
+            break
+
+    # If top parallel workers didn't yield an answer, try remaining sequentially
+    if not answer and len(dedup_models) > 2:
+        for m in dedup_models[2:]:
+            res = await _fetch_sync_model(m)
+            if res:
+                model_id, answer = res
+                break
 
     if not answer:
         if retrieved_chunks:
