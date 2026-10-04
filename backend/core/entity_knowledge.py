@@ -16,6 +16,8 @@ import time
 import glob
 import logging
 import hashlib
+import psycopg2
+from psycopg2.extras import execute_values
 from enum import Enum
 from typing import Dict, List, Optional, Any, Set, Tuple
 from dataclasses import dataclass, field
@@ -636,210 +638,231 @@ class EntityRegistry:
         return [item[0] for item in scored]
 
     def sync_to_postgres(self):
-        """Creates complete V7.2 PostgreSQL entity tables, applies safe ALTER migration, and syncs data to Neon."""
+        """Creates complete V7.2 PostgreSQL entity tables, applies safe ALTER migration, and syncs data to Neon with batched execute_values."""
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            return
+
         try:
-            from backend.app.services.database import DBContext
-            with DBContext() as conn:
-                if conn:
-                    with conn.cursor() as cur:
-                        # 1. Base entities table creation
-                        cur.execute("""
-                            CREATE TABLE IF NOT EXISTS entities (
-                                entity_id TEXT PRIMARY KEY,
-                                canonical_name TEXT NOT NULL,
-                                display_name TEXT NOT NULL,
-                                entity_type TEXT NOT NULL,
-                                entity_subtype TEXT,
-                                domains JSONB DEFAULT '[]'::jsonb,
-                                description TEXT,
-                                source_file TEXT,
-                                external_ids JSONB DEFAULT '{}'::jsonb,
-                                importance_score FLOAT DEFAULT 0.80,
-                                identity_confidence FLOAT DEFAULT 0.95,
-                                status TEXT DEFAULT 'verified',
-                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                            );
-                        """)
+            conn = psycopg2.connect(db_url, sslmode="require", connect_timeout=5)
+            with conn.cursor() as cur:
+                # 1. Base entities table creation
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entities (
+                        entity_id TEXT PRIMARY KEY,
+                        canonical_name TEXT NOT NULL,
+                        display_name TEXT NOT NULL,
+                        entity_type TEXT NOT NULL,
+                        entity_subtype TEXT,
+                        domains JSONB DEFAULT '[]'::jsonb,
+                        description TEXT,
+                        source_file TEXT,
+                        external_ids JSONB DEFAULT '{}'::jsonb,
+                        importance_score FLOAT DEFAULT 0.80,
+                        identity_confidence FLOAT DEFAULT 0.95,
+                        status TEXT DEFAULT 'verified',
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                """)
 
-                        # Apply safe ALTER TABLE for new V7.2 columns
-                        v72_entity_columns = [
-                            ("roles", "JSONB DEFAULT '[]'::jsonb"),
-                            ("tags", "JSONB DEFAULT '[]'::jsonb"),
-                            ("namespace", "TEXT DEFAULT 'msajce'"),
-                            ("source_authority", "FLOAT DEFAULT 0.95"),
-                            ("mention_count", "INT DEFAULT 1"),
-                            ("document_count", "INT DEFAULT 1"),
-                            ("merged_into_entity_id", "TEXT"),
-                            ("version", "INT DEFAULT 1"),
-                            ("canonical_source", "TEXT"),
-                            ("first_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
-                            ("last_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
-                            ("updated_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
-                        ]
-                        for col_name, col_def in v72_entity_columns:
-                            cur.execute(f"ALTER TABLE entities ADD COLUMN IF NOT EXISTS {col_name} {col_def};")
+                v72_entity_columns = [
+                    ("roles", "JSONB DEFAULT '[]'::jsonb"),
+                    ("tags", "JSONB DEFAULT '[]'::jsonb"),
+                    ("namespace", "TEXT DEFAULT 'msajce'"),
+                    ("source_authority", "FLOAT DEFAULT 0.95"),
+                    ("mention_count", "INT DEFAULT 1"),
+                    ("document_count", "INT DEFAULT 1"),
+                    ("merged_into_entity_id", "TEXT"),
+                    ("version", "INT DEFAULT 1"),
+                    ("canonical_source", "TEXT"),
+                    ("first_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+                    ("last_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+                    ("updated_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
+                ]
+                for col_name, col_def in v72_entity_columns:
+                    cur.execute(f"ALTER TABLE entities ADD COLUMN IF NOT EXISTS {col_name} {col_def};")
 
-                        # 2. entity_aliases table creation & ALTER migration
-                        cur.execute("""
-                            CREATE TABLE IF NOT EXISTS entity_aliases (
-                                alias_id SERIAL PRIMARY KEY,
-                                entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
-                                surface_form TEXT NOT NULL,
-                                normalized_form TEXT NOT NULL,
-                                is_preferred BOOLEAN DEFAULT FALSE,
-                                UNIQUE (entity_id, normalized_form)
-                            );
-                        """)
+                # 2. entity_aliases table creation & ALTER migration
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entity_aliases (
+                        alias_id SERIAL PRIMARY KEY,
+                        entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
+                        surface_form TEXT NOT NULL,
+                        normalized_form TEXT NOT NULL,
+                        is_preferred BOOLEAN DEFAULT FALSE,
+                        UNIQUE (entity_id, normalized_form)
+                    );
+                """)
 
-                        v72_alias_columns = [
-                            ("alias_type", "TEXT DEFAULT 'alias'"),
-                            ("language", "TEXT DEFAULT 'en'"),
-                            ("source", "TEXT DEFAULT 'extracted'"),
-                            ("confidence", "FLOAT DEFAULT 0.95"),
-                            ("frequency", "INT DEFAULT 1"),
-                            ("first_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
-                            ("last_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
-                        ]
-                        for col_name, col_def in v72_alias_columns:
-                            cur.execute(f"ALTER TABLE entity_aliases ADD COLUMN IF NOT EXISTS {col_name} {col_def};")
+                v72_alias_columns = [
+                    ("alias_type", "TEXT DEFAULT 'alias'"),
+                    ("language", "TEXT DEFAULT 'en'"),
+                    ("source", "TEXT DEFAULT 'extracted'"),
+                    ("confidence", "FLOAT DEFAULT 0.95"),
+                    ("frequency", "INT DEFAULT 1"),
+                    ("first_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()"),
+                    ("last_seen_at", "TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
+                ]
+                for col_name, col_def in v72_alias_columns:
+                    cur.execute(f"ALTER TABLE entity_aliases ADD COLUMN IF NOT EXISTS {col_name} {col_def};")
 
-                        # 3. entity_mentions table (Provenance)
-                        cur.execute("""
-                            CREATE TABLE IF NOT EXISTS entity_mentions (
-                                mention_id SERIAL PRIMARY KEY,
-                                entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
-                                document_id TEXT NOT NULL,
-                                document_version_id TEXT DEFAULT '2026-27',
-                                chunk_id TEXT NOT NULL,
-                                surface_form TEXT NOT NULL,
-                                normalized_form TEXT NOT NULL,
-                                mention_type TEXT DEFAULT 'explicit',
-                                page_number INT DEFAULT 1,
-                                section_path TEXT,
-                                start_char INT DEFAULT 0,
-                                end_char INT DEFAULT 0,
-                                extraction_confidence FLOAT DEFAULT 0.90,
-                                resolution_confidence FLOAT DEFAULT 0.90,
-                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                            );
-                        """)
+                # 3. entity_mentions table (Provenance)
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entity_mentions (
+                        mention_id SERIAL PRIMARY KEY,
+                        entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
+                        document_id TEXT NOT NULL,
+                        document_version_id TEXT DEFAULT '2026-27',
+                        chunk_id TEXT NOT NULL,
+                        surface_form TEXT NOT NULL,
+                        normalized_form TEXT NOT NULL,
+                        mention_type TEXT DEFAULT 'explicit',
+                        page_number INT DEFAULT 1,
+                        section_path TEXT,
+                        start_char INT DEFAULT 0,
+                        end_char INT DEFAULT 0,
+                        extraction_confidence FLOAT DEFAULT 0.90,
+                        resolution_confidence FLOAT DEFAULT 0.90,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                """)
 
-                        # 4. entity_claims table
-                        cur.execute("""
-                            CREATE TABLE IF NOT EXISTS entity_claims (
-                                claim_id SERIAL PRIMARY KEY,
-                                subject_entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
-                                predicate TEXT NOT NULL,
-                                object_entity_id TEXT REFERENCES entities(entity_id) ON DELETE SET NULL,
-                                object_value TEXT NOT NULL,
-                                value_type TEXT DEFAULT 'string',
-                                source_document_id TEXT NOT NULL,
-                                source_document_version_id TEXT DEFAULT '2026-27',
-                                source_chunk_id TEXT NOT NULL,
-                                source_mention_id INT REFERENCES entity_mentions(mention_id) ON DELETE SET NULL,
-                                evidence_span TEXT NOT NULL,
-                                confidence FLOAT DEFAULT 0.95,
-                                source_authority FLOAT DEFAULT 0.95,
-                                valid_from TIMESTAMP WITH TIME ZONE,
-                                valid_to TIMESTAMP WITH TIME ZONE,
-                                status TEXT DEFAULT 'active',
-                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                            );
-                        """)
+                # 4. entity_claims table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entity_claims (
+                        claim_id SERIAL PRIMARY KEY,
+                        subject_entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
+                        predicate TEXT NOT NULL,
+                        object_entity_id TEXT REFERENCES entities(entity_id) ON DELETE SET NULL,
+                        object_value TEXT NOT NULL,
+                        value_type TEXT DEFAULT 'string',
+                        source_document_id TEXT NOT NULL,
+                        source_document_version_id TEXT DEFAULT '2026-27',
+                        source_chunk_id TEXT NOT NULL,
+                        source_mention_id INT REFERENCES entity_mentions(mention_id) ON DELETE SET NULL,
+                        evidence_span TEXT NOT NULL,
+                        confidence FLOAT DEFAULT 0.95,
+                        source_authority FLOAT DEFAULT 0.95,
+                        valid_from TIMESTAMP WITH TIME ZONE,
+                        valid_to TIMESTAMP WITH TIME ZONE,
+                        status TEXT DEFAULT 'active',
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    );
+                """)
 
-                        # 5. entity_relationships table
-                        cur.execute("""
-                            CREATE TABLE IF NOT EXISTS entity_relationships (
-                                relationship_id SERIAL PRIMARY KEY,
-                                source_entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
-                                relationship_type TEXT NOT NULL,
-                                target_entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
-                                confidence FLOAT DEFAULT 0.95,
-                                source_document_id TEXT NOT NULL,
-                                source_chunk_id TEXT NOT NULL,
-                                valid_from TIMESTAMP WITH TIME ZONE,
-                                valid_to TIMESTAMP WITH TIME ZONE,
-                                status TEXT DEFAULT 'active',
-                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                                UNIQUE (source_entity_id, relationship_type, target_entity_id)
-                            );
-                        """)
+                # 5. entity_relationships table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entity_relationships (
+                        relationship_id SERIAL PRIMARY KEY,
+                        source_entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
+                        relationship_type TEXT NOT NULL,
+                        target_entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
+                        confidence FLOAT DEFAULT 0.95,
+                        source_document_id TEXT NOT NULL,
+                        source_chunk_id TEXT NOT NULL,
+                        valid_from TIMESTAMP WITH TIME ZONE,
+                        valid_to TIMESTAMP WITH TIME ZONE,
+                        status TEXT DEFAULT 'active',
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                        UNIQUE (source_entity_id, relationship_type, target_entity_id)
+                    );
+                """)
 
-                        # 6. entity_chunk_map table
-                        cur.execute("""
-                            CREATE TABLE IF NOT EXISTS entity_chunk_map (
-                                entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
-                                chunk_id TEXT NOT NULL,
-                                document_id TEXT NOT NULL,
-                                document_version_id TEXT DEFAULT '2026-27',
-                                mention_count INT DEFAULT 1,
-                                confidence FLOAT DEFAULT 0.95,
-                                first_position INT DEFAULT 0,
-                                section_path TEXT,
-                                page_number INT DEFAULT 1,
-                                PRIMARY KEY (entity_id, chunk_id)
-                            );
-                        """)
+                # 6. entity_chunk_map table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS entity_chunk_map (
+                        entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
+                        chunk_id TEXT NOT NULL,
+                        document_id TEXT NOT NULL,
+                        document_version_id TEXT DEFAULT '2026-27',
+                        mention_count INT DEFAULT 1,
+                        confidence FLOAT DEFAULT 0.95,
+                        first_position INT DEFAULT 0,
+                        section_path TEXT,
+                        page_number INT DEFAULT 1,
+                        PRIMARY KEY (entity_id, chunk_id)
+                    );
+                """)
 
-                        # Upsert canonical entities
-                        for ent in self.entities.values():
-                            cur.execute("""
-                                INSERT INTO entities (
-                                    entity_id, canonical_name, display_name, entity_type, entity_subtype,
-                                    domains, roles, tags, description, source_file, namespace, external_ids, source_authority,
-                                    identity_confidence, importance_score, mention_count, document_count, status,
-                                    merged_into_entity_id, version, canonical_source
-                                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                                ON CONFLICT (entity_id) DO UPDATE SET
-                                    canonical_name = EXCLUDED.canonical_name,
-                                    display_name = EXCLUDED.display_name,
-                                    description = EXCLUDED.description,
-                                    source_file = EXCLUDED.source_file,
-                                    domains = EXCLUDED.domains,
-                                    roles = EXCLUDED.roles,
-                                    importance_score = EXCLUDED.importance_score,
-                                    mention_count = EXCLUDED.mention_count,
-                                    document_count = EXCLUDED.document_count,
-                                    status = EXCLUDED.status,
-                                    merged_into_entity_id = EXCLUDED.merged_into_entity_id,
-                                    updated_at = NOW();
-                            """, (
-                                ent.entity_id, ent.canonical_name, ent.display_name,
-                                ent.entity_type.value, ent.entity_subtype,
-                                json.dumps(ent.domains), json.dumps(ent.roles), json.dumps(ent.tags),
-                                ent.description, ent.source_file, ent.namespace, json.dumps(ent.external_ids),
-                                ent.source_authority, ent.identity_confidence, ent.importance_score,
-                                ent.mention_count, ent.document_count, ent.status.value,
-                                ent.merged_into_entity_id, ent.version, ent.canonical_source
-                            ))
+                # Prepare tuples for batch upsert
+                entity_tuples = [
+                    (
+                        ent.entity_id, ent.canonical_name, ent.display_name,
+                        ent.entity_type.value, ent.entity_subtype,
+                        json.dumps(ent.domains), json.dumps(ent.roles), json.dumps(ent.tags),
+                        ent.description, ent.source_file, ent.namespace, json.dumps(ent.external_ids),
+                        ent.source_authority, ent.identity_confidence, ent.importance_score,
+                        ent.mention_count, ent.document_count, ent.status.value,
+                        ent.merged_into_entity_id, ent.version, ent.canonical_source
+                    )
+                    for ent in self.entities.values()
+                ]
 
-                            # Upsert aliases
-                            for alias in ent.aliases:
-                                norm = alias.strip().lower()
-                                cur.execute("""
-                                    INSERT INTO entity_aliases (entity_id, surface_form, normalized_form, is_preferred)
-                                    VALUES (%s, %s, %s, %s)
-                                    ON CONFLICT (entity_id, normalized_form) DO UPDATE SET
-                                        frequency = entity_aliases.frequency + 1,
-                                        last_seen_at = NOW();
-                                """, (ent.entity_id, alias, norm, alias == ent.canonical_name))
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO entities (
+                        entity_id, canonical_name, display_name, entity_type, entity_subtype,
+                        domains, roles, tags, description, source_file, namespace, external_ids, source_authority,
+                        identity_confidence, importance_score, mention_count, document_count, status,
+                        merged_into_entity_id, version, canonical_source
+                    ) VALUES %s
+                    ON CONFLICT (entity_id) DO UPDATE SET
+                        canonical_name = EXCLUDED.canonical_name,
+                        display_name = EXCLUDED.display_name,
+                        description = EXCLUDED.description,
+                        source_file = EXCLUDED.source_file,
+                        domains = EXCLUDED.domains,
+                        roles = EXCLUDED.roles,
+                        importance_score = EXCLUDED.importance_score,
+                        mention_count = EXCLUDED.mention_count,
+                        document_count = EXCLUDED.document_count,
+                        status = EXCLUDED.status,
+                        merged_into_entity_id = EXCLUDED.merged_into_entity_id,
+                        updated_at = NOW();
+                    """,
+                    entity_tuples
+                )
 
-                        # Upsert entity_chunk_map
-                        for (eid, cid), meta in self.entity_chunk_map.items():
-                            cur.execute("""
-                                INSERT INTO entity_chunk_map (entity_id, chunk_id, document_id, mention_count, confidence, section_path, page_number)
-                                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                                ON CONFLICT (entity_id, chunk_id) DO UPDATE SET
-                                    mention_count = EXCLUDED.mention_count,
-                                    confidence = EXCLUDED.confidence;
-                            """, (
-                                eid, cid, meta.get("document_id", ""), meta.get("mention_count", 1),
-                                meta.get("confidence", 0.95), meta.get("section_path", ""), meta.get("page_number", 1)
-                            ))
+                alias_tuples = []
+                for ent in self.entities.values():
+                    for alias in ent.aliases:
+                        norm = alias.strip().lower()
+                        alias_tuples.append((ent.entity_id, alias, norm, alias == ent.canonical_name))
 
-                        conn.commit()
-                        logger.info(f"[Entity Knowledge] Synchronized V7.2 Entity Intelligence layer ({len(self.entities)} entities) to Neon PostgreSQL!")
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO entity_aliases (entity_id, surface_form, normalized_form, is_preferred)
+                    VALUES %s
+                    ON CONFLICT (entity_id, normalized_form) DO UPDATE SET
+                        frequency = entity_aliases.frequency + 1,
+                        last_seen_at = NOW();
+                    """,
+                    alias_tuples
+                )
+
+                chunk_map_tuples = [
+                    (eid, cid, meta.get("document_id", ""), meta.get("mention_count", 1), meta.get("confidence", 0.95), meta.get("section_path", ""), meta.get("page_number", 1))
+                    for (eid, cid), meta in self.entity_chunk_map.items()
+                ]
+
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO entity_chunk_map (entity_id, chunk_id, document_id, mention_count, confidence, section_path, page_number)
+                    VALUES %s
+                    ON CONFLICT (entity_id, chunk_id) DO UPDATE SET
+                        mention_count = EXCLUDED.mention_count,
+                        confidence = EXCLUDED.confidence;
+                    """,
+                    chunk_map_tuples
+                )
+
+                conn.commit()
+                conn.close()
+                logger.info(f"[Entity Knowledge] Batch synchronized V7.2 Entity Intelligence layer ({len(self.entities)} entities) to Neon PostgreSQL!")
         except Exception as e:
             logger.warning(f"[Entity Knowledge] DB Sync Warning: {e}")
 
@@ -869,7 +892,6 @@ class CorpusEntityExtractor:
         extracted_count = 0
         new_entity_count = 0
 
-        # Regex patterns for generic entity discovery
         person_pattern = re.compile(r'\b(?:Dr\.|Prof\.|Mr\.|Mrs\.|Ms\.|Er\.)\s+([A-Z][a-zA-Z\.]+(?:\s+[A-Z][a-zA-Z\.]+){1,3})\b')
         dept_pattern = re.compile(r'\b(Department\s+of\s+[A-Z][a-zA-Z\s\&]+|B\.E\.\s+[A-Z][a-zA-Z\s\&]+|B\.Tech\.\s+[A-Z][a-zA-Z\s\&]+)\b')
         acronym_pattern = re.compile(r'\b[A-Z]{2,10}\b')
@@ -886,7 +908,6 @@ class CorpusEntityExtractor:
             for chunk_idx, paragraph in enumerate(paragraphs):
                 chunk_id = f"{doc_id}_{chunk_idx:03d}"
 
-                # 1. Person mentions
                 for match in person_pattern.finditer(paragraph):
                     full_name = match.group(0).strip()
                     extracted_count += 1
@@ -922,7 +943,6 @@ class CorpusEntityExtractor:
                         "section_path": paragraph[:50]
                     }
 
-                # 2. Department / Course mentions
                 for match in dept_pattern.finditer(paragraph):
                     dept_name = match.group(0).strip()
                     extracted_count += 1
@@ -958,7 +978,6 @@ class CorpusEntityExtractor:
                         "section_path": paragraph[:50]
                     }
 
-                # 3. Acronyms & Schemes
                 for ac in acronym_pattern.findall(paragraph):
                     if len(ac) >= 3 and ac.lower() not in {"this", "that", "with", "from", "have", "more", "will", "been", "were", "page", "section"}:
                         extracted_count += 1
