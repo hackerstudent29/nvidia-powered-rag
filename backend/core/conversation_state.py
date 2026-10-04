@@ -18,6 +18,8 @@ class EntityRef:
     attributes: Dict[str, Any] = field(default_factory=dict)
     source: Optional[str] = None       # e.g., "route_finder", "rag_retrieval", "taxonomy"
     metadata: Dict[str, Any] = field(default_factory=dict)
+    entity_binding_reason: Optional[str] = None # e.g., "explicit_current_query", "resolved_reference", "active_topic_continuation", "result_set_selection", "corpus_discovery"
+    resolution_status: str = "ENTITY_KNOWN"     # "ENTITY_KNOWN", "ENTITY_UNKNOWN", "ENTITY_AMBIGUOUS", "ENTITY_RESOLVED_FROM_CORPUS"
 
 @dataclass
 class ResultItem:
@@ -56,17 +58,18 @@ class TopicFrame:
 @dataclass
 class QueryPlan:
     plan_id: str
-    intent: str                        # e.g., "CREATE_TOPIC", "UPDATE_TOPIC", "SWITCH_TOPIC", "RESTORE_TOPIC", "SELECT_POSITION", "FILTER", "COMPARE", "ATTRIBUTE_CHANGE"
+    intent: str                        # e.g., "CREATE_TOPIC", "UPDATE_TOPIC", "SWITCH_TOPIC", "RESTORE_TOPIC", "SELECT_POSITION", "FILTER", "COMPARE", "ATTRIBUTE_CHANGE", "NEW_INDEPENDENT_QUERY"
     operation: str                     # e.g., "ROUTE_LOOKUP", "FLEET_OVERVIEW", "STOP_TIMINGS", "RAG_SEARCH", "COMPARISON"
     capability_id: str                 # e.g., "route_finder", "academic_info", "governance_info"
     target_entities: List[EntityRef] = field(default_factory=list)
     slot_changes: Dict[str, Any] = field(default_factory=dict)
     constraint_changes: Dict[str, Any] = field(default_factory=dict)
     attribute_requests: List[str] = field(default_factory=list)
-    topic_transition: Optional[str] = None # e.g., "PUSH", "POP", "SAME", "NEW"
+    topic_transition: Optional[str] = None # e.g., "PUSH", "POP", "SAME", "NEW", "SWITCH"
     search_query: str = ""
     canonical_cache_key: str = ""
     confidence: float = 1.0
+    entity_binding_reason: Optional[str] = None
 
 @dataclass
 class EvidencePlan:

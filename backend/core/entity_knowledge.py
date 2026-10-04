@@ -22,6 +22,17 @@ from enum import Enum
 from typing import Dict, List, Optional, Any, Set, Tuple
 from dataclasses import dataclass, field
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    if os.path.exists("backend/.env"):
+        load_dotenv("backend/.env")
+    backend_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    if os.path.exists(backend_env):
+        load_dotenv(backend_env, override=True)
+except Exception:
+    pass
+
 logger = logging.getLogger("lorin_ai.entity_knowledge")
 
 # ============================================================================
@@ -56,6 +67,12 @@ class EntityStatus(str, Enum):
     AMBIGUOUS = "ambiguous"
     DEPRECATED = "deprecated"
     MERGED = "merged"
+
+class EntityResolutionStatus(str, Enum):
+    ENTITY_KNOWN = "ENTITY_KNOWN"
+    ENTITY_UNKNOWN = "ENTITY_UNKNOWN"
+    ENTITY_AMBIGUOUS = "ENTITY_AMBIGUOUS"
+    ENTITY_RESOLVED_FROM_CORPUS = "ENTITY_RESOLVED_FROM_CORPUS"
 
 class ConfidenceBand(str, Enum):
     HIGH = "HIGH"       # >= 0.85 (Deterministic / strong identity evidence -> auto link)
@@ -266,11 +283,11 @@ class EntityRegistry:
                 for r in rows:
                     eid, cname, dname, etype_str, esub, doms, desc, sfile, imp, conf, stat_str = r
                     try:
-                        etype = EntityType(etype_str)
+                        etype = EntityType(str(etype_str).lower())
                     except Exception:
-                        etype = EntityType.CONCEPT
+                        etype = EntityType.CONTACT
                     try:
-                        stat = EntityStatus(stat_str)
+                        stat = EntityStatus(str(stat_str).lower())
                     except Exception:
                         stat = EntityStatus.VERIFIED
 
@@ -700,8 +717,18 @@ class EntityRegistry:
         if norm_q in self.alias_to_entity_ids:
             matched_ids.update(self.alias_to_entity_ids[norm_q])
 
+        # Match exact normalized forms and word-boundary aliases
+        q_words = set(re.findall(r'\b[a-zA-Z0-9_]+\b', q_clean))
+        norm_words = set(re.findall(r'\b[a-zA-Z0-9_]+\b', norm_q))
+
         for alias, eids in self.alias_to_entity_ids.items():
-            if len(alias) >= 3 and (alias in q_clean or q_clean in alias or alias in norm_q or norm_q in alias):
+            if len(alias) < 3:
+                continue
+            if alias in q_words or alias in norm_words:
+                matched_ids.update(eids)
+            elif re.search(rf'\b{re.escape(alias)}\b', q_clean, re.I) or re.search(rf'\b{re.escape(alias)}\b', norm_q, re.I):
+                matched_ids.update(eids)
+            elif len(q_clean) >= 4 and len(q_clean) >= len(alias) * 0.8 and q_clean in alias:
                 matched_ids.update(eids)
 
         resolved_entities: List[CanonicalEntity] = []
@@ -722,6 +749,23 @@ class EntityRegistry:
 
         scored.sort(key=lambda x: x[1], reverse=True)
         return [item[0] for item in scored]
+
+    def resolve_entity_with_status(self, query: str, context: str = "") -> Tuple[List[CanonicalEntity], EntityResolutionStatus]:
+        """
+        Resolves query terms to canonical entities and returns explicit resolution status:
+        ENTITY_KNOWN, ENTITY_UNKNOWN, ENTITY_AMBIGUOUS, ENTITY_RESOLVED_FROM_CORPUS.
+        """
+        entities = self.resolve_entity(query, context)
+        if not entities:
+            return [], EntityResolutionStatus.ENTITY_UNKNOWN
+        if len(entities) == 1:
+            return entities, EntityResolutionStatus.ENTITY_KNOWN
+        
+        s1 = EntityResolver.calculate_match_score(query, context, entities[0], entities[0].aliases)
+        s2 = EntityResolver.calculate_match_score(query, context, entities[1], entities[1].aliases)
+        if s1 >= 0.85 and (s1 - s2) >= 0.20:
+            return entities[:1], EntityResolutionStatus.ENTITY_KNOWN
+        return entities, EntityResolutionStatus.ENTITY_AMBIGUOUS
 
     def sync_to_postgres(self):
         """Creates complete V7.2 PostgreSQL entity tables, applies safe ALTER migration, and syncs data to Neon with batched execute_values."""

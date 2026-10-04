@@ -18,6 +18,7 @@ import logging
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from core.security import SlidingWindowRateLimiter, sanitize_user_input, mask_sensitive_data
 from core.observability import (

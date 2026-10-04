@@ -9,9 +9,14 @@ import time
 import json
 from typing import Dict, List, Optional, Tuple, Any
 
-from backend.core.conversation_state import (
-    ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
-)
+try:
+    from backend.core.conversation_state import (
+        ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
+    )
+except ImportError:
+    from core.conversation_state import (
+        ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
+    )
 
 class DialogueStateTracker:
     """Manages clean state transitions over ConversationState."""
@@ -24,17 +29,18 @@ class DialogueStateTracker:
         state.last_query_plan = plan
 
         # 1. Topic Frame Stack Navigation
-        if plan.intent in ["CREATE_TOPIC", "SWITCH_TOPIC"] or plan.topic_transition in ["NEW", "PUSH"]:
+        if plan.intent in ["CREATE_TOPIC", "SWITCH_TOPIC", "NEW_INDEPENDENT_QUERY"] or plan.topic_transition in ["NEW", "PUSH", "SWITCH"]:
             if state.active_topic_frame:
                 state.active_topic_frame.is_suspended = True
                 state.topic_stack.append(state.active_topic_frame)
             
-            # Create new active frame
+            # Create new active frame with isolated state
             new_frame = TopicFrame(
                 frame_id=f"frame_{int(time.time()*1000)}",
                 semantic_topic=(plan.capability_id or "general").replace("_info", "").replace("_finder", ""),
                 capability_id=plan.capability_id,
                 active_entities=list(plan.target_entities),
+                selected_entity=plan.target_entities[0] if plan.target_entities else None,
                 slots=dict(plan.slot_changes),
                 constraints=dict(plan.constraint_changes),
                 requested_attributes=list(plan.attribute_requests),
@@ -99,8 +105,7 @@ class DialogueStateTracker:
         if state.active_topic_frame:
             af = state.active_topic_frame
             state.active_entities = list(af.active_entities)
-            if af.selected_entity:
-                state.selected_entities = [af.selected_entity]
+            state.selected_entities = [af.selected_entity] if af.selected_entity else []
             state.active_slots = dict(af.slots)
             state.active_constraints = dict(af.constraints)
             state.requested_attributes = list(af.requested_attributes)

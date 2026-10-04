@@ -25,11 +25,18 @@ try:
 except Exception:
     pass
 
-from backend.core.conversation_state import (
-    ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
-)
-from backend.core.capability_registry import global_capability_registry, CapabilitySchema
-from backend.core.entity_knowledge import global_entity_registry
+try:
+    from backend.core.conversation_state import (
+        ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
+    )
+    from backend.core.capability_registry import global_capability_registry, CapabilitySchema
+    from backend.core.entity_knowledge import global_entity_registry
+except ImportError:
+    from core.conversation_state import (
+        ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
+    )
+    from core.capability_registry import global_capability_registry, CapabilitySchema
+    from core.entity_knowledge import global_entity_registry
 
 VERCEL_AI_GATEWAY_KEY = os.getenv("AI_GATEWAY_API_KEY") or os.getenv("VERCEL_AI_GATEWAY_KEY") or os.getenv("AI_GATEWAY_API_KEY_BACKUP")
 VERCEL_AI_GATEWAY_URL = os.getenv("VERCEL_AI_GATEWAY_URL", "https://ai-gateway.vercel.sh/v1")
@@ -258,7 +265,7 @@ async def resolve_user_utterance(
         return qp
 
     # 2.2 V7.2 Canonical Entity Knowledge Pass
-    resolved_k_entities = global_entity_registry.resolve_entity(q_clean)
+    resolved_k_entities, ent_status = global_entity_registry.resolve_entity_with_status(q_clean)
     canonical_entity_refs = []
     for k_ent in resolved_k_entities:
         ent_type_val = k_ent.entity_type.value if hasattr(k_ent.entity_type, 'value') else str(k_ent.entity_type)
@@ -266,18 +273,61 @@ async def resolve_user_utterance(
             entity_type=ent_type_val,
             entity_id=k_ent.entity_id,
             canonical_name=k_ent.canonical_name,
-            attributes={"subtype": k_ent.entity_subtype, "domains": k_ent.domains}
+            attributes={"subtype": k_ent.entity_subtype, "domains": k_ent.domains},
+            entity_binding_reason="explicit_current_query",
+            resolution_status=ent_status.value
         ))
 
-    # 2.5 Fast Deterministic Contextual Coreference / Continuation Pass
-    is_explicit_continuation = bool(re.search(r'\b(it|he|she|they|this|that|his|her|him|them)\b', q_clean, re.I))
-    is_elliptical_followup = bool(re.search(r'\b(what about|how about|and for|tell me more|any other)\b', q_clean, re.I))
-    has_distinct_new_topic = bool(re.search(r'\b(bus|buses|route|routes|stop|stops|velachery|tambaram|guindy|cutoff|cut-off|tnea|fee|fees|hostel|placement|placements|salary|admission|admissions|course|courses|syllabus|principal|hod|patents?)\b', q_clean, re.I))
+    # 2.3 Candidate Entity Discovery Path (Unknown Entity in Query)
+    # If the user asks about an unknown person or topic without verified canonical registry entry:
+    mention_match = re.search(r'\b(?:who\s+is|tell\s+me\s+about|details\s+of|profile\s+of)\s+([A-Z][a-zA-Z\.\s]{1,30})\b', q_clean, re.I)
+    if mention_match and not canonical_entity_refs:
+        raw_name = mention_match.group(1).strip().strip("?.!,")
+        if len(raw_name) >= 3 and raw_name.lower() not in {"this", "that", "there", "here", "the", "an", "a"}:
+            cand_id = f"cand_{re.sub(r'[^a-zA-Z0-9_]', '', raw_name.lower())}"
+            canonical_entity_refs.append(EntityRef(
+                entity_type="person",
+                entity_id=cand_id,
+                canonical_name=raw_name,
+                attributes={"status": "candidate"},
+                entity_binding_reason="corpus_discovery",
+                resolution_status="ENTITY_UNKNOWN"
+            ))
 
-    if state.active_topic_frame and (is_explicit_continuation or is_elliptical_followup) and not (has_distinct_new_topic and not is_explicit_continuation):
+    # 2.5 Generic Discourse State Transition Analysis
+    # Policy: previous entity != current entity by default.
+    # State is contextual background, NOT automatically an active constraint.
+    # Only bind prior entities when the current utterance exhibits semantic coreference or elliptical dependence.
+    is_pronoun_reference = bool(re.search(r'\b(he|she|his|her|him|it|its|they|them|their)\b', q_clean, re.I))
+    is_demonstrative = bool(re.search(r'\b(this|that|these|those)\s+(one|item|option|route|course|person|department|hostel)?\b', q_clean, re.I))
+    is_elliptical_followup = bool(re.search(r'^(?:what\s+about|how\s+about|and\s+for|tell\s+me\s+more|any\s+other)\b', q_clean, re.I))
+    is_attribute_fragment = bool(re.match(r'^(?:where|location|timings?|time|schedule|fees?|cost|price|qualification|qualifications|warden|office|room|contact|phone|email)\??$', q_clean, re.I))
+
+    is_continuation_turn = bool(
+        state.active_topic_frame and 
+        (is_pronoun_reference or is_demonstrative or is_elliptical_followup or is_attribute_fragment) and
+        not (canonical_entity_refs and not is_pronoun_reference)
+    )
+
+    if is_continuation_turn:
         af = state.active_topic_frame
         cap_id = af.capability_id
-        entities = canonical_entity_refs or list(af.active_entities)
+        binding_reason = "resolved_reference" if is_pronoun_reference else "active_topic_continuation"
+        
+        entities = []
+        for e in (canonical_entity_refs or list(af.active_entities)):
+            e_copy = EntityRef(
+                entity_type=e.entity_type,
+                entity_id=e.entity_id,
+                canonical_name=e.canonical_name,
+                attributes=dict(e.attributes),
+                source=e.source,
+                metadata=dict(e.metadata),
+                entity_binding_reason=binding_reason,
+                resolution_status=e.resolution_status
+            )
+            entities.append(e_copy)
+
         topic_name = af.semantic_topic.replace("_info", "").replace("_finder", "")
         
         slots = dict(af.slots)
@@ -313,15 +363,19 @@ async def resolve_user_utterance(
             attribute_requests=attr_requests,
             topic_transition="SAME",
             search_query=search_q if search_q else q_clean,
-            confidence=0.95
+            confidence=0.95,
+            entity_binding_reason=binding_reason
         )
         qp.canonical_cache_key = build_canonical_cache_key(qp)
         return qp
 
-    # 3. Fall back to LLM Dialogue State Tracker (Structured JSON Output)
-    llm_proposal = await resolve_dialogue_intent_llm(q_clean, state, http_client)
+    # 3. New Independent Query / Fresh Topic Determination
+    # If LLM dialogue intent interpreter is available and needed, call it:
+    llm_proposal = None
+    if http_client and (is_pronoun_reference or is_elliptical_followup):
+        llm_proposal = await resolve_dialogue_intent_llm(q_clean, state, http_client)
     
-    if llm_proposal and isinstance(llm_proposal, dict):
+    if llm_proposal and isinstance(llm_proposal, dict) and llm_proposal.get("intent") in ["UPDATE_TOPIC", "SELECT_POSITION"]:
         raw_entities = llm_proposal.get("target_entities", [])
         entities = canonical_entity_refs
         if not entities:
@@ -330,7 +384,8 @@ async def resolve_user_utterance(
                     entities.append(EntityRef(
                         entity_type=re_item.get("entity_type", "general"),
                         entity_id=re_item.get("entity_id"),
-                        canonical_name=re_item.get("canonical_name") or re_item.get("entity_id")
+                        canonical_name=re_item.get("canonical_name") or re_item.get("entity_id"),
+                        entity_binding_reason="resolved_reference"
                     ))
 
         qp = QueryPlan(
@@ -342,22 +397,52 @@ async def resolve_user_utterance(
             slot_changes=llm_proposal.get("slot_changes", {}),
             constraint_changes=llm_proposal.get("constraint_changes", {}),
             attribute_requests=llm_proposal.get("attribute_requests", []),
-            topic_transition=llm_proposal.get("topic_transition", "NEW"),
+            topic_transition=llm_proposal.get("topic_transition", "SAME"),
             search_query=llm_proposal.get("search_query") or q_clean,
-            confidence=float(llm_proposal.get("confidence", 0.9))
+            confidence=float(llm_proposal.get("confidence", 0.9)),
+            entity_binding_reason="resolved_reference"
         )
         qp.canonical_cache_key = build_canonical_cache_key(qp)
         return qp
 
-    # Default standalone query fallback with V7.2 Canonical Entities bound
+    # 4. Independent Query Capability & Transition Mapping
+    # Determine capability for current independent utterance
+    cap_id = "rag_evidence_engine"
+    op_name = "rag_search"
+
+    if re.search(r'\b(bus|buses|route|routes|stop|stops|transit|commute|pickup|boarding|transport|van|driver|ar\s*\d|r\s*\d|n\s*\d|570|515|555)\b', q_clean, re.I):
+        cap_id = "route_finder"
+        op_name = "find_stop" if re.search(r'\b(stop|passes\s+through|reach|from|at)\b', q_clean, re.I) else "find_route"
+    elif any(e.entity_type in ["person", "committee"] for e in canonical_entity_refs) or re.search(r'\b(who\s+is|principal|hod|professor|faculty|dean|officer|convener|warden)\b', q_clean, re.I):
+        cap_id = "governance_info"
+        op_name = "details"
+    elif re.search(r'\b(hostel|mess|dining|room|rooms|sharing|boarding|canteen)\b', q_clean, re.I):
+        cap_id = "hostel_info"
+        op_name = "details"
+    elif re.search(r'\b(admission|admissions|cutoff|tnea|fee|fees|scholarship|eligibility)\b', q_clean, re.I):
+        cap_id = "academic_info"
+        op_name = "details"
+
+    if state.active_topic_frame and state.active_topic_frame.capability_id != cap_id:
+        topic_intent = "SWITCH_TOPIC"
+        transition = "PUSH"
+    elif state.active_topic_frame is None:
+        topic_intent = "CREATE_TOPIC"
+        transition = "NEW"
+    else:
+        topic_intent = "NEW_INDEPENDENT_QUERY"
+        transition = "NEW"
+
     qp = QueryPlan(
         plan_id=f"qp_{int(time.time()*1000)}",
-        intent="CREATE_TOPIC",
-        operation="rag_search",
-        capability_id="rag_evidence_engine",
+        intent=topic_intent,
+        operation=op_name,
+        capability_id=cap_id,
         target_entities=canonical_entity_refs,
+        topic_transition=transition,
         search_query=q_clean,
-        confidence=0.85
+        confidence=0.95,
+        entity_binding_reason="explicit_current_query" if canonical_entity_refs else None
     )
     qp.canonical_cache_key = build_canonical_cache_key(qp)
     return qp

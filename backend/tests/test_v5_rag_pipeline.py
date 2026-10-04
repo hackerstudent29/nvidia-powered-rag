@@ -13,6 +13,7 @@ import os
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from query_expansion import get_deterministic_query_variants, normalize_query_representation, resolve_conversational_followup
 from server import classify_slot_entailment, process_lorin_query

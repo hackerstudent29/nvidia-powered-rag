@@ -9,9 +9,14 @@ import json
 import logging
 from typing import Dict, List, Optional, Tuple, Any
 
-from backend.core.conversation_state import ConversationState, QueryPlan, EntityRef
-from backend.core.capability_registry import global_capability_registry
-from backend.core.dialogue_state_tracker import global_dialogue_state_tracker
+try:
+    from backend.core.conversation_state import ConversationState, QueryPlan, EntityRef
+    from backend.core.capability_registry import global_capability_registry
+    from backend.core.dialogue_state_tracker import global_dialogue_state_tracker
+except ImportError:
+    from core.conversation_state import ConversationState, QueryPlan, EntityRef
+    from core.capability_registry import global_capability_registry
+    from core.dialogue_state_tracker import global_dialogue_state_tracker
 
 logger = logging.getLogger("lorin_ai.orchestrator")
 
@@ -101,13 +106,14 @@ class CapabilityOrchestrator:
                 chunk_text = f"Official Transport Schedule for Stop '{s_name}' (ID: {s_id}):\n"
                 bus_items = []
                 for b_idx, b in enumerate(buses, 1):
-                    chunk_text += f"- Position #{b_idx}: Route {b['route_id']} ({b['route_name']}) at {b['time']}\n"
+                    b_time = b.get("time_at_stop") or b.get("time") or "Scheduled"
+                    chunk_text += f"- Position #{b_idx}: Route {b['route_id']} ({b['route_name']}) at {b_time}\n"
                     bus_items.append({
                         "position": b_idx,
                         "entity_type": "route",
                         "entity_id": b["route_id"],
                         "canonical_name": f"Route {b['route_id']} ({b['route_name']})",
-                        "attributes": {"time": b["time"], "stop_name": s_name}
+                        "attributes": {"time": b_time, "stop_name": s_name}
                     })
 
                 # Buffer matching buses into ResultSet for positional follow-ups ("first one")

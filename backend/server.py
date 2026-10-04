@@ -31,6 +31,16 @@ import httpx
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+
+# Load environment variables early before other backend imports
+dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+if os.path.exists(backend_env_path):
+    load_dotenv(backend_env_path, override=True)
+load_dotenv()
+
 import websockets
 from fastapi import FastAPI, Request, HTTPException, Query, Depends, Header, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -170,14 +180,6 @@ except ImportError:
 
 
 
-# Load environment variables
-dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
-backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-if os.path.exists(backend_env_path):
-    load_dotenv(backend_env_path, override=True)
-load_dotenv()
 
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -1438,7 +1440,6 @@ ACRONYM_MAP = {
     r'\bsholinganalur\b|\bsholinganallur\b': 'Sholinganallur Route AR 4 Route AR 5 Route AR 8 Route AR 9',
     r'\bporur\b': 'Porur Route AR 10 R21 Route R 22',
     r'\bchrompet\b|\bchromepet\b': 'Chrompet Route AR 10 R21',
-    r'\b(usaha|ushaa|usha)\b': 'Ms. S. Usha Assistant Professor English Grievance Redressal Committee Convener Dr. Ushaa Eswaran',
     r'\b(?:who\s+is\s+)?(?:tran?sport\s+(?:officer|incharge|in-charge|convener|head|manager|in\s*charge|director|desk)|bus\s+(?:officer|incharge|in-charge|convener|head|manager|in\s*charge|coordinator))\b': 'Transport Convener Dr. K.P. Santhosh Nathan 9840886992 Assistant Transport Convener Mr. A. Abdul Gafoor 9940319629 msajce_transport.md',
     r'\b(?:who\s+is\s+)?(?:placement\s+(?:officer|incharge|in-charge|head|director|manager|lead))\b': 'Placement Head Mr. V. Vigneshwaran 7904117425 Training and Placement Cell Dr. S. Vijayakumar Mr. S.V. Vinodh',
     r'\b(?:who\s+is\s+)?(?:admission\s+(?:officer|incharge|in-charge|head|convener|director|coordinator|desk))\b': 'Head of Admission Dr. K.P. Santhosh Nathan 9840886992 Admission Officer Mr. A. Abdul Gafoor 9940319629 Other States Coordinator Dr. Vamsi Naga Mohan A 9043358674',
@@ -3578,7 +3579,7 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
                 "content": f"### Document: Entity Registry | Section: {cname}\nName: {cname}\nDescription: {desc}\nSource File: {sfile}",
                 "entity_injected": True
             }
-            scores[virtual_cid] = 10.0
+            scores[virtual_cid] = (1.0 / (60.0 + 1)) * 2.0
 
     if matched_ents and bm25_corpus:
         target_chunk_ids = set()
@@ -5325,7 +5326,7 @@ def get_query_focus_description(query: str, query_cat: str = "") -> Tuple[str, s
         )
     
     # 2. Hostel & Residential Accommodation
-    if any(k in q_low for k in ["hostel", "hostels", "room", "rooms", "ac", "non-ac", "sharing", "occupancy", "warden", "mess", "dining", "laundry", "residence"]):
+    if any(k in q_low for k in ["hostel", "hostels", "room", "rooms", "non-ac", "sharing", "occupancy", "warden", "mess", "dining", "laundry", "residence"]) or bool(re.search(r'\bac\b', q_low)):
         return (
             "Analyzing residential hostel capacity, room allocations & student welfare rules",
             "Scanning boys & girls hostel inventories, amenities & mess schedules",
@@ -5582,11 +5583,13 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 route_finder_instance=route_finder
             )
 
+            retrieval_query = user_query
             if v6_query_plan and v6_query_plan.search_query:
-                user_query = v6_query_plan.search_query
+                if v6_query_plan.topic_transition in ("CONTINUE", "MODIFY", "DRILL_DOWN") or is_contextual_query(user_query):
+                    retrieval_query = v6_query_plan.search_query
 
             # 1.2 Zero-Token Local Query Rewriting & Acronym Expansion
-            expanded_query = rewrite_query(user_query)
+            expanded_query = rewrite_query(retrieval_query)
 
             query_cat = categorize_user_query(user_query)
 
@@ -6387,7 +6390,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 dynamics_instruction = "Fresh topic: Open directly with a context-aware sentence."
 
             raw_user_message = (req.message or "").strip()
-            prompt_user_question = raw_user_message if (len(raw_user_message.split()) >= 6 and not is_contextual_query(raw_user_message)) else user_query
+            prompt_user_question = raw_user_message if not is_contextual_query(raw_user_message) else (v6_query_plan.search_query if v6_query_plan and v6_query_plan.search_query else raw_user_message)
 
             if query_class == "greeting":
                 messages.append({"role": "user", "content": prompt_user_question})
