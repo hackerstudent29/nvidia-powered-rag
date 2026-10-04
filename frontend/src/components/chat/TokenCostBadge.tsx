@@ -12,15 +12,18 @@ export default function TokenCostBadge({ metrics, isOpen, onClick }: TokenCostBa
     return null;
   }
 
+  const rawCost = typeof metrics?.total_cost_usd === "number" ? metrics.total_cost_usd : 0;
+  const rawLatency = typeof metrics?.latency_ms === "number" ? metrics.latency_ms : 0;
+
   const formattedCostUsd =
-    metrics.total_cost_usd < 0.0001
-      ? `${metrics.total_cost_usd.toFixed(6)} USD`
-      : `${metrics.total_cost_usd.toFixed(4)} USD`;
+    rawCost < 0.0001
+      ? `${rawCost.toFixed(6)} USD`
+      : `${rawCost.toFixed(4)} USD`;
 
   const formattedLatency =
-    metrics.latency_ms >= 1000
-      ? `${(metrics.latency_ms / 1000).toFixed(1)}s`
-      : `${Math.round(metrics.latency_ms)}ms`;
+    rawLatency >= 1000
+      ? `${(rawLatency / 1000).toFixed(1)}s`
+      : `${Math.round(rawLatency)}ms`;
 
   const cleanModelName = metrics.model_name
     ? metrics.model_name
@@ -109,10 +112,11 @@ interface TokenCostPanelProps {
 }
 
 export function TokenCostPanel({ metrics }: TokenCostPanelProps) {
+  const rawCost = typeof metrics?.total_cost_usd === "number" ? metrics.total_cost_usd : 0;
   const formattedCostUsd =
-    metrics.total_cost_usd < 0.0001
-      ? `${metrics.total_cost_usd.toFixed(6)} USD`
-      : `${metrics.total_cost_usd.toFixed(4)} USD`;
+    rawCost < 0.0001
+      ? `${rawCost.toFixed(6)} USD`
+      : `${rawCost.toFixed(4)} USD`;
 
   const cleanModelName = metrics.model_name
     ? metrics.model_name

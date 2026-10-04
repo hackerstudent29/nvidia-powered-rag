@@ -238,17 +238,19 @@ function useElapsedTimer(active: boolean, freeze: boolean, initialSeconds?: numb
   }, [active, freeze]);
 
   if (!active) {
-    if (typeof initialSeconds === "number" && initialSeconds > 0) {
+    if (typeof initialSeconds === "number" && !isNaN(initialSeconds) && initialSeconds > 0) {
       if (initialSeconds < 60) return `${initialSeconds.toFixed(1)}s`;
       return `${Math.floor(initialSeconds / 60)}m ${(initialSeconds % 60).toFixed(1)}s`;
     }
-    const finalSecs = (frozenRef.current !== null ? frozenRef.current : lastCapturedRef.current) / 10;
+    const rawFinal = (frozenRef.current !== null ? frozenRef.current : lastCapturedRef.current) / 10;
+    const finalSecs = (typeof rawFinal === "number" && !isNaN(rawFinal)) ? rawFinal : 0;
     if (finalSecs < 60) return `${finalSecs.toFixed(1)}s`;
     return `${Math.floor(finalSecs / 60)}m ${(finalSecs % 60).toFixed(1)}s`;
   }
 
   const tenthsToUse = (freeze && frozenRef.current !== null) ? frozenRef.current : elapsedTenths;
-  const seconds = tenthsToUse / 10;
+  const rawSec = tenthsToUse / 10;
+  const seconds = (typeof rawSec === "number" && !isNaN(rawSec)) ? rawSec : 0;
   if (seconds < 60) return `${seconds.toFixed(1)}s`;
   return `${Math.floor(seconds / 60)}m ${(seconds % 60).toFixed(1)}s`;
 }

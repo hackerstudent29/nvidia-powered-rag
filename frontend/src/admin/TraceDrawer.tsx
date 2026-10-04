@@ -169,12 +169,12 @@ export const TraceDrawer: React.FC<TraceDrawerProps> = ({
                               {totalTokens.toLocaleString()} tok
                             </span>
                           )}
-                          {totalCostUsd > 0 && (
+                          {typeof totalCostUsd === 'number' && totalCostUsd > 0 && (
                             <span className="text-[#10b981] font-bold">
                               ${totalCostUsd.toFixed(4)}
                             </span>
                           )}
-                          {asstMsg?.latency_ms && (
+                          {typeof asstMsg?.latency_ms === 'number' && (
                             <span className={isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}>
                               {(asstMsg.latency_ms / 1000).toFixed(1)}s
                             </span>
@@ -304,7 +304,7 @@ export const TraceDrawer: React.FC<TraceDrawerProps> = ({
                                 </div>
                                 <div>
                                   <div className={isDark ? 'text-[#b1ada1]' : 'text-[#78716C]'}>Cost USD</div>
-                                  <div className="text-[#10b981] font-bold text-xs">${totalCostUsd.toFixed(5)}</div>
+                                  <div className="text-[#10b981] font-bold text-xs">${(typeof totalCostUsd === 'number' ? totalCostUsd : 0).toFixed(5)}</div>
                                 </div>
                               </div>
 
