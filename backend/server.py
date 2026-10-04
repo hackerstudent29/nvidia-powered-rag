@@ -4489,7 +4489,11 @@ def is_invalid_cached_response(text: str) -> bool:
         "i apologize",
         "upstream ai model",
         "temporary outage",
-        "please try your question again in a few seconds"
+        "please try your question again in a few seconds",
+        "do not contain information about",
+        "couldn't verify",
+        "no record found for",
+        "i'm sorry, but the provided verified msajce campus records do not contain"
     ])
 
 def check_exact_cache(query: str) -> Optional[Dict[str, Any]]:
@@ -6633,8 +6637,8 @@ async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
             "suggestions": []
         })
 
-    # Check cache
-    cached = check_exact_cache(user_query)
+    # Check cache (bypassed if regeneration is explicitly requested)
+    cached = None if req.is_regeneration else check_exact_cache(user_query)
     if cached:
         cached_metrics = compute_token_metrics(
             user_query=user_query,
