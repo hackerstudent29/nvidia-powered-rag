@@ -246,6 +246,92 @@ class EntityRegistry:
         self.merged_entities: Dict[str, str] = {}
 
         self._load_curated_seeds()
+        self.load_from_postgres()
+
+    def load_from_postgres(self) -> bool:
+        """Loads all canonical entities, aliases, and entity_chunk_map from Neon PostgreSQL into memory."""
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            return False
+
+        try:
+            conn = psycopg2.connect(db_url, sslmode="require", connect_timeout=5)
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT entity_id, canonical_name, display_name, entity_type, entity_subtype,
+                           domains, description, source_file, importance_score, identity_confidence, status
+                    FROM entities;
+                """)
+                rows = cur.fetchall()
+                for r in rows:
+                    eid, cname, dname, etype_str, esub, doms, desc, sfile, imp, conf, stat_str = r
+                    try:
+                        etype = EntityType(etype_str)
+                    except Exception:
+                        etype = EntityType.CONCEPT
+                    try:
+                        stat = EntityStatus(stat_str)
+                    except Exception:
+                        stat = EntityStatus.VERIFIED
+
+                    if isinstance(doms, str):
+                        try:
+                            doms = json.loads(doms)
+                        except Exception:
+                            doms = []
+                    elif not doms:
+                        doms = []
+
+                    ent = CanonicalEntity(
+                        entity_id=eid,
+                        canonical_name=cname,
+                        display_name=dname,
+                        entity_type=etype,
+                        entity_subtype=esub or "",
+                        domains=doms,
+                        aliases=[cname],
+                        description=desc or "",
+                        source_file=sfile or "",
+                        importance_score=imp or 0.8,
+                        identity_confidence=conf or 0.95,
+                        status=stat
+                    )
+                    self.register_entity(ent)
+
+                cur.execute("SELECT entity_id, surface_form, normalized_form FROM entity_aliases;")
+                alias_rows = cur.fetchall()
+                for eid, surf, norm in alias_rows:
+                    if eid in self.entities:
+                        ent = self.entities[eid]
+                        if surf not in ent.aliases:
+                            ent.aliases.append(surf)
+                        norm_clean = surf.strip().lower()
+                        if norm_clean not in self.alias_to_entity_ids:
+                            self.alias_to_entity_ids[norm_clean] = []
+                        if eid not in self.alias_to_entity_ids[norm_clean]:
+                            self.alias_to_entity_ids[norm_clean].append(eid)
+                        if norm not in self.alias_to_entity_ids:
+                            self.alias_to_entity_ids[norm] = []
+                        if eid not in self.alias_to_entity_ids[norm]:
+                            self.alias_to_entity_ids[norm].append(eid)
+
+                cur.execute("SELECT entity_id, chunk_id, document_id, mention_count, confidence, section_path FROM entity_chunk_map;")
+                map_rows = cur.fetchall()
+                for eid, cid, doc_id, mcount, conf, sec_path in map_rows:
+                    self.entity_chunk_map[(eid, cid)] = {
+                        "document_id": doc_id,
+                        "mention_count": mcount,
+                        "confidence": conf,
+                        "section_path": sec_path
+                    }
+
+            conn.close()
+            logger.info(f"[Entity Knowledge] Successfully loaded {len(self.entities)} entities and {len(self.entity_chunk_map)} chunk mappings from Neon PostgreSQL!")
+            return True
+        except Exception as e:
+            logger.warning(f"[Entity Knowledge] Load from Postgres Warning: {e}")
+            return False
+
 
     def _load_curated_seeds(self):
         """Manually curated high-authority seed entities across MSAJCE domains."""

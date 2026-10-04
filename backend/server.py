@@ -839,55 +839,69 @@ def load_entities_index():
             print(f"[WARN] Knowledge Entities Index load error: {e}")
 
 def search_knowledge_entities(user_query: str) -> List[Dict[str, Any]]:
-    """Performs precision phrase & word matching against the Knowledge Entities Index."""
-    global entities_index
-    if entities_index is None:
-        load_entities_index()
-    if not entities_index or not user_query:
+    """Performs multi-signal canonical entity matching against global_entity_registry & PostgreSQL."""
+    if not user_query or not user_query.strip():
         return []
 
-    q_lower = user_query.lower().strip()
-    q_words = set(re.findall(r'\b[a-z0-9\_]+\b', q_lower))
     matched = []
     seen_keys = set()
-    # Prioritize creator/developer queries if ram, rama, ramzenderum, ramanathan, or developer/creator is mentioned
-    if any(w in q_words for w in ["ram", "rama", "ramzenderum", "ramzendrum", "ramanathan"]) or any(w in q_lower for w in ["who created", "who made", "who built", "developer of", "creator of", "who developed"]):
-        for ent in entities_index:
-            if ent.get("entity_key") == "developer_ramanathan":
-                matched.append(ent)
-                seen_keys.add("developer_ramanathan")
-                break
 
-    for ent in entities_index:
-        key = ent.get("entity_key")
-        if key in seen_keys:
-            continue
-        aliases = ent.get("aliases", [])
-        for alias in aliases:
-            alias_clean = alias.lower().strip()
-            if not alias_clean:
-                continue
-            
-            # Multi-word phrase match (e.g. "ar5 bus driver", "tnea code", "boys hostel")
-            if len(alias_clean.split()) > 1:
-                if alias_clean in q_lower:
-                    matched.append(ent)
-                    seen_keys.add(key)
-                    break
-            else:
-                # Single-word match must be exact token in query (e.g. "ar5", "r21", "srinivasan", "ramanathan", "ram", "rama")
-                GENERIC_ENTITY_STOPWORDS = {
-                    "year", "years", "first", "second", "third", "final", "direct", "lateral",
-                    "cell", "club", "unit", "date", "name", "hall", "room", "park", "road",
-                    "gate", "stop", "code", "time", "area", "high", "low", "bus", "car",
-                    "fee", "fees", "lab", "hod", "new", "old", "team", "meet"
-                }
-                if alias_clean in q_words and len(alias_clean) >= 3 and alias_clean not in GENERIC_ENTITY_STOPWORDS:
-                    matched.append(ent)
-                    seen_keys.add(key)
-                    break
+    # 1. Primary: Global Entity Knowledge Registry (V7.2 Corpus-Wide Entity Intelligence Layer)
+    if 'global_entity_registry' in globals() and global_entity_registry:
+        try:
+            resolved_ents = global_entity_registry.resolve_entity(user_query)
+            for ent in resolved_ents:
+                if ent.entity_id not in seen_keys:
+                    seen_keys.add(ent.entity_id)
+                    matched.append({
+                        "entity_key": ent.entity_id,
+                        "entity_name": ent.display_name,
+                        "canonical_name": ent.canonical_name,
+                        "entity_type": ent.entity_type.value if hasattr(ent.entity_type, 'value') else str(ent.entity_type),
+                        "description": ent.description,
+                        "aliases": ent.aliases,
+                        "domains": ent.domains,
+                        "source_file": ent.source_file
+                    })
+        except Exception as e:
+            print(f"[WARN] [search_knowledge_entities] Registry resolution error: {e}")
 
-    return matched[:4]
+    # 2. Fallback: Legacy JSON index matching if registry gave nothing
+    if not matched:
+        global entities_index
+        if entities_index is None:
+            load_entities_index()
+        if entities_index:
+            q_lower = user_query.lower().strip()
+            q_words = set(re.findall(r'\b[a-z0-9\_]+\b', q_lower))
+            for ent in entities_index:
+                key = ent.get("entity_key")
+                if key in seen_keys:
+                    continue
+                aliases = ent.get("aliases", [])
+                for alias in aliases:
+                    alias_clean = alias.lower().strip()
+                    if not alias_clean:
+                        continue
+                    if len(alias_clean.split()) > 1:
+                        if alias_clean in q_lower:
+                            matched.append(ent)
+                            seen_keys.add(key)
+                            break
+                    else:
+                        GENERIC_ENTITY_STOPWORDS = {
+                            "year", "years", "first", "second", "third", "final", "direct", "lateral",
+                            "cell", "club", "unit", "date", "name", "hall", "room", "park", "road",
+                            "gate", "stop", "code", "time", "area", "high", "low", "bus", "car",
+                            "fee", "fees", "lab", "hod", "new", "old", "team", "meet"
+                        }
+                        if alias_clean in q_words and len(alias_clean) >= 3 and alias_clean not in GENERIC_ENTITY_STOPWORDS:
+                            matched.append(ent)
+                            seen_keys.add(key)
+                            break
+
+    return matched[:6]
+
 
 def load_resource_catalog():
     global verified_resource_catalog, catalog_by_file
@@ -3531,30 +3545,38 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
     # 0. Pre-RRF Entity-Driven Candidate Injection
     matched_ents = search_knowledge_entities(query) if 'search_knowledge_entities' in globals() else []
     if matched_ents and bm25_corpus:
+        target_chunk_ids = set()
         for ent in matched_ents:
-            e_file = (ent.get("source_file") or "").lower()
-            ename = (ent.get("entity_name") or "").lower()
-            ekey = (ent.get("entity_key") or "").lower()
-            if not e_file:
-                continue
-            for idx, doc in enumerate(bm25_corpus):
-                d_file = (doc.get("source_file") or "").lower()
-                doc_text = (doc.get("text") or doc.get("content") or "").lower()
-                doc_title = (doc.get("topic_title") or doc.get("title") or "").lower()
-                if d_file == e_file and ((ename and (ename in doc_text or ename in doc_title)) or (ekey and ekey in doc_text)):
-                    chunk_id = str(doc.get("chunk_id", idx))
-                    if chunk_id not in chunk_map:
-                        chunk_map[chunk_id] = {
-                            "chunk_id": chunk_id,
-                            "title": doc.get("topic_title") or doc.get("title") or "MSAJCE Official Record",
-                            "source_file": doc.get("source_file", ""),
-                            "category": doc.get("category", "general"),
-                            "page_url": doc.get("page_url", "https://msajce.edu.in"),
-                            "content": doc.get("text") or doc.get("content", ""),
-                            "entity_injected": True
-                        }
-                    # Assign base candidate RRF rank equivalent
-                    scores[chunk_id] = scores.get(chunk_id, 0.0) + (1.0 / (60.0 + 10))
+            ekey = ent.get("entity_key") or ""
+            if 'global_entity_registry' in globals() and global_entity_registry:
+                for (eid, cid), meta in global_entity_registry.entity_chunk_map.items():
+                    if eid == ekey:
+                        target_chunk_ids.add(cid)
+            aliases = ent.get("aliases", []) or [ent.get("canonical_name", ""), ent.get("entity_name", "")]
+            for alias in aliases:
+                if len(alias) >= 3 and alias.lower() not in {"this", "that", "with", "from", "have", "more", "will", "been", "were", "page", "section"}:
+                    a_lower = alias.lower()
+                    for idx, doc in enumerate(bm25_corpus):
+                        doc_text = (doc.get("text") or doc.get("content") or "").lower()
+                        doc_title = (doc.get("topic_title") or doc.get("title") or "").lower()
+                        if a_lower in doc_text or a_lower in doc_title:
+                            target_chunk_ids.add(str(doc.get("chunk_id", idx)))
+
+        for idx, doc in enumerate(bm25_corpus):
+            cid = str(doc.get("chunk_id", idx))
+            if cid in target_chunk_ids:
+                if cid not in chunk_map:
+                    chunk_map[cid] = {
+                        "chunk_id": cid,
+                        "title": doc.get("topic_title") or doc.get("title") or "MSAJCE Official Record",
+                        "source_file": doc.get("source_file", ""),
+                        "category": doc.get("category", "general"),
+                        "page_url": doc.get("page_url", "https://msajce.edu.in"),
+                        "content": doc.get("text") or doc.get("content", ""),
+                        "entity_injected": True
+                    }
+                scores[cid] = scores.get(cid, 0.0) + (1.0 / (60.0 + 1)) * 2.0
+
 
     # 1. Qdrant Dense Search
     if qdrant_client and query_vector:
