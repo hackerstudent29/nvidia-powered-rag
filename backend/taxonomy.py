@@ -449,12 +449,15 @@ def get_allowed_category_keys() -> Set[str]:
     return {k for k, v in CAMPUS_TAXONOMY.items() if v.is_allowed}
 
 
-def get_jev_category_choices() -> Dict[str, str]:
+def get_taxonomy_category_choices() -> Dict[str, str]:
     """
-    Dynamically generates the choice schema for typesafe-ai/jev.
+    Dynamically generates the choice schema for System One classification.
     Enables automatic schema updating whenever a new category is registered.
     """
     return {k: v.jev_criteria for k, v in CAMPUS_TAXONOMY.items()}
+
+
+get_jev_category_choices = get_taxonomy_category_choices
 
 
 def is_conversational_greeting(query: str) -> bool:

@@ -1,10 +1,10 @@
 """
 Lorin AI — System Guardrails & Policy Interceptor
 ===================================================
-Enforces NeMo Guardrails policies and Vercel typesafe-ai/jev classification:
+Enforces NeMo Guardrails policies and Universal System One classification:
 1. Fast-path 0ms Jailbreak & Prompt Injection Interception
 2. Fast-path 0ms Whitelist for Greetings & Conversational Inquiries
-3. Unified Taxonomy Evaluation (System One Decision via typesafe-ai/jev)
+3. Unified Taxonomy Evaluation (Universal System One Decision Engine)
 4. Domain Boundary Verification with Word-Boundary Identifier Fallbacks
 """
 
@@ -39,12 +39,12 @@ except ImportError:
         CAMPUS_TAXONOMY = {}
 
 try:
-    from universal_evaluator import universal_evaluator as jev_evaluator, UniversalEvaluationResult as JevEvaluationResult
+    from universal_evaluator import universal_evaluator, UniversalEvaluationResult
 except ImportError:
     try:
-        from backend.universal_evaluator import universal_evaluator as jev_evaluator, UniversalEvaluationResult as JevEvaluationResult
+        from backend.universal_evaluator import universal_evaluator, UniversalEvaluationResult
     except ImportError:
-        jev_evaluator = None
+        universal_evaluator = None
 
 # Standard official refusal message
 CAMPUS_REFUSAL_MESSAGE = (
@@ -178,26 +178,26 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
             if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum", "course", "courses", "department", "degree"]):
                 return False, CAMPUS_REFUSAL_MESSAGE
 
-    # 5. Advanced System One Evaluation via Vercel AI Gateway (typesafe-ai/jev)
-    if jev_evaluator and jev_evaluator.is_enabled:
+    # 5. Advanced System One Evaluation (Universal Evaluator Engine)
+    if universal_evaluator and universal_evaluator.is_enabled:
         try:
-            jev_res = jev_evaluator.evaluate_query_sync(user_query, timeout=3.5)
-            if not jev_res.is_safe:
-                return False, jev_res.refusal_reason or CAMPUS_REFUSAL_MESSAGE
+            eval_res = universal_evaluator.evaluate_query_sync(user_query, timeout=3.5)
+            if not eval_res.is_safe:
+                return False, eval_res.refusal_reason or CAMPUS_REFUSAL_MESSAGE
 
             taxonomy = get_all_categories()
-            matched_meta = taxonomy.get(jev_res.category)
+            matched_meta = taxonomy.get(eval_res.category)
 
             # If the category is explicitly allowed by the taxonomy, grant immediate access
             if matched_meta and matched_meta.is_allowed:
                 return True, None
 
-            # Only refuse if JEV is 85%+ confident that the query is an active off-topic breach (e.g. math homework/crypto)
-            if jev_res.category == "off_topic" and jev_res.confidence >= 0.85 and not jev_res.is_campus_domain:
+            # Only refuse if Evaluator is 85%+ confident that the query is an active off-topic breach (e.g. math homework/crypto)
+            if eval_res.category == "off_topic" and eval_res.confidence >= 0.85 and not eval_res.is_campus_domain:
                 if not is_campus_domain_term_present(q_lower):
                     refusal = (
                         (matched_meta.refusal_message if matched_meta else None)
-                        or jev_res.refusal_reason
+                        or eval_res.refusal_reason
                         or CAMPUS_REFUSAL_MESSAGE
                     )
                     return False, refusal

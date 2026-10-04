@@ -17,7 +17,7 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-os.environ["ENABLE_JEV_EVALUATOR"] = "false"
+os.environ["ENABLE_UNIVERSAL_EVALUATOR"] = "false"
 
 import asyncio
 import time
