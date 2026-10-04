@@ -4663,21 +4663,18 @@ class ThreadSafeMemoryCache:
 TIER0_RAM_CACHE = ThreadSafeMemoryCache(capacity=1000)
 
 def is_invalid_cached_response(text: str) -> bool:
-    if not text or len(text.strip()) < 10:
+    if not text or len(text.strip()) < 15:
         return True
     t_clean = text.strip()
-    if t_clean.startswith("### "):
+    if t_clean.startswith("### Verified Record: Document:") or t_clean.startswith("Document: "):
         return True
     t_low = text.lower()
     return any(err in t_low for err in [
         "momentarily unavailable",
-        "i apologize",
+        "i apologize, but all upstream ai model gateways",
         "upstream ai model",
         "temporary outage",
         "please try your question again in a few seconds",
-        "do not contain information about",
-        "couldn't verify",
-        "no record found for",
         "i'm sorry, but the provided verified msajce campus records do not contain"
     ])
 
@@ -5062,6 +5059,9 @@ async def stream_cached_or_prebuilt(
     cache_type: str = "prebuilt",
     user_id: Optional[str] = None
 ) -> AsyncGenerator[str, None]:
+    if not response_text or not response_text.strip():
+        response_text = "I am Lorin AI, the official campus assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). How can I help you today?"
+
     label = "instant campus guide" if cache_type == "prebuilt" else "verified precision cache"
 
     # Topic-specific reasoning steps (<10ms)
