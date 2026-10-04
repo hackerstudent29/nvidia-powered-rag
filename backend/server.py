@@ -146,6 +146,7 @@ try:
         UniversalInteractionModel, analyze_universal_interaction, DiscourseAct, InteractionMode, DetailPreference, UnknownPolicy
     )
     from backend.core.answer_planner import AnswerPlan, build_answer_plan, global_response_validator
+    from backend.core.entity_knowledge import global_entity_registry, EntityType, EntitySubtype
 except ImportError:
     from core.security import global_rate_limiter, sanitize_user_input, mask_sensitive_data
     from core.observability import trace_id_ctx, session_id_ctx, log_pipeline_telemetry, telemetry_logger
@@ -1094,8 +1095,12 @@ def init_rag_resources():
     # 4. Load Verified Resource Catalog
     load_resource_catalog()
 
-    # 5. Load Knowledge Entities Index
+    # 5. Load Knowledge Entities Index & Sync PostgreSQL Entity Knowledge Layer
     load_entities_index()
+    try:
+        global_entity_registry.sync_to_postgres()
+    except Exception as esync_err:
+        print(f"[WARN] Entity Knowledge Layer DB Sync error: {esync_err}")
 
     # 6. Load Transport RouteFinder Engine
     load_route_finder()
