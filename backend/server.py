@@ -253,6 +253,14 @@ MODELS_CATALOG = [
         "supports_reasoning": True
     },
     {
+        "id": "convaiinnovations/laya-free",
+        "name": "Laya Free (ConvAI)",
+        "provider": "OpenRouter / ConvAI (Free Tier)",
+        "description": "High-velocity zero-cost free tier reasoning model",
+        "is_default": False,
+        "supports_reasoning": True
+    },
+    {
         "id": "inclusionai/ling-3.0-flash-sante-free",
         "name": "Ling 3.0 Flash (100% Free)",
         "provider": "Vercel AI Gateway (Free Tier)",
@@ -3744,7 +3752,7 @@ async def analyze_conversational_intent_ai(user_query: str) -> Dict[str, Any]:
             )
             headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Router"}
             payload = {
-                "model": "nvidia/nemotron-3-super-120b-a12b:free",
+                "model": "convaiinnovations/laya-free",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.0,
                 "max_tokens": 80
@@ -3957,12 +3965,9 @@ async def decompose_multi_hop_query_llm(query: str) -> List[str]:
         if client:
             # Step 3 Model Sequence: Primary (OpenRouter Free 120B MoE) -> Secondary (Vercel) -> Tertiary (NVIDIA NIM)
             step3_models = [
-                # Primary Worker: OpenRouter Free Tier (100% Free, 120B Parameters, 667ms)
+                ("convaiinnovations/laya-free", f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Campus Assistant"}),
                 ("nvidia/nemotron-3-super-120b-a12b:free", f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Campus Assistant"}),
-                # Secondary Failover: Vercel AI Gateway (300ms, High Throughput)
                 ("google/gemini-2.5-flash-lite", f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}),
-                # Tertiary Failover: NVIDIA NIM Infrastructure (Direct NIM)
-                ("nvidia/nemotron-3-super-120b-a12b", f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions", {"Authorization": f"Bearer {NVIDIA_API_KEY}", "Content-Type": "application/json"}),
             ]
 
             for m_idx, (m_name, url, hdrs) in enumerate(step3_models):
@@ -5585,7 +5590,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         VALUES (%s, %s, 'user', %s, %s);
                                     """, (user_msg_id, session_id, user_query, query_cat))
                                 conn.commit()
-                                append_cached_session_message(session_id, "user", raw_user_message)
+                                if 'append_cached_session_message' in globals():
+                                    try:
+                                        append_cached_session_message(session_id, "user", user_query)
+                                    except Exception:
+                                        pass
                 except Exception as e:
                     print(f"[WARN] Async user message save error: {e}")
 
@@ -6237,8 +6246,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             if matched_entities:
                 entity_lines = []
                 for ent in matched_entities:
-                    ctx = ent.get('surrounding_context') or ent['value']
-                    entity_lines.append(f"[Verified Entity: {ent['entity_name']}]:\n{ent['value']}\nContext: {ctx[:350]}")
+                    ent_name = ent.get('entity_name') or ent.get('canonical_name') or 'Verified Entity'
+                    val = ent.get('description') or ent.get('canonical_name') or ent_name
+                    ctx = ent.get('surrounding_context') or val
+                    entity_lines.append(f"[Verified Entity: {ent_name}]:\n{val}\nContext: {ctx[:350]}")
+
                 context_blocks.append("=== VERIFIED KNOWLEDGE BASE ENTITIES ===\n" + "\n\n".join(entity_lines) + "\n")
 
             seen_text = set()
@@ -6719,7 +6731,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                         json.dumps(reasoning_steps) if reasoning_steps else '[]'
                                     ))
                                 conn.commit()
-                                append_cached_session_message(session_id, "assistant", structured_answer)
+                                if 'append_cached_session_message' in globals():
+                                    try:
+                                        append_cached_session_message(session_id, "assistant", structured_answer)
+                                    except Exception:
+                                        pass
                                 try:
                                     commit_durable_conversation_state(v6_state)
                                 except Exception as st_err:

@@ -27,7 +27,7 @@ else:
 VERCEL_AI_GATEWAY_URL = os.getenv("VERCEL_AI_GATEWAY_URL", "https://ai-gateway.vercel.sh/v1")
 AI_GATEWAY_API_KEY = os.getenv("AI_GATEWAY_API_KEY")
 AI_GATEWAY_API_KEY_BACKUP = os.getenv("AI_GATEWAY_API_KEY_BACKUP")
-JEV_MODEL_ID = "typesafe-ai/jev"
+JEV_MODEL_ID = os.getenv("JEV_MODEL_ID", "convaiinnovations/laya-free")
 
 try:
     from taxonomy import get_jev_category_choices, is_conversational_greeting
