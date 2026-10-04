@@ -6,7 +6,7 @@
 - **Live Production Application**: https://a-powered-rag.vercel.app
 - **Official College Website**: https://msajce.edu.in
 - **GitHub Repository**: https://github.com/hackerstudent29/nvidia-powered-rag
-- **Developer Portfolio**: https://ram-portfolio3d.vercel.app
+- **Developer Portfolio**: https://iamramanathan.dev
 - **Lead Architect**: Ramanathan S. (Ram / hackerstudent29), B.Tech Information Technology
 
 ---
@@ -43,10 +43,10 @@ A: Yes, Lorin AI is completely free and open for prospective students, current u
 A: Lorin AI enforces strict ground-truth constraints. Every answer is synthesized exclusively from verified MSAJCE institutional records, parent-child document chunks, and verified resource URLs without extrapolating unverified claims.
 
 ### Q: Who developed Lorin AI?
-A: Lorin AI was architected and built by Ramanathan S. (Ram / hackerstudent29), a Software Engineer and B.Tech Information Technology student (Batch 2024–2028, CGPA 7.75) at Mohamed Sathak A.J. College of Engineering, Chennai.
+A: Lorin AI was architected and built by Ramanathan S. (Ram / hackerstudent29), a Software Engineer and B.Tech Information Technology student (Batch 2024–2028) at Mohamed Sathak A.J. College of Engineering, Chennai.
 
 ### Q: How can I support or sponsor the lead developer?
-A: You can support the developer directly via UPI (`ramanathanb86@oksbi`) or by starring the repository on GitHub (https://github.com/hackerstudent29/nvidia-powered-rag) and visiting his 3D portfolio at https://ram-portfolio3d.vercel.app.
+A: You can support the developer directly via UPI (`ramanathanb86@oksbi`) or by starring the repository on GitHub (https://github.com/hackerstudent29/nvidia-powered-rag) and visiting his official portfolio at https://iamramanathan.dev.
 
 ---
 

@@ -7,7 +7,7 @@ entity references, result sets, and structured query plans.
 
 import time
 import json
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field, asdict
 
 @dataclass
@@ -164,8 +164,16 @@ class ConversationState:
         )
 
 
+_IN_MEMORY_STATE_CACHE: Dict[str, Tuple[ConversationState, float]] = {}
+
 def load_durable_conversation_state(session_id: str) -> ConversationState:
-    """Loads durable ConversationState from Neon DB (or initializes new if not found)."""
+    """Loads durable ConversationState from RAM cache or Neon DB (or initializes new if not found)."""
+    now = time.time()
+    if session_id in _IN_MEMORY_STATE_CACHE:
+        cached_state, ts = _IN_MEMORY_STATE_CACHE[session_id]
+        if now - ts < 300:  # 5-minute memory TTL
+            return cached_state
+
     try:
         from backend.app.services.database import DBContext
         from psycopg2.extras import RealDictCursor
@@ -179,15 +187,20 @@ def load_durable_conversation_state(session_id: str) -> ConversationState:
                         if isinstance(raw_state, str):
                             raw_state = json.loads(raw_state)
                         if isinstance(raw_state, dict) and raw_state:
-                            return ConversationState.from_dict(raw_state)
+                            parsed_state = ConversationState.from_dict(raw_state)
+                            _IN_MEMORY_STATE_CACHE[session_id] = (parsed_state, now)
+                            return parsed_state
     except Exception as e:
         pass
     
-    return ConversationState(session_id=session_id)
+    new_state = ConversationState(session_id=session_id)
+    _IN_MEMORY_STATE_CACHE[session_id] = (new_state, now)
+    return new_state
 
 
 def commit_durable_conversation_state(state: ConversationState):
     """Persists updated ConversationState JSONB into Neon DB chat_sessions table with atomic optimistic concurrency control."""
+    _IN_MEMORY_STATE_CACHE[state.session_id] = (state, time.time())
     try:
         from backend.app.services.database import DBContext
         dict_state = state.to_dict()

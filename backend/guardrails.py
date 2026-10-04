@@ -178,6 +178,10 @@ def check_guardrails(user_query: str) -> Tuple[bool, Optional[str]]:
             if not any(w in q_lower for w in ["msajce", "mohamed sathak", "sathak", "tnea", "syllabus", "curriculum", "course", "courses", "department", "degree"]):
                 return False, CAMPUS_REFUSAL_MESSAGE
 
+    # 4.5 Fast-path Campus Domain Whitelist (0ms)
+    if is_campus_domain_term_present(q_lower):
+        return True, None
+
     # 5. Advanced System One Evaluation (Universal Evaluator Engine)
     if universal_evaluator and universal_evaluator.is_enabled:
         try:

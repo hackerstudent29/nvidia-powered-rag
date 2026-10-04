@@ -89,18 +89,17 @@ def extract_all_entities():
         "entity_name": "Ramanathan S. (Creator / Developer of Lorin AI)",
         "entity_type": "DEVELOPER",
         "aliases": ["ram", "rama", "ramanathan", "ramzenderum", "ramzendrum", "developer", "creator", "creator of bot", "who made this bot", "who created lorin", "hackerstudent29"],
-        "value": "Ramanathan S. is a Software Engineer, B.Tech Information Technology (IT) student (Batch 2024-2028, CGPA 7.75) at Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA), Chennai. He is the sole architect and lead developer of the Lorin AI Campus Chatbot. Personal Portfolio: https://ram-portfolio3d.vercel.app | GitHub: https://github.com/hackerstudent29",
+        "value": "Ramanathan S. is a Software Engineer, B.Tech Information Technology (IT) student (Batch 2024-2028) at Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA), Chennai. He is the sole architect and lead developer of the Lorin AI Campus Chatbot. Personal Portfolio: https://iamramanathan.dev | GitHub: https://github.com/hackerstudent29",
         "source_file": "msajce_developer_ramanathan.md",
-        "source_url": "https://ram-portfolio3d.vercel.app",
+        "source_url": "https://iamramanathan.dev",
         "details": {
             "name": "Ramanathan S.",
             "role": "Creator & Lead Backend/AI Engineer of Lorin AI Bot",
             "department": "B.Tech Information Technology (IT)",
             "batch": "2024-2028",
-            "cgpa": "7.75",
             "college": "Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA)",
             "skills": ["Java", "Spring Boot", "PostgreSQL", "React", "TypeScript", "NVIDIA NIM", "Qdrant", "RAG Architecture"],
-            "portfolio": "https://ram-portfolio3d.vercel.app",
+            "portfolio": "https://iamramanathan.dev",
             "github": "https://github.com/hackerstudent29"
         }
     })

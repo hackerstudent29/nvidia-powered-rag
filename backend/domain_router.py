@@ -389,6 +389,51 @@ class CorrectiveRAGFilter:
 
             return transport_chunks if transport_chunks else chunks
 
+        # If query is specifically about ADMISSION CONTACTS, strictly prioritize official admission contacts chunks
+        q_lower = (query or "").lower()
+        is_admission_contact_q = (
+            any(w in q_lower for w in ["contact", "whom to contact", "who to contact", "helpline", "phone", "call", "incharge", "in-charge", "officer", "head of admission", "coordinator"]) and
+            any(w in q_lower for w in ["admission", "admissions", "apply", "counselling", "enquiry", "inquiry"])
+        ) or any(w in q_lower for w in ["whom to contact for admission", "who to contact for admission", "admission contacts", "admissions contact"])
+        if is_admission_contact_q:
+            contact_chunks = []
+            for c in chunks:
+                content = (c.get("content") or c.get("text") or "").lower()
+                title = (c.get("title") or "").lower()
+                section_title = (c.get("section_title") or "").lower()
+                chunk_id = (c.get("chunk_id") or "").lower()
+                src = (c.get("source_file") or "").lower()
+
+                # Strictly drop non-contact admission sections (lateral entry, cutoffs, seat matrices, PhD, scholarships)
+                is_unwanted_topic = any(banned in section_title or banned in title or banned in content[:200] for banned in [
+                    "lateral entry", "postgraduate", "post graduate", "ph.d", "scholarship", "skill development",
+                    "tnea counselling", "programmes offered and seats available — 1.", "under graduate programmes",
+                    "programmes offered and seats available — 6."
+                ])
+                if is_unwanted_topic:
+                    continue
+
+                if "admission contacts" in section_title or "admission contacts" in title or "admission contacts" in content or "santhosh nathan" in content or "abdul gafoor" in content or chunk_id in ["msajce_courses_overview_007", "msajce_admission_012"]:
+                    contact_chunks.append(c)
+            if contact_chunks:
+                # Prioritize genuine document chunks (e.g. msajce_admission_012) over synthetic entity stubs
+                doc_chunks = [c for c in contact_chunks if not c.get("chunk_id", "").startswith("v_ent_")]
+                final_chunks = doc_chunks if doc_chunks else contact_chunks
+                # Dynamic Context Slicing (RAG Blueprint §2): strictly return top 1-2 chunks for contact inquiries
+                return final_chunks[:2]
+
+        # If query is about DEVELOPER / CREATOR, strictly retain developer profile chunks
+        is_dev_q = any(w in q_lower for w in ["developer", "creator", "ram", "ramanathan", "hackerstudent29", "who made", "who built", "who coded"])
+        if is_dev_q:
+            dev_chunks = []
+            for c in chunks:
+                src = (c.get("source_file") or "").lower()
+                content = (c.get("content") or c.get("text") or "").lower()
+                if "developer" in src or "ramanathan" in content:
+                    dev_chunks.append(c)
+            if dev_chunks:
+                return dev_chunks
+
         # For other domains, drop chunks that blatantly conflict with intent
         return chunks
 

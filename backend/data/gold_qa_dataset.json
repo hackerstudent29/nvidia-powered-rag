@@ -176,7 +176,7 @@
     {
         "id": "qa_30",
         "query": "Who is Ramanathan S?",
-        "ground_truth": "Ramanathan S. is an IT student at MSAJCEA and the sole architect and lead developer of Lorin AI. His portfolio is ram-portfolio3d.vercel.app.",
+        "ground_truth": "Ramanathan S. is an IT student at MSAJCEA and the sole architect and lead developer of Lorin AI. His portfolio is iamramanathan.dev.",
         "category": "general"
     },
     {
@@ -3020,7 +3020,7 @@
     {
         "id": "qa_504",
         "query": "What is Ramanathan S.'s personal portfolio website?",
-        "ground_truth": "Ramanathan S.'s personal portfolio website is accessible online at https://ram-portfolio3d.vercel.app.",
+        "ground_truth": "Ramanathan S.'s personal portfolio website is accessible online at https://iamramanathan.dev.",
         "category": "general"
     },
     {
@@ -3164,7 +3164,7 @@
     {
         "id": "qa_528",
         "query": "How can one contact Ramanathan S. for professional inquiries?",
-        "ground_truth": "Ramanathan S. can be reached via his personal portfolio website (https://ram-portfolio3d.vercel.app) or his GitHub profile (https://github.com/hackerstudent29).",
+        "ground_truth": "Ramanathan S. can be reached via his personal portfolio website (https://iamramanathan.dev) or his GitHub profile (https://github.com/hackerstudent29).",
         "category": "general"
     },
     {

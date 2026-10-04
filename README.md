@@ -143,10 +143,10 @@ If you find **Lorin AI** helpful or use this open-source Hybrid RAG architecture
 <div align="center">
 
 ### 👨‍💻 Developer Profile: Ramanathan S. (Ram)
-*Software Engineer | B.Tech Information Technology (Batch 2024–2028, CGPA 7.75)*  
+*Software Engineer | B.Tech Information Technology (Batch 2024–2028)*  
 **Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai**
 
-[![Portfolio](https://img.shields.io/badge/🌐_3D_Portfolio-ram--portfolio3d.vercel.app-10b981?style=for-the-badge)](https://ram-portfolio3d.vercel.app)
+[![Portfolio](https://img.shields.io/badge/🌐_Portfolio-iamramanathan.dev-10b981?style=for-the-badge)](https://iamramanathan.dev)
 [![GitHub](https://img.shields.io/badge/🐙_GitHub-hackerstudent29-181717?style=for-the-badge&logo=github)](https://github.com/hackerstudent29)
 
 ---

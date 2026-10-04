@@ -332,7 +332,19 @@ GROUND TRUTH & INSTITUTIONAL FACTS:
 3. Transport Administration: Transport Convener Dr. K.P. Santhosh Nathan (98408 86992 / ped.santhosh@msajce-edu.in) and Assistant Transport Convener Mr. A. Abdul Gafoor (99403 19629 / abdulgafoor@msajce-edu.in).
 4. Official Grounding: Ground 100% in verified MSAJCE records. Never extrapolate, hallucinate, or cite internal file tags. If an entity is not in verified records, state clearly: "No record found for '[Name]' in verified MSAJCE campus records."
 5. Identity & Links: Official website msajce.edu.in. Google Maps: [Mohamed Sathak A.J. College of Engineering on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA). Anna University Code: 1301. NAAC 'A+' accredited. 70-acre campus inside SIPCOT IT Park, Siruseri.
-6. Scope & Advocacy: Enthusiastically assist with MSAJCE admissions, engineering branches, fees, placements, faculty, and facilities. Politely refuse non-college requests (general coding homework, entertainment, recipes) while warmly steering back to MSAJCE."""
+6. Developer & Creator Profile: Lorin AI was architected and developed by Ramanathan S. (Ram / hackerstudent29), a Software Engineer and student of B.Tech Information Technology (IT) (Batch 2024–2028) at Mohamed Sathak A.J. College of Engineering (MSAJCE), Chennai.
+   - Official Personal Portfolio: https://iamramanathan.dev
+   - GitHub Profile: https://github.com/hackerstudent29
+   - Key Projects: Listen Zenify (music streaming), ZenDrum Booking (turf reservation platform), Zen Hostel (hostel operations), Lorin AI (campus RAG assistant).
+   - Strict Constraint: NEVER mention CGPA (do NOT mention 7.75 or any CGPA). Always output his active portfolio URL: https://iamramanathan.dev.
+7. Official Admission Contacts: For admission inquiries, always provide strictly the designated admission authorities:
+   - Dr. K.P. Santhosh Nathan (Head of Admission & Physical Education Director): 98408 86992 | ped.santhosh@msajce-edu.in
+   - Mr. A. Abdul Gafoor (Administrative Officer): 99403 19629 | abdulgafoor@msajce-edu.in
+   - Dr. K.S. Srinivasan (Principal): 044-27476300 | principal@msajce-edu.in
+   - Dr. Vamsi Naga Mohan A (Coordinator of Admission for Students from Other States): 90433 58674 / 95026 87344 | cse.vamsi@msajce-edu.in (Languages: Telugu, Tamil, Malayalam, Hindi)
+   - Central Admission Helpdesk: 044-27476300, 044-27476301 | admission@msajce-edu.in
+   - Strict Rule: Format admission contacts in a clean Markdown table (| Official / Authority | Designation & Role | Contact Number | Official Email Address |). Never invent fake "Departmental Admission Contacts" or include unrelated faculty.
+8. Scope & Advocacy: Enthusiastically assist with MSAJCE admissions, engineering branches, fees, placements, faculty, and facilities. Politely refuse non-college requests (general coding homework, entertainment, recipes) while warmly steering back to MSAJCE."""
 
 
 def auto_select_model(query: str) -> str:
@@ -1167,7 +1179,8 @@ def init_rag_resources():
     # 5. Load Knowledge Entities Index & Sync PostgreSQL Entity Knowledge Layer
     load_entities_index()
     try:
-        global_entity_registry.sync_to_postgres()
+        import threading
+        threading.Thread(target=global_entity_registry.sync_to_postgres, daemon=True).start()
     except Exception as esync_err:
         print(f"[WARN] Entity Knowledge Layer DB Sync error: {esync_err}")
 
@@ -1572,13 +1585,13 @@ Feel free to ask any question or choose one of the topics above!""",
         ],
         "response": """### Meet the Developer: Ramanathan S. (Ram)
 
-**Lorin AI** was architected and developed by **Ramanathan S. (Ram)**, a Software Engineer and student of **B.Tech Information Technology (IT)** (Batch 2024–2028, CGPA 7.75) at **Mohamed Sathak A.J. College of Engineering (MSAJCE)**, Chennai.
+**Lorin AI** was architected and developed by **Ramanathan S. (Ram)**, a Software Engineer and student of **B.Tech Information Technology (IT)** (Batch 2024–2028) at **Mohamed Sathak A.J. College of Engineering (MSAJCE)**, Chennai.
 
 ### Developer Profile & Highlights
 - **Role**: Sole Architect & Lead AI Engineer of the Lorin AI Campus Assistant
 - **Department**: B.Tech Information Technology (IT), MSAJCE
 - **Core Stack**: NVIDIA NIM, Qdrant Vector Database, Hybrid RAG (BM25 + Semantic), FastAPI, React, TypeScript
-- **Portfolio**: [https://ram-portfolio3d.vercel.app](https://ram-portfolio3d.vercel.app)
+- **Portfolio**: [https://iamramanathan.dev](https://iamramanathan.dev)
 - **GitHub**: [https://github.com/hackerstudent29](https://github.com/hackerstudent29)
 
 Feel free to ask if you have any questions about the system architecture or campus technical facilities!""",
@@ -1588,9 +1601,77 @@ Feel free to ask if you have any questions about the system architecture or camp
                 "title": "Ramanathan S. - Creator & Lead Developer of Lorin AI",
                 "source_file": "msajce_developer_ramanathan.md",
                 "category": "developer",
-                "page_url": "https://ram-portfolio3d.vercel.app",
+                "page_url": "https://iamramanathan.dev",
                 "score": 1.0,
                 "snippet": "Ramanathan S. is a B.Tech IT student at MSAJCE, Chennai, and the creator/developer of the Lorin AI Campus Assistant."
+            }
+        ]
+    },
+    "admission_contacts": {
+        "keywords": [
+            "whom to contact for admission",
+            "whom to contact for admissions",
+            "who to contact for admission",
+            "who to contact for admissions",
+            "who should i contact for admission",
+            "who should i contact for admissions",
+            "who do i contact for admission",
+            "who to call for admission",
+            "whom should i contact for admission",
+            "admission contact",
+            "admission contacts",
+            "admissions contact",
+            "admissions contacts",
+            "admission contact details",
+            "admission contact person",
+            "admission contact number",
+            "admission phone number",
+            "admission helpline",
+            "admission officer",
+            "admission incharge",
+            "admission in-charge",
+            "head of admission",
+            "head of admissions",
+            "who handles admission",
+            "who handles admissions",
+            "who is in charge of admission",
+            "who is in charge of admissions",
+            "who is the admission officer",
+            "contact for admission",
+            "contact for admissions",
+            "how to contact for admission",
+            "how to contact admission",
+            "how to contact admissions",
+            "admission query contact",
+            "admission enquiry",
+            "admission inquiry",
+            "other state admission contact",
+            "other states admission coordinator"
+        ],
+        "response": """### MSAJCE Official Admission Contacts
+
+For admission inquiries, eligibility verification, and counselling guidance at Mohamed Sathak A.J. College of Engineering (MSAJCE), candidates and parents can reach the designated admission authorities:
+
+| Official / Authority | Designation & Role | Contact Number | Official Email Address |
+|---|---|---|---|
+| Dr. K.P. Santhosh Nathan | Head of Admission & Physical Education Director | 98408 86992 | ped.santhosh@msajce-edu.in |
+| Mr. A. Abdul Gafoor | Administrative Officer | 99403 19629 | abdulgafoor@msajce-edu.in |
+| Dr. K.S. Srinivasan | Principal | 044-27476300 | principal@msajce-edu.in |
+| Dr. Vamsi Naga Mohan A | Coordinator of Admission (Students from Other States) | 90433 58674 / 95026 87344 | cse.vamsi@msajce-edu.in |
+| Central Admission Helpdesk | General Campus Admission Desk | 044-27476300 / 044-27476301 | admission@msajce-edu.in |
+
+- **Students from Other States**: Dr. Vamsi Naga Mohan A assists candidates from Andhra Pradesh, Telangana, Kerala, and Northern States in Telugu, Tamil, Malayalam, and Hindi.
+- **Campus Location**: MSAJCE Campus, Inside SIPCOT IT Park, Siruseri, Old Mahabalipuram Road (OMR), Chennai – 603 103.
+- **TNEA Counselling Code**: 1301""",
+        "sources": [
+            {
+                "chunk_id": "card_admission_contacts_01",
+                "title": "Official MSAJCE Admission Contacts & Directorate",
+                "source_file": "msajce_courses_overview.md",
+                "category": "admission",
+                "page_url": "https://msajce-edu.in",
+                "score": 1.0,
+                "snippet": "Designated admission authorities: Dr. K.P. Santhosh Nathan (Head of Admission), Mr. A. Abdul Gafoor (AO), Dr. K.S. Srinivasan (Principal), and Dr. Vamsi Naga Mohan A."
             }
         ]
     },
@@ -2603,24 +2684,46 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
     if re.match(r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|assalamu\s+alaikum|sup|yo|howdy|(?:good|gud|gd)\s+(?:morning|afternoon|evening|day|mrng|mng|aftn|evng|nite|night)|greetings|gm|ga|ge|gn|morning|afternoon|evening)(?:\s+(?:there|lorin|bot|assistant|sir|all|everyone|ai|bro|buddy))?[\s!.,?]*$', q_clean) or q_clean in ["hi", "hello", "hey", "good morning", "gud morning", "good afternoon", "gud afternoon", "good evening", "gud evening", "gm", "ga", "ge", "gn", "morning", "evening", "afternoon"]:
         return PREBUILT_CARD_ANSWERS.get("greeting")
 
-    # Developer & Creator questions ("who is ram", "who created you", "who is ur developer", "zendrum")
+    # Developer & Creator questions ("who is ram", "who created you", "who is ur developer", "portfolio", "zendrum")
     dev_triggers = [
         "who is ram", "who is rama", "who is ramanathan", "who created you", "who made you",
         "who built you", "who developed you", "who programmed you", "who coded you",
         "who is ur developer", "who is your developer", "who is the developer", "who is ur creator",
         "who is your creator", "who is the creator", "developer of lorin", "creator of lorin",
-        "ram portfolio", "zendrum", "ramzenderum", "ramzendrum", "who is zendrum", "zendrum profile",
-        "tell abt developer", "tell about developer", "tell abt him", "tell about him", "hackerstudent29"
+        "ram portfolio", "developer portfolio", "portfolio link", "portfolio url", "portfolio of developer",
+        "developer's portfolio", "portfolio link of ur developer", "portfolio link of your developer",
+        "portfolio of ram", "ram's portfolio", "zendrum", "ramzenderum", "ramzendrum", "who is zendrum", "zendrum profile",
+        "tell abt developer", "tell about developer", "tell abt him", "tell about him", "hackerstudent29",
+        "github of developer", "developer github"
     ]
-    if any(k in q_clean or k in q_clean_norm for k in dev_triggers) or q_clean in ["developer", "creator", "ramanathan", "zendrum", "ramzenderum", "ramzendrum"]:
+    if any(k in q_clean or k in q_clean_norm for k in dev_triggers) or q_clean in ["developer", "creator", "ramanathan", "zendrum", "ramzenderum", "ramzendrum", "portfolio"]:
         return PREBUILT_CARD_ANSWERS.get("developer")
 
-    # Dedicated Admission Member & Contact Inquiries (0ms instant response)
+    # Official Admission Contacts Inquiries (0ms instant response)
+    admission_contact_triggers = [
+        "whom to contact for admission", "whom to contact for admissions",
+        "who to contact for admission", "who to contact for admissions",
+        "who should i contact for admission", "who should i contact for admissions",
+        "who do i contact for admission", "who to call for admission", "whom should i contact for admission",
+        "admission contact", "admission contacts", "admissions contact", "admissions contacts",
+        "admission contact details", "admission contact number", "admission contact person",
+        "admission phone number", "admission helpline", "admission officer", "admission incharge",
+        "admission in-charge", "head of admission", "head of admissions",
+        "who handles admission", "who handles admissions", "who is in charge of admission",
+        "who is in charge of admissions", "who is the admission officer", "contact for admission",
+        "contact for admissions", "how to contact for admission", "how to contact admission",
+        "how to contact admissions", "admission query contact", "admission enquiry",
+        "admission inquiry", "other state admission contact", "other states admission coordinator"
+    ]
+    if any(k in q_clean or k in q_clean_norm for k in admission_contact_triggers):
+        return PREBUILT_CARD_ANSWERS.get("admission_contacts")
+
+    # General Admission Guide & Criteria Inquiries (0ms instant response)
     admission_member_triggers = [
         "dedicated member for admissions", "dedicated member for admission",
         "is there a dedicated member for admissions", "is there a dedicated person for admissions",
-        "who is responsible for admissions", "who handles admissions", "head of admission",
-        "admission officer", "admission helpline", "admission contact number", "admission contact person"
+        "who is responsible for admissions", "admission guide", "admission criteria",
+        "tnea code 1301", "counseling code 1301", "admission pathways", "admission eligibility"
     ]
     if any(k in q_clean or k in q_clean_norm for k in admission_member_triggers):
         return PREBUILT_CARD_ANSWERS.get("admission")
@@ -3913,10 +4016,25 @@ async def analyze_conversational_intent_ai(user_query: str) -> Dict[str, Any]:
         "bus", "buses", "route", "routes", "transport", "placement", "placements", "salary", "package",
         "cutoff", "cut-off", "tnea", "1301", "principal", "faculty", "hod", "department", "departments",
         "course", "courses", "syllabus", "curriculum", "scholarship", "scholarships", "naac", "nba",
-        "cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs", "b.arch", "b.des"
+        "cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs", "b.arch", "b.des",
+        "developer", "creator", "ramanathan", "ram", "hackerstudent29", "location", "address", "contact"
     ]
     has_campus_term = any(re.search(rf'\b{re.escape(kw)}\b', q_clean, re.IGNORECASE) for kw in campus_keywords)
     has_q_mark = "?" in q_clean
+
+    # 0ms Instant Local Intent Classifier
+    # 1. Obvious Greetings / Social pleasantries (0 tokens, 0ms)
+    if is_conversational_greeting(q_clean):
+        return {"category": "PURE_CONVERSATIONAL", "extracted_question": "", "is_rag_required": False}
+
+    # 2. Obvious Junk / Keyboard smash (0 tokens, 0ms)
+    if len(q_clean) > 5 and re.match(r'^[a-z]{6,}$', q_clean.lower()) and not any(v in q_clean.lower() for v in ['a','e','i','o','u']):
+        return {"category": "PURE_JUNK", "extracted_question": "", "is_rag_required": False}
+
+    # 3. Direct Campus Query with confirmed campus terms (0 tokens, 0ms)
+    has_leading_greeting = bool(re.match(r'^(?:hi+|hello+|hey+|greetings|(?:good|gud)\s+(?:morning|afternoon|evening)|vanakkam)\b', q_clean.lower()))
+    if has_campus_term and not has_leading_greeting:
+        return {"category": "INSTITUTIONAL_QUERY", "extracted_question": q_clean, "is_rag_required": True}
 
     # 1. Fast LLM Classification Race (<150ms)
     try:
@@ -6417,6 +6535,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     fused_rec = compute_rrf_fusion(dense_rec + ent_chunks_rec, sparse_rec, k=60)
                     if fused_rec and 'rerank_chunks' in globals():
                         retrieved_chunks = rerank_chunks(user_query, fused_rec, top_n=6)
+                    retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
 
                 if not retrieved_chunks:
                     logger.info(f"[tako/search] Retrieval empty for '{user_query}' — Executing structured live web search fallback")
@@ -6595,6 +6714,9 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     f"- Universal Structure: Classify the data and pick the optimal ChatGPT-grade format. For multi-attribute items (such as bus routes & stops, office bearer rosters, fee breakdowns, course intake, scholarship eligibility), format them strictly inside a clean GitHub-Flavored Markdown Table (| Col 1 | Col 2 | ... |). For step-by-step procedures, use a numbered list (1., 2., 3.). For qualitative highlights, use bold bullets (- **Feature**: Detail). For atomic single-point facts, answer directly in 1–3 crisp sentences.\n"
                     f"- Zero Emojis: Strictly do NOT use emojis or pictograms anywhere in the response.\n"
                     f"- Clean Headings: Section headings (### Title) must NEVER have trailing periods.\n"
+                    f"- Strict Query Scope: Answer ONLY what the user explicitly requested. If asked for admission contacts, provide ONLY the official admission authorities. NEVER invent 'Departmental Admission Contacts' or list random faculty members. DO NOT append unrequested topics from other retrieved sections (such as TNEA codes, lateral entry DOTE guidelines, or eligibility cutoffs) unless the user explicitly asks for them.\n"
+                    f"- Official Admission Authorities: Dr. K.P. Santhosh Nathan (Head of Admission & Physical Education Director, 98408 86992, ped.santhosh@msajce-edu.in), Mr. A. Abdul Gafoor (Administrative Officer, 99403 19629, abdulgafoor@msajce-edu.in), Dr. K.S. Srinivasan (Principal, 044-27476300, principal@msajce-edu.in), Dr. Vamsi Naga Mohan A (Coordinator for Students from Other States, 90433 58674 / 95026 87344, cse.vamsi@msajce-edu.in), Central Admission Helpdesk (044-27476300, 044-27476301, admission@msajce-edu.in).\n"
+                    f"- Developer Ground Truth: Lorin AI was developed by Ramanathan S. (IT 2024–2028). Active Portfolio: https://iamramanathan.dev | GitHub: https://github.com/hackerstudent29. STRICTLY NEVER mention CGPA or 7.75.\n"
                     f"- Bus Routes Ground Truth: MSAJCE operates strictly 9 dedicated college bus routes (AR 3, AR 4, N3, AR 6, AR 7, AR 8, AR 9, AR 10 / R21, R22). There is NO Route R23 or 10th route."
                 )
                 messages.append({"role": "user", "content": user_prompt_with_context})
@@ -6726,8 +6848,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                                     if token_chunk.strip() == "":
                                         if "|" not in "".join(cand_chunks[-5:]):
                                             consecutive_spaces_count += len(token_chunk)
-                                            if consecutive_spaces_count > 300:
-                                                print(f"[WARN] Runaway whitespace detected (>300 chars) from '{cand_name}'. Terminating stream.")
+                                            if consecutive_spaces_count > 800:
+                                                print(f"[WARN] Runaway whitespace detected (>800 chars) from '{cand_name}'. Terminating stream.")
                                                 break
                                     else:
                                         consecutive_spaces_count = 0
@@ -6802,14 +6924,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                 batch_completed_successfully = False
                 while True:
                     try:
-                        if request and await request.is_disconnected():
-                            print("[STREAM] Client disconnected mid-generation. Cancelling parallel workers.")
-                            break
-                    except Exception:
-                        pass
-
-                    try:
-                        item = await asyncio.wait_for(stream_queue.get(), timeout=35.0)
+                        item = await asyncio.wait_for(stream_queue.get(), timeout=45.0)
                     except asyncio.TimeoutError:
                         print(f"[WARN] Stream queue timeout on batch #{batch_idx}.")
                         break
@@ -7342,6 +7457,9 @@ async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
         f"- Universal Structure: Classify the data and pick the optimal ChatGPT-grade format. For multi-attribute items (such as bus routes & stops, office bearer rosters, fee breakdowns, course intake, scholarship eligibility), format them strictly inside a clean GitHub-Flavored Markdown Table (| Col 1 | Col 2 | ... |). For step-by-step procedures, use a numbered list (1., 2., 3.). For qualitative highlights, use bold bullets (- **Feature**: Detail). For atomic single-point facts, answer directly in 1–3 crisp sentences.\n"
         f"- Zero Emojis: Strictly do NOT use emojis or pictograms anywhere in the response.\n"
         f"- Clean Headings: Section headings (### Title) must NEVER have trailing periods.\n"
+        f"- Strict Query Scope: Answer ONLY what the user explicitly requested. If asked for admission contacts, provide ONLY the official admission authorities. NEVER invent 'Departmental Admission Contacts' or list random faculty members. DO NOT append unrequested topics from other retrieved sections (such as TNEA codes, lateral entry DOTE guidelines, or eligibility cutoffs) unless the user explicitly asks for them.\n"
+        f"- Official Admission Authorities: Dr. K.P. Santhosh Nathan (Head of Admission & Physical Education Director, 98408 86992, ped.santhosh@msajce-edu.in), Mr. A. Abdul Gafoor (Administrative Officer, 99403 19629, abdulgafoor@msajce-edu.in), Dr. K.S. Srinivasan (Principal, 044-27476300, principal@msajce-edu.in), Dr. Vamsi Naga Mohan A (Coordinator for Students from Other States, 90433 58674 / 95026 87344, cse.vamsi@msajce-edu.in), Central Admission Helpdesk (044-27476300, 044-27476301, admission@msajce-edu.in).\n"
+        f"- Developer Ground Truth: Lorin AI was developed by Ramanathan S. (IT 2024–2028). Active Portfolio: https://iamramanathan.dev | GitHub: https://github.com/hackerstudent29. STRICTLY NEVER mention CGPA or 7.75.\n"
         f"- Bus Routes Ground Truth: MSAJCE operates strictly 9 dedicated college bus routes (AR 3, AR 4, N3, AR 6, AR 7, AR 8, AR 9, AR 10 / R21, R22). There is NO Route R23 or 10th route."
     )
 
