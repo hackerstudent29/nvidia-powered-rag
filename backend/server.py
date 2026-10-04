@@ -3173,12 +3173,22 @@ def resolve_pronouns(current_query: str, session_id: str) -> str:
     if not last_assistant_content and not last_user_content:
         return normalized_q
 
+def extract_followup_topic_from_assistant(text: str) -> Optional[str]:
+    """Extracts suggested follow-up topic or offer from last assistant utterance."""
+    if not text:
+        return None
+    match = re.search(r'(?:like\s+to\s+know|interested\s+in|more\s+about|details\s+on)\s+([a-z0-9\s\&]+)[\?\.\!]', text, re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return None
+
     # 1. Affirmation / Continuation Handling
     if is_affirmation:
         offered_topic = extract_followup_topic_from_assistant(last_assistant_content)
         if offered_topic:
             print(f"[REGEX AFFIRMATION RESOLVER] '{current_query}' -> '{offered_topic}' (from assistant closing offer)")
             return offered_topic
+
 
     # Strictly search last assistant content first to preserve recency
     context_text = last_assistant_content + " " + last_user_content
@@ -3750,14 +3760,14 @@ async def analyze_conversational_intent_ai(user_query: str) -> Dict[str, Any]:
                 f"4. \"INSTITUTIONAL_QUERY\": A direct campus question or inquiry.\n\n"
                 f"Respond ONLY in valid JSON format: {{\"category\": \"...\", \"extracted_question\": \"...\"}}"
             )
-            headers = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json", "HTTP-Referer": "https://msajce.edu.in", "X-Title": "Lorin AI Router"}
+            headers = {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"}
             payload = {
-                "model": "convaiinnovations/laya-free",
+                "model": "google/gemini-2.5-flash-lite",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.0,
                 "max_tokens": 80
             }
-            resp = await client.post(f"{OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", headers=headers, json=payload, timeout=1.8)
+            resp = await client.post(f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions", headers=headers, json=payload, timeout=1.8)
             if resp.status_code == 200:
                 raw_out = resp.json()["choices"][0]["message"]["content"].strip()
                 raw_out = re.sub(r'<think>.*?</think>', '', raw_out, flags=re.DOTALL | re.IGNORECASE).strip()
@@ -6384,20 +6394,11 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
             candidate_models = [
-                # 1. Primary Engine: Ultra Low Latency Vercel AI Gateway (Primary Key)
                 "google/gemini-2.5-flash-lite",
-                # 2. Secondary Engine: NVIDIA NIM Flagship
-                "nvidia/nemotron-3-super-120b-a12b",
-                # 3. Failover: Vercel AI Gateway (Secondary Key 1)
-                "google/gemini-2.5-flash-lite:backup",
-                # 4. Failover: Vercel AI Gateway (Secondary Key 2)
-                "google/gemini-2.5-flash-lite:backup2",
-                # 5. Failover: Vercel Low-Latency Engine
                 "alibaba/qwen-3-32b",
-                # 6. OpenRouter Free Infrastructure
-                "nvidia/nemotron-3-super-120b-a12b:free",
-                "nvidia/nemotron-3-ultra-550b-a55b:free",
-                "inclusionai/ling-3.0-flash-sante-free"
+                "inclusionai/ling-3.0-flash-sante-free",
+                "google/gemini-2.5-flash-lite:backup",
+                "google/gemini-2.5-flash-lite:backup2"
             ]
             if model_id and model_id != "auto" and model_id not in candidate_models:
                 candidate_models.insert(0, model_id)

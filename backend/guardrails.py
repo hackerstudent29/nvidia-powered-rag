@@ -39,10 +39,10 @@ except ImportError:
         CAMPUS_TAXONOMY = {}
 
 try:
-    from jev_evaluator import jev_evaluator, JevEvaluationResult
+    from universal_evaluator import universal_evaluator as jev_evaluator, UniversalEvaluationResult as JevEvaluationResult
 except ImportError:
     try:
-        from backend.jev_evaluator import jev_evaluator, JevEvaluationResult
+        from backend.universal_evaluator import universal_evaluator as jev_evaluator, UniversalEvaluationResult as JevEvaluationResult
     except ImportError:
         jev_evaluator = None
 

@@ -1,10 +1,8 @@
 """
-Lorin AI — System One Evaluation & Decision Engine
-Powered by typesafe-ai/jev via Vercel AI Gateway
-
-Model: typesafe-ai/jev
-Role: Fast, typed, deterministic System One classification (Guardrails, Intent, Category Routing, & Domain Boundaries).
-Bypasses slow LLM text generation and eliminates brittle regex rules.
+Lorin AI — System One Universal Evaluation & Decision Engine
+============================================================
+Fast, typed, deterministic System One classification (Guardrails, Intent, Category Routing, & Domain Boundaries).
+Executes zero-latency classification using universal evaluation endpoints.
 """
 
 import os
@@ -27,7 +25,7 @@ else:
 VERCEL_AI_GATEWAY_URL = os.getenv("VERCEL_AI_GATEWAY_URL", "https://ai-gateway.vercel.sh/v1")
 AI_GATEWAY_API_KEY = os.getenv("AI_GATEWAY_API_KEY")
 AI_GATEWAY_API_KEY_BACKUP = os.getenv("AI_GATEWAY_API_KEY_BACKUP")
-JEV_MODEL_ID = os.getenv("JEV_MODEL_ID", "convaiinnovations/laya-free")
+UNIVERSAL_EVALUATOR_MODEL = os.getenv("UNIVERSAL_EVALUATOR_MODEL", "google/gemini-2.5-flash-lite")
 
 try:
     from taxonomy import get_jev_category_choices, is_conversational_greeting
@@ -39,7 +37,7 @@ except ImportError:
         is_conversational_greeting = lambda q: False
 
 @dataclass
-class JevEvaluationResult:
+class UniversalEvaluationResult:
     is_safe: bool
     safe_probability: float
     is_campus_domain: bool
@@ -50,11 +48,14 @@ class JevEvaluationResult:
     refusal_reason: Optional[str] = None
     raw_response: Optional[Dict[str, Any]] = None
 
+# Backwards-compatibility alias
+JevEvaluationResult = UniversalEvaluationResult
 
-class JevEvaluator:
+
+class UniversalEvaluator:
     """
-    Client for typesafe-ai/jev running on Vercel AI Gateway.
-    Executes typed, probabilistic System One decisions:
+    Universal System One Evaluator.
+    Executes typed, probabilistic decisions:
       - Prompt injection & safety assessment
       - Domain boundary verification (MSAJCE campus context)
       - Category & department classification
@@ -67,19 +68,19 @@ class JevEvaluator:
         self.backup_api_key = AI_GATEWAY_API_KEY_BACKUP
         self.base_url = (base_url or VERCEL_AI_GATEWAY_URL).rstrip("/")
         self.evaluate_url = f"{self.base_url}/evaluate"
-        enable_env = os.getenv("ENABLE_JEV_GATEWAY", "true").lower() in ("true", "1", "yes")
-        self._enabled = bool(self.api_key) and enable_env and not JevEvaluator._globally_disabled
+        enable_env = os.getenv("ENABLE_UNIVERSAL_EVALUATOR", "true").lower() in ("true", "1", "yes")
+        self._enabled = bool(self.api_key) and enable_env and not UniversalEvaluator._globally_disabled
 
     @property
     def is_enabled(self) -> bool:
-        return self._enabled and not JevEvaluator._globally_disabled
+        return self._enabled and not UniversalEvaluator._globally_disabled
 
-    def evaluate_query_sync(self, user_query: str, timeout: float = 6.0) -> JevEvaluationResult:
+    def evaluate_query_sync(self, user_query: str, timeout: float = 6.0) -> UniversalEvaluationResult:
         """
-        Synchronous evaluation of user prompt using typesafe-ai/jev.
+        Synchronous evaluation of user prompt using Universal System One Engine.
         """
         if not self.is_enabled:
-            return JevEvaluationResult(
+            return UniversalEvaluationResult(
                 is_safe=True,
                 safe_probability=1.0,
                 is_campus_domain=True,
@@ -91,7 +92,7 @@ class JevEvaluator:
 
         # 0ms Instant Fast-Path for Conversational Greetings & Pleasantries
         if is_conversational_greeting(user_query):
-            return JevEvaluationResult(
+            return UniversalEvaluationResult(
                 is_safe=True,
                 safe_probability=1.0,
                 is_campus_domain=True,
@@ -115,8 +116,8 @@ class JevEvaluator:
         }
 
         payload = {
-            "model": JEV_MODEL_ID,
-            "state": user_query[:1000],  # Cap query length for fast evaluation
+            "model": UNIVERSAL_EVALUATOR_MODEL,
+            "state": user_query[:1000],
             "questions": {
                 "is_safe": {
                     "type": "boolean",
@@ -150,7 +151,6 @@ class JevEvaluator:
             }
         }
 
-        # Try primary key, then backup key
         for key in [self.api_key, self.backup_api_key]:
             if not key:
                 continue
@@ -181,7 +181,7 @@ class JevEvaluator:
                         elif not is_campus and cat_choice == "off_topic":
                             refusal = "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I can only assist with college admissions, departments, academics, placements, and campus facilities."
 
-                        return JevEvaluationResult(
+                        return UniversalEvaluationResult(
                             is_safe=is_safe,
                             safe_probability=safe_prob,
                             is_campus_domain=is_campus,
@@ -193,16 +193,15 @@ class JevEvaluator:
                             raw_response=data
                         )
                     else:
-                        logger.warning(f"[Jev] Evaluate HTTP {resp.status_code}: {resp.text[:120]}")
-                        if resp.status_code in (401, 403, 404):
-                            JevEvaluator._globally_disabled = True
+                        logger.warning(f"[UniversalEvaluator] Evaluate HTTP {resp.status_code}: {resp.text[:120]}")
+                        if resp.status_code in (401, 403, 404, 422):
+                            UniversalEvaluator._globally_disabled = True
                             self._enabled = False
                             break
             except Exception as e:
-                logger.warning(f"[Jev] Failed attempt with key: {e}")
+                logger.warning(f"[UniversalEvaluator] Failed attempt with key: {e}")
 
-        # Fallback if request fails
-        return JevEvaluationResult(
+        return UniversalEvaluationResult(
             is_safe=True,
             safe_probability=1.0,
             is_campus_domain=True,
@@ -212,12 +211,12 @@ class JevEvaluator:
             needs_websearch=False
         )
 
-    async def evaluate_query_async(self, user_query: str, timeout: float = 5.0) -> JevEvaluationResult:
+    async def evaluate_query_async(self, user_query: str, timeout: float = 5.0) -> UniversalEvaluationResult:
         """
         Asynchronous evaluation using httpx.AsyncClient.
         """
         if not self._enabled:
-            return JevEvaluationResult(
+            return UniversalEvaluationResult(
                 is_safe=True,
                 safe_probability=1.0,
                 is_campus_domain=True,
@@ -227,9 +226,8 @@ class JevEvaluator:
                 needs_websearch=False
             )
 
-        # 0ms Instant Fast-Path for Conversational Greetings & Pleasantries
         if is_conversational_greeting(user_query):
-            return JevEvaluationResult(
+            return UniversalEvaluationResult(
                 is_safe=True,
                 safe_probability=1.0,
                 is_campus_domain=True,
@@ -253,7 +251,7 @@ class JevEvaluator:
         }
 
         payload = {
-            "model": JEV_MODEL_ID,
+            "model": UNIVERSAL_EVALUATOR_MODEL,
             "state": user_query[:1000],
             "questions": {
                 "is_safe": {
@@ -318,7 +316,7 @@ class JevEvaluator:
                         elif not is_campus and cat_choice == "off_topic":
                             refusal = "I am Lorin AI, the official intelligence assistant for Mohamed Sathak A.J. College of Engineering (MSAJCE). I can only assist with college admissions, departments, academics, placements, and campus facilities."
 
-                        return JevEvaluationResult(
+                        return UniversalEvaluationResult(
                             is_safe=is_safe,
                             safe_probability=safe_prob,
                             is_campus_domain=is_campus,
@@ -330,15 +328,15 @@ class JevEvaluator:
                             raw_response=data
                         )
                     else:
-                        logger.warning(f"[JevAsync] Evaluate HTTP {resp.status_code}: {resp.text[:120]}")
-                        if resp.status_code in (401, 403, 404):
-                            JevEvaluator._globally_disabled = True
+                        logger.warning(f"[UniversalEvaluatorAsync] Evaluate HTTP {resp.status_code}: {resp.text[:120]}")
+                        if resp.status_code in (401, 403, 404, 422):
+                            UniversalEvaluator._globally_disabled = True
                             self._enabled = False
                             break
             except Exception as e:
-                logger.warning(f"[JevAsync] Failed attempt with key: {e}")
+                logger.warning(f"[UniversalEvaluatorAsync] Failed attempt with key: {e}")
 
-        return JevEvaluationResult(
+        return UniversalEvaluationResult(
             is_safe=True,
             safe_probability=1.0,
             is_campus_domain=True,
@@ -350,21 +348,20 @@ class JevEvaluator:
 
     def evaluate_topic_shift_sync(self, current_query: str, previous_context: str, timeout: float = 4.0) -> Dict[str, Any]:
         """
-        Uses typesafe-ai/jev to evaluate whether the current user query is a continuation
-        or a new topic shift from the prior turn.
+        Evaluates whether the current user query is a continuation or a new topic shift.
         """
         if not self.is_enabled or not previous_context:
             return {"is_continuation": False, "probability": 0.0}
 
         payload = {
-            "model": JEV_MODEL_ID,
+            "model": UNIVERSAL_EVALUATOR_MODEL,
             "state": f"PREVIOUS_ASSISTANT_RESPONSE:\n{previous_context[:500]}\n\nFOLLOW_UP_USER_QUERY:\n{current_query[:300]}",
             "questions": {
                 "is_continuation": {
                     "type": "boolean",
                     "instructions": "Does the user query ask for more information or continue the specific topic or entity from the previous response?",
                     "criteria": {
-                        "true": "Direct follow-up question referencing the prior subject (e.g. asking for timings of that bus, fees of that course).",
+                        "true": "Direct follow-up question referencing the prior subject.",
                         "false": "Completely new topic, independent question, or unrelated subject."
                     }
                 }
@@ -380,8 +377,8 @@ class JevEvaluator:
                         data = resp.json()
                         cont_prob = float(data.get("answers", {}).get("is_continuation", {}).get("probability", 0.0))
                         return {"is_continuation": cont_prob >= 0.6, "probability": cont_prob}
-                    elif resp.status_code in (401, 403, 404):
-                        JevEvaluator._globally_disabled = True
+                    elif resp.status_code in (401, 403, 404, 422):
+                        UniversalEvaluator._globally_disabled = True
                         self._enabled = False
                         break
             except Exception:
@@ -390,13 +387,13 @@ class JevEvaluator:
 
     def evaluate_chunk_relevance_sync(self, query: str, chunk_snippet: str, timeout: float = 3.5) -> bool:
         """
-        Uses typesafe-ai/jev as a Corrective RAG (CRAG) document relevance evaluator.
+        Corrective RAG (CRAG) document relevance evaluator.
         """
         if not self.is_enabled:
             return True
 
         payload = {
-            "model": JEV_MODEL_ID,
+            "model": UNIVERSAL_EVALUATOR_MODEL,
             "state": f"QUERY: {query[:300]}\n\nDOCUMENT_CHUNK:\n{chunk_snippet[:600]}",
             "questions": {
                 "is_relevant": {
@@ -404,7 +401,7 @@ class JevEvaluator:
                     "instructions": "Does this document chunk contain relevant factual context or answers to the user's question?",
                     "criteria": {
                         "true": "Document chunk discusses the target topic or provides useful information for the query.",
-                        "false": "Completely irrelevant chunk from another domain (e.g. bus schedule for a patent query, or sports for a fee query)."
+                        "false": "Completely irrelevant chunk from another domain."
                     }
                 }
             }
@@ -419,8 +416,8 @@ class JevEvaluator:
                         data = resp.json()
                         rel_prob = float(data.get("answers", {}).get("is_relevant", {}).get("probability", 1.0))
                         return rel_prob >= 0.45
-                    elif resp.status_code in (401, 403, 404):
-                        JevEvaluator._globally_disabled = True
+                    elif resp.status_code in (401, 403, 404, 422):
+                        UniversalEvaluator._globally_disabled = True
                         self._enabled = False
                         break
             except Exception:
@@ -428,6 +425,7 @@ class JevEvaluator:
         return True
 
 
-# Singleton instance ready for import
-jev_evaluator = JevEvaluator()
-
+# Singleton instances ready for import
+universal_evaluator = UniversalEvaluator()
+jev_evaluator = universal_evaluator  # Backwards-compatibility alias
+JevEvaluator = UniversalEvaluator     # Backwards-compatibility alias

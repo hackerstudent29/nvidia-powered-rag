@@ -32,7 +32,7 @@ class DialogueStateTracker:
             # Create new active frame
             new_frame = TopicFrame(
                 frame_id=f"frame_{int(time.time()*1000)}",
-                semantic_topic=plan.capability_id.replace("_info", "").replace("_finder", ""),
+                semantic_topic=(plan.capability_id or "general").replace("_info", "").replace("_finder", ""),
                 capability_id=plan.capability_id,
                 active_entities=list(plan.target_entities),
                 slots=dict(plan.slot_changes),
@@ -70,7 +70,7 @@ class DialogueStateTracker:
             if not state.active_topic_frame:
                 state.active_topic_frame = TopicFrame(
                     frame_id=f"frame_{int(time.time()*1000)}",
-                    semantic_topic=plan.capability_id.replace("_info", "").replace("_finder", ""),
+                    semantic_topic=(plan.capability_id or "general").replace("_info", "").replace("_finder", ""),
                     capability_id=plan.capability_id,
                     created_turn=state.turn_count,
                     last_active_turn=state.turn_count

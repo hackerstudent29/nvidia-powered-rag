@@ -16,10 +16,10 @@ from enum import Enum
 from typing import List, Dict, Any, Optional, Tuple
 
 try:
-    from jev_evaluator import jev_evaluator
+    from universal_evaluator import universal_evaluator as jev_evaluator
 except ImportError:
     try:
-        from backend.jev_evaluator import jev_evaluator
+        from backend.universal_evaluator import universal_evaluator as jev_evaluator
     except ImportError:
         jev_evaluator = None
 
