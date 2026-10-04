@@ -37,6 +37,8 @@ build/
 *.7z
 scratch/
 tmp/
+eval/
+
 
 # ── IDE & Editor Settings ──
 .vscode/

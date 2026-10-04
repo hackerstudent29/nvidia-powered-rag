@@ -7,11 +7,11 @@
     "false_answers": 3,
     "false_refusals": 3,
     "latency_ms": {
-      "P50": 2486.91,
-      "P75": 3295.26,
-      "P90": 5698.98,
-      "P95": 6601.26,
-      "P99": 7643.27
+      "P50": 2378.93,
+      "P75": 3783.57,
+      "P90": 6657.78,
+      "P95": 8684.14,
+      "P99": 35854837.24
     }
   },
   "failed_query_audits": [
@@ -52,16 +52,16 @@
           "chunk_id": "msajce_aids_001",
           "source_file": "msajce_aids.md",
           "title": "AI & Data Science (AI&DS)",
-          "rrf_score": 0.2754,
-          "rerank_score": 0.7754,
+          "rrf_score": 0.2747,
+          "rerank_score": 0.7747,
           "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 1. Overview\n\nThe B.Tech program in Artificial "
         },
         {
           "chunk_id": "msajce_aids_010",
           "source_file": "msajce_aids.md",
           "title": "AI & Data Science (AI&DS)",
-          "rrf_score": 0.2745,
-          "rerank_score": 0.7745,
+          "rrf_score": 0.2743,
+          "rerank_score": 0.7743,
           "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 8. Job Profiles \u2014 AI and Data Science Growth i"
         },
         {
@@ -76,21 +76,21 @@
           "chunk_id": "msajce_aids_003",
           "source_file": "msajce_aids.md",
           "title": "AI & Data Science (AI&DS)",
-          "rrf_score": 0.2788,
-          "rerank_score": 0.7288,
+          "rrf_score": 0.2782,
+          "rerank_score": 0.7282,
           "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 2. Career Opportunities\n\nThe career opportunit"
         },
         {
           "chunk_id": "msajce_aids_008",
           "source_file": "msajce_aids.md",
           "title": "AI & Data Science (AI&DS)",
-          "rrf_score": 0.2766,
-          "rerank_score": 0.7266,
+          "rrf_score": 0.2761,
+          "rerank_score": 0.7261,
           "snippet": "### Document: AI & Data Science (AI&DS) | Section: B.Tech in Artificial Intelligence and Data Science \u2014 7. Programme Outcomes (PO)\n\nThe Programme Outc"
         }
       ],
       "trace": {
-        "request_id": "req_1791038353609",
+        "request_id": "req_1791039811463",
         "original_query": "What activities are done by RRC?",
         "normalized_query": {
           "original_query": "What activities are done by RRC?",
@@ -119,9 +119,11 @@
         "intent_category": "INSTITUTIONAL_QUERY",
         "query_class": "simple",
         "is_rag_required": true,
+        "adaptive_depth_active": false,
+        "candidate_depth": 10,
         "repair_attempted": true,
         "repair_query": "What activities are done by RRC? it",
-        "latency_ms": 3802.49,
+        "latency_ms": 4869.87,
         "evidence_decision": "ABSTAIN"
       }
     },
@@ -160,45 +162,45 @@
           "chunk_id": "msajce_about_010",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.5552,
-          "rerank_score": 0.7052,
+          "rrf_score": 0.5562,
+          "rerank_score": 0.7062,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udfd8\ufe0f Residential & Cost of Living"
         },
         {
           "chunk_id": "msajce_about_011",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.5551,
-          "rerank_score": 0.7051,
+          "rrf_score": 0.556,
+          "rerank_score": 0.706,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udfa1 Nearby Attractions & Lifestyl"
         },
         {
           "chunk_id": "msajce_about_009",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.5548,
-          "rerank_score": 0.7048,
+          "rrf_score": 0.5555,
+          "rerank_score": 0.7055,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026"
         },
         {
           "chunk_id": "msajce_about_012",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.5536,
-          "rerank_score": 0.7036,
+          "rrf_score": 0.5549,
+          "rerank_score": 0.7049,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udf93 Educational & Research Instit"
         },
         {
-          "chunk_id": "msajce_about_001",
+          "chunk_id": "msajce_about_008",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.5429,
-          "rerank_score": 0.6929,
-          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+          "rrf_score": 0.5532,
+          "rerank_score": 0.7032,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83c\udfdb\ufe0f History & Significance\n\n- **"
         }
       ],
       "trace": {
-        "request_id": "req_1791038365611",
+        "request_id": "req_1791039823464",
         "original_query": "Tell me about UBA cell Siruseri",
         "normalized_query": {
           "original_query": "Tell me about UBA cell Siruseri",
@@ -225,9 +227,11 @@
         "intent_category": "INSTITUTIONAL_QUERY",
         "query_class": "transport",
         "is_rag_required": true,
+        "adaptive_depth_active": false,
+        "candidate_depth": 10,
         "repair_attempted": true,
         "repair_query": "Tell me about UBA cell Siruseri siruseri",
-        "latency_ms": 4320.1,
+        "latency_ms": 5286.08,
         "evidence_decision": "ABSTAIN"
       }
     },
@@ -268,9 +272,17 @@
           "chunk_id": "msajce_about_001",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.4386,
-          "rerank_score": 0.6386,
+          "rrf_score": 0.4387,
+          "rerank_score": 0.6387,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+        },
+        {
+          "chunk_id": "msajce_admission_007",
+          "source_file": "msajce_admission.md",
+          "title": "Admissions & Eligibility",
+          "rrf_score": 0.424,
+          "rerank_score": 0.574,
+          "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 7. Direct Second Year Lateral Entry Eligibility\n\nFor Direct"
         },
         {
           "chunk_id": "msajce_admission_004",
@@ -279,14 +291,6 @@
           "rrf_score": 0.4143,
           "rerank_score": 0.5643,
           "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 4. Admission through TNEA Counselling\n\nThe official TNEA Co"
-        },
-        {
-          "chunk_id": "msajce_admission_007",
-          "source_file": "msajce_admission.md",
-          "title": "Admissions & Eligibility",
-          "rrf_score": 0.4143,
-          "rerank_score": 0.5643,
-          "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 7. Direct Second Year Lateral Entry Eligibility\n\nFor Direct"
         },
         {
           "chunk_id": "msajce_admission_009",
@@ -306,7 +310,7 @@
         }
       ],
       "trace": {
-        "request_id": "req_1791038395614",
+        "request_id": "req_1791039853468",
         "original_query": "Does the college have an NCC unit?",
         "normalized_query": {
           "original_query": "Does the college have an NCC unit?",
@@ -335,9 +339,11 @@
         "intent_category": "INSTITUTIONAL_QUERY",
         "query_class": "simple",
         "is_rag_required": true,
+        "adaptive_depth_active": false,
+        "candidate_depth": 10,
         "repair_attempted": true,
         "repair_query": "Does the college have an NCC unit? it",
-        "latency_ms": 3831.42,
+        "latency_ms": 4023.53,
         "evidence_decision": "ABSTAIN"
       }
     },
@@ -346,7 +352,7 @@
       "category": "negative",
       "query": "What is the swimming pool timing in the campus hostel?",
       "expected": "ABSTAIN",
-      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83c\udf7d\ufe0f Dining & Nightlife\n\nSiruseri has a vibrant food scene catering to IT professionals and students:\n- **Food Streets**: The **Navalur Junction** and **Thazhambur Main Road** are lined with hundreds of restaurants, ranging from quick-service (McDonald's, KFC, Domino's) to fine dining.\n- **Popular Chains**: **Starbucks**, **Barista**, **The Coffee Bean & Tea Leaf**, and **Burger King** have multiple outlets in the Navalur/Thazhambur stretch.\n- **Local Favorites**: Numerous \"mess\" style eateries inside the IT park and affordable South Indian tiffin centers (like **A2B** and **Saravana Bhavan**) surround the campus.\n- **Nightlife**: Pubs and breweries like **The Park** (hotel bar), **Highway 74**, and **Palm Beach** are located along the ECR and OMR stretch, about 10\u201315 minutes away. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n\n- **SIPCOT Industrial Fire Station**: Located **inside** the IT Park on First Cross Road. This is the primary response unit for fire emergencies within the campus. (Contact: 044-27470720 / 044-24401213)\n- **Tamil Nadu Fire & Rescue Services (Siruseri Unit)**: Co-located with the SIPCOT station, equipped for industrial and high-rise rescue operations. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83c\udfe5 Government Hospitals (Nearest to Siruseri)\n\nThere is no large government hospital *inside* Siruseri; the nearest government facilities are in Kelambakkam and Chengalpattu.\n- **Government Primary Health Centre (PHC), Kelambakkam**:\n    - **Phone**: **044-27474700**\n    - **Location**: Vandalur-Kelambakkam Road.\n- **Government Chengalpattu Medical College Hospital** (Major Trauma/Govt Facility):\n    - **Phone**: **044-27426566**\n    - **Distance**: ~15 km from Siruseri.\n- **Emergency Ambulance**: Dial **108** (Free government ambulance with life support).",
+      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83c\udf7d\ufe0f Dining & Nightlife\n\nSiruseri has a vibrant food scene catering to IT professionals and students:\n- **Food Streets**: The **Navalur Junction** and **Thazhambur Main Road** are lined with hundreds of restaurants, ranging from quick-service (McDonald's, KFC, Domino's) to fine dining.\n- **Popular Chains**: **Starbucks**, **Barista**, **The Coffee Bean & Tea Leaf**, and **Burger King** have multiple outlets in the Navalur/Thazhambur stretch.\n- **Local Favorites**: Numerous \"mess\" style eateries inside the IT park and affordable South Indian tiffin centers (like **A2B** and **Saravana Bhavan**) surround the campus.\n- **Nightlife**: Pubs and breweries like **The Park** (hotel bar), **Highway 74**, and **Palm Beach** are located along the ECR and OMR stretch, about 10\u201315 minutes away. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n\n- **SIPCOT Industrial Fire Station**: Located **inside** the IT Park on First Cross Road. This is the primary response unit for fire emergencies within the campus. (Contact: 044-27470720 / 044-24401213)\n- **Tamil Nadu Fire & Rescue Services (Siruseri Unit)**: Co-located with the SIPCOT station, equipped for industrial and high-rise rescue operations. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026\u20132028)\n\n- **Chennai Metro Phase II**: The **Purple Line (Corridor 3: Madhavaram\u2013SIPCOT)** and **Corridor 5** are under construction. The **Siruseri SIPCOT Metro Station** is expected to be operational by **late 2026 to 2028**, directly connecting the park to central Chennai and reducing commute times significantly.\n- **Road Upgrades**: An **under-pass at Potheri Junction** and extensions to the **Outer Ring Road (ORR)** are planned to decongest the NH-45 and OMR intersection, improving access to the airport and Chengalpattu.\n- **Campus Expansions**: Major firms like **HCL** and **L&T** have announced plans for adjacent expansions in 2026, adding further office capacity. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83c\udfe5 Hospitals & Medical Care\n\n- **Dr. Kamakshi Memorial Hospital**: Located directly **opposite the SIPCOT gate** on OMR. This is the nearest major multi-specialty private hospital for emergencies.\n- **Punarjeevan Hospital**: Located approximately **2.2 km** away in the Siruseri/Navalur area.\n- **Supreme Speciality Hospitals** & **Marhura Hospital**: Nearby private facilities in the immediate vicinity.\n- **Iswarya Hospital**: A large NABH-accredited multi-specialty hospital located about **8 km** away in Kottivakkam (towards the city), offering advanced trauma and specialty care.\n- **Government Hospital**: The nearest government facility is the **Primary Health Centre (PHC) in Kelambakkam** or **Thazhambur**, roughly 4\u20136 km away. For major government trauma care, the **Government Hospital in Tambaram** (approx. 15 km) is the referral center. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architecture is located at:\n34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Chennai, Tamil Nadu 603103, India.\n\nThe college is situated within the Siruseri IT Park, making it easily accessible via the Old Mahabalipuram Road. Its precise coordinates are approximately **12\u00b050'08.9\"N 80\u00b013'07.0\"E**\nPlus Code: **R6P9+8C Egattur, Tamil Nadu**.\n\nOfficial Map Directions Link: [Mohamed Sathak A.J. College of Engineering and Architecture on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA)",
       "decision": "ANSWER",
       "normalized_query": {
         "original_query": "What is the swimming pool timing in the campus hostel?",
@@ -374,8 +380,8 @@
           "chunk_id": "msajce_about_015",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.4705,
-          "rerank_score": 0.6705,
+          "rrf_score": 0.4707,
+          "rerank_score": 0.6707,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83c\udf7d\ufe0f Dining & Nightlife\n\nSiruseri has a "
         },
         {
@@ -390,29 +396,29 @@
           "chunk_id": "msajce_about_001",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.4692,
-          "rerank_score": 0.6692,
+          "rrf_score": 0.469,
+          "rerank_score": 0.669,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
-        },
-        {
-          "chunk_id": "msajce_about_021",
-          "source_file": "msajce_about.md",
-          "title": "About MSAJCEA",
-          "rrf_score": 0.4683,
-          "rerank_score": 0.6183,
-          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83c\udfe5 Government Hospitals (Nearest to Siruseri)\n\nThe"
         },
         {
           "chunk_id": "msajce_about_009",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.4679,
-          "rerank_score": 0.6179,
+          "rrf_score": 0.4683,
+          "rerank_score": 0.6183,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026"
+        },
+        {
+          "chunk_id": "msajce_about_006",
+          "source_file": "msajce_about.md",
+          "title": "About MSAJCEA",
+          "rrf_score": 0.4673,
+          "rerank_score": 0.6173,
+          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83c\udfe5 Hospitals & Me"
         }
       ],
       "trace": {
-        "request_id": "req_1791038846503",
+        "request_id": "req_1791083412591",
         "original_query": "What is the swimming pool timing in the campus hostel?",
         "normalized_query": {
           "original_query": "What is the swimming pool timing in the campus hostel?",
@@ -437,8 +443,10 @@
         "intent_category": "INSTITUTIONAL_QUERY",
         "query_class": "transport",
         "is_rag_required": true,
+        "adaptive_depth_active": false,
+        "candidate_depth": 10,
         "repair_attempted": false,
-        "latency_ms": 1532.73,
+        "latency_ms": 430.95,
         "evidence_decision": "ANSWER"
       }
     },
@@ -447,7 +455,7 @@
       "category": "negative",
       "query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
       "expected": "ABSTAIN",
-      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architecture is located at:\n34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Chennai, Tamil Nadu 603103, India.\n\nThe college is situated within the Siruseri IT Park, making it easily accessible via the Old Mahabalipuram Road. Its precise coordinates are approximately **12\u00b050'08.9\"N 80\u00b013'07.0\"E**\nPlus Code: **R6P9+8C Egattur, Tamil Nadu**.\n\nOfficial Map Directions Link: [Mohamed Sathak A.J. College of Engineering and Architecture on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA) About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\udecd\ufe0f Shopping Malls & Retail Hubs\n\nWhile there are no massive \"city-style\" malls strictly inside the IT park gates, the immediate surrounding stretches (Egattur, Navalur, Thazhambur) offer extensive retail options:\n- **The Marina Mall (Egattur)**: A major 1.5 million sq. ft. lifestyle destination located right at the edge of Siruseri (Egattur, OMR). It features international brands (Marks & Spencer, Levi's), a SPAR supermarket, food court, INOX theater, and Timezone gaming. Open daily 10 AM to 10 PM.\n- **Thazhambur High Road Market**: A bustling commercial strip **3 km** away, densely packed with showrooms, clothing brands, electronics stores, and lifestyle outlets.\n- **ECR Shopping Complexes**: Towards the East Coast Road (10\u201315 mins away), you find large format stores like **Decathlon** (sports), **IKEA** (home furnishings, near Thoraipakkam), and **Croma/Reliance Digital**.\n- **Local Retail**: Inside the Siruseri/Navalur junction, there are numerous mini-marts, **Reliance Smart Point**, **More Supermarket**, and **Nilgiris** for daily groceries. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\ude97 Fuel & Automotive\n\n- **Fuel Stations**: Multiple high-capacity fuel bunks (IOCL, BPCL, HPCL) with attached convenience stores (**Smart Bazaar**, **In & Out**) are located at the Siruseri entrance, Navalur, and Thazhambur.\n- **Service Centers**: Showrooms and service centers for major car and two-wheeler brands (Hyundai, Maruti, Honda, TVS) are clustered along the OMR service road near Navalur.",
+      "actual_response": "Based on verified MSAJCE official records: E-Governance & Service Policies: ### Document: E-Governance & Service Policies | Section: HR Policies \u2014 25. Patent and IPR\n\nThe inventors shall be the owner for all the intellectual property inventions, which includes patent and the inventions invented or created by the inventors/creators who include faculty members, research, scholars, students and those who make use of the resources of the Mohamed Sathak A.J. College of Engineering and Architecture, Chennai The inventions created by **MSAJCEA** personnel without using college resources and created outside their assigned/normal duties of teaching/research shall be owned by the inventors and the revenue generated out of such inventions shall be shared in the ratio of 75:25 between the inventor and College respectively. If an IP has emerged as a result of an Institutional/Industrial consultancy, sponsored to Mohamed Sathak A.J. College of Engineering and Architecture, Chennai the concerned industries and Mohamed Sathak A.J. College of Engineering and Architecture Chennai shall own the IP. This however will not apply to those IP that are covered under specific Memorandum of Understandings (MoU\u2019s) where the action shall be carried out as per the provisions of the MoU\u2019s. If the IP is a result of funds sponsored by an outside agency, then the IP will be shared the Mohamed Sathak A.J. College of Engineering and Architecture, Chennai and the sponsoring agency on case-by-case basis, as per MoU / Agreement/Undertaking. Alumni Association: ### Document: Alumni Association | Section: **MSAJCEA** Alumni Association \u2014 15. Alumni Scholarship Contribution\n\nThe **MSAJCEA** Alumni Association also sponsored sports jerseys for **MSAJCEA**'s cricket and football teams on November 1, 2023. Moreover, they sponsored the Tech Unity event for **MSAJCEA** symposium on October 16, 2023, and the Codeathon symposium on May 8, 2023.\n\nSeveral alumni of Mohamed Sathak A.J. College of Engineering and Architecture have made significant contributions to **MSAJCEA**. Farhan Basha T, a student from the 2021-2025 batch of the Computer Science and Engineering department, made contributions on two separate occasions: 24th March 2023 and 29th June 2022. Abdullah S, from the 2020-2024 batch of the Information Technology department, also made contributions on two separate dates: 18th March 2023 and 15th September 2022.\n\nThe BSM Cricket Trophy Tournament was sponsored on 24th February 2023. Additionally, a Smart Board Device was sponsored on 23rd January 2023. **MSAJCEA** also recognized its top performers department-wise on 15th October 2022. Furthermore, a Cricket Kit was sponsored on 7th October 2022.\n\nOther notable contributors include Ashwini A and Akshaya K, both from the 2019-2023 batch of the Electronics and Communication Engineering department, who made contributions on 8th September 2022. Md Sajith S, a student from the 2022-2026 batch of the Electronics and Communication Engineering department, made a contribution on 11th August 2022. Aayathul Mufarak A, from the 2019-2023 batch of the Mechanical Engineering department, made contributions on three separate occasions: 2nd August 2022, 30th March 2022, and 13th February 2021.\n\nAssifa A, from the 2019-2023 batch of the Electronics and Communication Engineering department, made a contribution on 2nd September 2023. Parveen Begum M, a student from the 2018-2022 batch of the Computer Science and Engineering department, made a contribution on 30th March 2022. Admissions & Eligibility: ### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 4. Admission through TNEA Counselling\n\nThe official TNEA Counselling Code for Mohamed Sathak A.J. College of Engineering and Architecture (MSAJCEA) is **1301**. Students who have completed Plus 2 or Diploma may apply for Tamil Nadu Engineering Admissions counselling for B.E or B.Tech programmes admission conducted by the Directorate of Technical Education in Chennai using TNEA Code **1301**. E-Governance & Service Policies: ### Document: E-Governance & Service Policies | Section: ANTI RAGGING POLICY\n\nRagging in any form is totally prohibited in and outside the campus of Mohamed Sathak A.J. College of Engineering and Architecture. It is the objective of every member of **MSAJCEA** community consisting of the Management, Faculty and Staff members and as well as all students and their parents / guardians to make **MSAJCEA** a 'Ragging free Institution` and ensure a conducive environment for fresher\u2019s to adapt to the changes that **MSAJCEA** life may demand on them and grow up along with theirseniors. **MSAJCEA** is committed to follow all Regulations and Guidelines promulgated by the UGC, AICTE and Honorable Supreme Court and other higher authorities from time to time. **MSAJCEA** will not permit or condone any incident of ragging in any form and will take all necessary and required measures to achieve the objective of eliminating ragging, within **MSAJCEA** or outside. **MSAJCEA** will follow the UGC Regulations on curbing the menace of ragging in Higher Educational Institutions, 2009. (F.1-16 / 2007 (CPP-dated 17th June, 2009) and take stringent action against those found guilty of ragging and/or abetting ragging, actively or passively, or being part of a conspiracy to promote ragging, in accordance with these and other Regulations in force. All the students and parents should submit the affidavit at the time of admission as well as submit the online affidavit in AICTE portal withoutfail. Ragging in any form is totally banned and anyone found indulging in ragging is severely punished including dismissal from **MSAJCEA**. Ragging constitutes one or more of any of the following acts Any conduct by any student or students whether by words spoken or written or by an act which has the effect of teasing, ill-treating or handling with rudeness a fresher or any other student. Indulging any indiscipline activities by any student or students which causes or is likely to cause annoyance, hardship, physical or psychological harm or to raise fear or apprehension thereof in any fresher or any otherstudent. Asking any student to do any act which such student will not in the ordinary course do and which has the effect of causing or generating a sense of shame, or torment or embarrassment so as to adversely affect the physique or psyche of a fresher or any otherstudent. Any act by a senior student that prevents, disrupts or disturbs the regular academic activity of any other student or a fresher. Exploiting the services of a fresher or any other student for completing the academic tasks assigned to an individual or a group of students. Any act of financial extortion or forceful expenditure burden put on a fresher or any other student by students. Any act of physical abuse including all variants of it: sexual abuse, homosexual assaults, stripping, forcing obscene and lewd acts, gestures, causing bodily harm or any other danger to health or person; Any act or abuse by spoken words, emails, posts, public insults which would also include deriving perverted pleasure, vicarious or sadistic thrill from actively or passively participating in the discomfiture to fresher or any otherstudent. Any act that affects the mental health and self-confidence of a fresher or any other student with or without an intent to derive a sadistic pleasure or showing off power, authority or superiority by a student over any fresher or any otherstudent. Don\u2019t \u2018RAG\u2019 also Don\u2019t be a Mute Witness to \u2018RAGGING\u2019 A Student indulging in ragging can be: Expelled from **MSAJCEA** and Banned from the Mess / Hostel His / Her Scholarship can be withdrawn Debarred from Examinations & Denied Admission to any institution Prosecuted for Criminal action \u2013 Max. 10 yr Jail + Rs 50000 fine Institutions have been asked to file FIR with local police against those who RAG / ABET Ragging. Are You Being Ragged? Immediately call UGC Anti \u2013 Ragging Helpline 1800-1805522 (24 / 7 Toll Free) Or send an e-mail to helpline@antiragging.in 27 About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architecture is located at:\n34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Chennai, Tamil Nadu 603103, India.\n\nThe college is situated within the Siruseri IT Park, making it easily accessible via the Old Mahabalipuram Road. Its precise coordinates are approximately **12\u00b050'08.9\"N 80\u00b013'07.0\"E**\nPlus Code: **R6P9+8C Egattur, Tamil Nadu**.\n\nOfficial Map Directions Link: [Mohamed Sathak A.J. College of Engineering and Architecture on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA) E-Governance & Service Policies: ### Document: E-Governance & Service Policies | Section: Scholarship Policy\n\nMohamed Sathak Educational Trust Scholarship: Mohamed Sathak educational trust provides merit scholarship to the eligible students, throughout their course of study to support their education as per the following criteria: Students who willing to join in **MSAJCEA** with cut-off mark of 180 and above out of 200 marks will be considered as eligible students to acquire the merit scholarship and it is provided only to the students those who get approval from **MSAJCEA** before attending the counseling. Students who are from underprivileged background, despite their aggregate marks. (Evident with the income certificate). Special consideration of up to 10% in tuition fees for the girls students. The following processes need to adhere to claim the merit scholarship: The students who are eligible have to fill an application form and the same has to be submitted to the Administration Office. The Scholarship committee will verify the authenticity of the certificates through a transparent approach and subsequently recommend the students to the trust for providing the eligible scholarship. A certificate denoting their Scholarship throughout their course of study will be provided as a documentary to the Scholarship availed students. All the students should maintain their academic credentials and disciplined to continue the scholarship. Government Scholarships: College creates awareness and assists students in applying for scholarships provided by Central & State government under various schemes. Name of the Scheme Funding Agency Scholarship Amount in Rs Pragati scholarship scheme for Girl Students AICTE Rs. 50,000 per year Saksham scholarship scheme for specially abled students AICTE Rs. 50,000 per year Merit cum based Scholarship ( minority community only) Ministry of Minority Affairs Rs. 20,000 per year + Rs. 12000 for Hosteller, Rs. 6000 for Day Scholar Central Sector Scheme MHRD Rs. 10000 per year Financial Assistance for Education to the wards of Beedi/Mine/Cine workers Ministry of Labor & Employment Rs. 15000 per year PRINCIPAL",
       "decision": "ANSWER",
       "normalized_query": {
         "original_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
@@ -467,53 +475,53 @@
         "degrees": [],
         "numbers": [],
         "requested_attributes": [],
-        "query_type": "single_fact"
+        "query_type": "list"
       },
       "conversation_history": [],
       "retrieved_chunks": [
         {
-          "chunk_id": "msajce_about_001",
-          "source_file": "msajce_about.md",
-          "title": "About MSAJCEA",
-          "rrf_score": 0.4552,
-          "rerank_score": 0.8052,
-          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**"
+          "chunk_id": "msajce_msajcepolicy_028",
+          "source_file": "msajce_msajcepolicy.md",
+          "title": "E-Governance & Service Policies",
+          "rrf_score": 0.309,
+          "rerank_score": 0.759,
+          "snippet": "### Document: E-Governance & Service Policies | Section: HR Policies \u2014 25. Patent and IPR\n\nThe inventors shall be the owner for all the intellectual p"
+        },
+        {
+          "chunk_id": "msajce_alumni_050",
+          "source_file": "msajce_alumni.md",
+          "title": "Alumni Association",
+          "rrf_score": 0.3931,
+          "rerank_score": 0.7931,
+          "snippet": "### Document: Alumni Association | Section: **MSAJCEA** Alumni Association \u2014 15. Alumni Scholarship Contribution\n\nThe **MSAJCEA** Alumni Association a"
+        },
+        {
+          "chunk_id": "msajce_admission_004",
+          "source_file": "msajce_admission.md",
+          "title": "Admissions & Eligibility",
+          "rrf_score": 0.5307,
+          "rerank_score": 1.3807,
+          "snippet": "### Document: Admissions & Eligibility | Section: Programmes Offered and Seats Available \u2014 4. Admission through TNEA Counselling\n\nThe official TNEA Co"
+        },
+        {
+          "chunk_id": "msajce_msajcepolicy_036",
+          "source_file": "msajce_msajcepolicy.md",
+          "title": "E-Governance & Service Policies",
+          "rrf_score": 0.2929,
+          "rerank_score": 0.7429,
+          "snippet": "### Document: E-Governance & Service Policies | Section: ANTI RAGGING POLICY\n\nRagging in any form is totally prohibited in and outside the campus of M"
         },
         {
           "chunk_id": "msajce_about_003",
           "source_file": "msajce_about.md",
           "title": "About MSAJCEA",
-          "rrf_score": 0.4566,
-          "rerank_score": 0.7566,
+          "rrf_score": 0.5406,
+          "rerank_score": 0.7906,
           "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architec"
-        },
-        {
-          "chunk_id": "msajce_about_013",
-          "source_file": "msajce_about.md",
-          "title": "About MSAJCEA",
-          "rrf_score": 0.4429,
-          "rerank_score": 0.6429,
-          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\udecd\ufe0f Shopping Malls & Retail Hubs\n\nWhile"
-        },
-        {
-          "chunk_id": "msajce_about_017",
-          "source_file": "msajce_about.md",
-          "title": "About MSAJCEA",
-          "rrf_score": 0.4429,
-          "rerank_score": 0.6429,
-          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83d\ude97 Fuel & Automotive\n\n- **Fuel Stations"
-        },
-        {
-          "chunk_id": "msajce_about_002",
-          "source_file": "msajce_about.md",
-          "title": "About MSAJCEA",
-          "rrf_score": 0.4429,
-          "rerank_score": 0.5929,
-          "snippet": "### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 2. Why Join **MSAJCEA**\n\n**MSAJCEA** is located in a green, lush environment at the Sirus"
         }
       ],
       "trace": {
-        "request_id": "req_1791038852504",
+        "request_id": "req_1791083418597",
         "original_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
         "normalized_query": {
           "original_query": "How to apply for the NASA Astronaut Scholarship at MSAJCE?",
@@ -533,13 +541,15 @@
           "degrees": [],
           "numbers": [],
           "requested_attributes": [],
-          "query_type": "single_fact"
+          "query_type": "list"
         },
         "intent_category": "INSTITUTIONAL_QUERY",
         "query_class": "simple",
         "is_rag_required": true,
+        "adaptive_depth_active": true,
+        "candidate_depth": 25,
         "repair_attempted": false,
-        "latency_ms": 2594.99,
+        "latency_ms": 540.25,
         "evidence_decision": "ANSWER"
       }
     },
@@ -548,7 +558,7 @@
       "category": "negative",
       "query": "What is the Metro train station located inside the campus?",
       "expected": "ABSTAIN",
-      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n\n- **SIPCOT Industrial Fire Station**: Located **inside** the IT Park on First Cross Road. This is the primary response unit for fire emergencies within the campus. (Contact: 044-27470720 / 044-24401213)\n- **Tamil Nadu Fire & Rescue Services (Siruseri Unit)**: Co-located with the SIPCOT station, equipped for industrial and high-rise rescue operations. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83d\ude92 Fire & Rescue (Siruseri IT Park)\n\nThe **SIPCOT IT Park Fire Station** is located inside the park premises.\n- **Station Phone**: **044-27470720**\n- **Mobile (Duty Officer)**: **+91-9445086139** / **+91-9600984344**\n- **Location**: First Cross Road, SIPCOT IT Park, Siruseri.\n- **Emergency Dial**: **101** (Routes to nearest unit). About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026\u20132028)\n\n- **Chennai Metro Phase II**: The **Purple Line (Corridor 3: Madhavaram\u2013SIPCOT)** and **Corridor 5** are under construction. The **Siruseri SIPCOT Metro Station** is expected to be operational by **late 2026 to 2028**, directly connecting the park to central Chennai and reducing commute times significantly.\n- **Road Upgrades**: An **under-pass at Potheri Junction** and extensions to the **Outer Ring Road (ORR)** are planned to decongest the NH-45 and OMR intersection, improving access to the airport and Chengalpattu.\n- **Campus Expansions**: Major firms like **HCL** and **L&T** have announced plans for adjacent expansions in 2026, adding further office capacity.",
+      "actual_response": "Based on verified MSAJCE official records: About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 4. Local Essential Services, Emergency Facilities & Government Offices \u2014 \ud83d\ude92 Fire & Rescue\n\n- **SIPCOT Industrial Fire Station**: Located **inside** the IT Park on First Cross Road. This is the primary response unit for fire emergencies within the campus. (Contact: 044-27470720 / 044-24401213)\n- **Tamil Nadu Fire & Rescue Services (Siruseri Unit)**: Co-located with the SIPCOT station, equipped for industrial and high-rise rescue operations. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 1. Overview\n\nThe Mohamed Sathak A.J. College of Engineering and Architecture (**MSAJCEA**), established on 5th July 2001 under the aegis of Mohamed Sathak Trust, is approved by AICTE New Delhi, and is affiliated to Anna University Chennai and the Government of Tamil Nadu. **MSAJCEA** strives to continuously upgrade its facilities to provide quality technical education to meet industrial and societal needs by providing skill-based training with state-of-the-art facilities.\n\n**MSAJCEA** campus sprawls over 70 acres of greenery located inside the SIPCOT IT Park in Siruseri, and it is surrounded by multinational IT companies such as TCS, CTS, Intellect, Aspire, Steria, Polaris, and FSS. **MSAJCEA** has good infrastructure facilities such as spacious classrooms, drawing halls, laboratories, seminar halls, computer facilities with internet and wifi connectivity, a library, workshops, an auditorium, and a playground. **MSAJCEA** is well connected by road, rail, and air from various parts of the country. A team of well-qualified and experienced faculty supports the teaching and learning process. **MSAJCEA** provides equal importance for academic, co-curricular, and extracurricular activities. **MSAJCEA** provides all kinds of training for the professional and overall transformation of the students. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 7. Official Emergency Contact Numbers \u2014 \ud83d\ude92 Fire & Rescue (Siruseri IT Park)\n\nThe **SIPCOT IT Park Fire Station** is located inside the park premises.\n- **Station Phone**: **044-27470720**\n- **Mobile (Duty Officer)**: **+91-9445086139** / **+91-9600984344**\n- **Location**: First Cross Road, SIPCOT IT Park, Siruseri.\n- **Emergency Dial**: **101** (Routes to nearest unit). About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 5. History, Lifestyle & Future Developments in Siruseri \u2014 \ud83d\ude87 Upcoming Infrastructure (2026\u20132028)\n\n- **Chennai Metro Phase II**: The **Purple Line (Corridor 3: Madhavaram\u2013SIPCOT)** and **Corridor 5** are under construction. The **Siruseri SIPCOT Metro Station** is expected to be operational by **late 2026 to 2028**, directly connecting the park to central Chennai and reducing commute times significantly.\n- **Road Upgrades**: An **under-pass at Potheri Junction** and extensions to the **Outer Ring Road (ORR)** are planned to decongest the NH-45 and OMR intersection, improving access to the airport and Chengalpattu.\n- **Campus Expansions**: Major firms like **HCL** and **L&T** have announced plans for adjacent expansions in 2026, adding further office capacity. About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 3. Campus Location & Google Maps\n\nMohamed Sathak A.J. College of Engineering and Architecture is located at:\n34, Rajiv Gandhi Salai (OMR), Inside SIPCOT IT Park, Siruseri, Egattur, Chennai, Tamil Nadu 603103, India.\n\nThe college is situated within the Siruseri IT Park, making it easily accessible via the Old Mahabalipuram Road. Its precise coordinates are approximately **12\u00b050'08.9\"N 80\u00b013'07.0\"E**\nPlus Code: **R6P9+8C Egattur, Tamil Nadu**.\n\nOfficial Map Directions Link: [Mohamed Sathak A.J. College of Engineering and Architecture on Google Maps](https://maps.app.goo.gl/nrTgXSwx1h76SjdSA) About MSAJCEA: ### Document: About MSAJCEA | Section: **MSAJCEA** \u2014 About \u2014 6. Shopping, Dining, Nightlife & Local Utilities \u2014 \ud83c\udf7d\ufe0f Dining & Nightlife\n\nSiruseri has a vibrant food scene catering to IT professionals and students:\n- **Food Streets**: The **Navalur Junction** and **Thazhambur Main Road** are lined with hundreds of restaurants, ranging from quick-service (McDonald's, KFC, Domino's) to fine dining.\n- **Popular Chains**: **Starbucks**, **Barista**, **The Coffee Bean & Tea Leaf**, and **Burger King** have multiple outlets in the Navalur/Thazhambur stretch.\n- **Local Favorites**: Numerous \"mess\" style eateries inside the IT park and affordable South Indian tiffin centers (like **A2B** and **Saravana Bhavan**) surround the campus.\n- **Nightlife**: Pubs and breweries like **The Park** (hotel bar), **Highway 74**, and **Palm Beach** are located along the ECR and OMR stretch, about 10\u201315 minutes away.",
       "decision": "ANSWER",
       "normalized_query": {
         "original_query": "What is the Metro train station located inside the campus?",
@@ -610,7 +620,7 @@
         }
       ],
       "trace": {
-        "request_id": "req_1791038864513",
+        "request_id": "req_1791083430600",
         "original_query": "What is the Metro train station located inside the campus?",
         "normalized_query": {
           "original_query": "What is the Metro train station located inside the campus?",
@@ -631,8 +641,10 @@
         "intent_category": "INSTITUTIONAL_QUERY",
         "query_class": "simple",
         "is_rag_required": true,
+        "adaptive_depth_active": false,
+        "candidate_depth": 10,
         "repair_attempted": false,
-        "latency_ms": 1685.72,
+        "latency_ms": 429.84,
         "evidence_decision": "ANSWER"
       }
     }

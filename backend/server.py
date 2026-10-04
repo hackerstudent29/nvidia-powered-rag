@@ -125,6 +125,28 @@ except ImportError:
         pass
 
 
+# Lorin AI Production Readiness Modules (RC1)
+try:
+    from backend.core.security import global_rate_limiter, sanitize_user_input, mask_sensitive_data
+    from backend.core.observability import trace_id_ctx, session_id_ctx, log_pipeline_telemetry, telemetry_logger
+    from backend.core.resilience import (
+        with_retry, with_async_retry, qdrant_circuit_breaker, nvidia_nim_circuit_breaker, CircuitBreakerOpenException
+    )
+    from backend.core.session_manager import global_session_manager
+    from backend.core.monitoring import global_metrics
+    from backend.core.feature_flags import global_flags
+except ImportError:
+    from core.security import global_rate_limiter, sanitize_user_input, mask_sensitive_data
+    from core.observability import trace_id_ctx, session_id_ctx, log_pipeline_telemetry, telemetry_logger
+    from core.resilience import (
+        with_retry, with_async_retry, qdrant_circuit_breaker, nvidia_nim_circuit_breaker, CircuitBreakerOpenException
+    )
+    from core.session_manager import global_session_manager
+    from core.monitoring import global_metrics
+    from core.feature_flags import global_flags
+
+
+
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
 backend_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
@@ -1107,17 +1129,67 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------
-# Health Check — required for Railway deployment
+# Health & Production Monitoring (RC1)
 # ---------------------------------------------------------
 @app.get("/", tags=["health"])
 async def health_check():
-    return {"status": "ok", "service": "Lorin AI API", "version": "2.0.0"}
+    return {"status": "ok", "service": "Lorin AI API", "version": "5.1-rc1"}
+
+@app.get("/healthz", tags=["health"])
+async def liveness_probe():
+    """Kubernetes / Railway liveness probe."""
+    return {"status": "healthy", "timestamp": time.time(), "version": "5.1-rc1"}
+
+@app.get("/ready", tags=["health"])
+async def readiness_probe():
+    """Deep readiness probe checking Qdrant, BM25 corpus, and upstream connectivity."""
+    checks = {
+        "qdrant": False,
+        "bm25_corpus": False,
+        "nvidia_credentials": bool(NVIDIA_API_KEY)
+    }
+    if bm25_corpus and len(bm25_corpus) > 0:
+        checks["bm25_corpus"] = True
+    if qdrant_client:
+        try:
+            colls = qdrant_client.get_collections()
+            checks["qdrant"] = any(c.name == COLLECTION_NAME for c in colls.collections)
+        except Exception:
+            checks["qdrant"] = False
+    is_ready = checks["bm25_corpus"] and (checks["qdrant"] or checks["nvidia_credentials"])
+    status_code = 200 if is_ready else 503
+    return JSONResponse(
+        status_code=status_code,
+        content={"status": "ready" if is_ready else "degraded", "checks": checks}
+    )
+
+@app.get("/metrics", tags=["monitoring"])
+async def prometheus_metrics():
+    """Prometheus-compatible metrics exposition endpoint."""
+    metrics_text = global_metrics.generate_prometheus_metrics(
+        active_sessions=global_session_manager.active_session_count()
+    )
+    return Response(content=metrics_text, media_type="text/plain; version=0.0.4; charset=utf-8")
+
+@app.get("/api/admin/flags", tags=["admin"])
+async def get_feature_flags():
+    """Inspect active runtime feature flags for zero-downtime rollback."""
+    return {"flags": global_flags.get_all()}
+
+@app.post("/api/admin/flags", tags=["admin"])
+async def update_feature_flag(payload: Dict[str, Any]):
+    """Dynamically toggle runtime feature flags without redeployment."""
+    flag = payload.get("flag", "")
+    enabled = bool(payload.get("enabled", True))
+    success = global_flags.set_flag(flag, enabled)
+    return {"flag": flag, "enabled": enabled, "updated": success, "active_flags": global_flags.get_all()}
 
 # ---------------------------------------------------------
-# Embeddings & Retrieval Logic
+# Embeddings & Retrieval Logic (Resilience Wrapped)
 # ---------------------------------------------------------
+@with_async_retry(max_retries=3, initial_delay=0.5, backoff_factor=1.5)
 async def get_query_embedding(query_text: str) -> Optional[List[float]]:
-    """Compute 2048-dim dense embedding using NVIDIA NeMo embedding API."""
+    """Compute 2048-dim dense embedding using NVIDIA NeMo embedding API with async retry."""
     base_url = (NVIDIA_BASE_URL or "https://integrate.api.nvidia.com/v1").rstrip("/")
     url = f"{base_url}/embeddings"
     headers = {
@@ -1138,12 +1210,16 @@ async def get_query_embedding(query_text: str) -> Optional[List[float]]:
         else:
             print(f"[WARN] NVIDIA Embedding API error: {resp.status_code} - {resp.text}")
             return None
+    except (httpx.RequestError, ConnectionError, OSError) as e:
+        print(f"[WARN] NVIDIA Async Embedding Network Exception (retrying): {e}")
+        raise e
     except Exception as e:
         print(f"[WARN] NVIDIA Embedding Exception: {e}")
         return None
 
+@with_retry(max_retries=3, initial_delay=0.5, backoff_factor=1.5)
 def get_query_embedding_sync(query_text: str) -> Optional[List[float]]:
-    """Synchronous version of dense embedding lookup via NVIDIA NeMo API."""
+    """Synchronous version of dense embedding lookup via NVIDIA NeMo API with retry & backoff."""
     if not NVIDIA_API_KEY:
         return None
     base_url = (NVIDIA_BASE_URL or "https://integrate.api.nvidia.com/v1").rstrip("/")
@@ -1159,13 +1235,20 @@ def get_query_embedding_sync(query_text: str) -> Optional[List[float]]:
     }
     try:
         import requests
-        resp = requests.post(url, headers=headers, json=payload, timeout=5.0)
+        resp = requests.post(url, headers=headers, json=payload, timeout=8.0)
         if resp.status_code == 200:
             data = resp.json()
             return data["data"][0]["embedding"]
+        else:
+            print(f"[WARN] NVIDIA Sync Embedding API status {resp.status_code}")
+            return None
+    except (requests.exceptions.RequestException, ConnectionError, OSError) as e:
+        print(f"[WARN] NVIDIA Sync Embedding Network Exception (retrying): {e}")
+        raise e
     except Exception as e:
         print(f"[WARN] NVIDIA Sync Embedding Exception: {e}")
-    return None
+        return None
+
 
 # ---------------------------------------------------------
 # NVIDIA NeMo Guardrails & Nemotron Reranking Integration
@@ -4154,7 +4237,7 @@ def process_lorin_query(
         q_type in ["table", "list", "multi_hop", "entity", "comparison", "structured_table"] or
         any(w in q_low for w in ["intake", "seat", "seats", "fee", "fees", "tuition", "scholarship", "scholarships", "list", "all", "courses", "departments", "routes", "karma", "vlsi", "cyber"]) or
         sub_queries is not None
-    )
+    ) and global_flags.is_enabled("ADAPTIVE_DEPTH")
 
     adaptive_top_k = 25 if is_deep_query else req_top_k
     trace["adaptive_depth_active"] = is_deep_query
@@ -4285,8 +4368,28 @@ def process_lorin_query(
             "content": (chunk.get("content") or "")[:250] + "..."
         })
 
-    trace["latency_ms"] = round((time.time() - t0) * 1000, 2)
+    duration_s = time.time() - t0
+    trace["latency_ms"] = round(duration_s * 1000, 2)
     trace["evidence_decision"] = evidence_decision
+
+    # Production Observability & Prometheus Metrics
+    global_metrics.record_request(
+        status_code=200,
+        decision=evidence_decision,
+        duration_s=duration_s
+    )
+    if evidence_decision == "ABSTAIN":
+        global_metrics.record_taxonomy_failure("F", "Evidence contract")
+
+    if global_flags.is_enabled("STRUCTURED_LOGGING"):
+        log_pipeline_telemetry(
+            query=user_query,
+            decision=evidence_decision,
+            latency_ms=duration_s * 1000.0,
+            stage_durations=trace.get("stage_timings", {}),
+            retrieved_count=len(candidate_chunks),
+            refusal_reason=refusal_reason
+        )
 
     return {
         "response": actual_ans,
@@ -4299,6 +4402,7 @@ def process_lorin_query(
         "query_type": normalized.get("query_type", "single_fact"),
         "trace": trace
     }
+
 
 def validate_citations(answer_text: str, retrieved_chunks: List[Dict[str, Any]]) -> str:
     """Validates that citations reference retrieved chunks and rejects unsupported citation references."""
@@ -5192,6 +5296,7 @@ def get_query_focus_description(query: str, query_cat: str = "") -> Tuple[str, s
 class ChatRequest(BaseModel):
     message: str = Field(..., description="User question or query")
     session_id: Optional[str] = Field(None, description="UUID of chat session")
+    trace_id: Optional[str] = Field(None, description="Request trace ID for end-to-end tracing")
     user_id: Optional[str] = Field(None, description="Persistent client user identifier")
     user_name: Optional[str] = Field(None, description="User name from onboarding profile")
     user_age: Optional[int] = Field(None, description="User age from onboarding profile")
@@ -5204,15 +5309,37 @@ class ChatRequest(BaseModel):
 @app.post("/api/chat/stream")
 async def chat_stream_endpoint(req: ChatRequest, request: Request):
     start_time = time.time()
-    user_query = req.message.strip()
-    session_id = req.session_id or f"sess_{int(time.time() * 1000)}"
-    user_id = req.user_id or request.headers.get("x-user-id") or (f"usr_{request.client.host}" if request.client else "usr_local_dev_user")
     user_ip = request.client.host if request.client else "127.0.0.1"
+
+    # 1. Input Sanitization (Security Pillar)
+    raw_message = req.message or ""
+    user_query = sanitize_user_input(raw_message).strip()
+    if not user_query:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    # 2. Session Isolation & Context State (Session Isolation Pillar)
+    session_id = global_session_manager.validate_or_create_session_id(req.session_id)
+    session_state = global_session_manager.get_session(session_id)
+
+    # 3. Observability Context Tracing (Observability Pillar)
+    trace_id = req.trace_id or f"req_{int(time.time() * 1000)}"
+    trace_id_ctx.set(trace_id)
+    session_id_ctx.set(session_id)
+
+    # 4. Rate Limiting Check (Security Pillar & Rollback Toggle)
+    if global_flags.is_enabled("RATE_LIMITER"):
+        allowed, count, retry_after = global_rate_limiter.is_allowed(f"{user_ip}:{session_id}")
+        if not allowed:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded. Too many requests. Retry after {retry_after}s.",
+                headers={"Retry-After": str(int(retry_after))}
+            )
+
+    user_id = req.user_id or request.headers.get("x-user-id") or (f"usr_{request.client.host}" if request.client else "usr_local_dev_user")
     user_agent = request.headers.get("user-agent", "Unknown")
     model_id = req.model if (req.model and req.model != "auto") else auto_select_model(user_query)
 
-    if not user_query:
-        raise HTTPException(status_code=400, detail="Message cannot be empty")
 
     async def event_generator() -> AsyncGenerator[str, None]:
         nonlocal start_time, model_id, user_query
@@ -6439,12 +6566,38 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
     )
 
 @app.post("/api/chat")
-async def chat_sync_endpoint(req: ChatRequest):
+async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
     """Synchronous JSON endpoint for compatibility."""
     start_time = time.time()
-    user_query = req.message.strip()
-    session_id = req.session_id or f"sess_{int(time.time() * 1000)}"
+    user_ip = (request.client.host if (request and request.client) else "127.0.0.1")
+
+    # 1. Input Sanitization (Security Pillar)
+    raw_message = req.message or ""
+    user_query = sanitize_user_input(raw_message).strip()
+    if not user_query:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    # 2. Session Isolation (Session Isolation Pillar)
+    session_id = global_session_manager.validate_or_create_session_id(req.session_id)
+    session_state = global_session_manager.get_session(session_id)
+
+    # 3. Observability Context Tracing (Observability Pillar)
+    trace_id = req.trace_id or f"req_{int(time.time() * 1000)}"
+    trace_id_ctx.set(trace_id)
+    session_id_ctx.set(session_id)
+
+    # 4. Rate Limiting Check (Security Pillar & Rollback Toggle)
+    if global_flags.is_enabled("RATE_LIMITER"):
+        allowed, count, retry_after = global_rate_limiter.is_allowed(f"{user_ip}:{session_id}")
+        if not allowed:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Rate limit exceeded. Too many requests. Retry after {retry_after}s.",
+                headers={"Retry-After": str(int(retry_after))}
+            )
+
     model_id = req.model or "zai/glm-5.3-flash"
+
 
     # Guardrails check
     is_safe, refusal_msg = check_guardrails(user_query)
