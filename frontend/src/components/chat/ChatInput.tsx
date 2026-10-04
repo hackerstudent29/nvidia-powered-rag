@@ -4,7 +4,7 @@ import { Tooltip } from "../Tooltip";
 import { RateLimitInfo } from "../../types/chat";
 import { cn } from "../../lib/utils";
 import { AIVoiceInput } from "../ui/AIVoiceInput";
-import { Bot, Volume1, Volume2, Sparkles, Zap, SlidersHorizontal, Check, X, Play, Square, Mic, Gauge, AudioWaveform } from "lucide-react";
+import { Bot, Volume1, Volume2, Sparkles, Zap, SlidersHorizontal, Check, X, Play, Square, Mic, Gauge, AudioWaveform, ArrowUp } from "lucide-react";
 
 // ----------------------------------------------------------------------
 // Physics & Animation Constants (Butter smooth Apple cubic-bezier curves)
@@ -1254,252 +1254,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </span>
                 </button>
               </Tooltip>
-            </div>
-
-            {/* Right side controls container (Listening Waveform + Voice Selector + Mic Action Button) */}
-            <div className={cn("absolute right-2 z-[10] flex items-center gap-2 transition-all duration-300", expanded ? "bottom-2" : "top-1/2 -translate-y-1/2")}>
-              {/* Dynamic Animated Soundwave Visualizer */}
-              <AnimatePresence>
-                {isRecording && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, x: 10 }}
-                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, x: 10 }}
-                    transition={{ duration: 0.2 }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 border border-emerald-500/40 text-[#10b981] dark:text-[#34d399] backdrop-blur-md shadow-md"
-                  >
-                    <div className="flex items-center gap-0.5 h-4 px-0.5">
-                      {audioData.concat(audioData).slice(0, 12).map((val, i) => (
-                        <motion.span
-                          key={i}
-                          className="w-0.5 rounded-full bg-[#10b981] dark:bg-[#34d399] shadow-[0_0_6px_rgba(16,185,129,0.6)]"
-                          animate={{
-                            height: [
-                              Math.max(4, val * 16),
-                              Math.max(6, val * 26),
-                              Math.max(4, val * 16)
-                            ]
-                          }}
-                          transition={{
-                            repeat: Infinity,
-                            repeatType: "mirror",
-                            duration: 0.18 + (i % 5) * 0.04,
-                            ease: "easeInOut"
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <span className="font-mono text-[11px] font-bold text-[#10b981] dark:text-[#34d399]">
-                      {formatRecordingTime(recordingSeconds)}
-                    </span>
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-[#10b981] dark:text-[#34d399] uppercase animate-pulse">
-                      Listening...
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Voice & STT Engine Selector (Placed right beside mic button) */}
-              <div className="relative">
-                <Tooltip content="Select Speech Voice & AI STT Model">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onOpenSettings) {
-                        onOpenSettings();
-                      } else {
-                        setIsVoiceMenuOpen(!isVoiceMenuOpen);
-                      }
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E1EED7]/90 dark:bg-[#10b981]/15 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E]/15 dark:hover:bg-[#10b981]/25 text-xs font-bold transition-all cursor-pointer border border-[#2E6B5E]/20 dark:border-[#10b981]/30 shadow-xs"
-                  >
-                    <Mic className="size-3.5 text-[#10b981]" />
-                    <span>
-                      {AURA_VOICES.find(v => v.id === selectedVoice)?.name || "Brooke"}
-                    </span>
-                  </button>
-                </Tooltip>
-
-                {!onOpenSettings && isVoiceMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 rounded-2xl bg-white/95 dark:bg-[#12141c]/95 backdrop-blur-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.4)] border border-black/10 dark:border-white/15 z-50 cursor-default text-ink dark:text-white"
-                  >
-                    {/* Compact Header */}
-                    <div className="px-1 pb-1.5 border-b border-black/[0.06] dark:border-white/[0.08] mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <SlidersHorizontal className="size-3.5 text-[#10b981]" />
-                        <span className="font-bold text-[11px] tracking-tight text-ink dark:text-white">Voice & Tone</span>
-                        <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-[#10b981] font-mono font-bold border border-emerald-500/30">
-                          AI
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsVoiceMenuOpen(false);
-                        }}
-                        className="text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-white p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                      >
-                        <X className="size-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Voice Filter Bar */}
-                    <div className="flex items-center justify-between mb-2 px-0.5">
-                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider text-ink-3 dark:text-zinc-400 flex items-center gap-1">
-                        <AudioWaveform className="size-3 text-[#10b981]" />
-                        AI Speakers ({AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).length})
-                      </span>
-
-                      {/* Male / Female Filter Options */}
-                      <div className="flex items-center gap-0.5 bg-black/[0.04] dark:bg-black/40 p-0.5 rounded-md border border-black/[0.06] dark:border-white/[0.06]">
-                        {(["all", "Feminine", "Masculine"] as const).map((g) => (
-                          <button
-                            key={g}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setGenderFilter(g);
-                            }}
-                            className={cn(
-                              "px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer",
-                              genderFilter === g
-                                ? "bg-white dark:bg-emerald-500/20 text-[#10b981] border border-black/10 dark:border-emerald-500/40 shadow-xs font-extrabold"
-                                : "text-ink-3 dark:text-zinc-400 hover:text-ink dark:hover:text-zinc-200"
-                            )}
-                          >
-                            {g === "all" ? "All" : g === "Feminine" ? "Female" : "Male"}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {/* AI Speaker Voice List */}
-                    <div className="flex flex-col gap-1 overflow-y-auto pr-0.5 custom-scrollbar max-h-64">
-                      {AURA_VOICES.filter(v => genderFilter === "all" || v.gender === genderFilter).map((v) => (
-                                  <div
-                                    key={v.id}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleVoiceSelect(v.id);
-                                    }}
-                                    className={cn(
-                                      "group relative flex items-center justify-between p-1.5 rounded-lg border transition-all cursor-pointer",
-                                      selectedVoice === v.id
-                                        ? "bg-black/[0.04] dark:bg-white/[0.08] border-black/[0.08] dark:border-[#10b981]/50 shadow-xs"
-                                        : "bg-black/[0.02] dark:bg-white/[0.03] border-transparent hover:bg-black/[0.05] dark:hover:bg-white/[0.06]"
-                                    )}
-                                  >
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      {/* Play Preview Button */}
-                                      <button
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handlePlayPreview(e, v);
-                                        }}
-                                        title="Play voice preview"
-                                        className={cn(
-                                          "size-5 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-xs",
-                                          previewingVoiceId === v.id
-                                            ? "bg-[#10b981] text-white animate-pulse"
-                                            : "bg-black/10 dark:bg-white/10 text-ink dark:text-zinc-300 hover:bg-[#10b981] hover:text-white"
-                                        )}
-                                      >
-                                        {previewingVoiceId === v.id ? (
-                                          <Square className="size-2 fill-current" />
-                                        ) : (
-                                          <Play className="size-2 fill-current ml-0.5" />
-                                        )}
-                                      </button>
-
-                                      {/* 3D Gradient Orb Avatar */}
-                                      <div className={cn("size-5 rounded-full bg-gradient-to-tr shadow-xs shrink-0 ring-1 ring-black/10 dark:ring-white/20", v.gradient)} />
-
-                                      {/* Voice Name & Description */}
-                                      <div className="flex flex-col min-w-0">
-                                        <div className="flex items-center gap-1">
-                                          <span className="font-semibold text-[11px] leading-tight text-ink dark:text-zinc-100 truncate">{v.name}</span>
-                                          <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-black/5 dark:bg-white/10 text-ink-3 dark:text-zinc-400 shrink-0">
-                                            {v.gender === "Masculine" ? "Male" : "Female"}
-                                          </span>
-                                        </div>
-                                        <span className="text-[9px] text-ink-3 dark:text-zinc-400 truncate">{v.description}</span>
-                                      </div>
-                                    </div>
-
-                                    {selectedVoice === v.id && (
-                                      <Check className="size-3.5 text-[#10b981] shrink-0 pl-0.5" />
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </motion.div>
-                          )}
-
-              </div>
-
-              {/* Single Unified Action Button (Mic -> ArrowUp -> Stop) */}
-              <Tooltip
-                content={
-                  isStreaming
-                    ? "Stop generating"
-                    : isRecording
-                    ? "Stop recording"
-                    : hasValue
-                    ? "Send message (Enter)"
-                    : "Voice Input (Speech to text)"
-                }
-              >
+                {/* Right side controls container (Lightweight Send & Stop Action Button) */}
+            <div className={cn("absolute right-2 z-[10] flex items-center gap-2 transition-all duration-200", expanded ? "bottom-2" : "top-1/2 -translate-y-1/2")}>
+              <Tooltip content={isStreaming ? "Stop generating" : "Send message (Enter)"}>
                 <button
                   type="button"
                   onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   onClick={handleActionButtonClick}
-                  disabled={!hasValue && !isRecording && !isStreaming && !!rateLimitInfo?.isLimited}
+                  disabled={!hasValue && !isStreaming && !!rateLimitInfo?.isLimited}
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-white transition-all duration-300 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
-                    showStop
-                      ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 animate-pulse ring-2 ring-red-400"
-                      : showArrow
-                      ? "bg-[#2E6B5E] dark:bg-[#10b981] dark:text-zinc-950 hover:opacity-90"
-                      : "bg-[#E1EED7] dark:bg-[#2E6B5E]/30 text-[#2E6B5E] dark:text-[#10b981] hover:bg-[#2E6B5E] hover:text-white dark:hover:bg-[#10b981] dark:hover:text-zinc-950"
+                    "flex size-8 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
+                    isStreaming
+                      ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 ring-2 ring-red-400"
+                      : hasValue
+                      ? "bg-[#9E2339] dark:bg-[#10b981] text-white dark:text-zinc-950 hover:opacity-90 shadow-[#9E2339]/20"
+                      : "bg-stone-200 dark:bg-zinc-800 text-stone-400 dark:text-zinc-500"
                   )}
                 >
-                  <span className="relative flex h-full w-full items-center justify-center">
-                    <span
-                      className={cn(
-                        "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                        showArrow ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
-                      )}
-                    >
-                      <ArrowUpIcon />
-                    </span>
-                    <span
-                      className={cn(
-                        "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                        showMic ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 -rotate-45 blur-[1px] pointer-events-none"
-                      )}
-                    >
-                      <MicIcon />
-                    </span>
-                    <span
-                      className={cn(
-                        "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                        showStop ? "opacity-100 scale-100 rotate-0 blur-none" : "opacity-0 scale-50 rotate-45 blur-[1px] pointer-events-none"
-                      )}
-                    >
-                      <StopIcon />
-                    </span>
-                  </span>
+                  {isStreaming ? (
+                    <Square className="size-3.5 fill-current" />
+                  ) : (
+                    <ArrowUp className="size-4 stroke-[2.5]" />
+                  )}
                 </button>
               </Tooltip>
-            </div>
+            </div>          </div>
           </div>
         </div>
 

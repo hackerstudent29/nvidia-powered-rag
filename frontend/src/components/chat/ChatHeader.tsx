@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Menu,
   X,
+  Mic,
 } from "lucide-react";
 import { JellyBlobMascot } from "../ui/JellyBlobMascot";
 
@@ -164,6 +165,19 @@ const ChatHeader = React.memo(function ChatHeader({
       action: () => {
         onOpenHistory();
         setActivePill("history");
+      },
+    },
+    {
+      id: "voice",
+      label: "Voice",
+      icon: Mic,
+      action: () => {
+        if (onOpenSettings) {
+          onOpenSettings();
+        } else {
+          navigate("/settings");
+        }
+        setActivePill("voice");
       },
     },
     {
