@@ -3780,10 +3780,23 @@ async def analyze_conversational_intent_ai(user_query: str) -> Dict[str, Any]:
         "course", "courses", "syllabus", "curriculum", "scholarship", "scholarships", "naac", "nba",
         "cse", "aids", "aiml", "it", "cyber", "ece", "eee", "mech", "civil", "csbs", "b.arch", "b.des"
     ]
-    has_campus_term = any(re.search(rf'\b{re.escape(kw)}\b', q_clean, re.IGNORECASE) for kw in campus_keywords)
-    has_q_mark = "?" in q_clean
+    conv_tokens = [
+        "hi", "hello", "hey", "thanks", "thank", "nandri", "shukriya", "awesome", "great",
+        "good", "super", "love", "amazing", "helpful", "best", "nice", "brilliant", "vanakkam"
+    ]
+    has_conv_token = any(re.search(rf'\b{re.escape(ct)}\b', q_clean, re.IGNORECASE) for ct in conv_tokens)
 
-    # 1. Fast LLM Classification Race (<150ms)
+    # 0ms Sub-1ms Local Intent Fast-Path (Eliminates 2.5s HTTP network classification overhead)
+    if has_campus_term and not has_conv_token:
+        return {"category": "INSTITUTIONAL_QUERY", "extracted_question": q_clean, "is_rag_required": True}
+
+    if has_campus_term and has_conv_token:
+        return {"category": "MIXED_COMPOUND", "extracted_question": q_clean, "is_rag_required": True}
+
+    if not has_campus_term and has_conv_token and len(q_clean.split()) <= 6:
+        return {"category": "PURE_CONVERSATIONAL", "extracted_question": "", "is_rag_required": False}
+
+    # 1. Fast LLM Classification Race (<150ms) for ambiguous multi-lingual queries
     try:
         client = get_http_client()
         if client:
