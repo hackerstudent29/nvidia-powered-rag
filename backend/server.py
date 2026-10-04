@@ -3560,8 +3560,26 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
     if query_vector is None:
         query_vector = get_query_embedding_sync(expanded_query)
 
-    # 0. Pre-RRF Entity-Driven Candidate Injection
+    # 0. Pre-RRF Entity-Driven Candidate Injection & Virtual Entity Grounding
     matched_ents = search_knowledge_entities(query) if 'search_knowledge_entities' in globals() else []
+    if matched_ents:
+        for ent in matched_ents:
+            ekey = ent.get("entity_key") or ent.get("entity_name", "ent")
+            cname = ent.get("canonical_name") or ent.get("entity_name") or "Campus Entity"
+            desc = ent.get("description") or cname
+            sfile = ent.get("source_file") or "msajce_entities.md"
+            virtual_cid = f"v_ent_{re.sub(r'[^a-zA-Z0-9_]', '', ekey)}"
+            chunk_map[virtual_cid] = {
+                "chunk_id": virtual_cid,
+                "title": f"Official Campus Entity Record: {cname}",
+                "source_file": sfile,
+                "category": "entity_registry",
+                "page_url": "https://msajce.edu.in",
+                "content": f"### Document: Entity Registry | Section: {cname}\nName: {cname}\nDescription: {desc}\nSource File: {sfile}",
+                "entity_injected": True
+            }
+            scores[virtual_cid] = 10.0
+
     if matched_ents and bm25_corpus:
         target_chunk_ids = set()
         for ent in matched_ents:
@@ -3594,6 +3612,7 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
                         "entity_injected": True
                     }
                 scores[cid] = scores.get(cid, 0.0) + (1.0 / (60.0 + 1)) * 2.0
+
 
 
     # 1. Qdrant Dense Search

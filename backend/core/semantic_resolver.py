@@ -270,7 +270,11 @@ async def resolve_user_utterance(
         ))
 
     # 2.5 Fast Deterministic Contextual Coreference / Continuation Pass
-    if state.active_topic_frame and (len(q_clean.split()) <= 6 or re.search(r'\b(it|he|she|they|this|that|his|her|girls|boys|where|location|timings|fee|fees|qualification|warden|office)\b', q_clean, re.I)):
+    is_explicit_continuation = bool(re.search(r'\b(it|he|she|they|this|that|his|her|him|them)\b', q_clean, re.I))
+    is_elliptical_followup = bool(re.search(r'\b(what about|how about|and for|tell me more|any other)\b', q_clean, re.I))
+    has_distinct_new_topic = bool(re.search(r'\b(bus|buses|route|routes|stop|stops|velachery|tambaram|guindy|cutoff|cut-off|tnea|fee|fees|hostel|placement|placements|salary|admission|admissions|course|courses|syllabus|principal|hod|patents?)\b', q_clean, re.I))
+
+    if state.active_topic_frame and (is_explicit_continuation or is_elliptical_followup) and not (has_distinct_new_topic and not is_explicit_continuation):
         af = state.active_topic_frame
         cap_id = af.capability_id
         entities = canonical_entity_refs or list(af.active_entities)
@@ -297,7 +301,7 @@ async def resolve_user_utterance(
             attr_requests = ["office_location"]
 
         ent_names = " ".join([e.canonical_name for e in entities]) if entities else topic_name
-        search_q = f"{ent_names} {' '.join(slots.values())} {' '.join(attr_requests)}".strip()
+        search_q = f"{q_clean} {ent_names}".strip()
 
         qp = QueryPlan(
             plan_id=f"qp_{int(time.time()*1000)}",
