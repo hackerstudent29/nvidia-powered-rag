@@ -408,27 +408,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, []);
 
-  // Mobile startup: auto-open chatbot with keyboard ready to type; PC: start in compact small size
+  // Default to compact small pill size on initial load for a sleek, lightweight interface
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const isMobileDevice =
-      isMobile ||
-      window.innerWidth < 640 ||
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (isMobileDevice) {
-      const timer = setTimeout(() => {
-        setIsSmoothResize(false);
-        setExpanded(true);
-        if (textareaRef.current) {
-          textareaRef.current.focus();
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    } else {
-      setExpanded(false);
-    }
-  }, [isMobile]);
+    setExpanded(false);
+  }, []);
 
   const handleValueChange = useCallback((val: string) => {
     setText(val);
@@ -1170,7 +1153,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           transition={{ type: "spring", stiffness: 350, damping: 28 }}
           className="relative flex flex-col w-full mx-auto"
         >
-          {/* Main Input Card */}
+          {/* Main Input Card / Pill */}
           <motion.div
             layout
             transition={{ type: "spring", stiffness: 350, damping: 28 }}
@@ -1180,85 +1163,151 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               }
             }}
             className={cn(
-              "relative w-full border border-black/[0.08] dark:border-white/[0.12] bg-white/95 dark:bg-[#14151a]/95 backdrop-blur-xl shadow-md dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-all z-10 focus-within:border-[#9E2339]/60 dark:focus-within:border-[#10b981]/60 focus-within:ring-2 focus-within:ring-[#9E2339]/20 dark:focus-within:ring-[#10b981]/20",
-              expanded ? "rounded-2xl sm:rounded-[24px] p-3" : "rounded-2xl sm:rounded-full p-2.5 sm:p-3 hover:border-black/20 dark:hover:border-white/25"
+              "relative w-full border border-black/[0.08] dark:border-white/[0.12] bg-white/95 dark:bg-[#14151a]/95 backdrop-blur-xl shadow-md dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-all z-10 focus-within:border-[#9E2339]/60 dark:focus-within:border-[#10b981]/60 focus-within:ring-2 focus-within:ring-[#9E2339]/20 dark:focus-within:ring-[#10b981]/20 cursor-text",
+              expanded
+                ? "rounded-2xl sm:rounded-[24px] p-3 flex flex-col justify-between"
+                : "rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-2.5 h-[50px] sm:h-[52px]"
             )}
           >
-            {/* Textarea Input */}
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={(e) => handleValueChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={() => {
-                if (!expanded) {
-                  setIsSmoothResize(false);
-                  setExpanded(true);
-                }
-              }}
-              onBlur={() => {
-                if (text.trim() === "" && !isRecording && !isStreaming) {
-                  setIsSmoothResize(false);
-                  setExpanded(false);
-                  setIsModelSelectOpen(false);
-                  setIsVoiceMenuOpen(false);
-                }
-              }}
-              placeholder="Ask anything about MSAJCE..."
-              rows={expanded ? 3 : 1}
-              style={{
-                height: expanded ? containerHeight : "24px",
-                maxHeight: "180px"
-              }}
-              className={cn(
-                "w-full resize-none bg-transparent px-2 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-500 cursor-text transition-all duration-200",
-                isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
-              )}
-            />
-
-            {/* Bottom Actions Row: Effort Selector (Left) & Send/Stop Button (Right) */}
-            <div className="flex items-center justify-between pt-2 px-1 border-t border-black/[0.04] dark:border-white/[0.05] mt-1">
-              {/* Effort Selector Button */}
-              <Tooltip content="Adjust reasoning token budget (Low, Medium, Max Effort)">
-                <button
-                  type="button"
-                  onClick={cycleEffort}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
-                >
-                  <DynamicBarsIcon level={EFFORTS[effortIndex]} />
-                  <span className="inline text-[11px] font-semibold">
-                    <MorphingText text={EFFORTS[effortIndex]} />
-                  </span>
-                </button>
-              </Tooltip>
-
-              {/* Send / Stop Action Button */}
-              <Tooltip content={isStreaming ? "Stop generating" : "Send message (Enter)"}>
-                <motion.button
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.94 }}
-                  transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                  type="button"
-                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                  onClick={handleActionButtonClick}
-                  disabled={!hasValue && !isStreaming && !!rateLimitInfo?.isLimited}
+            {expanded ? (
+              <>
+                {/* Expanded Textarea Input */}
+                <textarea
+                  ref={textareaRef}
+                  value={text}
+                  onChange={(e) => handleValueChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => {
+                    if (!expanded) {
+                      setIsSmoothResize(false);
+                      setExpanded(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (text.trim() === "" && !isRecording && !isStreaming) {
+                      setIsSmoothResize(false);
+                      setExpanded(false);
+                      setIsModelSelectOpen(false);
+                      setIsVoiceMenuOpen(false);
+                    }
+                  }}
+                  placeholder="Ask anything about MSAJCE..."
+                  rows={3}
+                  style={{
+                    height: `${textareaHeight}px`,
+                    maxHeight: "180px"
+                  }}
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0",
-                    isStreaming
-                      ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 ring-2 ring-red-400"
-                      : hasValue
-                      ? "bg-[#9E2339] dark:bg-[#10b981] text-white dark:text-zinc-950 hover:opacity-90 shadow-[#9E2339]/25"
-                      : "bg-[#9E2339]/80 dark:bg-[#10b981]/80 text-white dark:text-zinc-950 hover:bg-[#9E2339] dark:hover:bg-[#10b981]"
+                    "w-full resize-none bg-transparent px-2 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-500 cursor-text transition-all duration-200",
+                    isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
                   )}
-                >
-                  {isStreaming ? (
-                    <Square className="size-3.5 fill-current" />
-                  ) : (
-                    <ArrowUp className="size-4 stroke-[2.5]" />
-                  )}
-                </motion.button>
-              </Tooltip>
-            </div>
+                />
+
+                {/* Bottom Actions Row: Effort Selector (Left) & Send/Stop Button (Right) */}
+                <div className="flex items-center justify-between pt-2 px-1 border-t border-black/[0.04] dark:border-white/[0.05] mt-1">
+                  {/* Effort Selector Button */}
+                  <Tooltip content="Adjust reasoning token budget (Low, Medium, Max Effort)">
+                    <button
+                      type="button"
+                      onClick={cycleEffort}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
+                    >
+                      <DynamicBarsIcon level={EFFORTS[effortIndex]} />
+                      <span className="inline text-[11px] font-semibold">
+                        <MorphingText text={EFFORTS[effortIndex]} />
+                      </span>
+                    </button>
+                  </Tooltip>
+
+                  {/* Send / Stop Action Button */}
+                  <Tooltip content={isStreaming ? "Stop generating" : "Send message (Enter)"}>
+                    <motion.button
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.94 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                      type="button"
+                      onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      onClick={handleActionButtonClick}
+                      disabled={!hasValue && !isStreaming && !!rateLimitInfo?.isLimited}
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0",
+                        isStreaming
+                          ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 ring-2 ring-red-400"
+                          : hasValue
+                          ? "bg-[#9E2339] dark:bg-[#10b981] text-white dark:text-zinc-950 hover:opacity-90 shadow-[#9E2339]/25"
+                          : "bg-[#9E2339]/80 dark:bg-[#10b981]/80 text-white dark:text-zinc-950 hover:bg-[#9E2339] dark:hover:bg-[#10b981]"
+                      )}
+                    >
+                      {isStreaming ? (
+                        <Square className="size-3.5 fill-current" />
+                      ) : (
+                        <ArrowUp className="size-4 stroke-[2.5]" />
+                      )}
+                    </motion.button>
+                  </Tooltip>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Collapsed Single-line Textarea Input */}
+                <textarea
+                  ref={textareaRef}
+                  value={text}
+                  onChange={(e) => handleValueChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => {
+                    setIsSmoothResize(false);
+                    setExpanded(true);
+                  }}
+                  placeholder="Ask anything about MSAJCE..."
+                  rows={1}
+                  style={{ height: "24px" }}
+                  className="flex-1 resize-none bg-transparent px-2 text-sm leading-[24px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-500 cursor-text overflow-hidden h-[24px] py-0"
+                />
+
+                {/* Inline Controls Row (Effort Selector + Send/Stop Button) */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <Tooltip content="Adjust reasoning token budget (Low, Medium, Max Effort)">
+                    <button
+                      type="button"
+                      onClick={cycleEffort}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-ink dark:text-[#f4f3ee] hover:bg-black/[0.08] dark:hover:bg-white/[0.1] text-xs font-semibold transition-all cursor-pointer border border-black/[0.06] dark:border-white/[0.06]"
+                    >
+                      <DynamicBarsIcon level={EFFORTS[effortIndex]} />
+                      <span className="inline text-[11px] font-semibold">
+                        <MorphingText text={EFFORTS[effortIndex]} />
+                      </span>
+                    </button>
+                  </Tooltip>
+
+                  <Tooltip content={isStreaming ? "Stop generating" : "Send message (Enter)"}>
+                    <motion.button
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.94 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                      type="button"
+                      onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      onClick={handleActionButtonClick}
+                      disabled={!hasValue && !isStreaming && !!rateLimitInfo?.isLimited}
+                      className={cn(
+                        "flex size-8 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0",
+                        isStreaming
+                          ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 ring-2 ring-red-400"
+                          : hasValue
+                          ? "bg-[#9E2339] dark:bg-[#10b981] text-white dark:text-zinc-950 hover:opacity-90 shadow-[#9E2339]/25"
+                          : "bg-[#9E2339]/80 dark:bg-[#10b981]/80 text-white dark:text-zinc-950 hover:bg-[#9E2339] dark:hover:bg-[#10b981]"
+                      )}
+                    >
+                      {isStreaming ? (
+                        <Square className="size-3.5 fill-current" />
+                      ) : (
+                        <ArrowUp className="size-4 stroke-[2.5]" />
+                      )}
+                    </motion.button>
+                  </Tooltip>
+                </div>
+              </>
+            )}
           </motion.div>
         </motion.div>
 

@@ -16,12 +16,16 @@ from enum import Enum
 from typing import List, Dict, Any, Optional, Tuple
 
 try:
-    from universal_evaluator import universal_evaluator
+    from universal_evaluator import universal_evaluator, jev_evaluator
 except ImportError:
     try:
-        from backend.universal_evaluator import universal_evaluator
+        from backend.universal_evaluator import universal_evaluator, jev_evaluator
     except ImportError:
         universal_evaluator = None
+        jev_evaluator = None
+
+if jev_evaluator is None and universal_evaluator is not None:
+    jev_evaluator = universal_evaluator
 
 
 class CampusDomain(str, Enum):
