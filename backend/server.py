@@ -6102,6 +6102,73 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         "done": True
                     })
 
+                # Universal Adaptive Recovery Controller: Automated escalation on low retrieval confidence / candidate suppression
+                entity_keywords = [w.lower() for w in re.findall(r'\b[A-Za-z0-9]{3,}\b', user_query) if w.lower() not in ["who", "what", "where", "when", "how", "the", "for", "and", "is", "are", "of", "in", "tell", "about"]]
+                top_content = " ".join((c.get("content") or c.get("text") or "").lower() for c in retrieved_chunks[:3]) if retrieved_chunks else ""
+                has_entity_support = any(ent in top_content for ent in entity_keywords) if entity_keywords else True
+                is_low_confidence = (len(retrieved_chunks) < 2) or (not has_entity_support and len(entity_keywords) > 0)
+
+                if is_low_confidence and not req.is_regeneration:
+                    logger.info(f"[Adaptive Recovery] Low retrieval confidence detected for '{user_query}' — Escalating to Deep Candidate Union & Neural Reranking")
+                    yield json.dumps({
+                        "type": "reasoning",
+                        "step": "Adaptive Recovery Controller: Low retrieval confidence detected — Expanding candidate pool & running Neural Reranker",
+                        "done": True
+                    })
+
+                    dense_rec = []
+                    if qdrant_client and query_vector:
+                        try:
+                            q_res = qdrant_client.query_points(collection_name=COLLECTION_NAME, query=query_vector, limit=20)
+                            for h in q_res.points:
+                                p = h.payload or {}
+                                dense_rec.append({
+                                    "chunk_id": p.get("chunk_id", str(h.id)),
+                                    "title": p.get("topic_title") or p.get("title", "MSAJCEA Official Record"),
+                                    "source_file": p.get("source_file", "msajcea_records.md"),
+                                    "content": p.get("snippet") or p.get("content") or p.get("text", ""),
+                                    "dense_score": float(h.score)
+                                })
+                        except Exception as e:
+                            print(f"[WARN] Adaptive recovery dense error: {e}")
+
+                    sparse_rec = []
+                    if bm25_index:
+                        try:
+                            tokens = re.findall(r'\b\w+\b', user_query.lower())
+                            scores = bm25_index.get_scores(tokens)
+                            top_idx = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:20]
+                            for ti in top_idx:
+                                if scores[ti] > 0:
+                                    c = bm25_corpus[ti]
+                                    sparse_rec.append({
+                                        "chunk_id": c.get("chunk_id", f"bm25_{ti}"),
+                                        "title": c.get("topic_title") or c.get("title", "MSAJCEA Official Record"),
+                                        "source_file": c.get("source_file", "msajcea_records.md"),
+                                        "content": c.get("text") or c.get("content", ""),
+                                        "bm25_score": float(scores[ti])
+                                    })
+                        except Exception as e:
+                            print(f"[WARN] Adaptive recovery sparse error: {e}")
+
+                    matched_ents_rec = search_knowledge_entities(user_query) or search_knowledge_entities(expanded_query)
+                    ent_chunks_rec = []
+                    if matched_ents_rec and bm25_corpus:
+                        ent_files = { (e.get("source_file") or "").lower() for e in matched_ents_rec if e.get("source_file") }
+                        for doc in bm25_corpus:
+                            if (doc.get("source_file") or "").lower() in ent_files:
+                                ent_chunks_rec.append({
+                                    "chunk_id": doc.get("chunk_id", "ent_doc"),
+                                    "title": doc.get("topic_title") or doc.get("title", "MSAJCEA Official Record"),
+                                    "source_file": doc.get("source_file", ""),
+                                    "content": doc.get("text") or doc.get("content", ""),
+                                    "entity_injected": True
+                                })
+
+                    fused_rec = compute_rrf_fusion(dense_rec + ent_chunks_rec, sparse_rec, k=60)
+                    if fused_rec and 'rerank_chunks' in globals():
+                        retrieved_chunks = rerank_chunks(user_query, fused_rec, top_n=6)
+
                 source_files = list({c.get("source_file", "").split('\t')[0] for c in retrieved_chunks if c.get("source_file")})
                 source_summary = ", ".join(source_files[:2]) if source_files else "official records"
                 yield json.dumps({
