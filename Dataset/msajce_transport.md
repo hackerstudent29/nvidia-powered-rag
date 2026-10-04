@@ -1,11 +1,11 @@
 # Mohamed Sathak A.J. College of Engineering (MSAJCE) Transport System & Bus Routes
 
 ## 1. Overview & Key Contacts
-MSAJCE provides comprehensive transportation facilities across Chennai, Chengalpattu, Kanchipuram, and Thiruvallur districts. The campus operates 10 dedicated college bus routes alongside 9 high-frequency MTC public bus connections to Siruseri IT Park / OMR. All college buses arrive at the MSAJCE campus by 8:00 AM.
+MSAJCE provides comprehensive transportation facilities across Chennai, Chengalpattu, Kanchipuram, and Thiruvallur districts. The campus operates 9 dedicated college bus routes alongside 9 high-frequency MTC public bus connections to Siruseri IT Park / OMR. All college buses arrive at the MSAJCE campus by 8:00 AM.
 
 - **Transport Convener**: Dr. K.P. Santhosh Nathan (Phone: **98408 86992** / Email: `ped.santhosh@msajce-edu.in`)
 - **Assistant Transport Convener**: Mr. A. Abdul Gafoor (Phone: **99403 19629** / Email: `abdulgafoor@msajce-edu.in`)
-- **Total Official College Routes**: 10 Dedicated College Bus Routes (AR 3, AR 4, N3/AR 5, AR 6, AR 7, AR 8, AR 9, AR 10/R21, R22)
+- **Total Official College Routes**: 9 Dedicated College Bus Routes (AR 3, AR 4, N3/AR 5, AR 6, AR 7, AR 8, AR 9, AR 10/R21, R22)
 - **Public MTC Connections**: 9 MTC Bus Routes (570/AC-570, 570S, 515, 555S, 102/102X, 19K, 568B, MAA2 Airport Feeder, 95XCT)
 
 ---

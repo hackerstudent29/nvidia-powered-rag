@@ -193,6 +193,17 @@ class EntityResolver:
         n = re.sub(r'\s+', ' ', n).strip()
         return n
 
+    COMMON_STOPWORDS = {
+        "many", "much", "more", "most", "what", "which", "where", "when", "who",
+        "whom", "whose", "why", "how", "all", "any", "both", "each", "few",
+        "other", "some", "such", "than", "too", "very", "can", "will", "just",
+        "should", "now", "tell", "give", "list", "show", "have", "with", "from",
+        "that", "this", "they", "them", "their", "your", "yours", "about", "also",
+        "been", "were", "page", "section", "part", "does", "done", "into", "over",
+        "year", "name", "good", "best", "total", "only", "well", "high", "full",
+        "area", "campus", "course", "college", "school"
+    }
+
     @staticmethod
     def calculate_match_score(
         mention_name: str,
@@ -205,18 +216,19 @@ class EntityResolver:
         norm_mention = EntityResolver.normalize_name(mention_name)
         norm_canonical = EntityResolver.normalize_name(entity.canonical_name)
 
-        if norm_mention == norm_canonical or norm_mention in norm_canonical:
+        if norm_mention == norm_canonical or (len(norm_mention) >= 4 and norm_mention in norm_canonical and norm_mention not in EntityResolver.COMMON_STOPWORDS):
             score += 0.60
         else:
             for alias in known_aliases:
                 norm_alias = EntityResolver.normalize_name(alias)
-                if norm_mention == norm_alias or norm_mention in norm_alias:
+                if not norm_alias or norm_alias in EntityResolver.COMMON_STOPWORDS:
+                    continue
+                if norm_mention == norm_alias:
                     score += 0.55
                     break
-                elif len(norm_mention) >= 4 and len(norm_alias) >= 4:
-                    if norm_mention in norm_alias or norm_alias in norm_mention:
-                        score += 0.35
-                        break
+                elif len(norm_alias) >= 4 and re.search(rf'\b{re.escape(norm_alias)}\b', norm_mention):
+                    score += 0.35
+                    break
 
         mention_upper = mention_name.strip().upper()
         if mention_upper in entity.aliases or mention_upper == entity.canonical_name.upper():
@@ -722,7 +734,7 @@ class EntityRegistry:
         norm_words = set(re.findall(r'\b[a-zA-Z0-9_]+\b', norm_q))
 
         for alias, eids in self.alias_to_entity_ids.items():
-            if len(alias) < 3:
+            if len(alias) < 3 or alias in EntityResolver.COMMON_STOPWORDS:
                 continue
             if alias in q_words or alias in norm_words:
                 matched_ids.update(eids)
@@ -745,7 +757,8 @@ class EntityRegistry:
         scored: List[Tuple[CanonicalEntity, float]] = []
         for ent in resolved_entities:
             score = EntityResolver.calculate_match_score(query, context, ent, ent.aliases)
-            scored.append((ent, score))
+            if score >= 0.40:
+                scored.append((ent, score))
 
         scored.sort(key=lambda x: x[1], reverse=True)
         return [item[0] for item in scored]
