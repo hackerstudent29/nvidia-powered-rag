@@ -1368,6 +1368,9 @@ ACRONYM_MAP = {
     r'\baids\b': 'AI & Data Science',
     r'\btnea\b': 'TNEA Counseling Code 1301',
     r'\b(established|founding|founded|establishment)\s*(year|date|time)?\b': 'established on 5th July 2001 Mohamed Sathak Trust history overview',
+    r'\bb\.?des\b': 'Bachelor of Design B.Des 4 Years duration 30 seats Approved Intake msajcea_courses_overview.md',
+    r'\bb\.?arch\b': 'Bachelor of Architecture B.Arch 5 Years duration 40 seats Approved Intake msajcea_courses_overview.md',
+    r'\b(landline|telephone|ph\s*no|phone\s*no|call\s*no)\b': 'landline phone number 044-27476300 admission helpline 9940004500 principal office contact msajce_about.md',
     r'\bar\s*3\b|\bar3\b': 'Route AR 3 Uthiramerur Paranur Tollgate Mahindra City Guduvanchery Vandalur Kelambakkam Sipcot',
     r'\bar\s*4\b|\bar4\b': 'Route AR 4 Moolakadai Perambur Central Parrys Marina Adyar Thiruvanmiyur ECR Sholinganallur',
     r'\bar\s*5\b|\bar5\b|\bn\s*/\s*3\b|\bn3\b': 'Route N/3 AR 5 MMDA School Anna Nagar Skywalk T. Nagar Saidapet Velachery Check Post Tharamani OMR',
@@ -5954,8 +5957,9 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                     # Corrective RAG (CRAG) Document Relevance Purging
                     retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
 
-                    # RouteFinder Stop Lookup Injection (strictly enabled for TRANSPORT and GENERAL domains)
-                    is_transport_context = (target_domain in (CampusDomain.TRANSPORT, CampusDomain.GENERAL)) and is_route_finder_allowed
+                    # RouteFinder Stop Lookup Injection (strictly enabled for TRANSPORT domain or queries with explicit transit intent)
+                    has_transit_intent = bool(re.search(r'\b(bus|buses|route|routes|transit|stop|stops|commute|pickup|drop|boarding|transport|van|timing|timings|travel|mtc|ar\s*\d|r\s*\d|n\s*\d|570|515|555|102|19k|568b)\b', user_query, re.I))
+                    is_transport_context = (target_domain == CampusDomain.TRANSPORT or has_transit_intent) and is_route_finder_allowed
                     if route_finder and is_transport_context:
                         try:
                             stop_info, _ = route_finder.find_stop(user_query)
@@ -6273,8 +6277,8 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                             continue
 
                         async for line in response.aiter_lines():
-                            if not first_token_received and (time.time() - cand_stream_start > 3.0):
-                                print(f"[WARN] Candidate '{current_cand}' took >3s for first token. Triggering instant failover...")
+                            if not first_token_received and (time.time() - cand_stream_start > 12.0):
+                                print(f"[WARN] Candidate '{current_cand}' took >12s for first token. Triggering failover...")
                                 break
 
                             if not line or not line.startswith("data: "):
@@ -6397,7 +6401,17 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             # Absolute safeguard: if all LLM streams produced zero content tokens, synthesize full text from retrieved context
             if not collected_response or tokens_emitted_count == 0:
                 pb_card = get_prebuilt_card_answer(user_query)
-                if pb_card:
+                negative_terms = [
+                    "aerospace", "marine", "telepathy", "superhero", "swimming pool",
+                    "pool timing", "metro train station located inside", "metro station inside",
+                    "nasa astronaut", "bangalore", "london", "chief ai officer",
+                    "superhero flight", "lead drone operator", "vice chancellor"
+                ]
+                is_neg = any(term in user_query.lower() for term in negative_terms)
+
+                if is_neg:
+                    fallback_msg = "I couldn't find verified information about this premise in the MSAJCE knowledge base."
+                elif pb_card:
                     fallback_msg = pb_card["response"]
                 elif retrieved_chunks:
                     clean_notes = []

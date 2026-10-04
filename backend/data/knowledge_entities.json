@@ -120,7 +120,16 @@
       "college phone",
       "helpline",
       "admission phone",
-      "contact us"
+      "contact us",
+      "landline",
+      "landline number",
+      "landline no",
+      "ph no",
+      "college ph no",
+      "telephone",
+      "telephone number",
+      "office phone",
+      "office contact"
     ],
     "value": "MSAJCEA Campus Contact Numbers: Phone: [044-27476300](tel:04427476300), Mobile: [+91 9444103328](tel:+919444103328), Admission Helpline: [+91 9940004500](tel:+919940004500). Email: [admission@msajce-edu.in](mailto:admission@msajce-edu.in) / [info@msajce-edu.in](mailto:info@msajce-edu.in)",
     "source_file": "msajce_about.md",

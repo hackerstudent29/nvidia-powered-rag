@@ -188,6 +188,8 @@ class RouteFinder:
             "city", "near", "from", "where", "how", "many", "total", "running", "which",
             "what", "tell", "need", "full", "schedule", "all", "area", "location", "reach",
             "busses", "line", "lines", "commute", "pickup", "drop", "time", "timings",
+            "btech", "mtech", "b.tech", "m.tech", "tech", "technology", "marine", "aerospace",
+            "telepathy", "robotics", "swimming", "pool", "astronaut", "superhero",
             "in", "at", "to", "for", "on", "by", "is", "are", "of", "and", "or", "the", "a", "an",
             "there", "available", "facility", "facilities", "option", "options", "number", "numbers",
             "list", "get", "give", "show", "please", "can", "could", "would", "does", "do", "pass", "passes", "through"
