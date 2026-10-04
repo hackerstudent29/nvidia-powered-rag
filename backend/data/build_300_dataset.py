@@ -1,0 +1,286 @@
+"""
+Script to build the 300-Question Production Black-Box Test Suite
+================================================================
+Combines:
+- 100 existing E2E queries (10 per category)
+- 200 new realistic student-style queries (20 per category)
+Total: 300 queries, exactly 30 per category across 10 categories:
+1. basic
+2. acronym
+3. table
+4. multi_hop
+5. follow_up
+6. list
+7. paraphrase
+8. entity
+9. typos
+10. negative
+"""
+
+import os
+import json
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = BASE_DIR
+
+with open(os.path.join(DATA_DIR, "user_e2e_100_queries.json"), "r", encoding="utf-8") as f:
+    base_100 = json.load(f)
+
+new_200 = [
+    # ----------------------------------------------------
+    # 1. Basic (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-01", "category": "basic", "query": "What is the campus land area of MSAJCE?", "expected": "70 acres", "should_abstain": False, "session_id": "sess_b300_01"},
+    {"id": "U300-02", "category": "basic", "query": "What is the official admission contact phone number?", "expected": "9940004500", "should_abstain": False, "session_id": "sess_b300_02"},
+    {"id": "U300-03", "category": "basic", "query": "What is the main college office landline number?", "expected": "044-27476300", "should_abstain": False, "session_id": "sess_b300_03"},
+    {"id": "U300-04", "category": "basic", "query": "What is the official email address for student queries?", "expected": "info@msajce-edu.in", "should_abstain": False, "session_id": "sess_b300_04"},
+    {"id": "U300-05", "category": "basic", "query": "Does MSAJCE have an Apple iOS Development Centre?", "expected": "Yes, Apple iOS Development Centre", "should_abstain": False, "session_id": "sess_b300_05"},
+    {"id": "U300-06", "category": "basic", "query": "What is the pin code of the college campus in Siruseri?", "expected": "603103", "should_abstain": False, "session_id": "sess_b300_06"},
+    {"id": "U300-07", "category": "basic", "query": "Is the college situated near TCS in SIPCOT?", "expected": "Yes, inside SIPCOT IT Park Siruseri", "should_abstain": False, "session_id": "sess_b300_07"},
+    {"id": "U300-08", "category": "basic", "query": "Who is the Chairman of Mohamed Sathak Trust?", "expected": "Janab Alhaj S.M. Mohamed Yousuf", "should_abstain": False, "session_id": "sess_b300_08"},
+    {"id": "U300-09", "category": "basic", "query": "Who is the Director of the institution?", "expected": "Dr. P.R.L. Eswaran", "should_abstain": False, "session_id": "sess_b300_09"},
+    {"id": "U300-10", "category": "basic", "query": "What autonomous status or regulation applies to MSAJCE?", "expected": "Affiliated to Anna University", "should_abstain": False, "session_id": "sess_b300_10"},
+    {"id": "U300-11", "category": "basic", "query": "What is the counseling quota percentage through TNEA?", "expected": "65%", "should_abstain": False, "session_id": "sess_b300_11"},
+    {"id": "U300-12", "category": "basic", "query": "What is the management quota percentage in admissions?", "expected": "35%", "should_abstain": False, "session_id": "sess_b300_12"},
+    {"id": "U300-13", "category": "basic", "query": "What is the nearest railway station or suburban stop?", "expected": "Vandalur or Tambaram", "should_abstain": False, "session_id": "sess_b300_13"},
+    {"id": "U300-14", "category": "basic", "query": "What bus stop is closest to the college gate?", "expected": "Siruseri IT Park Bus Stop", "should_abstain": False, "session_id": "sess_b300_14"},
+    {"id": "U300-15", "category": "basic", "query": "Is Mohamed Sathak an ISO certified institution?", "expected": "Yes, ISO 9001:2015", "should_abstain": False, "session_id": "sess_b300_15"},
+    {"id": "U300-16", "category": "basic", "query": "What is the official college code for Anna University examinations?", "expected": "1301", "should_abstain": False, "session_id": "sess_b300_16"},
+    {"id": "U300-17", "category": "basic", "query": "Does MSAJCE offer lateral entry for diploma holders?", "expected": "Yes, direct second year lateral entry", "should_abstain": False, "session_id": "sess_b300_17"},
+    {"id": "U300-18", "category": "basic", "query": "What degree is awarded for architecture students?", "expected": "B.Arch", "should_abstain": False, "session_id": "sess_b300_18"},
+    {"id": "U300-19", "category": "basic", "query": "What degree is awarded for design students?", "expected": "B.Des", "should_abstain": False, "session_id": "sess_b300_19"},
+    {"id": "U300-20", "category": "basic", "query": "Who is the Vice Principal or Dean of Academics?", "expected": "Vice Principal or Academic Dean in records", "should_abstain": False, "session_id": "sess_b300_20"},
+
+    # ----------------------------------------------------
+    # 2. Acronym / Terminology (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-21", "category": "acronym", "query": "What is the full form of MSAJCE?", "expected": "Mohamed Sathak A.J. College of Engineering", "should_abstain": False, "session_id": "sess_a300_01"},
+    {"id": "U300-22", "category": "acronym", "query": "What is the full form of AIDS branch in college?", "expected": "Artificial Intelligence and Data Science", "should_abstain": False, "session_id": "sess_a300_02"},
+    {"id": "U300-23", "category": "acronym", "query": "What does AIML stand for in degree programs?", "expected": "Artificial Intelligence and Machine Learning", "should_abstain": False, "session_id": "sess_a300_03"},
+    {"id": "U300-24", "category": "acronym", "query": "What is the meaning of EDC cell?", "expected": "Entrepreneurship Development Cell", "should_abstain": False, "session_id": "sess_a300_04"},
+    {"id": "U300-25", "category": "acronym", "query": "What does IIC stand for in campus innovation?", "expected": "Institution's Innovation Council", "should_abstain": False, "session_id": "sess_a300_05"},
+    {"id": "U300-26", "category": "acronym", "query": "What is the full name of SAE collegiate club?", "expected": "Society of Automotive Engineers", "should_abstain": False, "session_id": "sess_a300_06"},
+    {"id": "U300-27", "category": "acronym", "query": "What is the full name of ISHRAE chapter?", "expected": "Indian Society of Heating, Refrigerating and Air Conditioning Engineers", "should_abstain": False, "session_id": "sess_a300_07"},
+    {"id": "U300-28", "category": "acronym", "query": "What does IETE stand for in ECE department?", "expected": "Institution of Electronics and Telecommunication Engineers", "should_abstain": False, "session_id": "sess_a300_08"},
+    {"id": "U300-29", "category": "acronym", "query": "What is the meaning of PEO in syllabus?", "expected": "Program Educational Objectives", "should_abstain": False, "session_id": "sess_a300_09"},
+    {"id": "U300-30", "category": "acronym", "query": "What does PSO mean in department outcomes?", "expected": "Program Specific Outcomes", "should_abstain": False, "session_id": "sess_a300_10"},
+    {"id": "U300-31", "category": "acronym", "query": "What does PO stand for in accreditation?", "expected": "Program Outcomes", "should_abstain": False, "session_id": "sess_a300_11"},
+    {"id": "U300-32", "category": "acronym", "query": "What is CO in continuous internal assessment?", "expected": "Course Outcomes", "should_abstain": False, "session_id": "sess_a300_12"},
+    {"id": "U300-33", "category": "acronym", "query": "What does NATA stand for for architecture entry?", "expected": "National Aptitude Test in Architecture", "should_abstain": False, "session_id": "sess_a300_13"},
+    {"id": "U300-34", "category": "acronym", "query": "What does TANCET stand for for PG admissions?", "expected": "Tamil Nadu Common Entrance Test", "should_abstain": False, "session_id": "sess_a300_14"},
+    {"id": "U300-35", "category": "acronym", "query": "What is the full form of OMR where campus is located?", "expected": "Old Mahabalipuram Road", "should_abstain": False, "session_id": "sess_a300_15"},
+    {"id": "U300-36", "category": "acronym", "query": "What is the full name of SIPCOT?", "expected": "State Industries Promotion Corporation of Tamil Nadu", "should_abstain": False, "session_id": "sess_a300_16"},
+    {"id": "U300-37", "category": "acronym", "query": "What is COE in exam cell?", "expected": "Controller of Examinations or Centre of Excellence", "should_abstain": False, "session_id": "sess_a300_17"},
+    {"id": "U300-38", "category": "acronym", "query": "What does NBA stand for in department accreditation?", "expected": "National Board of Accreditation", "should_abstain": False, "session_id": "sess_a300_18"},
+    {"id": "U300-39", "category": "acronym", "query": "What is the full name of NAAC?", "expected": "National Assessment and Accreditation Council", "should_abstain": False, "session_id": "sess_a300_19"},
+    {"id": "U300-40", "category": "acronym", "query": "What does UBA village adoption scheme stand for?", "expected": "Unnat Bharat Abhiyan", "should_abstain": False, "session_id": "sess_a300_20"},
+
+    # ----------------------------------------------------
+    # 3. Table / Numerical (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-41", "category": "table", "query": "What is the seat intake for B.E. ECE department?", "expected": "60 seats", "should_abstain": False, "session_id": "sess_t300_01"},
+    {"id": "U300-42", "category": "table", "query": "What is the seat intake for B.Tech CSBS?", "expected": "30 seats", "should_abstain": False, "session_id": "sess_t300_02"},
+    {"id": "U300-43", "category": "table", "query": "What is the seat intake for B.Arch degree?", "expected": "40 seats", "should_abstain": False, "session_id": "sess_t300_03"},
+    {"id": "U300-44", "category": "table", "query": "What is the seat intake for B.Des degree?", "expected": "30 seats", "should_abstain": False, "session_id": "sess_t300_04"},
+    {"id": "U300-45", "category": "table", "query": "What is the annual tuition fee for B.E. Civil Engineering?", "expected": "Rs 50,000", "should_abstain": False, "session_id": "sess_t300_05"},
+    {"id": "U300-46", "category": "table", "query": "What is the annual tuition fee for B.E. Mechanical Engineering?", "expected": "Rs 50,000", "should_abstain": False, "session_id": "sess_t300_06"},
+    {"id": "U300-47", "category": "table", "query": "What is the annual tuition fee for B.E. EEE department?", "expected": "Rs 50,000", "should_abstain": False, "session_id": "sess_t300_07"},
+    {"id": "U300-48", "category": "table", "query": "What is the annual tuition fee for B.E. ECE department?", "expected": "Rs 55,000", "should_abstain": False, "session_id": "sess_t300_08"},
+    {"id": "U300-49", "category": "table", "query": "What is the annual tuition fee for B.E. CSE branch?", "expected": "Rs 55,000", "should_abstain": False, "session_id": "sess_t300_09"},
+    {"id": "U300-50", "category": "table", "query": "What is the annual tuition fee for B.Tech AI & DS?", "expected": "Rs 55,000", "should_abstain": False, "session_id": "sess_t300_10"},
+    {"id": "U300-51", "category": "table", "query": "What is the annual tuition fee for B.Tech CSBS?", "expected": "Rs 55,000", "should_abstain": False, "session_id": "sess_t300_11"},
+    {"id": "U300-52", "category": "table", "query": "What is the total annual fee for hostel accommodation including mess?", "expected": "Rs 80,000 to Rs 85,000", "should_abstain": False, "session_id": "sess_t300_12"},
+    {"id": "U300-53", "category": "table", "query": "What is the highest placement package recorded in MSAJCE campus?", "expected": "8.5 LPA or higher in records", "should_abstain": False, "session_id": "sess_t300_13"},
+    {"id": "U300-54", "category": "table", "query": "What is the average placement package for engineering graduates?", "expected": "3.5 to 4.5 LPA", "should_abstain": False, "session_id": "sess_t300_14"},
+    {"id": "U300-55", "category": "table", "query": "What percentage of eligible students were placed in campus drives?", "expected": "90%+", "should_abstain": False, "session_id": "sess_t300_15"},
+    {"id": "U300-56", "category": "table", "query": "How many total bus routes does MSAJCE operate across Chennai?", "expected": "9 to 11 routes", "should_abstain": False, "session_id": "sess_t300_16"},
+    {"id": "U300-57", "category": "table", "query": "What is the intake for M.E. in Structural Engineering?", "expected": "18 seats", "should_abstain": False, "session_id": "sess_t300_17"},
+    {"id": "U300-58", "category": "table", "query": "What is the intake for M.E. in Computer Science and Engineering?", "expected": "18 seats", "should_abstain": False, "session_id": "sess_t300_18"},
+    {"id": "U300-59", "category": "table", "query": "What is the total library carpet area in square feet?", "expected": "10,000+ sq ft in records", "should_abstain": False, "session_id": "sess_t300_19"},
+    {"id": "U300-60", "category": "table", "query": "How many total titles are available in the central library?", "expected": "12,000+ titles", "should_abstain": False, "session_id": "sess_t300_20"},
+
+    # ----------------------------------------------------
+    # 4. Multi-hop (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-61", "category": "multi_hop", "query": "What is the TNEA code for MSAJCE and what is the fee for B.E. Computer Science?", "expected": "Code 1301 and Tuition Fee Rs 55,000", "should_abstain": False, "session_id": "sess_mh300_01"},
+    {"id": "U300-62", "category": "multi_hop", "query": "Who is the Principal of MSAJCE and where is his office located on campus?", "expected": "Dr. K.S. Srinivasan in Administrative Block", "should_abstain": False, "session_id": "sess_mh300_02"},
+    {"id": "U300-63", "category": "multi_hop", "query": "What is the intake for B.Tech IT and what companies recruit from IT department?", "expected": "60 seats and TCS, Infosys, Wipro, Cognizant", "should_abstain": False, "session_id": "sess_mh300_03"},
+    {"id": "U300-64", "category": "multi_hop", "query": "What is the address of MSAJCE and how can one contact the admission desk by email?", "expected": "SIPCOT IT Park Siruseri and admission@msajce-edu.in", "should_abstain": False, "session_id": "sess_mh300_04"},
+    {"id": "U300-65", "category": "multi_hop", "query": "Does the college offer B.Arch and what entrance test is required for admission?", "expected": "Yes, 5-year B.Arch requiring NATA score", "should_abstain": False, "session_id": "sess_mh300_05"},
+    {"id": "U300-66", "category": "multi_hop", "query": "Which trust runs the college and what other institutions does the trust operate?", "expected": "Mohamed Sathak Trust operating Polytechnic, Arts and Science, Pharmacy colleges", "should_abstain": False, "session_id": "sess_mh300_06"},
+    {"id": "U300-67", "category": "multi_hop", "query": "What is the bus route from Tambaram and what time does it start in the morning?", "expected": "Route AR 10 / R21 starting around 6:45 AM", "should_abstain": False, "session_id": "sess_mh300_07"},
+    {"id": "U300-68", "category": "multi_hop", "query": "Who developed Lorin AI and what award or recognition was received?", "expected": "Ramanathan S. from IT department", "should_abstain": False, "session_id": "sess_mh300_08"},
+    {"id": "U300-69", "category": "multi_hop", "query": "What is the NAAC grade of MSAJCE and when was the college established?", "expected": "NAAC A+ grade, established in 2001", "should_abstain": False, "session_id": "sess_mh300_09"},
+    {"id": "U300-70", "category": "multi_hop", "query": "What is the seat intake for Civil Engineering and what is its annual tuition fee?", "expected": "30 seats and Rs 50,000", "should_abstain": False, "session_id": "sess_mh300_10"},
+    {"id": "U300-71", "category": "multi_hop", "query": "What is the seat intake for Mechanical Engineering and what labs are available?", "expected": "60 seats and CAD/CAM, Thermal, Fluid Mechanics labs", "should_abstain": False, "session_id": "sess_mh300_11"},
+    {"id": "U300-72", "category": "multi_hop", "query": "What is the intake for AI & DS and what is the difference between AIDS and AIML?", "expected": "60 seats; Data science emphasis vs core machine learning algorithms", "should_abstain": False, "session_id": "sess_mh300_12"},
+    {"id": "U300-73", "category": "multi_hop", "query": "What is the boys hostel capacity and what mess food is served?", "expected": "On-campus hostel with South Indian vegetarian and non-vegetarian food", "should_abstain": False, "session_id": "sess_mh300_13"},
+    {"id": "U300-74", "category": "multi_hop", "query": "What is the girls hostel security policy and who is the warden?", "expected": "24/7 security with biometric attendance and resident female warden", "should_abstain": False, "session_id": "sess_mh300_14"},
+    {"id": "U300-75", "category": "multi_hop", "query": "What digital subscriptions does the library have and can students access IEEE papers?", "expected": "IEEE, DELNET, NPTEL subscriptions allowing online access to research papers", "should_abstain": False, "session_id": "sess_mh300_15"},
+    {"id": "U300-76", "category": "multi_hop", "query": "What scholarships are available for SC/ST students and how to apply?", "expected": "Post-Matric Government scholarship applied through college scholarship cell", "should_abstain": False, "session_id": "sess_mh300_16"},
+    {"id": "U300-77", "category": "multi_hop", "query": "What is the First Graduate concession and what is the income ceiling?", "expected": "Rs 25,000 tuition fee waiver for first graduate in family", "should_abstain": False, "session_id": "sess_mh300_17"},
+    {"id": "U300-78", "category": "multi_hop", "query": "Which bus route connects Koyambedu and Adyar to Siruseri campus?", "expected": "Route AR 4 or AR 9 connecting Central, Parrys, Adyar to campus", "should_abstain": False, "session_id": "sess_mh300_18"},
+    {"id": "U300-79", "category": "multi_hop", "query": "What is the AICTE KARMA scheme and how does it help local youth?", "expected": "Kaushal Augmentation skill training for rural and school dropout youth", "should_abstain": False, "session_id": "sess_mh300_19"},
+    {"id": "U300-80", "category": "multi_hop", "query": "Who is the Transport In-charge and what is his direct phone number?", "expected": "Dr. K.P. Santhosh Nathan 9840886992", "should_abstain": False, "session_id": "sess_mh300_20"},
+
+    # ----------------------------------------------------
+    # 5. Follow-up Conversations (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-81", "category": "follow_up", "query": "What B.E. programs are offered?", "expected": "List of B.E. branches", "should_abstain": False, "session_id": "sess_fu300_01"},
+    {"id": "U300-82", "category": "follow_up", "query": "what is the fee for the first one?", "expected": "Tuition fee for B.E. CSE", "should_abstain": False, "session_id": "sess_fu300_01", "history": [{"role": "user", "content": "What B.E. programs are offered?"}, {"role": "assistant", "content": "MSAJCE offers B.E. in Computer Science & Engineering (CSE), Electronics & Communication, Electrical & Electronics, Mechanical, and Civil Engineering."}]},
+    {"id": "U300-83", "category": "follow_up", "query": "how many seats in it?", "expected": "60 seats in CSE", "should_abstain": False, "session_id": "sess_fu300_01", "history": [{"role": "user", "content": "what is the fee for the first one?"}, {"role": "assistant", "content": "The annual tuition fee for B.E. Computer Science and Engineering is Rs. 55,000."}]},
+    {"id": "U300-84", "category": "follow_up", "query": "who is the HOD for that department?", "expected": "CSE HOD name", "should_abstain": False, "session_id": "sess_fu300_01", "history": [{"role": "user", "content": "how many seats in it?"}, {"role": "assistant", "content": "The sanctioned seat intake for B.E. CSE is 60 seats."}]},
+    {"id": "U300-85", "category": "follow_up", "query": "what are the lab facilities available?", "expected": "CSE lab details", "should_abstain": False, "session_id": "sess_fu300_01", "history": [{"role": "user", "content": "who is the HOD for that department?"}, {"role": "assistant", "content": "The HOD of Computer Science and Engineering is Dr. J. Noorul Ameen."}]},
+
+    {"id": "U300-86", "category": "follow_up", "query": "Tell me about college transport.", "expected": "Bus transport overview", "should_abstain": False, "session_id": "sess_fu300_02"},
+    {"id": "U300-87", "category": "follow_up", "query": "is there a bus from Velachery?", "expected": "Route AR 5 or R22", "should_abstain": False, "session_id": "sess_fu300_02", "history": [{"role": "user", "content": "Tell me about college transport."}, {"role": "assistant", "content": "MSAJCE operates college buses covering major areas of Chennai."}]},
+    {"id": "U300-88", "category": "follow_up", "query": "what time does it stop at check post?", "expected": "Timing at Velachery Check Post", "should_abstain": False, "session_id": "sess_fu300_02", "history": [{"role": "user", "content": "is there a bus from Velachery?"}, {"role": "assistant", "content": "Yes, Route AR 5 and Route R22 pass through Velachery."}]},
+    {"id": "U300-89", "category": "follow_up", "query": "who is the driver?", "expected": "Driver details in transport records", "should_abstain": False, "session_id": "sess_fu300_02", "history": [{"role": "user", "content": "what time does it stop at check post?"}, {"role": "assistant", "content": "Route AR 5 stops at Velachery Check Post at approximately 7:15 AM."}]},
+    {"id": "U300-90", "category": "follow_up", "query": "how much is the bus fee?", "expected": "Transport fee based on distance", "should_abstain": False, "session_id": "sess_fu300_02", "history": [{"role": "user", "content": "who is the driver?"}, {"role": "assistant", "content": "The driver contact is managed by the transport office."}]},
+
+    {"id": "U300-91", "category": "follow_up", "query": "What is the placement record?", "expected": "Placement statistics", "should_abstain": False, "session_id": "sess_fu300_03"},
+    {"id": "U300-92", "category": "follow_up", "query": "which IT companies visit?", "expected": "TCS, Infosys, Wipro, Cognizant", "should_abstain": False, "session_id": "sess_fu300_03", "history": [{"role": "user", "content": "What is the placement record?"}, {"role": "assistant", "content": "Over 90% of eligible students are placed with top tier companies."}]},
+    {"id": "U300-93", "category": "follow_up", "query": "what was the highest salary?", "expected": "Highest package 8.5 LPA", "should_abstain": False, "session_id": "sess_fu300_03", "history": [{"role": "user", "content": "which IT companies visit?"}, {"role": "assistant", "content": "Major recruiters include TCS, Infosys, Wipro, Cognizant, and Zoho."}]},
+    {"id": "U300-94", "category": "follow_up", "query": "do they provide placement training?", "expected": "Aptitude and soft skills training", "should_abstain": False, "session_id": "sess_fu300_03", "history": [{"role": "user", "content": "what was the highest salary?"}, {"role": "assistant", "content": "The highest package secured is 8.5 LPA."}]},
+    {"id": "U300-95", "category": "follow_up", "query": "who is the placement officer?", "expected": "Placement Director or Officer details", "should_abstain": False, "session_id": "sess_fu300_03", "history": [{"role": "user", "content": "do they provide placement training?"}, {"role": "assistant", "content": "Yes, comprehensive campus recruitment training begins from the 3rd year."}]},
+
+    {"id": "U300-96", "category": "follow_up", "query": "Does the college have a library?", "expected": "Central library details", "should_abstain": False, "session_id": "sess_fu300_04"},
+    {"id": "U300-97", "category": "follow_up", "query": "what are the timings?", "expected": "8:30 AM to 5:30 PM", "should_abstain": False, "session_id": "sess_fu300_04", "history": [{"role": "user", "content": "Does the college have a library?"}, {"role": "assistant", "content": "Yes, MSAJCE has a central library with over 35,000 volumes."}]},
+    {"id": "U300-98", "category": "follow_up", "query": "can students borrow books?", "expected": "Book lending policy with library cards", "should_abstain": False, "session_id": "sess_fu300_04", "history": [{"role": "user", "content": "what are the timings?"}, {"role": "assistant", "content": "The library is open from 8:30 AM to 5:30 PM on all working days."}]},
+    {"id": "U300-99", "category": "follow_up", "query": "how many books at a time?", "expected": "3 to 4 books per student", "should_abstain": False, "session_id": "sess_fu300_04", "history": [{"role": "user", "content": "can students borrow books?"}, {"role": "assistant", "content": "Yes, students can borrow books using their barcoded ID cards."}]},
+    {"id": "U300-100", "category": "follow_up", "query": "is there internet and digital access?", "expected": "Digital library with internet computers", "should_abstain": False, "session_id": "sess_fu300_04", "history": [{"role": "user", "content": "how many books at a time?"}, {"role": "assistant", "content": "Undergraduate students are allowed up to 3 books for 14 days."}]},
+
+    # ----------------------------------------------------
+    # 6. List (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-101", "category": "list", "query": "List all departments offering postgraduate M.E. programs", "expected": "M.E. CSE, M.E. VLSI, M.E. Structural", "should_abstain": False, "session_id": "sess_l300_01"},
+    {"id": "U300-102", "category": "list", "query": "What are all the bus routes covering South Chennai?", "expected": "Routes AR 3, AR 5, AR 7, AR 8, AR 10", "should_abstain": False, "session_id": "sess_l300_02"},
+    {"id": "U300-103", "category": "list", "query": "List the documents required for B.E. admission verification", "expected": "10th marksheet, 12th marksheet, Transfer Certificate, Community Certificate, First Graduate certificate", "should_abstain": False, "session_id": "sess_l300_03"},
+    {"id": "U300-104", "category": "list", "query": "What are the computer laboratories in CSE department?", "expected": "Programming Lab, Networks Lab, Cloud Computing Lab, AI Lab", "should_abstain": False, "session_id": "sess_l300_04"},
+    {"id": "U300-105", "category": "list", "query": "List all technical societies and professional bodies active on campus", "expected": "CSI, IEEE, IETE, SAE India, ISHRAE", "should_abstain": False, "session_id": "sess_l300_05"},
+    {"id": "U300-106", "category": "list", "query": "List all social welfare and extension activity clubs", "expected": "NSS, YRC, RRC, UBA, Rotaract Club", "should_abstain": False, "session_id": "sess_l300_06"},
+    {"id": "U300-107", "category": "list", "query": "What outdoor games courts are maintained on campus?", "expected": "Cricket ground, Football field, Basketball court, Volleyball court", "should_abstain": False, "session_id": "sess_l300_07"},
+    {"id": "U300-108", "category": "list", "query": "List all emerging B.Tech courses introduced recently", "expected": "AI & DS, AI & ML, CSBS, Cyber Security", "should_abstain": False, "session_id": "sess_l300_08"},
+    {"id": "U300-109", "category": "list", "query": "What are the major bus pickup points along OMR?", "expected": "Madhya Kailash, Tharamani, Perungudi, Thoraipakkam, Sholinganallur, Navalur", "should_abstain": False, "session_id": "sess_l300_09"},
+    {"id": "U300-110", "category": "list", "query": "List the core civil engineering laboratories", "expected": "Surveying Lab, Strength of Materials Lab, Soil Mechanics Lab, Environmental Lab", "should_abstain": False, "session_id": "sess_l300_10"},
+    {"id": "U300-111", "category": "list", "query": "List the core electrical and electronics laboratories", "expected": "Electrical Machines Lab, Power Electronics Lab, Control Systems Lab", "should_abstain": False, "session_id": "sess_l300_11"},
+    {"id": "U300-112", "category": "list", "query": "List the core mechanical engineering workshops", "expected": "Workshop, Manufacturing Lab, Thermal Engineering Lab, Dynamics Lab", "should_abstain": False, "session_id": "sess_l300_12"},
+    {"id": "U300-113", "category": "list", "query": "What are all the government scholarship schemes tenable at MSAJCE?", "expected": "First Graduate, SC/ST Post Matric, BC/MBC scholarship, Pragati scholarship", "should_abstain": False, "session_id": "sess_l300_13"},
+    {"id": "U300-114", "category": "list", "query": "What amenities are provided inside the hostel rooms?", "expected": "Bed, study table, chair, cupboard, fan, high speed Wi-Fi", "should_abstain": False, "session_id": "sess_l300_14"},
+    {"id": "U300-115", "category": "list", "query": "List the key statutory committees functioning in MSAJCE", "expected": "Anti-Ragging Committee, Grievance Redressal Committee, Internal Complaints Committee, IQAC", "should_abstain": False, "session_id": "sess_l300_15"},
+    {"id": "U300-116", "category": "list", "query": "List the prominent alumni employers in the IT and software domain", "expected": "TCS, Cognizant, Wipro, Infosys, Zoho, HCL", "should_abstain": False, "session_id": "sess_l300_16"},
+    {"id": "U300-117", "category": "list", "query": "List the core recruiters for core engineering disciplines (Mech, Civil, EEE)", "expected": "L&T, Ashok Leyland, Bosch, Saint Gobain", "should_abstain": False, "session_id": "sess_l300_17"},
+    {"id": "U300-118", "category": "list", "query": "What are the food menus served in the hostel mess during breakfast?", "expected": "Idli, Dosa, Pongal, Poori, Vada with sambar and chutney, tea and coffee", "should_abstain": False, "session_id": "sess_l300_18"},
+    {"id": "U300-119", "category": "list", "query": "What are the major annual cultural and sports events celebrated?", "expected": "SATHAK Utsav, Annual Sports Day, Pongal Celebrations, College Day", "should_abstain": False, "session_id": "sess_l300_19"},
+    {"id": "U300-120", "category": "list", "query": "List the research domains promoted by the MSAJCE Research Cell", "expected": "Renewable Energy, Artificial Intelligence, Structural Engineering, VLSI, IoT", "should_abstain": False, "session_id": "sess_l300_20"},
+
+    # ----------------------------------------------------
+    # 7. Paraphrase (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-121", "category": "paraphrase", "query": "Could you share the mobile number to inquire about new admissions?", "expected": "9940004500", "should_abstain": False, "session_id": "sess_p300_01"},
+    {"id": "U300-122", "category": "paraphrase", "query": "What is the code assigned to Mohamed Sathak College in TNEA counseling?", "expected": "1301", "should_abstain": False, "session_id": "sess_p300_02"},
+    {"id": "U300-123", "category": "paraphrase", "query": "Who holds the principal position at MSAJCE right now?", "expected": "Dr. K.S. Srinivasan", "should_abstain": False, "session_id": "sess_p300_03"},
+    {"id": "U300-124", "category": "paraphrase", "query": "Tell me the tuition cost per year for studying B.E. Computer Science.", "expected": "Rs 55,000", "should_abstain": False, "session_id": "sess_p300_04"},
+    {"id": "U300-125", "category": "paraphrase", "query": "In which technology park along OMR is the campus built?", "expected": "SIPCOT IT Park Siruseri", "should_abstain": False, "session_id": "sess_p300_05"},
+    {"id": "U300-126", "category": "paraphrase", "query": "Is there lodging facility for women students inside the premises?", "expected": "Yes, separate girls hostel", "should_abstain": False, "session_id": "sess_p300_06"},
+    {"id": "U300-127", "category": "paraphrase", "query": "Are there campus interviews held and which corporations participate?", "expected": "Yes, TCS, Infosys, Wipro, Cognizant", "should_abstain": False, "session_id": "sess_p300_07"},
+    {"id": "U300-128", "category": "paraphrase", "query": "Can students use institution-owned buses to travel to campus?", "expected": "Yes, college bus fleet", "should_abstain": False, "session_id": "sess_p300_08"},
+    {"id": "U300-129", "category": "paraphrase", "query": "What is the landline contact number for the administrative office?", "expected": "044-27476300", "should_abstain": False, "session_id": "sess_p300_09"},
+    {"id": "U300-130", "category": "paraphrase", "query": "Which grade was awarded to the college by NAAC committee?", "expected": "Grade A+", "should_abstain": False, "session_id": "sess_p300_10"},
+    {"id": "U300-131", "category": "paraphrase", "query": "What is the total student intake approved for AI and Data Science?", "expected": "60 seats", "should_abstain": False, "session_id": "sess_p300_11"},
+    {"id": "U300-132", "category": "paraphrase", "query": "How many seats are allocated for Information Technology degree?", "expected": "60 seats", "should_abstain": False, "session_id": "sess_p300_12"},
+    {"id": "U300-133", "category": "paraphrase", "query": "Is direct second year lateral entry possible after diploma?", "expected": "Yes, lateral entry available", "should_abstain": False, "session_id": "sess_p300_13"},
+    {"id": "U300-134", "category": "paraphrase", "query": "Who is the officer handling transport and bus schedule queries?", "expected": "Dr. K.P. Santhosh Nathan", "should_abstain": False, "session_id": "sess_p300_14"},
+    {"id": "U300-135", "category": "paraphrase", "query": "How many years does the Bachelor of Architecture course take to complete?", "expected": "5 years", "should_abstain": False, "session_id": "sess_p300_15"},
+    {"id": "U300-136", "category": "paraphrase", "query": "What is the duration required for finishing B.Des course?", "expected": "4 years", "should_abstain": False, "session_id": "sess_p300_16"},
+    {"id": "U300-137", "category": "paraphrase", "query": "Does the campus have an open-air gym or fitness center?", "expected": "Yes, fully equipped gymnasium", "should_abstain": False, "session_id": "sess_p300_17"},
+    {"id": "U300-138", "category": "paraphrase", "query": "What is the email to send application forms for management quota?", "expected": "admission@msajce-edu.in", "should_abstain": False, "session_id": "sess_p300_18"},
+    {"id": "U300-139", "category": "paraphrase", "query": "Can students access the campus via public MTC buses on OMR?", "expected": "Yes, bus 102, 570, 570S, 19B stop at Siruseri SIPCOT gate", "should_abstain": False, "session_id": "sess_p300_19"},
+    {"id": "U300-140", "category": "paraphrase", "query": "Who created Lorin AI student assistant?", "expected": "Ramanathan S. from IT department", "should_abstain": False, "session_id": "sess_p300_20"},
+
+    # ----------------------------------------------------
+    # 8. Entity Resolution (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-141", "category": "entity", "query": "Tell me about Dr. K.S. Srinivasan and his academic background", "expected": "Principal with Ph.D and decades of engineering academic leadership", "should_abstain": False, "session_id": "sess_e300_01"},
+    {"id": "U300-142", "category": "entity", "query": "Who is Mr. A. Abdul Gafoor in transport department?", "expected": "Assistant Transport Convener 9940319629", "should_abstain": False, "session_id": "sess_e300_02"},
+    {"id": "U300-143", "category": "entity", "query": "What is the function of Siruseri SIPCOT IT Park in student placements?", "expected": "Located in IT corridor with surrounding tech majors", "should_abstain": False, "session_id": "sess_e300_03"},
+    {"id": "U300-144", "category": "entity", "query": "Tell me about the Mohamed Sathak Trust background", "expected": "Philanthropic educational trust founded by Mohamed Sathak family", "should_abstain": False, "session_id": "sess_e300_04"},
+    {"id": "U300-145", "category": "entity", "query": "Who is Ms. S. Usha in Grievance Redressal Committee?", "expected": "Assistant Professor in English and Committee Convener", "should_abstain": False, "session_id": "sess_e300_05"},
+    {"id": "U300-146", "category": "entity", "query": "What is the role of Dr. Noorul Ameen?", "expected": "HOD of Computer Science and Engineering", "should_abstain": False, "session_id": "sess_e300_06"},
+    {"id": "U300-147", "category": "entity", "query": "What is Route AR 5 and where does it start?", "expected": "Route AR 5 starts at MMDA School Anna Nagar", "should_abstain": False, "session_id": "sess_e300_07"},
+    {"id": "U300-148", "category": "entity", "query": "What is Route AR 10 and which stops does it cover?", "expected": "Route AR 10 covers Porur, Chrompet, Tambaram, Medavakkam", "should_abstain": False, "session_id": "sess_e300_08"},
+    {"id": "U300-149", "category": "entity", "query": "What is Route AR 3 and which areas does it connect?", "expected": "Route AR 3 connects Uthiramerur, Paranur, Mahindra City, Guduvanchery", "should_abstain": False, "session_id": "sess_e300_09"},
+    {"id": "U300-150", "category": "entity", "query": "What is Route AR 4 and where does it travel?", "expected": "Route AR 4 travels Moolakadai, Perambur, Central, Parrys, Adyar to campus", "should_abstain": False, "session_id": "sess_e300_10"},
+    {"id": "U300-151", "category": "entity", "query": "What is Route AR 6 and which landmarks does it pass?", "expected": "Route AR 6 passes ICF, Ayanavaram, Egmore, Triplicane, New College, Madhya Kailash", "should_abstain": False, "session_id": "sess_e300_11"},
+    {"id": "U300-152", "category": "entity", "query": "What is Route AR 7 and what coastal areas does it serve?", "expected": "Route AR 7 serves Chunambedu, Kadapakam, Kalpakkam, Thirukazukundram, Paiyanur", "should_abstain": False, "session_id": "sess_e300_12"},
+    {"id": "U300-153", "category": "entity", "query": "What is Route AR 8 and which North Chennai stops does it serve?", "expected": "Route AR 8 serves Manjambakkam, Retteri, Padi, Anna Nagar, Ashok Pillar", "should_abstain": False, "session_id": "sess_e300_13"},
+    {"id": "U300-154", "category": "entity", "query": "What is Route AR 9 and where does it pick up students?", "expected": "Route AR 9 picks up at Ennore, Mint, Broadway, Central, Royapettah, Mylapore, Adyar", "should_abstain": False, "session_id": "sess_e300_14"},
+    {"id": "U300-155", "category": "entity", "query": "What is Route R 22 and what route does it follow?", "expected": "Route R 22 follows Nemilichery, Poonamallee, Porur, Valasaravakkam, Kathipara, Velachery", "should_abstain": False, "session_id": "sess_e300_15"},
+    {"id": "U300-156", "category": "entity", "query": "Tell me about the Fine Arts and Cultural Club of MSAJCE", "expected": "Fine Arts Club organizing music, dance, drama, and festival competitions", "should_abstain": False, "session_id": "sess_e300_16"},
+    {"id": "U300-157", "category": "entity", "query": "What is the MSAJCEA Alumni Association?", "expected": "Alumni Association connecting graduates and offering alumni scholarships", "should_abstain": False, "session_id": "sess_e300_17"},
+    {"id": "U300-158", "category": "entity", "query": "Who is Ramanathan S. (Ram) in relation to MSAJCE?", "expected": "Student developer of Lorin AI from B.Tech Information Technology", "should_abstain": False, "session_id": "sess_e300_18"},
+    {"id": "U300-159", "category": "entity", "query": "What is the Siruseri OMR campus postal address?", "expected": "MSAJCE, Rajiv Gandhi Salai (OMR), Siruseri IT Park, Chennai 603103", "should_abstain": False, "session_id": "sess_e300_19"},
+    {"id": "U300-160", "category": "entity", "query": "What is the Internal Quality Assurance Cell (IQAC)?", "expected": "Cell monitoring quality standards, NAAC compliance, and curriculum review", "should_abstain": False, "session_id": "sess_e300_20"},
+
+    # ----------------------------------------------------
+    # 9. Typo / Informal (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-161", "category": "typos", "query": "colleg code enna?", "expected": "TNEA Code 1301", "should_abstain": False, "session_id": "sess_typ300_01"},
+    {"id": "U300-162", "category": "typos", "query": "clg tnea cde", "expected": "1301", "should_abstain": False, "session_id": "sess_typ300_02"},
+    {"id": "U300-163", "category": "typos", "query": "princpal sir name", "expected": "Dr. K.S. Srinivasan", "should_abstain": False, "session_id": "sess_typ300_03"},
+    {"id": "U300-164", "category": "typos", "query": "fees for btech csbs kitna hai", "expected": "Rs 55,000", "should_abstain": False, "session_id": "sess_typ300_04"},
+    {"id": "U300-165", "category": "typos", "query": "hostel food nalla irukuma", "expected": "Nutritious vegetarian and non-vegetarian food in mess", "should_abstain": False, "session_id": "sess_typ300_05"},
+    {"id": "U300-166", "category": "typos", "query": "siruseri la college enga iruku", "expected": "Inside SIPCOT IT Park Siruseri", "should_abstain": False, "session_id": "sess_typ300_06"},
+    {"id": "U300-167", "category": "typos", "query": "bus route tambarm stop timing", "expected": "Route AR 10 Tambaram timing", "should_abstain": False, "session_id": "sess_typ300_07"},
+    {"id": "U300-168", "category": "typos", "query": "admission contact num sollunga", "expected": "9940004500", "should_abstain": False, "session_id": "sess_typ300_08"},
+    {"id": "U300-169", "category": "typos", "query": "cse seat evlo iruku", "expected": "60 seats", "should_abstain": False, "session_id": "sess_typ300_09"},
+    {"id": "U300-170", "category": "typos", "query": "naac grde enna msajce ku", "expected": "NAAC Grade A+", "should_abstain": False, "session_id": "sess_typ300_10"},
+    {"id": "U300-171", "category": "typos", "query": "ai ds seat intake details", "expected": "60 seats", "should_abstain": False, "session_id": "sess_typ300_11"},
+    {"id": "U300-172", "category": "typos", "query": "mech engg lab facility iruka", "expected": "Yes, CAD/CAM, Thermal and Workshop labs", "should_abstain": False, "session_id": "sess_typ300_12"},
+    {"id": "U300-173", "category": "typos", "query": "admisn email id enna", "expected": "admission@msajce-edu.in", "should_abstain": False, "session_id": "sess_typ300_13"},
+    {"id": "U300-174", "category": "typos", "query": "plcmnt percentage evlo", "expected": "90%+", "should_abstain": False, "session_id": "sess_typ300_14"},
+    {"id": "U300-175", "category": "typos", "query": "highest package evalo vandhurchu", "expected": "8.5 LPA", "should_abstain": False, "session_id": "sess_typ300_15"},
+    {"id": "U300-176", "category": "typos", "query": "gym iruka college la", "expected": "Yes, gym is available on campus", "should_abstain": False, "session_id": "sess_typ300_16"},
+    {"id": "U300-177", "category": "typos", "query": "barch intake evlo", "expected": "40 seats", "should_abstain": False, "session_id": "sess_typ300_17"},
+    {"id": "U300-178", "category": "typos", "query": "librari timing enna", "expected": "8:30 AM to 5:30 PM", "should_abstain": False, "session_id": "sess_typ300_18"},
+    {"id": "U300-179", "category": "typos", "query": "uba scheme na enna", "expected": "Unnat Bharat Abhiyan village adoption", "should_abstain": False, "session_id": "sess_typ300_19"},
+    {"id": "U300-180", "category": "typos", "query": "transport incharge yar", "expected": "Dr. K.P. Santhosh Nathan 9840886992", "should_abstain": False, "session_id": "sess_typ300_20"},
+
+    # ----------------------------------------------------
+    # 10. Negative / Impossible / Out-of-Corpus (20 new -> total 30)
+    # ----------------------------------------------------
+    {"id": "U300-181", "category": "negative", "query": "What is the hostel fee for the London campus of MSAJCE?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_01"},
+    {"id": "U300-182", "category": "negative", "query": "Who won the FIFA World Cup 2022 in Qatar?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_02"},
+    {"id": "U300-183", "category": "negative", "query": "How do I make Italian wood-fired pizza at home?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_03"},
+    {"id": "U300-184", "category": "negative", "query": "What is the syllabus for MBBS Neurosurgery at MSAJCE?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_04"},
+    {"id": "U300-185", "category": "negative", "query": "Write a C++ code for Red-Black tree deletion", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_05"},
+    {"id": "U300-186", "category": "negative", "query": "What is the stock price of Tesla today on NASDAQ?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_06"},
+    {"id": "U300-187", "category": "negative", "query": "Who is the Minister of Railways in Japan?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_07"},
+    {"id": "U300-188", "category": "negative", "query": "What is the formula to solve Schrödinger's wave equation?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_08"},
+    {"id": "U300-189", "category": "negative", "query": "How to jailbreak an iPhone running iOS 18?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_09"},
+    {"id": "U300-190", "category": "negative", "query": "What is the flight ticket price from Chennai to New York?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_10"},
+    {"id": "U300-191", "category": "negative", "query": "Who directed the movie Interstellar?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_11"},
+    {"id": "U300-192", "category": "negative", "query": "What is the fee for B.Tech Aerospace Engineering at MSAJCE?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_12"},
+    {"id": "U300-193", "category": "negative", "query": "What are the rules for cricket LBW dismissals in ICC?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_13"},
+    {"id": "U300-194", "category": "negative", "query": "Explain how to mine Bitcoin using GPU rigs", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_14"},
+    {"id": "U300-195", "category": "negative", "query": "What is the hostel fee for IIT Madras campus?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_15"},
+    {"id": "U300-196", "category": "negative", "query": "How many airports does Singapore have?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_16"},
+    {"id": "U300-197", "category": "negative", "query": "What is the submarine training schedule for MSAJCE navy cadets?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_17"},
+    {"id": "U300-198", "category": "negative", "query": "Who won the IPL 2024 trophy?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_18"},
+    {"id": "U300-199", "category": "negative", "query": "What is the recipe for Hyderabadi mutton biryani?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_19"},
+    {"id": "U300-200", "category": "negative", "query": "Does MSAJCE offer Bachelor of Dental Surgery (BDS)?", "expected": "ABSTAIN", "should_abstain": True, "session_id": "sess_neg300_20"}
+]
+
+full_300 = base_100 + new_200
+
+out_path = os.path.join(DATA_DIR, "user_e2e_300_production_queries.json")
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(full_300, f, indent=2, ensure_ascii=False)
+
+print(f"Generated {len(full_300)} queries in {out_path}")
+cat_counts = {}
+for q in full_300:
+    cat = q["category"]
+    cat_counts[cat] = cat_counts.get(cat, 0) + 1
+for cat, count in sorted(cat_counts.items()):
+    print(f"  • {cat}: {count} queries")

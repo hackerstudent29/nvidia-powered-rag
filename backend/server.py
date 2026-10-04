@@ -853,7 +853,13 @@ def search_knowledge_entities(user_query: str) -> List[Dict[str, Any]]:
                     break
             else:
                 # Single-word match must be exact token in query (e.g. "ar5", "r21", "srinivasan", "ramanathan", "ram", "rama")
-                if alias_clean in q_words and len(alias_clean) >= 3 and alias_clean not in ["bus", "car", "fee", "lab", "hod"]:
+                GENERIC_ENTITY_STOPWORDS = {
+                    "year", "years", "first", "second", "third", "final", "direct", "lateral",
+                    "cell", "club", "unit", "date", "name", "hall", "room", "park", "road",
+                    "gate", "stop", "code", "time", "area", "high", "low", "bus", "car",
+                    "fee", "fees", "lab", "hod", "new", "old", "team", "meet"
+                }
+                if alias_clean in q_words and len(alias_clean) >= 3 and alias_clean not in GENERIC_ENTITY_STOPWORDS:
                     matched.append(ent)
                     seen_keys.add(key)
                     break
@@ -1361,6 +1367,7 @@ ACRONYM_MAP = {
     r'\baiml\b': 'AI & Machine Learning',
     r'\baids\b': 'AI & Data Science',
     r'\btnea\b': 'TNEA Counseling Code 1301',
+    r'\b(established|founding|founded|establishment)\s*(year|date|time)?\b': 'established on 5th July 2001 Mohamed Sathak Trust history overview',
     r'\bar\s*3\b|\bar3\b': 'Route AR 3 Uthiramerur Paranur Tollgate Mahindra City Guduvanchery Vandalur Kelambakkam Sipcot',
     r'\bar\s*4\b|\bar4\b': 'Route AR 4 Moolakadai Perambur Central Parrys Marina Adyar Thiruvanmiyur ECR Sholinganallur',
     r'\bar\s*5\b|\bar5\b|\bn\s*/\s*3\b|\bn3\b': 'Route N/3 AR 5 MMDA School Anna Nagar Skywalk T. Nagar Saidapet Velachery Check Post Tharamani OMR',
@@ -3421,9 +3428,18 @@ async def async_hybrid_search(query: str, query_vector: Optional[List[float]], t
         c_title = item.get("title", "").lower()
         c_content = item.get("content", "").lower()
 
-        # 1. Exact entity file boost
-        if s_file in ent_files:
+        # 1. Exact entity chunk-level boost (only boost chunk if it mentions the matched entity)
+        matched_ent_chunk = False
+        for ent in matched_ents:
+            ename = (ent.get("entity_name") or "").lower()
+            ekey = (ent.get("entity_key") or "").lower()
+            if (ename and (ename in c_content or ename in c_title)) or (ekey and ekey in c_content):
+                matched_ent_chunk = True
+                break
+        if matched_ent_chunk:
             scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.25
+        elif s_file in ent_files and s_file not in ["msajce_alumni.md", "msajcepolicy.md"]:
+            scores[chunk_id] = scores.get(chunk_id, 0.0) + 0.05
 
         # 2. Core institutional document boost
         if s_file in core_institutional_files:
@@ -3479,11 +3495,15 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
     if matched_ents and bm25_corpus:
         for ent in matched_ents:
             e_file = (ent.get("source_file") or "").lower()
+            ename = (ent.get("entity_name") or "").lower()
+            ekey = (ent.get("entity_key") or "").lower()
             if not e_file:
                 continue
             for idx, doc in enumerate(bm25_corpus):
                 d_file = (doc.get("source_file") or "").lower()
-                if d_file == e_file:
+                doc_text = (doc.get("text") or doc.get("content") or "").lower()
+                doc_title = (doc.get("topic_title") or doc.get("title") or "").lower()
+                if d_file == e_file and ((ename and (ename in doc_text or ename in doc_title)) or (ekey and ekey in doc_text)):
                     chunk_id = str(doc.get("chunk_id", idx))
                     if chunk_id not in chunk_map:
                         chunk_map[chunk_id] = {
