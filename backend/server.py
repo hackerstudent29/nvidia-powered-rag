@@ -4486,6 +4486,9 @@ TIER0_RAM_CACHE = ThreadSafeMemoryCache(capacity=1000)
 def is_invalid_cached_response(text: str) -> bool:
     if not text or len(text.strip()) < 10:
         return True
+    t_clean = text.strip()
+    if t_clean.startswith("### "):
+        return True
     t_low = text.lower()
     return any(err in t_low for err in [
         "momentarily unavailable",
@@ -4606,14 +4609,7 @@ def save_to_cache(query: str, response: str, sources: List[Dict[str, Any]], reas
         return
     if not response or len(response.strip()) < 10:
         return
-    resp_lower = response.lower()
-    if any(err_sig in resp_lower for err_sig in [
-        "momentarily unavailable",
-        "i apologize",
-        "upstream ai model",
-        "temporary outage",
-        "please try your question again in a few seconds"
-    ]):
+    if is_invalid_cached_response(response):
         return
     normalized_query = query.strip().lower()
     query_hash = hashlib.sha256(normalized_query.encode("utf-8")).hexdigest()
@@ -6728,7 +6724,7 @@ async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
 
     query_vector = await get_query_embedding(user_query)
 
-    if query_vector:
+    if query_vector and not req.is_regeneration:
         semantic_cached = check_semantic_cache(query_vector)
         if semantic_cached:
             return {
