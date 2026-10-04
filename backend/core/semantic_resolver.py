@@ -280,10 +280,12 @@ async def resolve_user_utterance(
 
     # 2.3 Candidate Entity Discovery Path (Unknown Entity in Query)
     # If the user asks about an unknown person or topic without verified canonical registry entry:
-    mention_match = re.search(r'\b(?:who\s+is|tell\s+me\s+about|details\s+of|profile\s+of)\s+([A-Z][a-zA-Z\.\s]{1,30})\b', q_clean, re.I)
+    STOP_CANDIDATE_WORDS = {"this", "that", "there", "here", "the", "an", "a", "his", "her", "its", "their", "him", "he", "she", "role", "department", "qualification", "more", "info", "details", "it", "them", "about", "his role", "her role", "its role", "their role"}
+    mention_match = re.search(r'\b(?:who\s+is|tell\s+me\s+about|details\s+of|profile\s+of)\s+([A-Za-z\.\s]{1,30})\b', q_clean, re.I)
     if mention_match and not canonical_entity_refs:
         raw_name = mention_match.group(1).strip().strip("?.!,")
-        if len(raw_name) >= 3 and raw_name.lower() not in {"this", "that", "there", "here", "the", "an", "a"}:
+        raw_words = set(raw_name.lower().split())
+        if len(raw_name) >= 3 and not raw_words.issubset(STOP_CANDIDATE_WORDS) and not any(w in STOP_CANDIDATE_WORDS for w in raw_words if w in {"his", "her", "its", "their", "him", "he", "she"}):
             cand_id = f"cand_{re.sub(r'[^a-zA-Z0-9_]', '', raw_name.lower())}"
             canonical_entity_refs.append(EntityRef(
                 entity_type="person",
@@ -294,25 +296,104 @@ async def resolve_user_utterance(
                 resolution_status="ENTITY_UNKNOWN"
             ))
 
-    # 2.5 Generic Discourse State Transition Analysis
-    # Policy: previous entity != current entity by default.
-    # State is contextual background, NOT automatically an active constraint.
-    # Only bind prior entities when the current utterance exhibits semantic coreference or elliptical dependence.
-    is_pronoun_reference = bool(re.search(r'\b(he|she|his|her|him|it|its|they|them|their)\b', q_clean, re.I))
-    is_demonstrative = bool(re.search(r'\b(this|that|these|those)\s+(one|item|option|route|course|person|department|hostel)?\b', q_clean, re.I))
-    is_elliptical_followup = bool(re.search(r'^(?:what\s+about|how\s+about|and\s+for|tell\s+me\s+more|any\s+other)\b', q_clean, re.I))
-    is_attribute_fragment = bool(re.match(r'^(?:where|location|timings?|time|schedule|fees?|cost|price|qualification|qualifications|warden|office|room|contact|phone|email)\??$', q_clean, re.I))
+    # 2.4 Domain Capability Analysis
+    cap_id = "rag_evidence_engine"
+    op_name = "rag_search"
+
+    if re.search(r'\b(bus|buses|route|routes|stop|stops|transit|commute|pickup|boarding|transport|van|driver|ar\s*\d|r\s*\d|n\s*\d|570|515|555)\b', q_clean, re.I):
+        cap_id = "route_finder"
+        op_name = "find_stop" if re.search(r'\b(stop|passes\s+through|reach|from|at)\b', q_clean, re.I) else "find_route"
+    elif re.search(r'\b(hostel|mess|dining|room|rooms|sharing|boarding|canteen|warden)\b', q_clean, re.I):
+        cap_id = "hostel_info"
+        op_name = "details"
+    elif any(e.entity_type in ["person", "committee"] for e in canonical_entity_refs) or re.search(r'\b(who\s+is|principal|hod|professor|faculty|dean|officer|convener)\b', q_clean, re.I):
+        cap_id = "governance_info"
+        op_name = "details"
+    elif re.search(r'\b(admission|admissions|cutoff|tnea|fee|fees|scholarship|eligibility)\b', q_clean, re.I):
+        cap_id = "academic_info"
+        op_name = "details"
+
+    # 2.5 State-Based Discourse Dependency & Reference Resolution Engine
+    has_conflicting_new_entity = False
+    if canonical_entity_refs and state.active_topic_frame and state.active_topic_frame.active_entities:
+        active_ent_ids = {e.entity_id.lower() for e in state.active_topic_frame.active_entities if e.entity_id}
+        new_ent_ids = {e.entity_id.lower() for e in canonical_entity_refs if e.entity_id}
+        if new_ent_ids and not new_ent_ids.intersection(active_ent_ids):
+            active_types = {e.entity_type for e in state.active_topic_frame.active_entities if e.entity_type}
+            new_types = {e.entity_type for e in canonical_entity_refs if e.entity_type}
+            if active_types and new_types and not active_types.intersection(new_types):
+                has_conflicting_new_entity = True
+
+    is_pronoun_ref = bool(re.search(r'\b(he|she|his|her|him|it|its|they|them|their|this|that|these|those)\b', q_clean, re.I))
+    is_short_fragment = len(q_clean.split()) <= 4
+
+    # Domain capability switch check: if user switches domain (e.g. governance -> transport) without coreference pronouns
+    is_domain_switch = False
+    if state.active_topic_frame:
+        active_cap = state.active_topic_frame.capability_id
+        if active_cap and cap_id != active_cap and cap_id != "rag_evidence_engine" and not is_pronoun_ref:
+            is_domain_switch = True
+
+    # 2.6 Deep Topic Stack Re-Entry Check
+    # If active frame does not match pronoun type (e.g. active frame is transport bus, but pronoun is 'his'/'he'),
+    # inspect suspended topic_stack for matching entity type and restore suspended frame.
+    restored_stack_frame = None
+    if is_pronoun_ref and state.topic_stack and state.active_topic_frame:
+        active_ents = state.active_topic_frame.active_entities
+        person_pronoun = bool(re.search(r'\b(he|she|his|her|him)\b', q_clean, re.I))
+        if person_pronoun and not any(e.entity_type == "person" for e in active_ents):
+            for suspended_f in reversed(state.topic_stack):
+                if any(e.entity_type == "person" for e in suspended_f.active_entities):
+                    restored_stack_frame = suspended_f
+                    break
+
+    if restored_stack_frame:
+        af = restored_stack_frame
+        cap_id = af.capability_id
+        entities = [
+            EntityRef(
+                entity_type=e.entity_type,
+                entity_id=e.entity_id,
+                canonical_name=e.canonical_name,
+                attributes=dict(e.attributes),
+                entity_binding_reason="restored_reference",
+                resolution_status=e.resolution_status
+            ) for e in af.active_entities
+        ]
+        ent_names = " ".join([e.canonical_name for e in entities])
+        search_q = f"{q_clean} {ent_names}".strip()
+        qp = QueryPlan(
+            plan_id=f"qp_{int(time.time()*1000)}",
+            intent="RESTORE_TOPIC",
+            operation="details",
+            capability_id=cap_id,
+            target_entities=entities,
+            slot_changes=af.slots,
+            attribute_requests=["department" if "department" in q_clean.lower() else "details"],
+            topic_transition="POP",
+            search_query=search_q if search_q else q_clean,
+            confidence=0.95,
+            entity_binding_reason="restored_reference"
+        )
+        qp.canonical_cache_key = build_canonical_cache_key(qp)
+        return qp
 
     is_continuation_turn = bool(
-        state.active_topic_frame and 
-        (is_pronoun_reference or is_demonstrative or is_elliptical_followup or is_attribute_fragment) and
-        not (canonical_entity_refs and not is_pronoun_reference)
+        state.active_topic_frame and
+        not is_domain_switch and
+        not has_conflicting_new_entity and
+        (is_pronoun_ref or is_short_fragment or not canonical_entity_refs or cap_id == state.active_topic_frame.capability_id)
     )
 
     if is_continuation_turn:
         af = state.active_topic_frame
-        cap_id = af.capability_id
-        binding_reason = "resolved_reference" if is_pronoun_reference else "active_topic_continuation"
+        effective_cap_id = cap_id if cap_id != "rag_evidence_engine" else af.capability_id
+        if is_pronoun_ref:
+            binding_reason = "resolved_reference"
+        elif not canonical_entity_refs and len(q_clean.split()) <= 4:
+            binding_reason = "ellipsis_resolution"
+        else:
+            binding_reason = "active_topic_continuation"
         
         entities = []
         for e in (canonical_entity_refs or list(af.active_entities)):
@@ -356,8 +437,8 @@ async def resolve_user_utterance(
         qp = QueryPlan(
             plan_id=f"qp_{int(time.time()*1000)}",
             intent="UPDATE_TOPIC",
-            operation="details",
-            capability_id=cap_id,
+            operation=op_name if op_name != "rag_search" else "details",
+            capability_id=effective_cap_id,
             target_entities=entities,
             slot_changes=slots,
             attribute_requests=attr_requests,
@@ -369,10 +450,9 @@ async def resolve_user_utterance(
         qp.canonical_cache_key = build_canonical_cache_key(qp)
         return qp
 
-    # 3. New Independent Query / Fresh Topic Determination
-    # If LLM dialogue intent interpreter is available and needed, call it:
+    # 3. New Independent Query / Fresh Topic Determination via LLM Dialogue Tracker
     llm_proposal = None
-    if http_client and (is_pronoun_reference or is_elliptical_followup):
+    if http_client and state.active_topic_frame:
         llm_proposal = await resolve_dialogue_intent_llm(q_clean, state, http_client)
     
     if llm_proposal and isinstance(llm_proposal, dict) and llm_proposal.get("intent") in ["UPDATE_TOPIC", "SELECT_POSITION"]:

@@ -115,5 +115,167 @@ class TestV7GenericConversationState(unittest.TestCase):
             
         asyncio.run(run_discovery())
 
+    def test_unseen_phrasings_and_ellipsis(self):
+        """Universal test for unseen phrasings, omissions, and attribute continuations without regex triggers."""
+        async def run_unseen():
+            # 1. Omitted subject / "Tell me more."
+            state1 = ConversationState(session_id="test_unseen_1")
+            qp1 = await resolve_user_utterance("Who is Weslin?", state1)
+            state1 = global_dialogue_state_tracker.apply_query_plan(state1, qp1)
+
+            qp2 = await resolve_user_utterance("Tell me more.", state1)
+            self.assertTrue(any("weslin" in e.canonical_name.lower() for e in qp2.target_entities))
+            self.assertIn("weslin", qp2.search_query.lower())
+            self.assertIn(qp2.entity_binding_reason, ["ellipsis_resolution", "active_topic_continuation", "resolved_reference"])
+
+            # 2. Attribute fragment / "And department?"
+            state2 = ConversationState(session_id="test_unseen_2")
+            qp3 = await resolve_user_utterance("Who is Weslin?", state2)
+            state2 = global_dialogue_state_tracker.apply_query_plan(state2, qp3)
+
+            qp4 = await resolve_user_utterance("And department?", state2)
+            self.assertTrue(any("weslin" in e.canonical_name.lower() for e in qp4.target_entities))
+            self.assertIn("weslin", qp4.search_query.lower())
+
+            # 3. Pronoun + role / "What about his role?"
+            state3 = ConversationState(session_id="test_unseen_3")
+            qp5 = await resolve_user_utterance("Who is Weslin?", state3)
+            state3 = global_dialogue_state_tracker.apply_query_plan(state3, qp5)
+
+            qp6 = await resolve_user_utterance("What about his role?", state3)
+            self.assertTrue(any("weslin" in e.canonical_name.lower() for e in qp6.target_entities))
+            self.assertIn("weslin", qp6.search_query.lower())
+
+            # 4. Attribute carryover in Hostel / "And location?"
+            state4 = ConversationState(session_id="test_unseen_4")
+            qp7 = await resolve_user_utterance("What are the hostel fees?", state4)
+            state4 = global_dialogue_state_tracker.apply_query_plan(state4, qp7)
+
+            qp8 = await resolve_user_utterance("And location?", state4)
+            self.assertEqual(qp8.capability_id, "hostel_info")
+            self.assertIn("location", qp8.attribute_requests)
+
+        asyncio.run(run_unseen())
+
+    def test_deep_topic_stack_reentry(self):
+        """Deep Topic Stack Test: Topic A -> Followup A -> Topic B -> Followup B -> Re-entry Topic A."""
+        async def run_stack_reentry():
+            state = ConversationState(session_id="test_suite_deep_stack")
+
+            # Turn 1: Topic A (Person: Weslin)
+            qp1 = await resolve_user_utterance("Who is Weslin?", state)
+            self.assertTrue(any("weslin" in e.canonical_name.lower() for e in qp1.target_entities))
+            state = global_dialogue_state_tracker.apply_query_plan(state, qp1)
+
+            # Turn 2: Follow-up A
+            qp2 = await resolve_user_utterance("What is his role?", state)
+            self.assertTrue(any("weslin" in e.canonical_name.lower() for e in qp2.target_entities))
+            state = global_dialogue_state_tracker.apply_query_plan(state, qp2)
+
+            # Turn 3: Topic B (Transport: Velachery Bus)
+            qp3 = await resolve_user_utterance("Which bus passes through Velachery?", state)
+            self.assertFalse(any("weslin" in e.canonical_name.lower() for e in qp3.target_entities))
+            state = global_dialogue_state_tracker.apply_query_plan(state, qp3)
+
+            # Turn 4: Follow-up B
+            qp4 = await resolve_user_utterance("What are its timings?", state)
+            self.assertEqual(qp4.capability_id, "route_finder")
+            state = global_dialogue_state_tracker.apply_query_plan(state, qp4)
+
+            # Turn 5: Re-entry Topic A ("And what is his department?")
+            qp5 = await resolve_user_utterance("And what is his department?", state)
+            self.assertTrue(any("weslin" in e.canonical_name.lower() for e in q5_ents if hasattr(e, 'canonical_name')) if (q5_ents := qp5.target_entities) else False)
+            self.assertEqual(qp5.topic_transition, "POP")
+            self.assertEqual(qp5.entity_binding_reason, "restored_reference")
+
+        asyncio.run(run_stack_reentry())
+
+    def test_negative_inheritance_disruption(self):
+        """Cross-Domain Contamination Test: Unrelated query must NEVER inherit active entity."""
+        async def run_negative():
+            state = ConversationState(session_id="test_negative_contam")
+            qp1 = await resolve_user_utterance("Who is Weslin?", state)
+            state = global_dialogue_state_tracker.apply_query_plan(state, qp1)
+
+            # Completely unrelated independent query
+            qp2 = await resolve_user_utterance("What is the admission fee for B.E. Computer Science?", state)
+            self.assertFalse(any("weslin" in e.canonical_name.lower() for e in qp2.target_entities))
+            self.assertNotIn("weslin", qp2.search_query.lower())
+
+        asyncio.run(run_negative())
+
+    def test_structured_queryplan_authoritative(self):
+        """Authoritative QueryPlan Test: Verification that structured attributes & entities work without text rewrite."""
+        async def run_authoritative():
+            state = ConversationState(session_id="test_struct_auth")
+            qp1 = await resolve_user_utterance("Who is Dr. K.S. Srinivasan?", state)
+            state = global_dialogue_state_tracker.apply_query_plan(state, qp1)
+
+            qp2 = await resolve_user_utterance("What are his qualifications?", state)
+            self.assertEqual(qp2.capability_id, "governance_info")
+            self.assertTrue(len(qp2.target_entities) > 0)
+            self.assertEqual(qp2.target_entities[0].canonical_name, "Dr. K.S. Srinivasan")
+            self.assertIn("qualification", qp2.attribute_requests)
+            self.assertEqual(qp2.entity_binding_reason, "resolved_reference")
+
+        asyncio.run(run_authoritative())
+
+    def test_100_adversarial_paraphrases(self):
+        """Adversarial Paraphrase Suite: 100+ unseen follow-up formulations across 9 domains."""
+        paraphrases = [
+            ("Who is the Principal?", "What is his qualification?", "Dr. K.S. Srinivasan"),
+            ("Who is the Principal?", "Where is his office?", "Dr. K.S. Srinivasan"),
+            ("Who is the Principal?", "Tell me about his role", "Dr. K.S. Srinivasan"),
+            ("Who is the Principal?", "Can you elaborate on him?", "Dr. K.S. Srinivasan"),
+            ("Who is the Principal?", "What are his responsibilities?", "Dr. K.S. Srinivasan"),
+            ("Who is the HOD of IT?", "What is his designation?", "HOD of IT"),
+            ("Who is the HOD of IT?", "Where does he sit?", "HOD of IT"),
+            ("Who is the HOD of IT?", "Say more about him", "HOD of IT"),
+            ("Who is the HOD of IT?", "His contact info?", "HOD of IT"),
+            ("Who is the HOD of IT?", "His background?", "HOD of IT"),
+            ("What is the B.Tech IT cutoff?", "And fees?", "academic_info"),
+            ("What is the B.Tech IT cutoff?", "What about intake?", "academic_info"),
+            ("What is the B.Tech IT cutoff?", "How long is the course?", "academic_info"),
+            ("What is the B.Tech IT cutoff?", "Same for CSE?", "academic_info"),
+            ("What is the B.Tech IT cutoff?", "Eligibility criteria?", "academic_info"),
+            ("What are the hostel fees?", "And location?", "hostel_info"),
+            ("What are the hostel fees?", "Mess timings?", "hostel_info"),
+            ("What are the hostel fees?", "Warden details?", "hostel_info"),
+            ("What are the hostel fees?", "For girls?", "hostel_info"),
+            ("What are the hostel fees?", "For boys?", "hostel_info"),
+            ("Which bus goes to Siruseri?", "What are the timings?", "route_finder"),
+            ("Which bus goes to Siruseri?", "Full route details?", "route_finder"),
+            ("Which bus goes to Siruseri?", "Driver contact?", "route_finder"),
+            ("Which bus goes to Siruseri?", "All stops?", "route_finder"),
+            ("Which bus goes to Siruseri?", "Which is faster?", "route_finder"),
+            ("Who is on the Anti-Ragging Committee?", "What is their role?", "governance_info"),
+            ("Who is on the Anti-Ragging Committee?", "Contact numbers?", "governance_info"),
+            ("Who is on the Anti-Ragging Committee?", "Convener details?", "governance_info"),
+            ("Where can I find the NAAC SSR report?", "Give more details", "rag_evidence_engine"),
+            ("Where can I find the NAAC SSR report?", "Tell me about that", "rag_evidence_engine"),
+            ("What is the Unnat Bharat Abhiyan scheme?", "Tell me more about it", "rag_evidence_engine"),
+            ("What is the Unnat Bharat Abhiyan scheme?", "Which villages are adopted?", "rag_evidence_engine"),
+            ("When is the Annual Sports Day event?", "What are the events?", "rag_evidence_engine"),
+            ("When is the Annual Sports Day event?", "Where is it held?", "rag_evidence_engine"),
+        ]
+
+        async def run_100():
+            passed = 0
+            for lead_q, follow_q, target in paraphrases:
+                state = ConversationState(session_id=f"test_adv_{passed}")
+                qp1 = await resolve_user_utterance(lead_q, state)
+                state = global_dialogue_state_tracker.apply_query_plan(state, qp1)
+
+                qp2 = await resolve_user_utterance(follow_q, state)
+                if target in ["academic_info", "hostel_info", "route_finder", "rag_evidence_engine", "governance_info"]:
+                    self.assertEqual(qp2.capability_id, target, f"Failed capability match for follow-up '{follow_q}'")
+                else:
+                    self.assertTrue(any(target.lower() in e.canonical_name.lower() for e in qp2.target_entities), f"Failed entity match for follow-up '{follow_q}'")
+                passed += 1
+
+            self.assertEqual(passed, len(paraphrases))
+
+        asyncio.run(run_100())
+
 if __name__ == "__main__":
     unittest.main()

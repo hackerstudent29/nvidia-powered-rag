@@ -276,7 +276,7 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, official student ambassador & campus 
 
 CONVERSATIONAL STYLE & CHATGPT-LIKE AI PERSONA:
 1. Tone: Warm, empathetic, intelligent, and highly articulate campus advisor. Answer in a natural, friendly, ChatGPT-style conversational tone.
-2. Structure & Presentation: Combine engaging conversational explanations with clean, structured Markdown (bold headers, bullet points, and Markdown tables | Column 1 | Column 2 |). Highlight key names, amounts, and dates in bold text for effortless reading.
+2. Structure & Presentation: Combine engaging conversational explanations with clean, structured Markdown (bold headers, bullet points, and Markdown tables | Column 1 | Column 2 |). Highlight key names, amounts, and dates in bold text for effortless reading. Always format dates with proper spaces (e.g., "April 7, 2021").
 3. Engaging Openings & Closings: Begin naturally with a welcoming, contextual introductory sentence (e.g., "Here is the breakdown of students who have benefited from the MSAJCEA Alumni Scholarship Program:"). Conclude helpfully with a warm follow-up offer (e.g., "If you'd like to know more about specific department scholarships or application procedures, feel free to ask!").
 4. Anti-Metadata & Grounding: Ground 100% in verified MSAJCE records. Never extrapolate or invent facts. NEVER quote internal chunk indices, document filenames (e.g. '[8]', 'msajce_policy.md'), or raw version tags.
 5. Administrative In-Charges & Faculty: Map role queries strictly to official campus contacts with name, title, phone, and email as stated in verified records. If a named individual is not in records, state clearly: "No record found for '[Name]' in verified MSAJCE campus records."
@@ -380,6 +380,10 @@ def structure_markdown_for_mobile(text: str) -> str:
     # Strip internal dataset direction tags (_onward, _return) from bus route names and numbers
     text = re.sub(r'\b([A-Za-z0-9\-_]+?)_(onward|return)\b', r'\1', text, flags=re.IGNORECASE)
     text = re.sub(r'\b(MTC\s+[A-Za-z0-9\-]+|[0-9]{2,3}[A-Za-z]?)\s*,\s*\1\b', r'\1', text, flags=re.IGNORECASE)
+
+    # Automatically format unspaced or smashed dates (e.g. "April72021" -> "April 7, 2021")
+    months_pat = r'(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)'
+    text = re.sub(rf'\b({months_pat})\s*(\d{{1,2}})\s*,?\s*(\d{{4}})\b', r'\1 \2, \3', text, flags=re.IGNORECASE)
 
     # Normalize excessive blank lines
     text = re.sub(r'\n{3,}', '\n\n', text)
@@ -3003,10 +3007,12 @@ _PRONOUN_TRIGGERS = re.compile(
     r'\b(the same|above mentioned|given above|those details|these details)\b'
     r'|\b(any\s*other|anyother|anyone\s+else|who\s+else|what\s+else|which\s+other|who\s+other|what\s+other|how\s+about\s+other|how\s+about\s+the\s+other|are\s+there\s+any\s+other|is\s+there\s+any\s+other|any\s+more|more\s+names?|other\s+students?|other\s+faculty|other\s+members?|other\s+recipients?|other\s+candidates?|more\s+recipients?)\b'
     r'|\b(who\s+are\s+they|who\s+are\s+the\s+others|what\s+are\s+the\s+others|list\s+others|list\s+more|show\s+more|give\s+more)\b'
-    r'|\b(full route|complete route|route fully|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt that|who is he|who is she|more info|further details|that briefly|this briefly)\b'
+    r'|\b(full route|complete route|route fully|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt him|abt her|abt it|abt that|who is he|who is she|who is her|who is him|more info|further details|that briefly|this briefly)\b'
+    r'|\b(more|details|info|tell me|tell|tell me more|know|learn)\s+(?:abt|about|on|regarding|for)?\s*(?:her|him|them|it|that|this)\b'
+    r'|\b(abt|about)\s+(?:her|him|them|it|that|this)\b'
     r'|\bwhat (is|are|about) (that|them|those|him|her|it)\b'
-    r'|\b(its|their|his|her) (route|routes|stops?|driver|contact|timings?|details?|fees?|profile|designation|department|qualification|sports|facilities|facility)\b'
-    r'|\b(give|show|tell|send|get|provide|list)\b.*?\b(that|this|it|them|those|these)\b'
+    r'|\b(its|their|his|her) (route|routes|stops?|driver|contact|timings?|details?|fees?|profile|designation|department|qualification|sports|facilities|facility|role|history|background)\b'
+    r'|\b(give|show|tell|send|get|provide|list)\b.*?\b(that|this|it|them|those|these|her|him)\b'
     r'|\b(this|that|the|those|these)\b(?:[\w\s]{0,25})\b(bus|buses|route|routes|dept|department|driver|drivers|course|subject|hostel|stop|stops|schedule|contact|fee|fees|syllabus|program|branch|faculty|person|professor|sports|facility|facilities)\b',
     re.IGNORECASE
 )
@@ -3050,7 +3056,7 @@ def is_standalone_or_protected_query(query: str) -> bool:
 
     # 4. Direct question structures targeting specific topics (who is, what is, where is, how to)
     if re.search(r'\b(who\s+is|what\s+is|what\s+are|where\s+is|how\s+to|list\s+all|tell\s+me\s+about)\b', q_low) and len(q_clean.split()) >= 3:
-        if not re.search(r'\b(who\s+is\s+he|who\s+is\s+she|who\s+are\s+they|what\s+is\s+it|what\s+is\s+that|what\s+are\s+they|tell\s+me\s+about\s+it|tell\s+me\s+about\s+that|tell\s+abt\s+it|tell\s+abt\s+that)\b', q_low):
+        if not re.search(r'\b(who\s+is\s+he|who\s+is\s+she|who\s+is\s+her|who\s+is\s+him|who\s+are\s+they|what\s+is\s+it|what\s+is\s+that|what\s+are\s+they|tell\s+me\s+about\s+it|tell\s+me\s+about\s+that|tell\s+me\s+about\s+her|tell\s+me\s+about\s+him|tell\s+abt\s+it|tell\s+abt\s+that|tell\s+abt\s+her|tell\s+abt\s+him)\b', q_low):
             return True
 
     # 5. Compound / Multi-question queries with 2+ questions
@@ -3059,24 +3065,36 @@ def is_standalone_or_protected_query(query: str) -> bool:
 
     return False
 
-def is_contextual_query(query: str) -> bool:
+def is_contextual_query(query: str, state: Optional[Any] = None) -> bool:
     """
-    Universal Production RAG Contextual Query Detector.
-    Returns True ONLY if the query is a pure follow-up or referential query dependent on past dialogue.
+    Universal State-Aware Contextual Query Detector.
+    Evaluates whether an utterance depends on active conversation state or coreference/ellipsis.
     """
     if not query:
         return False
     q_norm = normalize_query_typos(query.strip())
 
-    # Standalone queries with clear domain subjects are NOT contextual
-    if is_standalone_or_protected_query(q_norm):
-        return False
+    # 1. State-driven evaluation: if active topic frame has entities/topic and query has no conflicting new entity
+    if state and getattr(state, 'active_topic_frame', None):
+        af = state.active_topic_frame
+        if af and af.active_entities:
+            # Check if query introduces a clear independent domain keyword
+            words = set(re.findall(r'\b\w+\b', q_norm.lower()))
+            if not words.intersection(_STANDALONE_DOMAIN_KEYWORDS):
+                return True
+            # Short query with active topic frame
+            if len(q_norm.split()) <= 7:
+                return True
 
-    # Affirmation & pure ambiguous pronoun triggers
+    # 2. Structural referential & elliptical indicators
     if _FOLLOWUP_AFFIRMATION_PATTERNS.match(q_norm):
         return True
 
     if _PRONOUN_TRIGGERS.search(q_norm):
+        return True
+
+    # Short query (< 6 words) without explicit question targets
+    if len(q_norm.split()) <= 5 and not is_standalone_or_protected_query(q_norm):
         return True
 
     return False
@@ -5585,7 +5603,7 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
             retrieval_query = user_query
             if v6_query_plan and v6_query_plan.search_query:
-                if v6_query_plan.topic_transition in ("CONTINUE", "MODIFY", "DRILL_DOWN") or is_contextual_query(user_query):
+                if v6_query_plan.topic_transition in ("CONTINUE", "MODIFY", "DRILL_DOWN", "SAME") or v6_query_plan.intent in ("UPDATE_TOPIC", "SELECT_POSITION", "RESTORE_TOPIC") or is_contextual_query(user_query) or (v6_query_plan.search_query.strip().lower() != user_query.strip().lower()):
                     retrieval_query = v6_query_plan.search_query
 
             # 1.2 Zero-Token Local Query Rewriting & Acronym Expansion

@@ -19,10 +19,12 @@ _PRONOUN_TRIGGERS = re.compile(
     r'\b(the same|above mentioned|given above|those details|these details)\b'
     r'|\b(any\s*other|anyother|anyone\s+else|who\s+else|what\s+else|which\s+other|who\s+other|what\s+other|how\s+about\s+other|how\s+about\s+the\s+other|are\s+there\s+any\s+other|is\s+there\s+any\s+other|any\s+more|more\s+names?|other\s+students?|other\s+faculty|other\s+members?|other\s+recipients?|other\s+candidates?|more\s+recipients?)\b'
     r'|\b(who\s+are\s+they|who\s+are\s+the\s+others|what\s+are\s+the\s+others|list\s+others|list\s+more|show\s+more|give\s+more)\b'
-    r'|\b(full route|complete route|route fully|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt that|who is he|who is she|more info|further details|that briefly|this briefly)\b'
+    r'|\b(full route|complete route|route fully|all stops|more details?|tell me more|tell abt|tell about|tellme|tellme abt|tellme about|know more|expand|elaborate|go on|continue|give those|show those|about him|about her|about it|about that|abt him|abt her|abt it|abt that|who is he|who is she|who is her|who is him|more info|further details|that briefly|this briefly)\b'
+    r'|\b(more|details|info|tell me|tell|tell me more|know|learn)\s+(?:abt|about|on|regarding|for)?\s*(?:her|him|them|it|that|this)\b'
+    r'|\b(abt|about)\s+(?:her|him|them|it|that|this)\b'
     r'|\bwhat (is|are|about) (that|them|those|him|her|it)\b'
-    r'|\b(its|their|his|her) (route|routes|stops?|driver|contact|timings?|details?|fees?|profile|designation|department|qualification|sports|facilities|facility)\b'
-    r'|\b(give|show|tell|send|get|provide|list)\b.*?\b(that|this|it|them|those|these)\b'
+    r'|\b(its|their|his|her) (route|routes|stops?|driver|contact|timings?|details?|fees?|profile|designation|department|qualification|sports|facilities|facility|role|history|background)\b'
+    r'|\b(give|show|tell|send|get|provide|list)\b.*?\b(that|this|it|them|those|these|her|him)\b'
     r'|\b(this|that|the|those|these)\b(?:[\w\s]{0,25})\b(bus|buses|route|routes|dept|department|driver|drivers|course|subject|hostel|stop|stops|schedule|contact|fee|fees|syllabus|program|branch|faculty|person|professor|sports|facility|facilities)\b',
     re.IGNORECASE
 )
@@ -92,7 +94,7 @@ def is_standalone_or_protected_query(query: str) -> bool:
         return True
 
     if re.search(r'\b(who\s+is|what\s+is|what\s+are|where\s+is|how\s+to|list\s+all|tell\s+me\s+about)\b', q_low) and len(q_clean.split()) >= 3:
-        if not re.search(r'\b(who\s+is\s+he|who\s+is\s+she|who\s+are\s+they|what\s+is\s+it|what\s+is\s+that|what\s+are\s+they|tell\s+me\s+about\s+it|tell\s+me\s+about\s+that|tell\s+abt\s+it|tell\s+abt\s+that)\b', q_low):
+        if not re.search(r'\b(who\s+is\s+he|who\s+is\s+she|who\s+is\s+her|who\s+is\s+him|who\s+are\s+they|what\s+is\s+it|what\s+is\s+that|what\s+are\s+they|tell\s+me\s+about\s+it|tell\s+me\s+about\s+that|tell\s+me\s+about\s+her|tell\s+me\s+about\s+him|tell\s+abt\s+it|tell\s+abt\s+that|tell\s+abt\s+her|tell\s+abt\s+him)\b', q_low):
             return True
 
     if q_clean.count('?') >= 2 or len(q_clean.split()) >= 15:
