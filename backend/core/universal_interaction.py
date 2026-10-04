@@ -91,19 +91,24 @@ def detect_social_interaction(utterance: str) -> Optional[DiscourseAct]:
     u_clean = utterance.strip().lower()
     u_norm = re.sub(r'[^a-z0-9\s]', '', u_clean).strip()
 
-    # Greetings
-    if re.match(r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|salam|assalamu\s+alaikum|sup|yo|howdy|good\s+morning|good\s+afternoon|good\s+evening|gm|ga|ge)(?:\s+(?:there|lorin|bot|assistant|sir|all|ai|friend))?[\s!.,?]*$', u_norm):
+    # Tamil/Tanglish & English Greetings
+    greet_patterns = [
+        r'^(?:hi+|he+y+|hello+|helo+|hola|namaste|vanakkam|vannakam|vannkam|vanakam|salam|assalamu\s+alaikum|sup|yo|howdy|good\s+morning|good\s+afternoon|good\s+evening|gm|ga|ge)(?:\s+(?:there|lorin|bot|assistant|sir|all|ai|friend|da|bro|machan|machi|dude|buddy))?[\s!.,?]*$',
+        r'^(?:vanakkam|vannakam|vannkam|vanakam|namaste|hello|hi|hey)\s+(?:da|bro|machan|machi|dude|buddy|lorin|bot|sir)[\s!.,?]*$'
+    ]
+    if any(re.match(p, u_norm) for p in greet_patterns):
         return DiscourseAct.GREET
     
     # Thanks / Gratitude
-    if re.search(r'\b(?:thank\s+you|thanks|thx|ty|thank\s+u|much\s+appreciated|great\s+thanks)\b', u_norm):
+    if re.search(r'\b(?:thank\s+you|thanks|thx|ty|thank\s+u|much\s+appreciated|great\s+thanks|nandri|nanri)\b', u_norm):
         return DiscourseAct.THANK
 
     # Farewell
-    if re.search(r'\b(?:bye|goodbye|see\s+you|cya|take\s+care|have\s+a\s+good\s+day)\b', u_norm):
+    if re.search(r'\b(?:bye|goodbye|see\s+you|cya|take\s+care|have\s+a\s+good\s+day|poitu\s+varren|poituvarren)\b', u_norm):
         return DiscourseAct.FAREWELL
 
     return None
+
 
 def analyze_universal_interaction(
     utterance: str,

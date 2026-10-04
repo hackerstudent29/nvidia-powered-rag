@@ -3681,8 +3681,8 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
     return nemotron_rerank(expanded_query, results, top_k=top_k)
 
 GREETING_WORDS = {
-    "hello", "hi", "hey", "howdy", "sup", "namaste", "vanakkam", "salam", "yo", "hola",
-    "gm", "ga", "ge", "gn", "helo", "hii", "hiii", "heyy", "heyyy"
+    "hello", "hi", "hey", "howdy", "sup", "namaste", "vanakkam", "vannakam", "vannkam", "vanakam", "salam", "yo", "hola",
+    "gm", "ga", "ge", "gn", "helo", "hii", "hiii", "heyy", "heyyy", "nandri", "nanri"
 }
 GREETING_PHRASES = [
     "good morning", "good evening", "good afternoon", "good day", "good night",
@@ -5495,11 +5495,15 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
             # V7 Social Fast-Path Interceptor: Handle generic social conversational acts sub-5ms
             if v7_interaction.interaction_mode == InteractionMode.SOCIAL_CONVERSATION:
                 logger.info(f"[V7 Social Fast-Path] Servicing conversational act '{v7_interaction.discourse_act.value}'")
-                social_response = "Hello! Welcome to MSAJCE institutional assistant. How can I assist you today?"
-                if v7_interaction.discourse_act == DiscourseAct.THANK:
+                if any(w in user_query.lower() for w in ["vanakkam", "vannakam", "vannkam", "vanakam", "nandri", "nanri"]):
+                    social_response = "Vanakkam! Welcome to Mohamed Sathak A.J. College of Engineering (MSAJCE). How can I assist you today?"
+                elif v7_interaction.discourse_act == DiscourseAct.THANK:
                     social_response = "You're very welcome! Feel free to ask if you need any more information about MSAJCE."
                 elif v7_interaction.discourse_act == DiscourseAct.FAREWELL:
                     social_response = "Goodbye! Wishing you all the best. Feel free to reach out anytime."
+                else:
+                    social_response = "Hello! Welcome to MSAJCE institutional assistant. How can I assist you today?"
+
                 
                 yield json.dumps({
                     "type": "reasoning",
