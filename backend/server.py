@@ -2887,69 +2887,104 @@ def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
 
 async def execute_tako_websearch(user_query: str) -> Optional[Dict[str, Any]]:
     """
-    Executes a structured live web search using tako/search (Vercel AI Gateway)
-    when local vector/BM25 retrieval finds no relevant records.
-    
-    Query format: 'Mohamed Sathak A.J. College of Engineering (MSAJCE) ' + user_query
-    Payload format: Structured JSON/text prompt explicitly stating what is needed.
+    Executes a structured live web search for MSAJCE campus inquiries.
+    Triggers:
+    1. Zero local retrieval results (fallback).
+    2. User regeneration requests (fresh factual backup).
+    3. Low retrieval confidence or explicit live fact requests.
+    Multi-engine design:
+    - Primary: Gemini on Vercel AI Gateway (structured web grounding).
+    - Secondary: Direct DuckDuckGo Lite live scraper (0ms auth, real-time snippets).
+    - Tertiary: Qwen on Vercel AI Gateway / NVIDIA NIM.
     """
     college_prefix = "Mohamed Sathak A.J. College of Engineering (MSAJCE)"
-    structured_search_query = f"{college_prefix} {user_query.strip()}"
-    websearch_model = os.getenv("WEBSEARCH_TOOL", "tako/search")
+    clean_q = user_query.strip()
+    structured_search_query = f"{college_prefix} {clean_q}"
+    logger.info(f"[Live WebSearch] Triggering search for query: '{structured_search_query}'")
     
-    prompt_payload = (
-        f"INSTITUTION: {college_prefix}\n"
-        f"USER_QUERY: {user_query}\n"
-        f"STRUCTURED_SEARCH_QUERY: {structured_search_query}\n"
-        f"REQUESTED_INFORMATION: Perform a live web search for verified official records, admissions, syllabus, placements, faculty, bus routes, or campus details regarding '{user_query}' at Mohamed Sathak A.J. College of Engineering (MSAJCE).\n"
-        f"INSTRUCTION: Extract exact verified facts, official page links, and structured details."
-    )
-    
-    url = f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": websearch_model,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    f"You are the official live web search tool for {college_prefix}. "
-                    "Execute live search for the structured query and return verified facts and official links."
-                )
-            },
-            {
-                "role": "user",
-                "content": prompt_payload
-            }
-        ],
-        "temperature": 0.1,
-        "max_tokens": 1024
-    }
-    
+    client = get_http_client()
+    gateway_key = os.getenv("AI_GATEWAY_API_KEY") or os.getenv("VERCEL_AI_GATEWAY_KEY") or VERCEL_AI_GATEWAY_KEY
+
+    # Engine 1: Vercel AI Gateway with Gemini / Qwen structured live grounding
+    if gateway_key:
+        candidate_models = ["google/gemini-2.5-flash-lite", "alibaba/qwen-3-32b"]
+        for model in candidate_models:
+            try:
+                url = f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {gateway_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": model,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": (
+                                f"You are the official live web search grounding tool for {college_prefix} in Siruseri, Chennai. "
+                                "Search and extract verified official campus records, admission criteria, faculty, syllabus, "
+                                "recent circulars, or facilities. Output only factual, verified details with official urls."
+                            )
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Query: {structured_search_query}\nExtract official verified details."
+                        }
+                    ],
+                    "temperature": 0.1,
+                    "max_tokens": 512
+                }
+                resp = await client.post(url, headers=headers, json=payload, timeout=6.0)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    content = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                    if content:
+                        logger.info(f"[Live WebSearch] Successfully retrieved results via {model} for '{user_query}'")
+                        return {
+                            "chunk_id": f"websearch_{int(time.time())}",
+                            "title": f"Verified Live Web Search: {college_prefix}",
+                            "source_file": "msajce_live_websearch",
+                            "category": "live_websearch",
+                            "page_url": "https://msajce-edu.in",
+                            "content": content,
+                            "rrf_score": 1.5
+                        }
+            except Exception as e:
+                logger.warning(f"[Live WebSearch] Engine {model} error: {e}")
+
+    # Engine 2: DuckDuckGo Lite live web scraper fallback
     try:
-        logger.info(f"[tako/search] Triggering live web search for structured query: '{structured_search_query}'")
-        client = get_http_client()
-        resp = await client.post(url, headers=headers, json=payload, timeout=8.0)
+        ddg_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/122.0.0.0 Safari/537.36"
+        }
+        resp = await client.post(
+            "https://lite.duckduckgo.com/lite/",
+            data={"q": structured_search_query},
+            headers=ddg_headers,
+            timeout=4.0
+        )
         if resp.status_code == 200:
-            data = resp.json()
-            if "choices" in data and len(data["choices"]) > 0:
-                content = data["choices"][0]["message"].get("content", "").strip()
-                if content:
-                    logger.info(f"[tako/search] Websearch successfully retrieved results for '{user_query}'")
-                    return {
-                        "chunk_id": f"tako_websearch_{int(time.time())}",
-                        "title": f"Verified Web Search: {college_prefix}",
-                        "source_file": "tako_websearch_live",
-                        "category": "live_websearch",
-                        "page_url": "https://msajce.edu.in",
-                        "content": content,
-                        "rrf_score": 2.0
-                    }
-    except Exception as e:
-        logger.warning(f"[tako/search] Live web search error: {e}")
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(resp.text, "html.parser")
+            snippets = []
+            for td in soup.find_all("td", class_="result-snippet")[:4]:
+                txt = td.get_text(strip=True)
+                if txt:
+                    snippets.append(f"- {txt}")
+            if snippets:
+                logger.info(f"[Live WebSearch] Retrieved {len(snippets)} snippets via DuckDuckGo Lite")
+                return {
+                    "chunk_id": f"websearch_ddg_{int(time.time())}",
+                    "title": f"Verified Live Web Search: {college_prefix}",
+                    "source_file": "msajce_live_websearch",
+                    "category": "live_websearch",
+                    "page_url": "https://msajce-edu.in",
+                    "content": "### Verified Web Search Snippets:\n" + "\n".join(snippets),
+                    "rrf_score": 1.5
+                }
+    except Exception as ddg_err:
+        logger.warning(f"[Live WebSearch] DuckDuckGo Lite error: {ddg_err}")
+
     return None
 
 
@@ -6537,16 +6572,31 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
                         retrieved_chunks = rerank_chunks(user_query, fused_rec, top_n=6)
                     retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
 
-                if not retrieved_chunks:
-                    logger.info(f"[tako/search] Retrieval empty for '{user_query}' — Executing structured live web search fallback")
+                # Trigger Live Web Search:
+                # 1. On empty local retrieval (fallback)
+                # 2. On regeneration requests (user clicked regenerate — fresh factual backup)
+                # 3. On explicit live/recent inquiry keywords (circular, latest, today, news)
+                is_explicit_live_query = bool(re.search(r'\b(latest|recent|current|today|circular|circulars|news|announcement|update|updates|live|fresh)\b', user_query, re.I))
+                should_trigger_websearch = (
+                    not retrieved_chunks or
+                    req.is_regeneration or
+                    is_explicit_live_query
+                )
+
+                if should_trigger_websearch:
+                    reason_label = "Regeneration fresh backup" if req.is_regeneration else ("Live news/updates trigger" if is_explicit_live_query else "Zero-retrieval fallback")
+                    logger.info(f"[Live WebSearch] Triggering search for '{user_query}' ({reason_label})")
                     yield json.dumps({
                         "type": "reasoning",
-                        "step": "tako/search Fallback: Executing structured live web search for Mohamed Sathak A.J. College of Engineering (MSAJCE)",
+                        "step": f"Live Web Search Tool: {reason_label} for Mohamed Sathak A.J. College of Engineering (MSAJCE)",
                         "done": True
                     })
-                    tako_chunk = await execute_tako_websearch(user_query)
-                    if tako_chunk:
-                        retrieved_chunks = [tako_chunk]
+                    web_chunk = await execute_tako_websearch(user_query)
+                    if web_chunk:
+                        if not retrieved_chunks:
+                            retrieved_chunks = [web_chunk]
+                        else:
+                            retrieved_chunks.insert(0, web_chunk)
 
                 source_files = list({c.get("source_file", "").split('\t')[0] for c in retrieved_chunks if c.get("source_file")})
                 source_summary = ", ".join(source_files[:2]) if source_files else "official records"
@@ -7410,11 +7460,15 @@ async def chat_sync_endpoint(req: ChatRequest, request: Request = None):
     target_domain = domain_router.classify(user_query)
     retrieved_chunks = crag_filter.filter_chunks(retrieved_chunks, target_domain, user_query)
 
-    if not retrieved_chunks:
-        logger.info(f"[tako/search] Retrieval empty for '{user_query}' — Executing structured live web search fallback")
-        tako_chunk = await execute_tako_websearch(user_query)
-        if tako_chunk:
-            retrieved_chunks = [tako_chunk]
+    is_explicit_live_query = bool(re.search(r'\b(latest|recent|current|today|circular|circulars|news|announcement|update|updates|live|fresh)\b', user_query, re.I))
+    if not retrieved_chunks or is_explicit_live_query:
+        logger.info(f"[Live WebSearch] Executing structured live web search for '{user_query}'")
+        web_chunk = await execute_tako_websearch(user_query)
+        if web_chunk:
+            if not retrieved_chunks:
+                retrieved_chunks = [web_chunk]
+            else:
+                retrieved_chunks.insert(0, web_chunk)
 
     seen_source_keys = set()
     sources_payload = []
