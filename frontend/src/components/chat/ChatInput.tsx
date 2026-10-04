@@ -1162,41 +1162,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           )
         )}
 
-        {/* ── Prompt Input Container (Maintains full lengthy width in idle state matching message column) ── */}
-        <div
+        {/* ── Prompt Input Container ── */}
+        <motion.div
           ref={internalContainerRef}
           onBlur={handleBlur}
+          layout
+          transition={{ type: "spring", stiffness: 350, damping: 28 }}
           className="relative flex flex-col w-full mx-auto"
-          style={{
-            maxWidth: "100%",
-            transition: isSmoothResize
-              ? "max-width 0.15s ease-out"
-              : "max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-          }}
         >
           {/* Main Input Card */}
-          <div
+          <motion.div
+            layout
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
             onClick={() => {
               if (!expanded) {
                 expand();
               }
             }}
-            onMouseDown={(e) => {
-              const isTextarea = e.target === textareaRef.current;
-              if (expanded && !isTextarea && !isRecording) {
-                e.preventDefault();
-                textareaRef.current?.focus();
-              }
-            }}
-            style={{
-              borderRadius: expanded ? 28 : 9999,
-              height: expanded ? containerHeight : (isMobileViewport ? 48 : 54),
-              transition: isSmoothResize ? SMOOTH_HEIGHT_TRANSITION : SPRING_TRANSITION,
-              overflow: (expanded || isVoiceMenuOpen || isModelSelectOpen) ? "visible" : "hidden",
-            }}
             className={cn(
-              "relative w-full border border-black/[0.08] dark:border-white/[0.12] bg-white/95 dark:bg-[#14151a]/95 backdrop-blur-xl shadow-sm dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-all z-10 focus-within:border-[#2E6B5E]/60 dark:focus-within:border-[#10b981]/60 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)]",
-              expanded ? "cursor-text rounded-[28px]" : "cursor-pointer rounded-full hover:border-[#2E6B5E]/40 dark:hover:border-[#10b981]/40"
+              "relative w-full border border-black/[0.08] dark:border-white/[0.12] bg-white/95 dark:bg-[#14151a]/95 backdrop-blur-xl shadow-md dark:shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-all z-10 focus-within:border-[#9E2339]/60 dark:focus-within:border-[#10b981]/60 focus-within:ring-2 focus-within:ring-[#9E2339]/20 dark:focus-within:ring-[#10b981]/20",
+              expanded ? "rounded-2xl sm:rounded-[24px] p-3" : "rounded-2xl sm:rounded-full p-2.5 sm:p-3 hover:border-black/20 dark:hover:border-white/25"
             )}
           >
             {/* Textarea Input */}
@@ -1212,7 +1197,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 }
               }}
               onBlur={() => {
-                // If user dismissed mobile keyboard and input is empty, collapse back down
                 if (text.trim() === "" && !isRecording && !isStreaming) {
                   setIsSmoothResize(false);
                   setExpanded(false);
@@ -1221,26 +1205,19 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 }
               }}
               placeholder="Ask anything about MSAJCE..."
+              rows={expanded ? 3 : 1}
               style={{
-                transition: isSmoothResize
-                  ? "height 0.15s ease-out"
-                  : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+                height: expanded ? containerHeight : "24px",
+                maxHeight: "180px"
               }}
               className={cn(
-                "absolute inset-x-0 z-[2] w-full resize-none bg-transparent pl-5 sm:pl-6 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-400 cursor-text",
-                expanded ? "top-0 py-3 opacity-100 scale-100 translate-y-0 pr-12" : "top-1/2 -translate-y-1/2 py-0 h-6 opacity-100 scale-100 cursor-pointer pr-36 sm:pr-40",
+                "w-full resize-none bg-transparent px-2 text-sm leading-[22px] text-ink dark:text-[#f4f3ee] outline-none placeholder:font-normal placeholder:text-stone-400 dark:placeholder:text-zinc-500 cursor-text transition-all duration-200",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden"
               )}
             />
 
-            {/* Bottom Actions Bar (Effort Selector) */}
-            <div
-              className={cn(
-                "absolute bottom-2 left-3 right-12 z-[10] flex items-center gap-1.5 transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]",
-                expanded && !isRecording ? "opacity-100 blur-0 translate-y-0 pointer-events-auto" : "opacity-0 blur-sm translate-y-2 pointer-events-none"
-              )}
-            >
-
+            {/* Bottom Actions Row: Effort Selector (Left) & Send/Stop Button (Right) */}
+            <div className="flex items-center justify-between pt-2 px-1 border-t border-black/[0.04] dark:border-white/[0.05] mt-1">
               {/* Effort Selector Button */}
               <Tooltip content="Adjust reasoning token budget (Low, Medium, Max Effort)">
                 <button
@@ -1254,21 +1231,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </span>
                 </button>
               </Tooltip>
-                {/* Right side controls container (Lightweight Send & Stop Action Button) */}
-            <div className={cn("absolute right-2 z-[10] flex items-center gap-2 transition-all duration-200", expanded ? "bottom-2" : "top-1/2 -translate-y-1/2")}>
+
+              {/* Send / Stop Action Button */}
               <Tooltip content={isStreaming ? "Stop generating" : "Send message (Enter)"}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 25 }}
                   type="button"
                   onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   onClick={handleActionButtonClick}
                   disabled={!hasValue && !isStreaming && !!rateLimitInfo?.isLimited}
                   className={cn(
-                    "flex size-8 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none",
+                    "flex size-8 items-center justify-center rounded-full text-white transition-all duration-200 cursor-pointer shadow-md active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0",
                     isStreaming
                       ? "bg-red-500 hover:bg-red-600 shadow-red-500/30 ring-2 ring-red-400"
                       : hasValue
-                      ? "bg-[#9E2339] dark:bg-[#10b981] text-white dark:text-zinc-950 hover:opacity-90 shadow-[#9E2339]/20"
-                      : "bg-stone-200 dark:bg-zinc-800 text-stone-400 dark:text-zinc-500"
+                      ? "bg-[#9E2339] dark:bg-[#10b981] text-white dark:text-zinc-950 hover:opacity-90 shadow-[#9E2339]/25"
+                      : "bg-[#9E2339]/80 dark:bg-[#10b981]/80 text-white dark:text-zinc-950 hover:bg-[#9E2339] dark:hover:bg-[#10b981]"
                   )}
                 >
                   {isStreaming ? (
@@ -1276,11 +1256,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   ) : (
                     <ArrowUp className="size-4 stroke-[2.5]" />
                   )}
-                </button>
+                </motion.button>
               </Tooltip>
-            </div>          </div>
-          </div>
-        </div>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* 1-Sentence Rotating Disclaimer Banner */}
         {!isMobile && (
