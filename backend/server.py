@@ -2738,6 +2738,9 @@ def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
             f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
             {"Authorization": f"Bearer {VERCEL_AI_GATEWAY_KEY}", "Content-Type": "application/json"},
             "google/gemini-2.5-flash-lite"
+        )
+
+
 async def execute_tako_websearch(user_query: str) -> Optional[Dict[str, Any]]:
     """
     Executes a structured live web search using tako/search (Vercel AI Gateway)
