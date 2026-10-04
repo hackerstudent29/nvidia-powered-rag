@@ -5,6 +5,7 @@ Interprets user utterances in the context of durable ConversationState and produ
 a strict, structured QueryPlan.
 Combines deterministic fast-paths (positional references, topic restoration, exact entity matching)
 with LLM-based structured JSON interpretation for complex coreference and multi-turn shifts.
+Includes Lorin V7.2 Canonical Entity Knowledge Layer integration.
 """
 
 import os
@@ -19,7 +20,6 @@ from typing import Dict, List, Optional, Tuple, Any
 try:
     from dotenv import load_dotenv
     load_dotenv()
-    # Check backend/.env as well if cwd is root
     if os.path.exists("backend/.env"):
         load_dotenv("backend/.env")
 except Exception:
@@ -29,6 +29,7 @@ from backend.core.conversation_state import (
     ConversationState, TopicFrame, QueryPlan, EntityRef, ResultSet, ResultItem
 )
 from backend.core.capability_registry import global_capability_registry, CapabilitySchema
+from backend.core.entity_knowledge import global_entity_registry
 
 VERCEL_AI_GATEWAY_KEY = os.getenv("AI_GATEWAY_API_KEY") or os.getenv("VERCEL_AI_GATEWAY_KEY") or os.getenv("AI_GATEWAY_API_KEY_BACKUP")
 VERCEL_AI_GATEWAY_URL = os.getenv("VERCEL_AI_GATEWAY_URL", "https://ai-gateway.vercel.sh/v1")
@@ -78,7 +79,6 @@ def resolve_topic_restoration(query: str, state: ConversationState) -> Optional[
         m = pat.search(query)
         if m:
             target_topic_raw = m.group(1).strip().lower()
-            # Search suspended frames in stack
             for frame in reversed(state.topic_stack):
                 if frame.semantic_topic.lower() in target_topic_raw or target_topic_raw in frame.semantic_topic.lower():
                     return frame
@@ -104,7 +104,6 @@ async def resolve_dialogue_intent_llm(
 ) -> Optional[Dict[str, Any]]:
     """Calls fast LLM engine to interpret utterance into structured JSON transition proposal."""
     
-    # Format active state summaries for prompt
     active_frame_summary = "None"
     if state.active_topic_frame:
         af = state.active_topic_frame
@@ -148,7 +147,7 @@ Output ONLY valid JSON matching this exact structure:
   "target_entities": [
     {{
       "entity_type": "<route | stop | course | department | person | hostel | facility | general>",
-      "entity_id": "<canonical ID like AR3, CSE, dr_ks_srinivasan, girls_hostel, or null>",
+      "entity_id": "<canonical ID like AR3, CSE, ent_principal_srinivasan, or null>",
       "canonical_name": "<full clean name or null>"
     }}
   ],
@@ -164,7 +163,6 @@ DO NOT return markdown preambles or explanations. Return ONLY the JSON string.
 
     user_msg = f"User Utterance: \"{current_query}\""
 
-    # Model Cascade for fast sub-250ms JSON generation
     keys_to_test = [
         ("google/gemini-2.5-flash-lite", VERCEL_AI_GATEWAY_URL, VERCEL_AI_GATEWAY_KEY),
         ("nvidia/nemotron-3-super-120b-a12b", NVIDIA_BASE_URL, NVIDIA_API_KEY)
@@ -208,6 +206,7 @@ async def resolve_user_utterance(
 ) -> QueryPlan:
     """
     Main entry point: Converts user utterance + ConversationState into a fully validated QueryPlan.
+    Integrates Lorin V7.2 Canonical Entity Knowledge Layer matching.
     """
     q_clean = user_query.strip()
     
@@ -258,21 +257,31 @@ async def resolve_user_utterance(
         qp.canonical_cache_key = build_canonical_cache_key(qp)
         return qp
 
+    # 2.2 V7.2 Canonical Entity Knowledge Pass
+    resolved_k_entities = global_entity_registry.resolve_entity(q_clean)
+    canonical_entity_refs = []
+    for k_ent in resolved_k_entities:
+        ent_type_val = k_ent.entity_type.value if hasattr(k_ent.entity_type, 'value') else str(k_ent.entity_type)
+        canonical_entity_refs.append(EntityRef(
+            entity_type=ent_type_val,
+            entity_id=k_ent.entity_id,
+            canonical_name=k_ent.canonical_name,
+            attributes={"subtype": k_ent.entity_subtype, "domains": k_ent.domains}
+        ))
+
     # 2.5 Fast Deterministic Contextual Coreference / Continuation Pass
     if state.active_topic_frame and (len(q_clean.split()) <= 6 or re.search(r'\b(it|he|she|they|this|that|his|her|girls|boys|where|location|timings|fee|fees|qualification|warden|office)\b', q_clean, re.I)):
         af = state.active_topic_frame
         cap_id = af.capability_id
-        entities = list(af.active_entities)
+        entities = canonical_entity_refs or list(af.active_entities)
         topic_name = af.semantic_topic.replace("_info", "").replace("_finder", "")
         
-        # Check slot shift (e.g. girls vs boys)
         slots = dict(af.slots)
         if re.search(r'\bgirls?\b', q_clean, re.I):
             slots["gender"] = "girls"
         elif re.search(r'\bboys?\b', q_clean, re.I):
             slots["gender"] = "boys"
 
-        # Check requested attributes
         attr_requests = list(af.requested_attributes)
         if re.search(r'\b(?:where|location|located|address)\b', q_clean, re.I):
             attr_requests = ["location"]
@@ -287,7 +296,6 @@ async def resolve_user_utterance(
         elif re.search(r'\b(?:office|room)\b', q_clean, re.I):
             attr_requests = ["office_location"]
 
-        # Build context-aware search query
         ent_names = " ".join([e.canonical_name for e in entities]) if entities else topic_name
         search_q = f"{ent_names} {' '.join(slots.values())} {' '.join(attr_requests)}".strip()
 
@@ -311,14 +319,15 @@ async def resolve_user_utterance(
     
     if llm_proposal and isinstance(llm_proposal, dict):
         raw_entities = llm_proposal.get("target_entities", [])
-        entities = []
-        for re_item in raw_entities:
-            if isinstance(re_item, dict) and re_item.get("entity_id"):
-                entities.append(EntityRef(
-                    entity_type=re_item.get("entity_type", "general"),
-                    entity_id=re_item.get("entity_id"),
-                    canonical_name=re_item.get("canonical_name") or re_item.get("entity_id")
-                ))
+        entities = canonical_entity_refs
+        if not entities:
+            for re_item in raw_entities:
+                if isinstance(re_item, dict) and re_item.get("entity_id"):
+                    entities.append(EntityRef(
+                        entity_type=re_item.get("entity_type", "general"),
+                        entity_id=re_item.get("entity_id"),
+                        canonical_name=re_item.get("canonical_name") or re_item.get("entity_id")
+                    ))
 
         qp = QueryPlan(
             plan_id=f"qp_{int(time.time()*1000)}",
@@ -336,15 +345,15 @@ async def resolve_user_utterance(
         qp.canonical_cache_key = build_canonical_cache_key(qp)
         return qp
 
-    # Default standalone query fallback
+    # Default standalone query fallback with V7.2 Canonical Entities bound
     qp = QueryPlan(
         plan_id=f"qp_{int(time.time()*1000)}",
         intent="CREATE_TOPIC",
         operation="rag_search",
         capability_id="rag_evidence_engine",
-        target_entities=[],
+        target_entities=canonical_entity_refs,
         search_query=q_clean,
-        confidence=0.8
+        confidence=0.85
     )
     qp.canonical_cache_key = build_canonical_cache_key(qp)
     return qp
