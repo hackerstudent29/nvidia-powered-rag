@@ -3987,7 +3987,7 @@ def decompose_multi_hop_query(query: str) -> List[str]:
 
     # 1. Structural Sentence & Clause Splitting
     raw_splits = re.split(r'[\?\n;\!]+', q_clean)
-    split_pattern = r'(?:,\s*(?:and\s+)?|\.\s+|\s+also\s+|\s+then\s+|\s+and\s+)(?=(?:what|which|how|where|who|tell\s+me|compare|give|is\s+there|are\s+there|what\s+are|what\s+is|what\s+does|how\s+does|how\s+many|can\s+you)\b)'
+    split_pattern = r'(?:,\s*(?:and\s+)?|\.\s+|\s+and\s+also\s+|\s+also\s+|\s+then\s+|\s+plus\s+|\s+with\s+|\s+&\s+|\s+and\s+)(?=(?:what|which|how|where|who|tell|tell\s+me|compare|give|is\s+there|are\s+there|abt|about|details|info|information|nss|yrc|rrc|uba|principal|hostel|mess|bus|canteen|placement|fees?|courses?|admission|naac|nba|karma|scholarship)\b)'
     
     clauses = []
     for raw in raw_splits:
@@ -3997,7 +3997,7 @@ def decompose_multi_hop_query(query: str) -> List[str]:
         parts = re.split(split_pattern, raw_trimmed, flags=re.IGNORECASE)
         for p in parts:
             p_clean = p.strip(' ,.?\n')
-            if len(p_clean.split()) >= 2:
+            if len(p_clean.split()) >= 1:
                 clauses.append(p_clean)
 
     if not clauses:
@@ -4008,8 +4008,8 @@ def decompose_multi_hop_query(query: str) -> List[str]:
 
     for c in clauses:
         c_low = c.lower()
-        sub_c = re.sub(r'^(?:i\s+want\s+to\s+know(?:\s+more)?(?:\s+about\s+msajce)?(?:\s+before\s+joining)?[\.\,\:]*\s*|i\s+would\s+like\s+to\s+know(?:\s+about)?[\.\,\:]*\s*)', '', c, flags=re.IGNORECASE).strip()
-        if len(sub_c.split()) >= 3:
+        sub_c = re.sub(r'^(?:i\s+want\s+to\s+know(?:\s+more)?(?:\s+about\s+msajce)?(?:\s+before\s+joining)?[\.\,\:]*\s*|i\s+would\s+like\s+to\s+know(?:\s+about)?[\.\,\:]*\s*|tell\s+me\s+about\s*|tell\s+abt\s*|tell\s+me\s*|abt\s*|about\s*)', '', c, flags=re.IGNORECASE).strip()
+        if len(sub_c.split()) >= 1:
             c = sub_c
             c_low = c.lower()
 
@@ -4025,13 +4025,15 @@ def decompose_multi_hop_query(query: str) -> List[str]:
 
     # 2. Comprehensive Specialized Campus Aspect Anchors
     aspect_patterns = [
+        (r'\b(nss|yrc|rrc|uba|unnat\s+bharat|swachh|social\s+service|social\s+services|clubs?|rotaract|extension)\b', "msajce national service scheme nss social services community activities"),
+        (r'\b(karma|karma\s+scheme|kaushal)\b', "msajce karma scheme kaushal augmentation model skill development aicte"),
         (r'\b(naac|nba|accreditation|autonomous|ranking|nirf|grade)\b', "msajce naac nba accreditation status grade autonomous"),
         (r'\b(information\s+technology|it\s+dept|b\.?tech\s+it)\b', "msajce information technology it department courses curriculum intake"),
         (r'\b(department|departments|branches|programs|programmes|degree\s+courses)\b', "msajce undergraduate engineering departments courses intake"),
         (r'\b(sports|games|gym|gymnasium|playground|cricket|football|volleyball|basketball|badminton|indoor|outdoor)\b', "msajce sports facilities games gymnasium physical education director grounds"),
         (r'\b(library|books|journals|digital\s+library|reading\s+room|delnet|ieee)\b', "msajce central library facilities books journals working hours digital library"),
         (r'\b(entrepreneurship|innovation|incubation|incubator|edc|iic|startups?|msme|patents?)\b', "msajce entrepreneurship innovation incubation centre edc msme startups support"),
-        (r'\b(administration|contact|procedure|helpdesk|phone|email|office|principal|address)\b', "msajce administration contact details principal office phone email address procedure"),
+        (r'\b(administration|contact|procedure|helpdesk|phone|email|office|principal|dean|srinivasan|address)\b', "msajce administration contact details principal office phone email address procedure"),
         (r'\b(hostel|hostels|rooms?|occupancy|boys\s+hostel|girls\s+hostel)\b', "msajce boys girls hostel facilities rooms blocks capacity wifi"),
         (r'\b(transport|bus|buses|routes?|stops?|commute|driver)\b', "msajce transport official college bus routes schedules"),
         (r'\b(placement|placements|salary|package|recruiters?|companies)\b', "msajce placements top recruiters highest package salary"),
@@ -4197,26 +4199,26 @@ def classify_slot_entailment(query: str, required_fact: str, chunk: Dict[str, An
 
     content = (chunk.get("content") or chunk.get("text") or "").lower()
     q_low = query.lower()
-    fact_low = required_fact.lower()
+    fact_low = required_fact.lower() if required_fact else q_low
 
-    # 1. Temporal / Year Context Check
-    q_years = set(re.findall(r'\b(20\d\d)\b', q_low))
+    # 1. Temporal / Year Context Check (scoped to required_fact if present, else q_low)
+    fact_years = set(re.findall(r'\b(20\d\d)\b', fact_low))
     c_years = set(re.findall(r'\b(20\d\d)\b', content))
-    if q_years and not q_years.issubset(c_years):
+    if fact_years and not fact_years.issubset(c_years):
         return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 2. Location / City Context Check
+    # 2. Location / City Context Check (scoped to required_fact)
     q_cities = {
         "bangalore", "hyderabad", "mumbai", "delhi", "pondicherry", "vellore", "mysore",
         "paris", "dubai", "singapore", "tokyo", "madurai", "kanchipuram", "sydney", "berlin",
         "london", "california", "everest", "mars", "jupiter", "pacific ocean", "atlantis"
     }
-    q_locs = set(w for w in q_cities if w in q_low)
+    fact_locs = set(w for w in q_cities if w in fact_low)
     c_locs = set(w for w in q_cities if w in content)
-    if q_locs and not q_locs.issubset(c_locs):
+    if fact_locs and not fact_locs.issubset(c_locs):
         return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 3. Department Branch / Program Check with Soft Alias Equivalence
+    # 3. Department Branch / Program Check with Soft Alias Equivalence (scoped to required_fact)
     CANONICAL_SYNONYMS = {
         "cse": ["cse", "computer science", "computer science and engineering"],
         "it": ["it", "information technology"],
@@ -4240,38 +4242,45 @@ def classify_slot_entailment(query: str, required_fact: str, chunk: Dict[str, An
         "csi": ["csi", "computer society of india"],
     }
 
-    requested_dept_key = None
+    fact_dept_key = None
     for key, syn_list in CANONICAL_SYNONYMS.items():
-        if any(re.search(rf'\b{re.escape(syn)}\b', q_low) for syn in syn_list):
-            requested_dept_key = key
+        if any(re.search(rf'\b{re.escape(syn)}\b', fact_low) for syn in syn_list):
+            fact_dept_key = key
             break
 
-    if requested_dept_key:
-        valid_synonyms = CANONICAL_SYNONYMS[requested_dept_key]
+    if fact_dept_key:
+        valid_synonyms = CANONICAL_SYNONYMS[fact_dept_key]
         has_dept_match = any(syn in content for syn in valid_synonyms)
         if not has_dept_match:
             return "RELATED_BUT_NOT_SUPPORTING"
     else:
-        # Fallback to general branch list for negative checks
+        # Fallback to general branch list for negative checks scoped to fact_low
         generic_branches = {
             "biotechnology", "aerospace", "marine", "quantum", "nuclear",
             "petroleum", "genetic", "telepathy", "superhero", "dragon", "magic", "fashion",
             "robotics", "bio-cybernetics", "supercomputing", "nanotechnology"
         }
-        q_gen = set(w for w in generic_branches if w in q_low)
+        fact_gen = set(w for w in generic_branches if w in fact_low)
         c_gen = set(w for w in generic_branches if w in content)
-        if q_gen and not q_gen.intersection(c_gen):
+        if fact_gen and not fact_gen.intersection(c_gen):
             return "RELATED_BUT_NOT_SUPPORTING"
 
-    # 4. Role / Position Check
-    roles = ["dean", "cfo", "director", "warden", "president", "ceo", "chief ai officer", "lead drone operator", "vice chancellor", "astronaut"]
-    for r in roles:
-        if r in q_low and r not in content:
+    # 4. Role / Position Check (scoped to required_fact)
+    roles = ["dean", "cfo", "director", "warden", "president", "ceo", "chief ai officer", "lead drone operator", "vice chancellor", "astronaut", "principal", "hod"]
+    fact_roles = [r for r in roles if r in fact_low]
+    for r in fact_roles:
+        if r not in content:
             return "RELATED_BUT_NOT_SUPPORTING"
 
     # 5. Direct Fact Entailment
     if fact_low in content:
         return "DIRECTLY_ENTAILED"
+
+    # Soft Alias Equivalence Match for department/scheme keys
+    if fact_dept_key:
+        valid_synonyms = CANONICAL_SYNONYMS[fact_dept_key]
+        if any(syn in content for syn in valid_synonyms):
+            return "DIRECTLY_ENTAILED"
 
     stopwords = {
         "what", "is", "the", "of", "and", "a", "an", "in", "on", "at", "to", "for", "with", "by", 
@@ -4507,6 +4516,10 @@ def process_lorin_query(
         req_facts.extend(normalized["numbers"])
     if normalized.get("locations"):
         req_facts.extend(normalized["locations"])
+    if normalized.get("acronyms"):
+        for ac in normalized["acronyms"]:
+            if ac not in req_facts:
+                req_facts.append(ac)
 
     if opts.get("required_facts"):
         for rf in opts["required_facts"]:
