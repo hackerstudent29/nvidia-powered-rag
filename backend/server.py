@@ -5505,6 +5505,17 @@ class ChatRequest(BaseModel):
     is_regeneration: Optional[bool] = Field(False, description="Flag indicating in-place response regeneration")
     target_message_id: Optional[str] = Field(None, description="Target assistant message ID for in-place regeneration")
 
+@app.get("/")
+@app.get("/health")
+@app.get("/api/health")
+async def root_health_check():
+    return JSONResponse({
+        "status": "healthy",
+        "service": "Lorin AI Enterprise Backend",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+
 @app.post("/api/chat/stream")
 async def chat_stream_endpoint(req: ChatRequest, request: Request):
     start_time = time.time()
