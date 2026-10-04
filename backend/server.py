@@ -2625,7 +2625,9 @@ def get_prebuilt_card_answer(query: str) -> Optional[Dict[str, Any]]:
 
 def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
     m_clean = (m_name or "").lower()
-    vercel_backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or VERCEL_AI_GATEWAY_KEY
+    vercel_primary_key = os.getenv("AI_GATEWAY_API_KEY") or VERCEL_AI_GATEWAY_KEY
+    vercel_backup_key = os.getenv("AI_GATEWAY_API_KEY_BACKUP") or vercel_primary_key
+    vercel_backup_key_2 = os.getenv("AI_GATEWAY_API_KEY_BACKUP_2") or vercel_backup_key
     openrouter_key = os.getenv("OPENROUTER_API_KEY", OPENROUTER_API_KEY)
     
     # 1. OpenRouter Models (any model with :free or openrouter prefix)
@@ -2642,7 +2644,13 @@ def get_model_endpoint_config(m_name: str) -> Tuple[str, Dict[str, str], str]:
             actual_model
         )
     
-    # 2. Vercel Backup Key
+    # 2. Vercel Backup Keys
+    if "backup2" in m_clean or "backup_2" in m_clean:
+        return (
+            f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
+            {"Authorization": f"Bearer {vercel_backup_key_2}", "Content-Type": "application/json"},
+            "google/gemini-2.5-flash-lite"
+        )
     if "backup" in m_clean:
         return (
             f"{VERCEL_AI_GATEWAY_URL.rstrip('/')}/chat/completions",
@@ -6191,13 +6199,17 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
 
             candidate_models = [
-                # 1. Primary Engine: Ultra Low Latency Vercel AI Gateway (~300ms TTFT)
+                # 1. Primary Engine: Ultra Low Latency Vercel AI Gateway (Primary Key)
                 "google/gemini-2.5-flash-lite",
                 # 2. Secondary Engine: NVIDIA NIM Flagship
                 "nvidia/nemotron-3-super-120b-a12b",
-                # 3. Failover: Vercel Low-Latency Engine
+                # 3. Failover: Vercel AI Gateway (Secondary Key 1)
+                "google/gemini-2.5-flash-lite:backup",
+                # 4. Failover: Vercel AI Gateway (Secondary Key 2)
+                "google/gemini-2.5-flash-lite:backup2",
+                # 5. Failover: Vercel Low-Latency Engine
                 "alibaba/qwen-3-32b",
-                # 4. OpenRouter Free Infrastructure
+                # 6. OpenRouter Free Infrastructure
                 "nvidia/nemotron-3-super-120b-a12b:free",
                 "nvidia/nemotron-3-ultra-550b-a55b:free",
                 "inclusionai/ling-3.0-flash-sante-free"

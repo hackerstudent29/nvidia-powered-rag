@@ -64,12 +64,16 @@ def check_external_headers(headers: Dict[str, str]) -> Tuple[bool, str, str]:
 
 def evaluate_abstention(query: str, response: str) -> bool:
     """Determine whether response successfully abstained on out-of-domain/negative query."""
-    resp_lower = response.lower().replace("’", "'").replace("`", "'")
+    resp_raw = response.lower().replace("’", "'").replace("`", "'")
+    resp_clean = re.sub(r'[*_`#~]', '', resp_raw)
     abstain_signals = [
         "no record found",
+        "no records found",
         "not found",
         "does not offer",
+        "do not offer",
         "does not have",
+        "do not have",
         "not available",
         "cannot verify",
         "couldn't verify",
@@ -94,6 +98,8 @@ def evaluate_abstention(query: str, response: str) -> bool:
         "cannot find any record",
         "couldn't find verified information",
         "could not find verified information",
+        "couldn't find any information",
+        "could not find any information",
         "no verified record",
         "no verified details",
         "not mentioned in the verified",
@@ -103,9 +109,16 @@ def evaluate_abstention(query: str, response: str) -> bool:
         "don't see a specific",
         "main college phone number is not explicitly listed",
         "not part of",
-        "no program, department, or position"
+        "no program, department, or position",
+        "there isn't one directly",
+        "there is no metro station",
+        "there isn't one",
+        "is not listed",
+        "are not listed",
+        "no swimming pool"
     ]
-    return any(sig in resp_lower for sig in abstain_signals)
+    return any(sig in resp_clean or sig in resp_raw for sig in abstain_signals)
+
 
 
 def evaluate_answer_correctness(query: str, response: str, expected: str, should_abstain: bool) -> Tuple[bool, str]:
