@@ -277,6 +277,19 @@ LORIN_SYSTEM_PROMPT = """You are Lorin AI, official student ambassador & campus 
 CONVERSATIONAL STYLE & CHATGPT-LIKE AI PERSONA:
 1. Tone: Warm, empathetic, intelligent, and highly articulate campus advisor. Answer in a natural, friendly, ChatGPT-style conversational tone.
 2. Structure & Presentation: Combine engaging conversational explanations with clean, structured Markdown (bold headers, bullet points, and Markdown tables | Column 1 | Column 2 |). Highlight key names, amounts, and dates in bold text for effortless reading. Always format dates with proper spaces (e.g., "April 7, 2021").
+MANDATORY MARKDOWN TABLES FOR MULTIPLE DETAILS & ROSTERS:
+Whenever answering queries asking for office bearers, committee members, student branch officers, faculty rosters, bus routes/stops, fee structures, course lists, intake capacity, timings, scholarships, or any multi-item/multi-attribute details:
+- You MUST format the core information inside a clean GitHub-Flavored Markdown Table (`| Header 1 | Header 2 | Header 3 |`).
+- Example for Office Bearers / Committee Members / Student Branches:
+  | Position / Role | Name | Department / Branch |
+  |---|---|---|
+  | President | Yogesh R | B.Tech IT |
+  | Vice President | Saqlin Mustaq M | B.Tech AI&DS |
+  | Secretary | Abu Jabar Mubarak | B.Tech CSBS |
+- Example for Bus Routes & Stops:
+  | Route Number | Key Stops | Campus Arrival | Driver / Contact |
+  |---|---|---|---|
+- NEVER output plain unstructured text paragraphs or unformatted lists when a Markdown Table can cleanly structure the data!
 3. Engaging Openings & Closings: Begin naturally with a welcoming, contextual introductory sentence (e.g., "Here is the breakdown of students who have benefited from the MSAJCEA Alumni Scholarship Program:"). Conclude helpfully with a warm follow-up offer (e.g., "If you'd like to know more about specific department scholarships or application procedures, feel free to ask!").
 4. Anti-Metadata & Grounding: Ground 100% in verified MSAJCE records. Never extrapolate or invent facts. NEVER quote internal chunk indices, document filenames (e.g. '[8]', 'msajce_policy.md'), or raw version tags.
 5. Administrative In-Charges & Faculty: Map role queries strictly to official campus contacts with name, title, phone, and email as stated in verified records. If a named individual is not in records, state clearly: "No record found for '[Name]' in verified MSAJCE campus records."
@@ -303,7 +316,7 @@ def auto_select_model(query: str) -> str:
 def structure_markdown_for_mobile(text: str) -> str:
     """
     Post-processes markdown text to ensure inline key-value pairs and category lists
-    have proper line breaks for mobile screens while preserving natural conversational paragraphs.
+    have proper line breaks for mobile screens while preserving natural conversational paragraphs and Markdown tables.
     """
     if not text:
         return ""
@@ -314,17 +327,13 @@ def structure_markdown_for_mobile(text: str) -> str:
     text = re.sub(r'^\s*[\*\-•–—+]\s*[-–—•]\s+(?=[A-Za-z0-9\(\[\`\*\"#])', '- ', text, flags=re.MULTILINE)
     text = re.sub(r'^\s*[\*\-•–—+]\s*$', '', text, flags=re.MULTILINE)
 
-    # Restore table row line-breaks if table rows got smashed inline (e.g. "| r1 || r2 |" or "| r1 | | r2 |")
-    text = re.sub(r'\|\s*\|', '|\n|', text)
-    text = re.sub(r'\|\s+(?=\|\s*[A-Za-z0-9\*\-])', '|\n', text)
-
     lines = text.split('\n')
     processed_lines = []
 
     for line in lines:
         stripped = line.strip()
 
-        # Skip table rows or lines inside code blocks/horizontal rules
+        # Preserve markdown tables, code blocks, and horizontal rules completely intact
         if stripped.startswith('|') or stripped.startswith('```') or re.match(r'^[\-\*\=_]{3,}$', stripped):
             processed_lines.append(line)
             continue
@@ -3762,7 +3771,9 @@ def hybrid_search(query: str, query_vector: Optional[List[float]] = None, top_k:
     core_institutional_files = {
         "msajce_about.md", "msajce_admission.md", "msajce_courses_overview.md",
         "msajce_transport.md", "msajce_principal.md", "msajce_facilities.md",
-        "msajce_iqac.md", "msajce_hostel.md", "msajce_contact.md", "msajce_placements.md"
+        "msajce_iqac.md", "msajce_hostel.md", "msajce_contact.md", "msajce_placements.md",
+        "msajce_professional_societies.md", "msajce_socialservices.md", "msajce_student_clubs.md",
+        "msajce_incubation.md", "msajce_naac.md"
     }
 
     is_academic_aids = any(w in q_low for w in ["aids", "ai&ds", "ai and ds", "artificial intelligence"]) and not any(w in q_low for w in ["medical", "disease", "hiv", "policy", "health"])
@@ -6665,10 +6676,12 @@ async def chat_stream_endpoint(req: ChatRequest, request: Request):
 
                                 # Runaway whitespace and repetitive token glitch guard
                                 if token_chunk.strip() == "":
-                                    consecutive_spaces_count += len(token_chunk)
-                                    if consecutive_spaces_count > 60:
-                                        print(f"[WARN] Runaway whitespace detected (>60 chars) from '{current_cand}'. Terminating stream.")
-                                        break
+                                    # Do not count spaces inside Markdown table rows (|)
+                                    if "|" not in "".join(cand_chunks[-5:]):
+                                        consecutive_spaces_count += len(token_chunk)
+                                        if consecutive_spaces_count > 300:
+                                            print(f"[WARN] Runaway whitespace detected (>300 chars) from '{current_cand}'. Terminating stream.")
+                                            break
                                 else:
                                     consecutive_spaces_count = 0
 
