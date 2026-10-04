@@ -769,7 +769,7 @@ class EntityRegistry:
                     );
                 """)
 
-                # 6. entity_chunk_map table
+                # 6. entity_chunk_map table creation & ALTER migration
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS entity_chunk_map (
                         entity_id TEXT REFERENCES entities(entity_id) ON DELETE CASCADE,
@@ -785,19 +785,32 @@ class EntityRegistry:
                     );
                 """)
 
-                # Prepare tuples for batch upsert
-                entity_tuples = [
-                    (
-                        ent.entity_id, ent.canonical_name, ent.display_name,
-                        ent.entity_type.value, ent.entity_subtype,
-                        json.dumps(ent.domains), json.dumps(ent.roles), json.dumps(ent.tags),
-                        ent.description, ent.source_file, ent.namespace, json.dumps(ent.external_ids),
-                        ent.source_authority, ent.identity_confidence, ent.importance_score,
-                        ent.mention_count, ent.document_count, ent.status.value,
-                        ent.merged_into_entity_id, ent.version, ent.canonical_source
-                    )
-                    for ent in self.entities.values()
+                v72_chunk_map_columns = [
+                    ("document_version_id", "TEXT DEFAULT '2026-27'"),
+                    ("mention_count", "INT DEFAULT 1"),
+                    ("confidence", "FLOAT DEFAULT 0.95"),
+                    ("first_position", "INT DEFAULT 0"),
+                    ("section_path", "TEXT"),
+                    ("page_number", "INT DEFAULT 1")
                 ]
+                for col_name, col_def in v72_chunk_map_columns:
+                    cur.execute(f"ALTER TABLE entity_chunk_map ADD COLUMN IF NOT EXISTS {col_name} {col_def};")
+
+                # Prepare unique tuples for batch upsert
+                seen_entity_ids = set()
+                unique_entity_tuples = []
+                for ent in self.entities.values():
+                    if ent.entity_id not in seen_entity_ids:
+                        seen_entity_ids.add(ent.entity_id)
+                        unique_entity_tuples.append((
+                            ent.entity_id, ent.canonical_name, ent.display_name,
+                            ent.entity_type.value, ent.entity_subtype,
+                            json.dumps(ent.domains), json.dumps(ent.roles), json.dumps(ent.tags),
+                            ent.description, ent.source_file, ent.namespace, json.dumps(ent.external_ids),
+                            ent.source_authority, ent.identity_confidence, ent.importance_score,
+                            ent.mention_count, ent.document_count, ent.status.value,
+                            ent.merged_into_entity_id, ent.version, ent.canonical_source
+                        ))
 
                 execute_values(
                     cur,
@@ -822,14 +835,18 @@ class EntityRegistry:
                         merged_into_entity_id = EXCLUDED.merged_into_entity_id,
                         updated_at = NOW();
                     """,
-                    entity_tuples
+                    unique_entity_tuples
                 )
 
-                alias_tuples = []
+                seen_alias_keys = set()
+                unique_alias_tuples = []
                 for ent in self.entities.values():
                     for alias in ent.aliases:
                         norm = alias.strip().lower()
-                        alias_tuples.append((ent.entity_id, alias, norm, alias == ent.canonical_name))
+                        key = (ent.entity_id, norm)
+                        if key not in seen_alias_keys:
+                            seen_alias_keys.add(key)
+                            unique_alias_tuples.append((ent.entity_id, alias, norm, alias == ent.canonical_name))
 
                 execute_values(
                     cur,
@@ -840,13 +857,19 @@ class EntityRegistry:
                         frequency = entity_aliases.frequency + 1,
                         last_seen_at = NOW();
                     """,
-                    alias_tuples
+                    unique_alias_tuples
                 )
 
-                chunk_map_tuples = [
-                    (eid, cid, meta.get("document_id", ""), meta.get("mention_count", 1), meta.get("confidence", 0.95), meta.get("section_path", ""), meta.get("page_number", 1))
-                    for (eid, cid), meta in self.entity_chunk_map.items()
-                ]
+                seen_chunk_keys = set()
+                unique_chunk_map_tuples = []
+                for (eid, cid), meta in self.entity_chunk_map.items():
+                    key = (eid, cid)
+                    if key not in seen_chunk_keys:
+                        seen_chunk_keys.add(key)
+                        unique_chunk_map_tuples.append((
+                            eid, cid, meta.get("document_id", ""), meta.get("mention_count", 1),
+                            meta.get("confidence", 0.95), meta.get("section_path", ""), meta.get("page_number", 1)
+                        ))
 
                 execute_values(
                     cur,
@@ -857,7 +880,7 @@ class EntityRegistry:
                         mention_count = EXCLUDED.mention_count,
                         confidence = EXCLUDED.confidence;
                     """,
-                    chunk_map_tuples
+                    unique_chunk_map_tuples
                 )
 
                 conn.commit()
