@@ -2185,7 +2185,7 @@ const MessageItem = React.memo(function MessageItem({
         )}
 
         {/* Contextual Follow-up Prompts */}
-        {isLatestMessage && !message.is_streaming && message.suggestions && message.suggestions.length > 0 && (
+        {isLatestMessage && !message.is_streaming && Array.isArray(message.suggestions) && message.suggestions.length > 0 && (
           <div className="mt-3.5 sm:pl-7 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="text-[11.5px] font-semibold text-ink-3 dark:text-zinc-400 mb-2 pl-1">Follow-ups</div>
             <div className="flex flex-col gap-1.5">

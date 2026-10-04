@@ -151,6 +151,17 @@ export function useChat() {
             }
             dedupedHistory.push(item);
           }
+          const ensureArray = (val: any): any[] => {
+            if (Array.isArray(val)) return val;
+            if (typeof val === 'string' && val.trim()) {
+              try {
+                const p = JSON.parse(val);
+                if (Array.isArray(p)) return p;
+              } catch (e) {}
+            }
+            return [];
+          };
+
           const formatted: Message[] = dedupedHistory.map((h: any) => ({
             id: h.id || h.message_id || `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             role: h.role,
@@ -158,11 +169,11 @@ export function useChat() {
             timestamp: h.created_at || new Date(),
             model: h.model || h.model_used,
             latency_ms: h.latency_ms,
-            sources: h.sources || h.citations || [],
-            reasoning_steps: h.reasoning_steps || [],
+            sources: ensureArray(h.sources || h.citations),
+            reasoning_steps: ensureArray(h.reasoning_steps),
             token_metrics: h.token_metrics || h.token_usage,
             resource_attachments: h.resource_attachments,
-            suggestions: h.suggestions || [],
+            suggestions: ensureArray(h.suggestions),
           }));
 
           setMessages((current) => {
